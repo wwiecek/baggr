@@ -1,0 +1,28 @@
+---
+output:
+  github_document:
+    html_preview: false
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+options(tibble.print_min = 5, tibble.print_max = 5)
+```
+
+# baggr
+
+-- THIS VERSION OF BAGGR IS A PROTOTYPE, WE MAKE NO PROMISES --
+
+## Overview
+
+Baggr (pronounced as _bagger_ or _badger_) is a meta-analysis package using hierarchical Bayesian models in Stan. Baggr is intended to be user-friendly and transparent so that it's easier to understand the models you're building and criticise them.
+
+## Use
+
+...

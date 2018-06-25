@@ -1,0 +1,99 @@
+#' @title Convert inputs for baggr Stan models
+#'
+#' @description
+#' Allows conversions from full to reduced (summary) data and
+#' in summary between long (control and treatment on separate rows)
+#' and wide data (control and treatment in separate columns).
+#'
+#' @param data data.frame with desired modelling input
+#' @param model valid model name used by baggr
+#' @param grouping name of the column with grouping variable
+#' @param outcome name of column with outcome variable
+#' @param treatment name of column with treatment variable
+#' @return data.frame of class baggr_data that baggr() uses
+#' @details
+#' The conversions will typically happen automatically when data is fed to baggr()
+#' function. This function can be used to explicitly convert from full to reduced
+#' data without analysing it in a model.
+#' @author Witold Wiecek
+#' @export
+
+convert_inputs <- function(data,
+                           model,
+                           grouping  = "site",
+                           outcome   = "outcome",
+                           treatment = "treatment") {
+
+  # 1/ check what kind of data is required for the model & what's available
+  model_data_types <- c("rubin" = "pool_noctrl_narrow",
+                        "mutau" = "pool_wide",
+                        "joint" = "individual")
+  available_data <- detect_input_type(data)
+  if(is.null(model)) {
+    message("Attempting to infer the correct model for data.")
+    # we take FIRST MODEL THAT SUITS OUR DATA!
+    model <- names(model_data_types)[which(model_data_types == available_data)[1]]
+    message(paste0("Chosen model ", model))
+  } else {
+    if(!(model %in% names(model_data_types)))
+      stop("Unrecognised model, can't format data.")
+  }
+  required_data <- model_data_types[[model]]
+  browser()
+  # let's assume data is individual-level
+  # if we can't determine it
+  # because it may have custom columns
+  if(available_data == "unknown")
+    available_data <- "individual" #in future call it 'inferred ind.'
+
+  if(required_data != available_data)
+    stop(paste(
+      "Data provided is of type", available_data,
+      "and the model requires", required_data))
+  #for now this means no automatic conversion of individual->pooled
+
+  if(required_data == "individual"){
+    # check correctness of inputs:
+    if(is.null(data[[grouping]]))
+      stop("No 'site' column in data.")
+    if(is.null(data[[outcome]]))
+      stop("No outcome column in data.")
+    if(is.null(data[[treatment]]))
+      stop("No treatment column in data.")
+
+    site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
+    site_label <- unique(as.factor(as.character(data[[grouping]])))
+
+    out <- list(
+      K = max(site_numeric),
+      N = nrow(data),
+      P = 2, #will be dynamic
+      y = data[[outcome]],
+      ITT = data[[treatment]],
+      site = site_numeric
+    )
+  }
+
+  if(required_data == "pool_noctrl_narrow"){
+    site_label <- data[[grouping]]
+    out <- list(
+      K = nrow(data),
+      tau_hat_k = data[["tau"]],
+      se_k = data[["se"]]
+    )
+  }
+  if(required_data == "pool_wide"){
+    site_label <- data[[grouping]]
+    out <- list(
+      K = nrow(data),
+      tau_k_hat = data[["tau"]],
+      mu_k_hat = data[["mu"]],
+      se_mu_k = data[["se.mu"]],
+      se_tau_k = data[["se.tau"]]
+    )
+  }
+  return(structure(
+    out,
+    site_label = site_label))
+
+}
