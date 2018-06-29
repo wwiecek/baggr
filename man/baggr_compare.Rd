@@ -4,7 +4,7 @@
 \alias{baggr_compare}
 \title{Compare a(ny) number of baggr models side by side}
 \usage{
-baggr_compare(..., style = "areas", arrange = "single")
+baggr_compare(..., compare = "site", style = "areas", arrange = "single")
 }
 \arguments{
 \item{...}{Either any number of objects of class `baggr`
@@ -14,6 +14,9 @@ function, but with `pooling = ...` omitted.
 In the latter case 3 models will be run, with
 pooling set to `none`, `partial` and `full`.}
 
+\item{compare}{can be 'site' (compare different sites in each model),
+or 'ate' (compare aggregate treatment effects only)}
+
 \item{style}{What kind of plot to display - see options for `plot.baggr`}
 
 \item{arrange}{If `single`, generate a single plot, if `grid`
@@ -22,7 +25,7 @@ display multiple plots side-by-side.}
 \value{
 ggplot is plotted and an extra comparison printed.
         Returned value is a list that contains
-        the models, the plot and printed summaries.
+        the models, the plot and printed summaries. (WIP)
 }
 \description{
 Compare a(ny) number of baggr models side by side
