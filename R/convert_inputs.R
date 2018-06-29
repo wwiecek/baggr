@@ -24,11 +24,26 @@ convert_inputs <- function(data,
                            outcome   = "outcome",
                            treatment = "treatment") {
 
-  # 1/ check what kind of data is required for the model & what's available
+
+  # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
                         "mutau" = "pool_wide",
                         "joint" = "individual")
-  available_data <- detect_input_type(data)
+  available_data <- detect_input_type(data, grouping)
+
+  if(available_data == "individual") {
+    # stop if variables are not available
+    if(is.null(data[[grouping]]))
+      stop("No grouping column in data.")
+    if(is.null(data[[outcome]]))
+      stop("No outcome column in data.")
+    if(is.null(data[[treatment]]))
+      stop("No treatment column in data.")
+  }
+
+  if(available_data == "unknown")
+    stop("Cannot automatically determine type of input data.")
+
   if(is.null(model)) {
     message("Attempting to infer the correct model for data.")
     # we take FIRST MODEL THAT SUITS OUR DATA!
@@ -38,8 +53,8 @@ convert_inputs <- function(data,
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
   }
+
   required_data <- model_data_types[[model]]
-  browser()
   # let's assume data is individual-level
   # if we can't determine it
   # because it may have custom columns
@@ -94,6 +109,8 @@ convert_inputs <- function(data,
   }
   return(structure(
     out,
-    site_label = site_label))
+    site_label = site_label,
+    n_sites = out[["K"]],
+    model = model))
 
 }

@@ -6,12 +6,14 @@
 #'            function, but with `pooling = ...` omitted.
 #'            In the latter case 3 models will be run, with
 #'            pooling set to `none`, `partial` and `full`.
+#' @param compare can be 'site' (compare different sites in each model),
+#'                or 'ate' (compare aggregate treatment effects only)
 #' @param style What kind of plot to display - see options for `plot.baggr`
 #' @param arrange If `single`, generate a single plot, if `grid`
 #'                display multiple plots side-by-side.
 #' @return ggplot is plotted and an extra comparison printed.
 #'         Returned value is a list that contains
-#'         the models, the plot and printed summaries.
+#'         the models, the plot and printed summaries. (WIP)
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
 #' @import magrittr
@@ -20,7 +22,10 @@
 #' @import ggplot2
 #' @export
 
-baggr_compare <- function(..., style = "areas", arrange = "single") {
+baggr_compare <- function(...,
+                          compare = "site",
+                          style = "areas",
+                          arrange = "single") {
   l <- list(...)
   if(length(l) == 0)
     stop("Provide baggr models or model specification.")
@@ -41,24 +46,23 @@ baggr_compare <- function(..., style = "areas", arrange = "single") {
     gridExtra::grid.arrange(grobs = plots, ncol = length(plots))
   }
   if(arrange == "single") {
-    # dplyr::bind_rows(
-    #   lapply(models, function(x) as.data.frame(study_effects(x))),
-    #   .id = "model") %>%
-    #   tidyr::gather(variable, value, -model) %>%
-    #   ggplot(aes(x = variable, y = value,
-    #              group = interaction(model, variable),
-    #              color = model)) +
-    #   geom_boxplot() +
-    #   coord_flip()
     dplyr::bind_rows(
-      lapply(models, function(x) as.data.frame(study_effects(x, interval = T))),
+      lapply(models, function(x) as.data.frame(study_effects(x))),
       .id = "model") %>%
-      tidyr::gather(variable, value, parameter) %>%
-      ggplot(aes(x = value, y = median, ymin = lci, ymax = uci,
-                 group = interaction(model, value),
+      tidyr::gather(variable, value, -model) %>%
+      # tidyr::gather(variable, value, parameter) %>%
+      ggplot(aes(x = variable, y = value,
+                 # x = value, y = median,
+                 # ymin = lci, ymax = uci,
+                 # group = interaction(model, value),
+                 group = interaction(model, variable),
                  color = model)) +
-      geom_point(size = 2) + geom_errorbar(size = 1.2, width = .2, alpha = .5) +
-      coord_flip()
+      geom_boxplot() +
+      # geom_point(size = 2) +
+      # geom_errorbar(size = 1.2, width = .2, alpha = .5) +
+      coord_flip() +
+      labs(x = "Treatment effect", y = "",
+           title = "Comparison of treatment effects by site")
   }
 }
 

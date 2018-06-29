@@ -17,8 +17,10 @@ study_effects <- function(bg, interval = FALSE
   } else{
     # choose correct columns for the given models:
     if(bg$model %in% c("rubin", "mutau")) {
+      #replace by extract:
       m <- m[, grepl("^tau_k", colnames(m))]
     } else if(bg$model == "joint") {
+      #replace by extract:
       m <- m[, grepl("^mutau_k", colnames(m))]
       m <- m[, grepl(",2]", colnames(m))]
     }

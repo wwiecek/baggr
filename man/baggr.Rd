@@ -4,8 +4,9 @@
 \alias{baggr}
 \title{Bayesian aggregate treatment effects model}
 \usage{
-baggr(data, model, prior = NULL, pooling = "partial", warnings = TRUE,
-  outcome = "outcome", grouping = "site", treatment = "treatment", ...)
+baggr(data, model = NULL, prior = NULL, pooling = "partial",
+  warnings = TRUE, outcome = "outcome", grouping = "site",
+  treatment = "treatment", ...)
 }
 \arguments{
 \item{data}{data frame with columns 'outcome', 'treatment' and 'site'}

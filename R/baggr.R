@@ -27,21 +27,32 @@ baggr <- function(data,
                   warnings = TRUE,
                   outcome = "outcome", grouping = "site", treatment = "treatment",
                   ...) {
+
+
+
   stan_data <- convert_inputs(data, model,
                               outcome = outcome,
                               grouping = grouping,
                               treatment = treatment)
+  # model might've been chosen automatically
+  # when we prepared inputs, take note:
+  model <- attr(stan_data, "model")
   stan_model  <- get_model(model)
 
-  # default priors
+  # remember number of sites:
+  n_sites <- attr(stan_data, "n_sites")
 
+
+
+  # default priors
   if(pooling %in% c("none", "partial", "full")) {
-    if(model == "rubin")
+    if(model == "rubin") {
       # switch? separate scripts for each pooling type? third way?
       stan_data[["pooling_type"]] <- switch(pooling,
                                             "none" = 0,
                                             "partial" = 1,
                                             "full" = 2)
+    }
   } else {
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
@@ -74,12 +85,15 @@ baggr <- function(data,
   result <- list(
     "data" = data,
     "inputs" = stan_data,
+    "n_sites" = n_sites,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model
   )
 
   class(result) <- c("baggr")
+
+  result[["pooling_metric"]] <- pooling(result)
 
   return(result)
 }
