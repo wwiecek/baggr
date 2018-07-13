@@ -1,7 +1,7 @@
 library(dplyr)
 library(purrr)
 # load("data-raw/microcredit_project_data_with_replication_profit.RData")
-load("data-raw/microcredit_project_data.RData")
+# load("data-raw/microcredit_project_data.RData")
 obj <- ls()
 
 nall_na <- function(x) !all(is.na(x))
