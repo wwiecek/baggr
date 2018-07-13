@@ -5,6 +5,7 @@
 #' More info is included in the summary of the model and its attributes.
 #'
 #' @param bg object of class `baggr`
+#' @importFrom stats sd var median quantile
 #' @importFrom crayon bold
 #' @importFrom crayon red
 #' @importFrom crayon blue

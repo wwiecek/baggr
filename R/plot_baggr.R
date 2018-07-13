@@ -6,7 +6,7 @@
 #' @return ggplot2 object
 #'
 #' @import ggplot2
-#' @importFrom bayesplot mcmc_areas
+#' @import bayesplot
 
 plot.baggr <- function(bg, style = "areas", ...) {
   m <- study_effects(bg)

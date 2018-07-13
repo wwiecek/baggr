@@ -5,7 +5,7 @@
 \title{Convert inputs for baggr Stan models}
 \usage{
 convert_inputs(data, model, grouping = "site", outcome = "outcome",
-  treatment = "treatment")
+  treatment = "treatment", standardise = FALSE)
 }
 \arguments{
 \item{data}{data.frame with desired modelling input}

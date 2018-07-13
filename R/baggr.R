@@ -1,22 +1,43 @@
 #' Bayesian aggregate treatment effects model
 #'
-#' Estimate parameters in an ATE model
+#' Estimate parameters of an ATE model
 #' that's appropriate to the supplied
 #' individual- or group-level data.
 #'
 #' @param data data frame with columns 'outcome', 'treatment' and 'site'
-#' @param model choose from 'rubin', ...
-#' @param pooling choose from `none`, `partial` (default) and `full`
-#' @param model choose from 'rubin', ...
-#' @param prior WIP
+#' @param model if \code{NULL}, detected automatically from input data
+#'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
+#' @param prior list of prior arguments passed directly to each model (see Details)
+#' @param pooling choose from \code{none}, \code{partial} (default) and \code{full}
+#' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
+#'                    If \code{FALSE}, they have independent priors. Ignored if no control
+#'                    (\code{mu}) data exists.
+#' @param standardise logical; determines if data inputs are standardised
+#' @param outcome   character; column name in (individual-level) \code{data} with outcome variable values
+#' @param grouping  character; column name in \code{data} with grouping factor;
+#'                  it's necessary for individual-level data, for summarised data
+#'                  it will be used as labels for groups when displaying results
+#' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
+#' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
+#'            number of iterations etc.
 #' @param warnings if `TRUE` (default), Stan warnings will be displayed
-#'
-#' @return `baggr` class list with Stan model fit embedded inside it,
+#' @return `baggr` class structure: list with Stan model fit embedded inside it,
 #'          alongside input data, pooling metrics, various model properties
 #'
 #' @details
-#' WIP
+#'
+#'
 #' @author Witold Wiecek
+#' @examples
+#' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+#' "se" = rep(1, 8),
+#' "state" = datasets::state.name[1:8])
+#' baggr(df_pooled) #automatically detects the input data
+#' # correct labels
+#' baggr(df_pooled, grouping = "state")
+#' # Stan options
+#' baggr(df_pooled, iter = 200)
+#'
 #'
 #' @import rstan
 #' @export
@@ -26,9 +47,9 @@ baggr <- function(data,
                   prior = NULL,
                   pooling = "partial",
                   joint_prior = TRUE,
-                  warnings = TRUE,
                   standardise = FALSE,
                   outcome = "outcome", grouping = "site", treatment = "treatment",
+                  warnings = TRUE,
                   ...) {
 
 

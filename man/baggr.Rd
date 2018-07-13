@@ -5,32 +5,61 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  warnings = TRUE, outcome = "outcome", grouping = "site",
-  treatment = "treatment", ...)
+  joint_prior = TRUE, standardise = FALSE, outcome = "outcome",
+  grouping = "site", treatment = "treatment", warnings = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with columns 'outcome', 'treatment' and 'site'}
 
-\item{model}{choose from 'rubin', ...}
+\item{model}{if \code{NULL}, detected automatically from input data
+otherwise choose from \code{rubin}, \code{mutau}, \code{individual}}
 
-\item{prior}{WIP}
+\item{prior}{list of prior arguments passed directly to each model (see Details)}
 
-\item{pooling}{choose from `none`, `partial` (default) and `full`}
+\item{pooling}{choose from \code{none}, \code{partial} (default) and \code{full}}
+
+\item{joint_prior}{If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
+If \code{FALSE}, they have independent priors. Ignored if no control
+(\code{mu}) data exists.}
+
+\item{standardise}{logical; determines if data inputs are standardised}
+
+\item{outcome}{character; column name in (individual-level) \code{data} with outcome variable values}
+
+\item{grouping}{character; column name in \code{data} with grouping factor;
+it's necessary for individual-level data, for summarised data
+it will be used as labels for groups when displaying results}
+
+\item{treatment}{character; column name in (individual-level) \code{data} with treatment factor;}
 
 \item{warnings}{if `TRUE` (default), Stan warnings will be displayed}
 
-\item{model}{choose from 'rubin', ...}
+\item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
+number of iterations etc.}
 }
 \value{
-`stanfit` object with appropriate parameters
+`baggr` class structure: list with Stan model fit embedded inside it,
+         alongside input data, pooling metrics, various model properties
 }
 \description{
-Estimate parameters in an ATE model
+Estimate parameters of an ATE model
 that's appropriate to the supplied
 individual- or group-level data.
 }
 \details{
-WIP
+
+}
+\examples{
+df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+"se" = rep(1, 8),
+"state" = datasets::state.name[1:8])
+baggr(df_pooled) #automatically detects the input data
+# correct labels
+baggr(df_pooled, grouping = "state")
+# Stan options
+baggr(df_pooled, iter = 200)
+
+
 }
 \author{
 Witold Wiecek
