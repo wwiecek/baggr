@@ -16,7 +16,6 @@
 #'         the models, the plot and printed summaries. (WIP)
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
-#' @import magrittr
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr mutate
 #' @importFrom tidyr gather
@@ -46,14 +45,15 @@ baggr_compare <- function(...,
     gridExtra::grid.arrange(grobs = plots, ncol = length(plots))
   }
   if(arrange == "single") {
-    dplyr::bind_rows(
+    # Note: pipe operators are not used here for compatibility and
+    # to reduce dependencies
+    df <- dplyr::bind_rows(
       lapply(models, function(x) as.data.frame(study_effects(x, interval = T))),
-      .id = "model") %>%
-      # tidyr::gather(variable, value, -model) %>%
-      dplyr::mutate(parameter = factor(parameter, levels = unique(parameter[order(median)]))) %>%
-      ggplot(aes(x = parameter, y = median, ymin = lci, ymax = uci,
-                 group = interaction(model),
-                 color = model)) +
+      .id = "model")
+    df <- dplyr::mutate(df, parameter = factor(parameter, levels = unique(parameter[order(median)])))
+    ggplot(df, aes(x = parameter, y = median, ymin = lci, ymax = uci,
+                   group = interaction(model),
+                   color = model)) +
       geom_point(size = 2, position=position_dodge(width=0.5)) +
       # geom_jitter(size = 2) +
       geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
