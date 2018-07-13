@@ -4,10 +4,10 @@
 \alias{print.baggr}
 \title{S3 print method for objects of class `baggr` (model fits)}
 \usage{
-\method{print}{baggr}(bg)
+\method{print}{baggr}(x, ...)
 }
 \arguments{
-\item{bg}{object of class `baggr`}
+\item{x}{object of class `baggr`}
 }
 \description{
 This \code{print} method for a very concise summary of main model features.

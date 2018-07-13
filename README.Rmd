@@ -21,7 +21,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 ## Overview
 
-Baggr (pronounced as _bagger_ or _badger_) is a meta-analysis package using hierarchical Bayesian models in Stan. Baggr is intended to be user-friendly and transparent so that it's easier to understand the models you're building and criticise them.
+`baggr` (pronounced as _bagger_ or _badger_) is a meta-analysis package using hierarchical Bayesian models in Stan. Baggr is intended to be user-friendly and transparent so that it's easier to understand the models you're building and criticise them.
 
 ## Basic use case
 
