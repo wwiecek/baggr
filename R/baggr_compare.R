@@ -18,6 +18,7 @@
 #' @importFrom gridExtra grid.arrange
 #' @import magrittr
 #' @importFrom dplyr bind_rows
+#' @importFrom dplyr mutate
 #' @importFrom tidyr gather
 #' @import ggplot2
 #' @export
@@ -40,28 +41,24 @@ baggr_compare <- function(...,
     })
     names(models) <- c("none", "partial")
   }
-
   if(arrange == "grid") {
     plots <- lapply(models, plot, style = style)
     gridExtra::grid.arrange(grobs = plots, ncol = length(plots))
   }
   if(arrange == "single") {
     dplyr::bind_rows(
-      lapply(models, function(x) as.data.frame(study_effects(x))),
+      lapply(models, function(x) as.data.frame(study_effects(x, interval = T))),
       .id = "model") %>%
-      tidyr::gather(variable, value, -model) %>%
-      # tidyr::gather(variable, value, parameter) %>%
-      ggplot(aes(x = variable, y = value,
-                 # x = value, y = median,
-                 # ymin = lci, ymax = uci,
-                 # group = interaction(model, value),
-                 group = interaction(model, variable),
+      # tidyr::gather(variable, value, -model) %>%
+      dplyr::mutate(parameter = factor(parameter, levels = unique(parameter[order(median)]))) %>%
+      ggplot(aes(x = parameter, y = median, ymin = lci, ymax = uci,
+                 group = interaction(model),
                  color = model)) +
-      geom_boxplot() +
-      # geom_point(size = 2) +
-      # geom_errorbar(size = 1.2, width = .2, alpha = .5) +
+      geom_point(size = 2, position=position_dodge(width=0.5)) +
+      # geom_jitter(size = 2) +
+      geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
       coord_flip() +
-      labs(x = "Treatment effect", y = "",
+      labs(x = "", y = "Treatment effect",
            title = "Comparison of treatment effects by site")
   }
 }

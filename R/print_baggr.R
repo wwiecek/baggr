@@ -22,13 +22,20 @@ print.baggr <- function(bg) {
 
 
   cat("Aggregate treatment effect:\n")
-  te <- treatment_effect(bg)
-  tau <- te[[1]]; sigma_tau <- te[[2]]
-  cat("Mean(tau) = ", round(mean(tau), 2), "; 95% interval", round(quantile(tau, .025),2), "to", round(quantile(tau, .975), 2))
-  cat("\n")
-  cat("SD(tau) = ", round(mean(sigma_tau), 2), "; 95% interval", round(quantile(sigma_tau, .025), 2), "to", round(quantile(sigma_tau, .975), 2))
-  cat("\n\n")
-
+  if(bg$pooling == "none") {
+    cat("No treatment effect estimated as pooling = 'none'.\n")
+  } else {
+    te <- treatment_effect(bg)
+    tau <- te[[1]]; sigma_tau <- te[[2]]
+    cat("Mean(tau) = ", round(mean(tau), 2), "; 95% interval", round(quantile(tau, .025),2), "to", round(quantile(tau, .975), 2))
+    cat("\n")
+    if(bg$pooling == "partial")
+      cat("SD(tau) = ", round(mean(sigma_tau), 2), "; 95% interval",
+          round(quantile(sigma_tau, .025), 2), "to", round(quantile(sigma_tau, .975), 2), "\n")
+    if(bg$pooling == "full")
+      cat("(SD(tau) undefined.)\n")
+    cat("\n")
+  }
   if(bg$pooling != "full") {
     cat("Study effects:\n")
     study_eff_tab <- t(apply(study_effects(bg), 2,

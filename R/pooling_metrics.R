@@ -24,6 +24,8 @@ pooling <- function(bg, metric = "gelman-hill") {
   #we have to rig it, because sigma_tau may be allowed to wander freely
   if(bg$pooling == "none")
     return(matrix(0, bg$n_sites, 3))
+  if(bg$pooling == "full")
+    return(matrix(1, bg$n_sites, 3))
 
   # we'll replace by switch() in the future
   if(bg$model == "rubin") {

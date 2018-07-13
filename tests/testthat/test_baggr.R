@@ -7,17 +7,24 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                         "se" = rep(1, 8),
                         "state" = datasets::state.name[1:8])
 # pooled, wide
-df_pooled_mu <- data.frame("tau" = c(.1,.1), "se.tau" = c(1,1),
-                           "mu" = c(0,0), "se.mu" = c(1,1),
-                           "site" = c("Site 1", "Site X"))
+df_pooled_mu <- data.frame("tau" = c(.1,.1, 3, 3.4, .7, .9), "se.tau" = c(1,1,2,2, .4, .6),
+                           "mu" = c(0,0, 1, 1, .3, .3), "se.mu" = rep(.5, 6),
+                           "site" = c("Site 1", "Site X", "A", "B", "Test 41", "Test 42"))
 # individual
-df_ind <- data.frame(outcome = rnorm(100),
-                     site = rep(c("A", "B", "C", "D"), each = 25),
-                     treatment = rbinom(100, 1, .5))
+df_ind <- data.frame()
+for(k in 1:15) {
+  mu <- rnorm(1, 2, 2)
+  p1 <- rnorm(100, mu, 2)
+  tau <- rnorm(1, mu + 0.5*mu, 1)
+  p2 <- rnorm(100, tau, 2)
+  df_ind <- rbind(df_ind,
+                  data.frame(treatment = 1, outcome = p2, site = paste0("Site ", k)),
+                  data.frame(treatment = 0, outcome = p1, site = paste0("Site ", k)))
+}
 # individual, custom column names
-df_ind_custom <- data.frame(profit = rnorm(100),
-                            village = rep(c("A", "B", "C", "D"), each = 25),
-                            ITT = rbinom(100, 1, .5))
+# df_ind_custom <- data.frame(profit = rnorm(100),
+                            # village = rep(c("A", "B", "C", "D"), each = 25),
+                            # ITT = rbinom(100, 1, .5))
 
 # we also use microcredit df's that are built in
 
@@ -63,9 +70,10 @@ test_that("Pooling metrics are what they should be", {
   expect_equal(length(unique(bg5_p$pooling_metric[,1])), 1) #expect_length()
   expect_equal(length(unique(bg5_p$pooling_metric[,2])), 1)
   expect_equal(length(unique(bg5_p$pooling_metric[,3])), 1)
-
-  # no pooling means 0's everywhere
+  # all pooling stats are 0 if no pooling
   expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
+  # full pooling means 1's everywhere
+  expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
 
 })
 
@@ -74,33 +82,30 @@ test_that("Pooling metrics are what they should be", {
 # })
 
 
+#
 
 # Work in progress -----
 
-bg2 <- baggr(df_pooled_mu, "mutau")
-bg3 <- baggr(df_ind_custom, "joint",
-             grouping = "village", outcome = "profit", treatment = "ITT")
+bg_mu1 <- baggr(df_pooled_mu, "mutau", joint_prior = 1, iter = 200, chains = 2)
+bg_mu2 <- baggr(df_pooled_mu, "mutau", joint_prior = 0, iter = 200, chains = 2)
+bg_ind1 <- baggr(df_ind, pooling = "none", iter = 200, chains = 2)
+bg_ind2 <- baggr(df_ind, iter = 200, chains = 2)
+bg_ind3 <- baggr(df_ind, pooling = "full", iter = 200, chains = 2)
+
+
+
+test_that("Different pooling methods work (don't crash) for full data", {
+  expect_is(bg_ind1, "baggr")
+  expect_is(bg_ind2, "baggr")
+  expect_is(bg_ind3, "baggr")
+})
 
 test_that("Plotting works", {
   # plots happen at all with vanilla settings
-  expect_is(plot(bg5_n), "gg")
-  expect_is(plot(bg2), "gg")
-  expect_is(plot(bg3), "gg")
-  # we can crash it
+  expect_is(plot(bg_ind1), "gg")
+  expect_is(plot(bg_mu1), "gg")
+  expect_is(plot(bg5_f), "gg")
+  # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
 
-
-#
-# bg1 <- baggr(df_pooled, "rubin")
-
-# class(bg)
-#
-# # naming of sites
-# bg_sites <- baggr(data.frame(df_pooled, "site" = LETTERS[1:nrow(df_pooled)]), "rubin")
-# plot(bg_sites)
-
-# #different kinds of pooling:
-# bg_none <- baggr(df_pooled, "rubin", pooling = "none")
-# bg_partial <- baggr(df_pooled, "rubin", pooling = "partial")
-# # bg_full <- baggr(df_pooled, "rubin", pooling = "full")

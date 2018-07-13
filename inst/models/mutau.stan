@@ -1,54 +1,74 @@
-
-
 data {
-  int<lower=0> K;  // number of sites
-  real mu_k_hat[K] ; // means
-  real tau_k_hat[K] ; // slopes
-  real se_mu_k[K] ; // ses for mus
-  real se_tau_k[K] ; // ses for taus
-
+  int<lower=2> K; // number of sites
+  int<lower=2> P; // number of parameters (1 or 2)
+  real tau_hat_k[P,K]; // estimated treatment effects
+  real<lower=0> se_tau_k[P,K]; // s.e. of effect estimates
+  int pooling_type; //0 if none, 1 if partial, 2 if full
+  int<lower=0, upper=1> joint; //is the distribution on parameters (mu and tau) joint?
+  // real prior_upper_sigma_tau[P];
+  vector[P] prior_tau_mean;
+  vector[P] prior_upper_sigma_tau;
+  matrix<lower=0>[P,P] prior_tau_scale;
 }
-
-
+transformed data {
+  int K_pooled; // number of modelled sites if we take into account pooling
+  if(pooling_type == 2)
+    K_pooled = 0;
+  if(pooling_type != 2)
+    K_pooled = K;
+}
 parameters {
-  real tau;//
-  real mu;//
-  vector[K] tau_k;//
-  vector[K] mu_k;//
-  real<lower=0> sigma_tau;//
-  real<lower=0> sigma_mu;//
-
+  vector[P] tau;
+  // real<lower=0> sigma_tau[P];
+  vector[P] tau_k[K_pooled];
+  corr_matrix[P] Omega;        //  correlation
+  vector<lower=0>[P] theta;    //  scale
 }
 transformed parameters {
-
+  matrix[P,P] sigma_tau;
+  sigma_tau = quad_form_diag(Omega,theta);
 }
 
 model {
-     //  let me try with bounded uniform
-  sigma_tau ~ uniform(0,100000);
-  sigma_mu ~ uniform(0,100000);
+  // parameter variance priors
+  // XXX: change this?
+  // theta ~ cauchy(0,10);
+  theta ~ cauchy(0,10);
+  // theta ~ normal(0,100);
+  Omega ~ lkj_corr(3); // pushes towards independence
 
-
-  //  I am hard coding the priors on the hyperparameters here
-  tau ~ normal(0,1000);
-  mu ~ normal(0,1000); // one could later insert a more realistic mean but it doesnt matter
-
-  tau_k ~ normal(tau, sigma_tau);
-
-  mu_k ~ normal(mu, sigma_mu);
-
-  for (k in 1:K) {
-
-    mu_k_hat[k] ~ normal(mu_k[k],se_mu_k[k]);
-    tau_k_hat[k] ~ normal(tau_k[k],se_tau_k[k]);
+if(pooling_type != 0) { //hyperparam only if there's pooling
+  if(joint == 1)
+    tau ~ multi_normal(prior_tau_mean, prior_tau_scale);
+  if(joint == 0) {
+    for(p in 1:P)
+      tau[p] ~ normal(prior_tau_mean[p], prior_tau_scale[p,p]);
   }
+}
+if(pooling_type == 0) {
+  //tau_k's 'take over' tau's prior distribution
+  for (k in 1:K)
+    tau_k[k] ~ multi_normal(prior_tau_mean, prior_tau_scale);
+  //tau is allowed to wander (but not too much)
+  for(p in 1:P){
+    tau[p] ~ normal(0, 1);
+}}
 
 
+if(pooling_type != 2) { //tau_k only if pooling is not full
+  for (k in 1:K) {
+    if(pooling_type == 1) //if 0, then tau_k are NOT linked to tau
+      tau_k[k] ~ multi_normal(tau, sigma_tau);
+    for(p in 1:P)
+      tau_hat_k[p,k] ~ normal(tau_k[k,p], se_tau_k[p,k]);
+  }
+}
+if(pooling_type == 2) {
+  for (k in 1:K) {
+    for(p in 1:P)
+      tau_hat_k[p,k] ~ normal(tau[p], se_tau_k[p,k]);
+  }
 }
 
-generated quantities{
-  real predicted_tau_k;
-  real predicted_mu_k;
-  predicted_tau_k = normal_rng(tau, sigma_tau);
-  predicted_mu_k = normal_rng(mu, sigma_mu);
+
 }

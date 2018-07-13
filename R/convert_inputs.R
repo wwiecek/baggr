@@ -22,7 +22,8 @@ convert_inputs <- function(data,
                            model,
                            grouping  = "site",
                            outcome   = "outcome",
-                           treatment = "treatment") {
+                           treatment = "treatment",
+                           standardise = FALSE) {
 
 
   # check what kind of data is required for the model & what's available
@@ -77,7 +78,7 @@ convert_inputs <- function(data,
       stop("No treatment column in data.")
 
     site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
-    site_label <- unique(as.factor(as.character(data[[grouping]])))
+    site_label <- unique(as.character(data[[grouping]]))
 
     out <- list(
       K = max(site_numeric),
@@ -94,17 +95,19 @@ convert_inputs <- function(data,
     out <- list(
       K = nrow(data),
       tau_hat_k = data[["tau"]],
-      se_k = data[["se"]]
+      se_tau_k = data[["se"]]
     )
   }
   if(required_data == "pool_wide"){
     site_label <- data[[grouping]]
+    nr <- nrow(data)
     out <- list(
-      K = nrow(data),
-      tau_k_hat = data[["tau"]],
-      mu_k_hat = data[["mu"]],
-      se_mu_k = data[["se.mu"]],
-      se_tau_k = data[["se.tau"]]
+      K = nr,
+      P = 2, #fixed for this case
+      # Remember, first row is always mu (baseline), second row is tau (effect)
+      # (Has to be consistent against ordering of prior values.)
+      tau_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
+      se_tau_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
     )
   }
   return(structure(

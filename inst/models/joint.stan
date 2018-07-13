@@ -18,8 +18,10 @@ data {
   real y[N];       // outcome variable of interest
   int ITT[N];      // intention to treat indicator
   int site[N];     // factor variable to split them out into K sites
+  int pooling_type;//0 if none, 1 if partial, 2 if full
+  int<lower=0, upper=1> joint; //is the distribution on parameters (mu and tau) joint?
   matrix[P,P] mutau_prior_sigma;
-  vector[P] mutau_prior_mean;
+  vector[P]   mutau_prior_mean;
 }
 transformed data {
   int N_k[K];           // number of observations from site K
@@ -65,25 +67,35 @@ model {
 
   // parameter variance priors
   theta ~ cauchy(0,10);
-  
+
   // theta ~ normal(0,100);
   Omega ~ lkj_corr(3);
 
   // hyperparameter priors
-  mutau ~ multi_normal(mutau_prior_mean, mutau_prior_sigma);
+  if(pooling_type != 0)
+    mutau ~ multi_normal(mutau_prior_mean, mutau_prior_sigma);
+  if(pooling_type == 0)
+    for(p in 1:P)
+      mutau[p] ~ normal(0, 1);
 
   for (k in 1:K) {
-    mutau_k[k] ~ multi_normal(mutau, sigma_mutau);
-    target += normal_ss_log(N_k[k], y_sq_sum[k], xy_sum[k], 
-                            xx_sum[k], mutau_k[k]', sigma_y_k[k]);
+    if(pooling_type == 0)
+      mutau_k[k] ~ multi_normal(mutau_prior_mean, mutau_prior_sigma);
+    if(pooling_type != 0)
+      mutau_k[k] ~ multi_normal(mutau, sigma_mutau);
+    if(pooling_type != 2)
+      target += normal_ss_log(N_k[k], y_sq_sum[k], xy_sum[k],
+                              xx_sum[k], mutau_k[k]', sigma_y_k[k]);
+    if(pooling_type == 2)
+        target += normal_ss_log(N_k[k], y_sq_sum[k], xy_sum[k],
+                            xx_sum[k], mutau, sigma_y_k[k]);
   }
 }
 generated quantities{
-  vector[2] predicted_mutau_k;
-  real signal_noise_ratio_mu;
-  real signal_noise_ratio_tau;
-  signal_noise_ratio_mu = mutau[1]/sqrt(sigma_mutau[1,1]);
-  signal_noise_ratio_tau = mutau[2]/sqrt(sigma_mutau[2,2]);
-  predicted_mutau_k = multi_normal_rng(mutau, sigma_mutau);
-
+  // vector[2] predicted_mutau_k;
+  // real signal_noise_ratio_mu;
+  // real signal_noise_ratio_tau;
+  // signal_noise_ratio_mu = mutau[1]/sqrt(sigma_mutau[1,1]);
+  // signal_noise_ratio_tau = mutau[2]/sqrt(sigma_mutau[2,2]);
+  // predicted_mutau_k = multi_normal_rng(mutau, sigma_mutau);
 }
