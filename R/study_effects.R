@@ -1,5 +1,5 @@
-#' Given a model return treatment effects
-#' (Used as a helper for plotting and printing of results)
+# Given a model return treatment effects
+# (Used as a helper for plotting and printing of results)
 
 study_effects <- function(bg, interval = FALSE) {
   if(class(bg) != "baggr")

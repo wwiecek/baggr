@@ -10,6 +10,8 @@ Description: Running and comparing meta-analyses of data with hierarchical
 License: GPL
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp, bayesplot, crayon, dplyr, ggplot2, gridExtra, rstan, tidyr
+Depends: R (>= 2.10), Rcpp
+Imports: bayesplot, crayon, dplyr, ggplot2, gridExtra, rstan, tidyr
 RoxygenNote: 6.0.1
-Suggests: testthat
+Suggests: testthat, knitr
+VignetteBuilder: knitr

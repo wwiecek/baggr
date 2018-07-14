@@ -8,6 +8,9 @@
 }
 \arguments{
 \item{x}{object of class `baggr`}
+
+\item{...}{currently unused by this pacakge: further arguments passed
+to or from other methods (\code{print}  requirement)}
 }
 \description{
 This \code{print} method for a very concise summary of main model features.

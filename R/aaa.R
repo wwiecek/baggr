@@ -8,7 +8,7 @@ copy_models <- function(installation_path = "~/baggr/models_stan/"){
     )
 }
 
-.onLoad <- function(libname, pkgname) {
+.onAttach <- function(libname, pkgname) {
   packageStartupMessage("Welcome to baggr --development version-- July 2018")
   packageStartupMessage("Use vignette('baggr') for tutorial.")
 

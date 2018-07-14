@@ -47,9 +47,10 @@ that's appropriate to the supplied
 individual- or group-level data.
 }
 \details{
-
+This part of documentation is in development.
 }
 \examples{
+load_baggr_models()
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 "se" = rep(1, 8),
 "state" = datasets::state.name[1:8])

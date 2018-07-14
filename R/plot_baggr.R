@@ -1,7 +1,8 @@
 #' Plotting method in baggr package
 #'
-#' @param bg object of class `baggr`
+#' @param bg object of class \code{baggr}
 #' @param style one of 'areas', 'intervals' or (WIP)
+#' @param ... extra arguments passed to bayesplot functions
 #'
 #' @return ggplot2 object
 #'

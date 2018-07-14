@@ -21,33 +21,6 @@ comment = "#>"
 Three types of inputs imply three basic models of meta-analysis:
 
 ```{r}
-k <- 18
-n_k <- sample(c(10, 50, 100, 500), k, replace = TRUE)
-means <- MASS::mvrnorm(k, c(0, .3), matrix(.1*c(1, .2, .2, 1), 2, 2))
-baseline_k <- means[,1]
-effect_k <- means[,2]
-sigma <- .1 #within study error
-df_patient <- data.frame()
-
-for(i in 1:k)
-  df_patient <- rbind(df_patient,
-                      rbind(
-                        data.frame(treatment = 1, outcome = rnorm(n_k[i], baseline_k[i] + effect_k[i], sigma)),
-                        data.frame(treatment = 0, outcome = rnorm(n_k[i], baseline_k[i], sigma))
-                      )
-  )
-
-
-
-df5 <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3, .3, 3.1), 
-                  "se" = exp(rnorm(10, 0, .2)), 
-                  "state" = datasets::state.name[1:10])
-
-bg5_n <- baggr(df5, "rubin", pooling = "none", grouping = "state",
-               iter = 200, chains = 2)
-bg5_p <- baggr(df5, "rubin", pooling = "partial", grouping = "state",
-               iter = 200, chains = 2)
-#full pooling has no methods implemented yet
 ```
 
 

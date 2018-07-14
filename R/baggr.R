@@ -25,10 +25,11 @@
 #'          alongside input data, pooling metrics, various model properties
 #'
 #' @details
-#'
+#' This part of documentation is in development.
 #'
 #' @author Witold Wiecek
 #' @examples
+#' load_baggr_models()
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 #' "se" = rep(1, 8),
 #' "state" = datasets::state.name[1:8])

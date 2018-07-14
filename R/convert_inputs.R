@@ -6,10 +6,12 @@
 #' and wide data (control and treatment in separate columns).
 #'
 #' @param data data.frame with desired modelling input
-#' @param model valid model name used by baggr
+#' @param model valid model name used by baggr;
+#'              see \code{?baggr} for allowed models
 #' @param grouping name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
+#' @param standardise logical; whether to standardise data when converting
 #' @return data.frame of class baggr_data that baggr() uses
 #' @details
 #' The conversions will typically happen automatically when data is fed to baggr()

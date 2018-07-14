@@ -7,9 +7,11 @@
 plot.baggr(bg, style = "areas", ...)
 }
 \arguments{
-\item{bg}{object of class `baggr`}
+\item{bg}{object of class \code{baggr}}
 
 \item{style}{one of 'areas', 'intervals' or (WIP)}
+
+\item{...}{extra arguments passed to bayesplot functions}
 }
 \value{
 ggplot2 object

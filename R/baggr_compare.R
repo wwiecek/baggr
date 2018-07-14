@@ -51,7 +51,7 @@ baggr_compare <- function(...,
       lapply(models, function(x) as.data.frame(study_effects(x, interval = T))),
       .id = "model")
     df <- dplyr::mutate(df, parameter = factor(parameter, levels = unique(parameter[order(median)])))
-    ggplot(df, aes(x = parameter, y = median, ymin = lci, ymax = uci,
+    ggplot2::ggplot(df, aes(x = parameter, y = median, ymin = lci, ymax = uci,
                    group = interaction(model),
                    color = model)) +
       geom_point(size = 2, position=position_dodge(width=0.5)) +

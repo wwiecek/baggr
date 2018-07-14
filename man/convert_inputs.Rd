@@ -10,13 +10,16 @@ convert_inputs(data, model, grouping = "site", outcome = "outcome",
 \arguments{
 \item{data}{data.frame with desired modelling input}
 
-\item{model}{valid model name used by baggr}
+\item{model}{valid model name used by baggr;
+see \code{?baggr} for allowed models}
 
 \item{grouping}{name of the column with grouping variable}
 
 \item{outcome}{name of column with outcome variable}
 
 \item{treatment}{name of column with treatment variable}
+
+\item{standardise}{logical; whether to standardise data when converting}
 }
 \value{
 data.frame of class baggr_data that baggr() uses
