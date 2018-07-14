@@ -8,12 +8,12 @@ baggr
 Overview
 --------
 
-Baggr (pronounced as *bagger* or *badger*) is a meta-analysis package using hierarchical Bayesian models in Stan. Baggr is intended to be user-friendly and transparent so that it's easier to understand the models you're building and criticise them.
+`baggr` (pronounced as *bagger* or *badger*) is a Bayesian meta-analysis package for R using Stan. `baggr` is intended to be user-friendly and transparent so that it's easier to understand the models you are building and criticise them.
 
 Basic use case
 --------------
 
-`baggr` is designed to work well with both individual-level ("full") and summarised ("group") data on treatment effect
+`baggr` is designed to work well with both individual-level ("full") and summarised ("group") data on treatment effect. In most basic case only summary information on treatment effects (such as means and their standard errors) is needed. Data are always specified in a single data frame and the same `baggr()` function is used for all models. For "standard" cases of modelling means the appropriate model is detected from shape of data:
 
 ``` r
 library(baggr)
