@@ -60,7 +60,6 @@ baggr <- function(data,
   # model might've been chosen automatically
   # when we prepared inputs, take note:
   model <- attr(stan_data, "model")
-  # stan_model  <- get_model(model)
 
   # choice whether the parameters have a joint prior or not
   # for now fixed
