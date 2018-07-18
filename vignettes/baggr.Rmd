@@ -1,20 +1,23 @@
 ---
-title: "ATE models with baggr()"
+title: "ATE models with baggr"
 author: "Witold Wiecek, Rachael Meager"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-%\VignetteIndexEntry{baggr}
+  %\VignetteIndexEntry{baggr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  ---
+---
   
-  ```{r setup, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
 collapse = TRUE,
 comment = "#>"
 )
 ```
+
+
+_Vignette under construction (duh)_
 
 # Basic types of models
 
