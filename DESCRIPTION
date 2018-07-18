@@ -10,8 +10,12 @@ Description: Running and comparing meta-analyses of data with hierarchical
 License: GPL
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 2.10), Rcpp
-Imports: bayesplot, crayon, dplyr, ggplot2, gridExtra, rstan, tidyr
+ByteCompile: true
+Depends: R (>= 3.4.0), Rcpp (>= 0.12.17), methods
+Imports: rstan (>= 2.17.3), rstantools (>= 1.5.0), bayesplot, crayon, dplyr, ggplot2, gridExtra, tidyr
+LinkingTo: StanHeaders (>= 2.17.2), rstan (>= 2.17.3), BH (>= 1.66.0-1), Rcpp (>= 0.12.17), RcppEigen (>= 0.3.3.4.0)
+SystemRequirements: GNU make
+NeedsCompilation: yes
 RoxygenNote: 6.0.1
 Suggests: testthat, knitr
 VignetteBuilder: knitr

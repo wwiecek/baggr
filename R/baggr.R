@@ -38,9 +38,6 @@
 #' baggr(df_pooled, grouping = "state")
 #' # Stan options
 #' baggr(df_pooled, iter = 200)
-#'
-#'
-#' @import rstan
 #' @export
 
 baggr <- function(data,
@@ -63,7 +60,7 @@ baggr <- function(data,
   # model might've been chosen automatically
   # when we prepared inputs, take note:
   model <- attr(stan_data, "model")
-  stan_model  <- get_model(model)
+  # stan_model  <- get_model(model)
 
   # choice whether the parameters have a joint prior or not
   # for now fixed
@@ -122,10 +119,11 @@ baggr <- function(data,
       stan_data[[nm]] <- prior[[nm]]
   }
 
-  if(warnings)
-    fit <- rstan::sampling(stan_model, data = stan_data, ...)
-  else
-    fit <- suppressWarnings(rstan::sampling(stan_model, data = stan_data, ...))
+  # if(warnings)
+    # fit <- rstan::sampling(stan_model, data = stan_data, ...)
+  fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
+  # else
+    # fit <- suppressWarnings(rstan::sampling(stan_model, data = stan_data, ...))
 
   result <- list(
     "data" = data,

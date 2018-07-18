@@ -59,8 +59,6 @@ baggr(df_pooled) #automatically detects the input data
 baggr(df_pooled, grouping = "state")
 # Stan options
 baggr(df_pooled, iter = 200)
-
-
 }
 \author{
 Witold Wiecek

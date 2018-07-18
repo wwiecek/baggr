@@ -27,7 +27,6 @@ convert_inputs <- function(data,
                            treatment = "treatment",
                            standardise = FALSE) {
 
-
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
                         "mutau" = "pool_wide",
@@ -44,8 +43,13 @@ convert_inputs <- function(data,
       stop("No treatment column in data.")
   }
 
+  # if(available_data == "unknown")
+    # stop("Cannot automatically determine type of input data.")
+  # let's assume data is individual-level
+  # if we can't determine it
+  # because it may have custom columns
   if(available_data == "unknown")
-    stop("Cannot automatically determine type of input data.")
+    available_data <- "individual" #in future call it 'inferred ind.'
 
   if(is.null(model)) {
     message("Attempting to infer the correct model for data.")
@@ -58,11 +62,7 @@ convert_inputs <- function(data,
   }
 
   required_data <- model_data_types[[model]]
-  # let's assume data is individual-level
-  # if we can't determine it
-  # because it may have custom columns
-  if(available_data == "unknown")
-    available_data <- "individual" #in future call it 'inferred ind.'
+
 
   if(required_data != available_data)
     stop(paste(

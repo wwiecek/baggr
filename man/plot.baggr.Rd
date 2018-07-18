@@ -4,7 +4,7 @@
 \alias{plot.baggr}
 \title{Plotting method in baggr package}
 \usage{
-plot.baggr(bg, style = "areas", ...)
+\method{plot}{baggr}(bg, style = "areas", ...)
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}
