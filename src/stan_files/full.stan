@@ -1,5 +1,5 @@
 functions {
-  real normal_ss_log(int N, real y_sq_sum, vector xy_sum,
+  real normal_log_ss(int N, real y_sq_sum, vector xy_sum,
                      matrix xx_sum, vector beta, real sigma) {
     real beta_xy;
     real lp;
@@ -84,10 +84,10 @@ model {
     if(pooling_type != 0)
       mutau_k[k] ~ multi_normal(mutau, sigma_mutau);
     if(pooling_type != 2)
-      target += normal_ss_log(N_k[k], y_sq_sum[k], xy_sum[k],
+      target += normal_log_ss(N_k[k], y_sq_sum[k], xy_sum[k],
                               xx_sum[k], mutau_k[k]', sigma_y_k[k]);
     if(pooling_type == 2)
-        target += normal_ss_log(N_k[k], y_sq_sum[k], xy_sum[k],
+        target += normal_log_ss(N_k[k], y_sq_sum[k], xy_sum[k],
                             xx_sum[k], mutau, sigma_y_k[k]);
   }
 }

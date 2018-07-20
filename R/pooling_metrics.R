@@ -34,7 +34,7 @@ pooling <- function(bg, metric = "gelman-hill") {
   } else if(bg$model == "mutau") {
     sigma_tau <- rstan::extract(bg$fit, pars = "sigma_tau")[[1]]
     sigma_k <- bg$data$se.tau
-  } else if(bg$model == "joint") {
+  } else if(bg$model == "full") {
     #now it will be vectors, not a single value
     m <- as.matrix(bg$fit)
     #replace by extract:

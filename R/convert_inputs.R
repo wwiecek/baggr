@@ -30,7 +30,7 @@ convert_inputs <- function(data,
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
                         "mutau" = "pool_wide",
-                        "joint" = "individual")
+                        "full" = "individual")
   available_data <- detect_input_type(data, grouping)
 
   if(available_data == "individual") {
@@ -82,6 +82,9 @@ convert_inputs <- function(data,
     site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
     site_label <- unique(as.character(data[[grouping]]))
 
+    if(standardise)
+      data[[outcome]] <- as.vector(scale(data[[outcome]]))
+
     out <- list(
       K = max(site_numeric),
       N = nrow(data),
@@ -114,6 +117,7 @@ convert_inputs <- function(data,
   }
   return(structure(
     out,
+    standardised = standardise,
     site_label = site_label,
     n_sites = out[["K"]],
     model = model))

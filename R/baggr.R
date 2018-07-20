@@ -104,7 +104,7 @@ baggr <- function(data,
       stan_data[["prior_tau_scale"]] <- 1000*diag(2)
       message(paste0("(mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
     }
-    if(model == "joint") {
+    if(model == "full") {
       # empirical variance of outcome:
       vhat <- var(stan_data[["y"]])
       message(paste("Prior variance set to 5 times the observed variance in outcome."))

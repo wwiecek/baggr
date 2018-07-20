@@ -22,7 +22,7 @@ study_effects <- function(bg, interval = FALSE) {
       # drop mu if model has mu (baseline/control value)
       if(bg$model == "mutau")
         m <- m[,,2]
-    } else if(bg$model == "joint") {
+    } else if(bg$model == "full") {
       m <- rstan::extract(bg$fit, pars = "mutau_k")[[1]][,,2]
       #replace by extract:
       # m <- m[, grepl("^mutau_k", colnames(m))]

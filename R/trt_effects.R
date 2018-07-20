@@ -14,7 +14,7 @@ treatment_effect <- function(bg) {
       # in model with correlation, we have Var(), not SD()
       sigma_tau <- sqrt(sigma_tau[,2,2])
     }
-  } else if(bg$model == "joint") {
+  } else if(bg$model == "full") {
     tau <- as.matrix(bg$fit)[,"mutau[2]"]
     # in model with correlation, we have Var(), not SD()
     sigma_tau <- as.matrix(bg$fit)[,"sigma_mutau[2,2]"]
