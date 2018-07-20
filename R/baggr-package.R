@@ -1,10 +1,12 @@
-#' The 'baggr' package.
+#' baggr - a package for meta-analysis
 #'
-#' @description A DESCRIPTION OF THE PACKAGE
+#' @description
+#' (Work in progress.) This is overall package help file.
+#' For documentation of \code{baggr()} function for conducting
+#' analyses see \code{?baggr}
 #'
 #' @docType package
-#' @name baggr-package
-#' @aliases baggr
+#' @name baggr_package
 #' @useDynLib baggr, .registration = TRUE
 #' @import methods
 #' @import Rcpp

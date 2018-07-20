@@ -6,7 +6,7 @@
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
   joint_prior = TRUE, standardise = FALSE, outcome = "outcome",
-  grouping = "site", treatment = "treatment", warnings = TRUE, ...)
+  grouping = "site", treatment = "treatment", ...)
 }
 \arguments{
 \item{data}{data frame with columns 'outcome', 'treatment' and 'site'}
@@ -32,8 +32,6 @@ it will be used as labels for groups when displaying results}
 
 \item{treatment}{character; column name in (individual-level) \code{data} with treatment factor;}
 
-\item{warnings}{if `TRUE` (default), Stan warnings will be displayed}
-
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 number of iterations etc.}
 }
@@ -45,20 +43,18 @@ number of iterations etc.}
 Estimate parameters of an ATE model
 that's appropriate to the supplied
 individual- or group-level data.
+(For overall package help file see \code{?baggr-package})
 }
 \details{
 This part of documentation is in development.
 }
 \examples{
-load_baggr_models()
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 "se" = rep(1, 8),
 "state" = datasets::state.name[1:8])
 baggr(df_pooled) #automatically detects the input data
-# correct labels
-baggr(df_pooled, grouping = "state")
-# Stan options
-baggr(df_pooled, iter = 200)
+# correct labels & passing some options to Stan
+baggr(df_pooled, grouping = "state", iter = 200)
 }
 \author{
 Witold Wiecek
