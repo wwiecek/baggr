@@ -1,4 +1,5 @@
 context("Basic baggr() calls")
+library(baggr)
 
 # prepare inputs ----------------------------------------------------------
 

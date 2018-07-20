@@ -3,6 +3,7 @@ Type: Package
 Title: Bayesian Aggregate Treatment Effects
 Version: 0.1.0
 Author: Witold Wiecek, Rachael Meager
+URL: https://github.com/wwiecek/baggr
 Maintainer: Witold Wiecek <witold.wiecek@gmail.com>
 Description: Running and comparing meta-analyses of data with hierarchical 
     Bayesian models in Stan, including convenience functions for formatting
