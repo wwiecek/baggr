@@ -110,7 +110,7 @@ baggr <- function(data,
       message(paste("Prior variance set to 5 times the observed variance in outcome."))
       stan_data[["P"]] <- 2
       stan_data[["mutau_prior_mean"]]  <- rep(0, stan_data$P)
-      stan_data[["mutau_prior_sigma"]] <- (vhat)*diag(stan_data$P)
+      stan_data[["mutau_prior_sigma"]] <- 5*vhat*diag(stan_data$P)
     }
   } else {
     # !!!check for allowed priors here!!!

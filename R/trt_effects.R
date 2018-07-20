@@ -11,11 +11,14 @@ treatment_effect <- function(bg) {
     sigma_tau <- rstan::extract(bg$fit, pars="sigma_tau")[[1]]
     if(bg$model == "mutau") {
       tau <- tau[,2]
-      sigma_tau <- sigma_tau[,2,2]
+      # in model with correlation, we have Var(), not SD()
+      sigma_tau <- sqrt(sigma_tau[,2,2])
     }
   } else if(bg$model == "joint") {
     tau <- as.matrix(bg$fit)[,"mutau[2]"]
+    # in model with correlation, we have Var(), not SD()
     sigma_tau <- as.matrix(bg$fit)[,"sigma_mutau[2,2]"]
+    sigma_tau <- sqrt(sigma_tau)
   }
   return(list(tau = tau, sigma_tau = sigma_tau))
 }
