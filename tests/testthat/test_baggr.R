@@ -13,7 +13,7 @@ df_pooled_mu <- data.frame("tau" = c(.1,.1, 3, 3.4, .7, .9), "se.tau" = c(1,1,2,
                            "site" = c("Site 1", "Site X", "A", "B", "Test 41", "Test 42"))
 # individual
 df_ind <- data.frame()
-for(k in 1:15) {
+for(k in 1:5) {
   mu <- rnorm(1, 2, 2)
   p1 <- rnorm(100, mu, 2)
   tau <- rnorm(1, mu + 0.5*mu, 1)
