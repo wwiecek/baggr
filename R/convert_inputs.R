@@ -134,15 +134,19 @@ convert_inputs <- function(data,
     )
     if(is.null(test_data)){
       out$K_test <- 0
-      out$test_tau_hat_k <- array(0, dim = 0)
-      out$test_se_tau_k <- array(0, dim = 0)
+      out$test_tau_hat_k <- array(0, dim = c(2,0))
+      out$test_se_k <- array(0, dim = c(2,0))
     } else {
-      if(is.null(test_data[["tau"]]) ||
-         is.null(test_data[["se"]]))
+      if(is.null(test_data[["mu"]]) ||
+         is.null(test_data[["tau"]]) ||
+         is.null(test_data[["se.mu"]]) ||
+         is.null(test_data[["se.tau"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
-      out$test_tau_hat_k <- test_data[["tau"]]
-      out$test_se_tau_k <- test_data[["se"]]
+      out$test_tau_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
+                                   2, nrow(test_data), byrow = T)
+      out$test_se_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
+                              2, nrow(test_data), byrow = T)
     }
   }
 
