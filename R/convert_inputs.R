@@ -25,7 +25,8 @@ convert_inputs <- function(data,
                            grouping  = "site",
                            outcome   = "outcome",
                            treatment = "treatment",
-                           standardise = FALSE) {
+                           standardise = FALSE,
+                           test_data = NULL) {
 
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
@@ -70,6 +71,7 @@ convert_inputs <- function(data,
       "and the model requires", required_data))
   #for now this means no automatic conversion of individual->pooled
 
+  # individual level data -----
   if(required_data == "individual"){
     # check correctness of inputs:
     if(is.null(data[[grouping]]))
@@ -95,6 +97,7 @@ convert_inputs <- function(data,
     )
   }
 
+  # summary data: treatment effect only -----
   if(required_data == "pool_noctrl_narrow"){
     site_label <- data[[grouping]]
     out <- list(
@@ -102,7 +105,22 @@ convert_inputs <- function(data,
       tau_hat_k = data[["tau"]],
       se_tau_k = data[["se"]]
     )
+    if(is.null(test_data)){
+      out$K_test <- 0
+      out$test_tau_hat_k <- array(0, dim = 0)
+      out$test_se_k <- array(0, dim = 0)
+    } else {
+      if(is.null(test_data[["tau"]]) ||
+         is.null(test_data[["se"]]))
+        stop("Test data must be of the same format as input data")
+      out$K_test <- nrow(test_data)
+      out$test_tau_hat_k <- test_data[["tau"]]
+      out$test_se_k <- test_data[["se"]]
+    }
   }
+
+
+  # summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
     site_label <- data[[grouping]]
     nr <- nrow(data)
@@ -114,7 +132,21 @@ convert_inputs <- function(data,
       tau_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
       se_tau_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
     )
+    if(is.null(test_data)){
+      out$K_test <- 0
+      out$test_tau_hat_k <- array(0, dim = 0)
+      out$test_se_tau_k <- array(0, dim = 0)
+    } else {
+      if(is.null(test_data[["tau"]]) ||
+         is.null(test_data[["se"]]))
+        stop("Test data must be of the same format as input data")
+      out$K_test <- nrow(test_data)
+      out$test_tau_hat_k <- test_data[["tau"]]
+      out$test_se_tau_k <- test_data[["se"]]
+    }
   }
+
+
   return(structure(
     out,
     standardised = standardise,

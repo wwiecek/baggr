@@ -5,7 +5,7 @@
 #' individual- or group-level data.
 #' (For overall package help file see \code{?baggr_package})
 #'
-#' @param data data frame with columns 'outcome', 'treatment' and 'site'
+#' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
 #' @param prior list of prior arguments passed directly to each model (see Details)
@@ -19,6 +19,8 @@
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
 #' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
+#' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
+#'                  with the same columns as `data` argument (see `loo_cv` for automation)
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
 #' @return `baggr` class structure: list with Stan model fit embedded inside it,
@@ -28,6 +30,7 @@
 #' This part of documentation is in development.
 #'
 #' @author Witold Wiecek
+#'
 #' @examples
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 #' "se" = rep(1, 8),
@@ -35,21 +38,22 @@
 #' baggr(df_pooled) #automatically detects the input data
 #' # correct labels & passing some options to Stan
 #' baggr(df_pooled, grouping = "state", iter = 200)
+#'
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
                   joint_prior = TRUE, standardise = FALSE,
+                  test_data = NULL,
                   outcome = "outcome", grouping = "site", treatment = "treatment", ...) {
-
-
 
   stan_data <- convert_inputs(data, model,
                               outcome = outcome,
                               grouping = grouping,
                               treatment = treatment,
-                              standardise = standardise)
-  # model might've been chosen automatically
-  # when we prepared inputs, take note:
+                              standardise = standardise,
+                              test_data = test_data)
+  # model might've been chosen automatically (if NULL)
+  # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
 
   # choice whether the parameters have a joint prior or not
@@ -109,11 +113,7 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
       stan_data[[nm]] <- prior[[nm]]
   }
 
-  # if(warnings)
-    # fit <- rstan::sampling(stan_model, data = stan_data, ...)
   fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
-  # else
-    # fit <- suppressWarnings(rstan::sampling(stan_model, data = stan_data, ...))
 
   result <- list(
     "data" = data,
