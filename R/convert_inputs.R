@@ -114,8 +114,9 @@ convert_inputs <- function(data,
          is.null(test_data[["se"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
-      out$test_tau_hat_k <- test_data[["tau"]]
-      out$test_se_k <- test_data[["se"]]
+      # remember that for 1-dim cases we need to pass array()
+      out$test_tau_hat_k <- array(test_data[["tau"]], dim = c(nrow(test_data)))
+      out$test_se_k <- array(test_data[["se"]], dim = c(nrow(test_data)))
     }
   }
 
