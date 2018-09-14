@@ -15,6 +15,8 @@
 #'
 #' @import ggplot2
 #' @import bayesplot
+#' @author Witold Wiecek
+#'
 
 plot.baggr <- function(bg, style = "intervals", prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {

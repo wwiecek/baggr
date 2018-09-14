@@ -20,7 +20,7 @@
 #'                  it will be used as labels for groups when displaying results
 #' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
-#'                  with the same columns as `data` argument (see `loo_cv` for automation)
+#'                  with the same columns as `data` argument (see \code{\link[baggr]{loocv}} for automation)
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
 #' @return `baggr` class structure: list with Stan model fit embedded inside it,
@@ -65,53 +65,27 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   n_sites <- attr(stan_data, "n_sites")
 
 
-
-  # default priors
+  # pooling type
   if(pooling %in% c("none", "partial", "full")) {
     # if(model %in% c("rubin", "mutau")) {
-      # switch? separate scripts for each pooling type? third way?
-      stan_data[["pooling_type"]] <- switch(pooling,
-                                            "none" = 0,
-                                            "partial" = 1,
-                                            "full" = 2)
+    # switch? separate scripts for each pooling type? third way?
+    stan_data[["pooling_type"]] <- switch(pooling,
+                                          "none" = 0,
+                                          "partial" = 1,
+                                          "full" = 2)
   } else {
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
 
+  # default priors
   if(is.null(prior)) {
-    message("Automatically setting prior values.")
-    if(model %in% c("rubin")) {
-      stan_data[["prior_upper_sigma_tau"]] <- 5*var(data$tau)
-      message(paste0("sigma_tau ~ Uniform(0, ",
-                     round(stan_data[["prior_upper_sigma_tau"]], 2), ")"))
-      stan_data[["prior_tau_mean"]] <- 0
-      stan_data[["prior_tau_scale"]] <- 1000
-      message(paste0("tau ~ Normal(0, 1000)"))
-    }
-    if(model == "mutau") {
-      # Remember, first row is always mu (baseline), second row is tau (effect)
-      stan_data[["prior_upper_sigma_tau"]] <- c(5*var(data$mu), 5*var(data$tau))
-      message(paste0("sigma_mu ~ Uniform(0, ",
-                     round(stan_data[["prior_upper_sigma_tau"]][1], 2), ")"))
-      message(paste0("sigma_tau ~ Uniform(0, ",
-                     round(stan_data[["prior_upper_sigma_tau"]][2], 2), ")"))
-      stan_data[["prior_tau_mean"]] <- c(0,0)
-      stan_data[["prior_tau_scale"]] <- 1000*diag(2)
-      message(paste0("(mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
-    }
-    if(model == "full") {
-      # empirical variance of outcome:
-      vhat <- var(stan_data[["y"]])
-      message(paste("Prior variance set to 5 times the observed variance in outcome."))
-      stan_data[["P"]] <- 2
-      stan_data[["mutau_prior_mean"]]  <- rep(0, stan_data$P)
-      stan_data[["mutau_prior_sigma"]] <- 5*vhat*diag(stan_data$P)
-    }
+    prior <- auto_prior(data, model, outcome = outcome)
+
   } else {
     # !!!check for allowed priors here!!!
-    for(nm in names(prior))
-      stan_data[[nm]] <- prior[[nm]]
   }
+  for(nm in names(prior))
+    stan_data[[nm]] <- prior[[nm]]
 
   fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
 
