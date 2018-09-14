@@ -29,3 +29,6 @@ ggplot2 object
 Extracts study effects from the  \code{baggr} model and sends them to
 one of \code{bayesplot} package plotting functions (with minimal embelishments).
 }
+\author{
+Witold Wiecek, Rachael Meager
+}

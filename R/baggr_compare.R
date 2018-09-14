@@ -21,6 +21,7 @@
 #' @importFrom tidyr gather
 #' @import ggplot2
 #' @export
+#' @author Witold Wiecek, Rachael Meager
 
 baggr_compare <- function(...,
                           compare = "site",

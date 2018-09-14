@@ -18,6 +18,7 @@
 #'
 #'
 #' @return Matrix with mean and intervals for chosen pooling metric, each row corresponding to one meta-analysis group.
+#' @author Witold Wiecek, Rachael Meager
 
 
 pooling <- function(bg, metric = "gelman-hill") {

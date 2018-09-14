@@ -5,7 +5,7 @@
 \title{Convert inputs for baggr Stan models}
 \usage{
 convert_inputs(data, model, grouping = "site", outcome = "outcome",
-  treatment = "treatment", standardise = FALSE)
+  treatment = "treatment", standardise = FALSE, test_data = NULL)
 }
 \arguments{
 \item{data}{data.frame with desired modelling input}
@@ -35,5 +35,5 @@ function. This function can be used to explicitly convert from full to reduced
 data without analysing it in a model.
 }
 \author{
-Witold Wiecek
+Witold Wiecek, Rachael Meager
 }

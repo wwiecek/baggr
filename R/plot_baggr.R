@@ -15,7 +15,7 @@
 #'
 #' @import ggplot2
 #' @import bayesplot
-#' @author Witold Wiecek
+#' @author Witold Wiecek, Rachael Meager
 #'
 
 plot.baggr <- function(bg, style = "intervals", prob = 0.5, prob_outer = 0.95,

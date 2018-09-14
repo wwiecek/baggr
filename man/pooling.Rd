@@ -23,6 +23,9 @@ Pooling statistic describes the extent to which group-level estimates of treatme
 average treatment effect in the meta-analysis model.
 
 Different measures of pooling can be estimated and choosing the right one depends on the research questions.
-The default (\code{"gelman-hill"}) "pooling factor" statistic by Gelman & Hill (2007) [REFERENCES ARE WIP] is
+The default (\code{"gelman-hill"}) "pooling factor" statistic by Gelman & Hill (2007) \link{REFERENCES ARE WIP} is
 \deqn{\omega(\tau_k) = \frac{WIP}}
+}
+\author{
+Witold Wiecek, Rachael Meager
 }

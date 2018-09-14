@@ -17,7 +17,7 @@
 #' The conversions will typically happen automatically when data is fed to baggr()
 #' function. This function can be used to explicitly convert from full to reduced
 #' data without analysing it in a model.
-#' @author Witold Wiecek
+#' @author Witold Wiecek, Rachael Meager
 #' @export
 
 convert_inputs <- function(data,

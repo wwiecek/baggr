@@ -29,7 +29,7 @@
 #' @details
 #' This part of documentation is in development.
 #'
-#' @author Witold Wiecek
+#' @author Witold Wiecek, Rachael Meager
 #'
 #' @examples
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
