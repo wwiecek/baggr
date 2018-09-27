@@ -19,19 +19,27 @@ comment = "#>"
 
 _Vignette under construction (duh)_
 
-# Basic types of models
+Baggr, pronounced "bagger" or "badger" and short for Bayesian Aggregator, is a package for aggregating evidence on causal effects measured in different studies, locations or "sites" however conceptualised. When the "site" is a study, the user is typically doing meta-analysis. One of the most basic objects of interest in this setting is the average treatment effect estimated using all the evidence from all the sites. 
 
-Three types of inputs imply three basic models of meta-analysis:
+We will consider the simplest case where each study compares the outcomes in the treatment and control groups of a randomized experiment, and does not consider any covariate information neither within nor across studies. 
+
+Consider some outcome of interest $y_{ik}$ such as profits or consumption for a household or individual $i = 1,2,...N$ in study site $k = 1,2....K$. Let $Y_k$ denote the $N_k$-length vector of observed outcomes from site $k$. Denote the binary indicator of treatment status by $T_{ik}$, and denote by $T_k$ the $N_k$-length vector of all treatment status indicators from site $k$. Suppose that $y_{ik}$ varies randomly around its conditional mean $\mu_k + \tau_k T_i$. In this setting $\tau_k$ is the treatment effect in site $k$. The random variation in $y_{ik}$ may be the result of sampling variation or measurement error, as in the Rubin (1981) model, or it may be the result of unmodeled heterogeneity or uncertainty in outcomes for individuals. Allow the variance of the outcome variable $y_{ik}$ to vary across sites, so $\sigma_{y_k}^2$ may differ across $k$. 
+
+# Data inputs: reported effects or full individual-level data sets
+
+For average effects aggregation, Baggr allows 3 types of data inputs. The user may supply 
+
+(1) A set of estimated treatment effects $\{\hat{\tau}_k\}_{k=1}^{K}$ and their standard errors $\{\hat{se}_k\}_{k=1}^{K}$ from each study, 
+
+(2) A set of both control group means and estimated treatment effects $\{\hat{\mu}_k,\hat{\tau}_k\}_{k=1}^{K}$, as well as the standard errors for both $\{\hat{se}_{\mu k}, \hat{se}_{\tau k}\}_{k=1}^{K}$, for each study site 
+
+(3) The full data sets from all the original studies $\{Y_k, T_k\}_{k=1}^{K}$. 
 
 ```{r}
 ```
 
 
-# Meta-analysis inputs: summaries or individual-level
-```{r}
-```
-
-# Types of models in baggr
+# Types of aggregation models in baggr
 
 ```{r}
 ```
