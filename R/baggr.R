@@ -92,6 +92,7 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   result <- list(
     "data" = data,
     "inputs" = stan_data,
+    "prior" = prior,
     "n_sites" = n_sites,
     "pooling" = pooling,
     "fit" = fit,

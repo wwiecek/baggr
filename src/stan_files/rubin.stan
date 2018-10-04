@@ -48,13 +48,14 @@ model {
 }
 
 generated quantities {
-  real loglik = 0;
-  if(K_test > 0)
+  real logpd = 0;
+  if(K_test > 0){
     for(k in 1:K_test){
       //sigma_tau[p,p] is questionable!
       if(pooling_type == 1)
-        loglik += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(sigma_tau^2 + test_se_k[k]^2));
+        logpd += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(sigma_tau^2 + test_se_k[k]^2));
       if(pooling_type == 2)
-        loglik += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(test_se_k[k]^2));
+        logpd += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(test_se_k[k]^2));
     }
+  }
 }
