@@ -5,11 +5,11 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  joint_prior = TRUE, standardise = FALSE, outcome = "outcome",
-  grouping = "site", treatment = "treatment", ...)
+  joint_prior = TRUE, standardise = FALSE, test_data = NULL,
+  outcome = "outcome", grouping = "site", treatment = "treatment", ...)
 }
 \arguments{
-\item{data}{data frame with columns 'outcome', 'treatment' and 'site'}
+\item{data}{data frame with summary or individual level data to meta-analyse}
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from \code{rubin}, \code{mutau}, \code{individual}}
@@ -24,6 +24,9 @@ If \code{FALSE}, they have independent priors. Ignored if no control
 
 \item{standardise}{logical; determines if data inputs are standardised}
 
+\item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
+with the same columns as \code{data} argument (see \code{\link[baggr]{loocv}} for automation)}
+
 \item{outcome}{character; column name in (individual-level) \code{data} with outcome variable values}
 
 \item{grouping}{character; column name in \code{data} with grouping factor;
@@ -36,14 +39,14 @@ it will be used as labels for groups when displaying results}
 number of iterations etc.}
 }
 \value{
-`baggr` class structure: list with Stan model fit embedded inside it,
-         alongside input data, pooling metrics, various model properties
+\code{baggr} class structure: list with Stan model fit embedded inside it,
+alongside input data, pooling metrics, various model properties
 }
 \description{
 Estimate parameters of an ATE model
 that's appropriate to the supplied
 individual- or group-level data.
-(For overall package help file see \code{?baggr-package})
+(For overall package help file see \code{?baggr_package})
 }
 \details{
 This part of documentation is in development.
@@ -55,7 +58,8 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 baggr(df_pooled) #automatically detects the input data
 # correct labels & passing some options to Stan
 baggr(df_pooled, grouping = "state", iter = 200)
+
 }
 \author{
-Witold Wiecek
+Witold Wiecek, Rachael Meager
 }

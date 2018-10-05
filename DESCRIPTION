@@ -18,5 +18,6 @@ LinkingTo: StanHeaders (>= 2.17.2), rstan (>= 2.17.3), BH (>= 1.66.0-1), Rcpp (>
 SystemRequirements: GNU make
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
+Roxygen: list(markdown = TRUE)
 Suggests: testthat, knitr
 VignetteBuilder: knitr

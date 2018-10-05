@@ -2,12 +2,12 @@
 % Please edit documentation in R/print_baggr.R
 \name{print.baggr}
 \alias{print.baggr}
-\title{S3 print method for objects of class `baggr` (model fits)}
+\title{S3 print method for objects of class \code{baggr} (model fits)}
 \usage{
 \method{print}{baggr}(x, ...)
 }
 \arguments{
-\item{x}{object of class `baggr`}
+\item{x}{object of class \code{baggr}}
 
 \item{...}{currently unused by this pacakge: further arguments passed
 to or from other methods (\code{print}  requirement)}
