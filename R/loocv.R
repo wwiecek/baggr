@@ -29,31 +29,40 @@ loocv <- function(data, return_models = FALSE, ...) {
     message(paste("Large number of sites - note that the
                    model will be repeated", K, "times"))
 
+  # Set prior, if not specified by the user
+  args <- list(...)
+  # Stop if pooling == "none"
+  if(!is.null(args[["pooling"]]) && (args[["pooling"]] == "none"))
+    stop("For a model with no pooling LOO CV doesn't exist.")
+
+
   # Model with all of data:
   full_fit <- baggr(data, ...)
 
-  # Set prior, if not specified by the user
-  args <- list(...)
+  # Prepare the arguments
   args[["data"]] <- data
   args[["model"]] <- full_fit$model
   if(!("prior" %in% names(args))) {
-    message("(Prior distributions are taken from the model with all data. See $prior.)")
+    message("(Prior distributions taken from the model with all data. See $prior.)")
     args[["prior"]] <- full_fit$prior
   }
 
-
+  # LOO CV models
+  pb <- txtProgressBar(style = 3)
+  # should sink() Stan print()'s?
   kfits <- lapply(as.list(1:K), function(i) {
     # baggr(data = data[-i,], test_data = data[i,], ...)
     args$data <- data[-i,]
     args$test_data <- data[i,]
+    setTxtProgressBar(pb, (i-1)/K)
     do.call(baggr, args)
   })
+  close(pb)
 
   tau_estimate <-
     lapply(kfits, function(x) apply(as.matrix(x$fit, "tau"), 2, mean))
   loglik <-
     lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd"), 2, mean))
-
 
   out <- structure(
     -2*sum(unlist(loglik)),
