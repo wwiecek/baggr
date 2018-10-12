@@ -1,4 +1,4 @@
-#' @title Convert inputs for baggr Stan models
+#' @title Convert inputs for baggr models
 #'
 #' @description
 #' Allows conversions from full to reduced (summary) data and
@@ -8,6 +8,8 @@
 #' @param data data.frame with desired modelling input
 #' @param model valid model name used by baggr;
 #'              see \code{?baggr} for allowed models
+#' @param distribution Probability distribution of the outcome.
+#'                     For now one of \code{normal} and \code{lognormal}.
 #' @param grouping name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
@@ -16,12 +18,13 @@
 #' @details
 #' The conversions will typically happen automatically when data is fed to baggr()
 #' function. This function can be used to explicitly convert from full to reduced
-#' data without analysing it in a model.
+#' data without analysing it in any model.
 #' @author Witold Wiecek, Rachael Meager
 #' @export
 
 convert_inputs <- function(data,
                            model,
+                           distribution,
                            grouping  = "site",
                            outcome   = "outcome",
                            treatment = "treatment",
@@ -84,6 +87,8 @@ convert_inputs <- function(data,
     site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
     site_label <- unique(as.character(data[[grouping]]))
 
+    if(distribution == "lognormal")
+      data[[outcome]] <- log(data[[outcome]])
     if(standardise)
       data[[outcome]] <- as.vector(scale(data[[outcome]]))
 

@@ -8,8 +8,9 @@
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
-#' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param pooling choose from \code{none}, \code{partial} (default) and \code{full}
+#' @param distribution Probability distribution of the outcome. For now one of \code{normal} and \code{lognormal}.
+#' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
 #'                    (\code{mu}) data exists.
@@ -42,11 +43,11 @@
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
+                  distribution = "normal",
                   joint_prior = TRUE, standardise = FALSE,
                   test_data = NULL,
                   outcome = "outcome", grouping = "site", treatment = "treatment", ...) {
-
-  stan_data <- convert_inputs(data, model,
+  stan_data <- convert_inputs(data, model, distribution,
                               outcome = outcome,
                               grouping = grouping,
                               treatment = treatment,
@@ -55,6 +56,7 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
+
 
   # choice whether the parameters have a joint prior or not
   # for now fixed

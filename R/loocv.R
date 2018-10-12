@@ -69,13 +69,16 @@ loocv <- function(data, return_models = FALSE, ...) {
     df = data.frame(
       "tau" = unlist(tau_estimate),
       "lpd" = unlist(loglik)),
-    models = kfits,
     full_model = full_fit,
     prior = args[["prior"]]
   )
+  if(return_models)
+    out$models <- kfits
+
   class(out) <- "baggr_cv"
   return(out)
 }
+
 
 
 print.baggr_cv <- function(x, ...) {
