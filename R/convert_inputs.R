@@ -25,32 +25,28 @@ convert_inputs <- function(data,
                            grouping  = "site",
                            outcome   = "outcome",
                            treatment = "treatment",
+                           quantiles,
                            standardise = FALSE,
                            test_data = NULL) {
 
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
                         "mutau" = "pool_wide",
-                        "full" = "individual")
+                        "full" = "individual",
+                        "quantiles" = "individual") #for now no quantiles model from summary level data
   available_data <- detect_input_type(data, grouping)
 
-  if(available_data == "individual") {
-    # stop if variables are not available
-    if(is.null(data[[grouping]]))
-      stop("No grouping column in data.")
-    if(is.null(data[[outcome]]))
-      stop("No outcome column in data.")
-    if(is.null(data[[treatment]]))
-      stop("No treatment column in data.")
-  }
-
   # if(available_data == "unknown")
-    # stop("Cannot automatically determine type of input data.")
+  # stop("Cannot automatically determine type of input data.")
   # let's assume data is individual-level
   # if we can't determine it
   # because it may have custom columns
   if(available_data == "unknown")
-    available_data <- "individual" #in future call it 'inferred ind.'
+    available_data <- "individual" #in future can call it 'inferred ind.'
+
+  if(available_data == "individual")
+    check_columns(data, outcome, grouping, treatment)
+
 
   if(is.null(model)) {
     message("Attempting to infer the correct model for data.")
@@ -73,13 +69,14 @@ convert_inputs <- function(data,
 
   # individual level data -----
   if(required_data == "individual"){
-    # check correctness of inputs:
-    if(is.null(data[[grouping]]))
-      stop("No 'site' column in data.")
-    if(is.null(data[[outcome]]))
-      stop("No outcome column in data.")
-    if(is.null(data[[treatment]]))
-      stop("No treatment column in data.")
+    # # check correctness of inputs:
+    # (This check moved up now.)
+    # if(is.null(data[[grouping]]))
+    #   stop("No 'site' column in data.")
+    # if(is.null(data[[outcome]]))
+    #   stop("No outcome column in data.")
+    # if(is.null(data[[treatment]]))
+    #   stop("No treatment column in data.")
 
     site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
     site_label <- unique(as.character(data[[grouping]]))
@@ -87,14 +84,26 @@ convert_inputs <- function(data,
     if(standardise)
       data[[outcome]] <- as.vector(scale(data[[outcome]]))
 
-    out <- list(
-      K = max(site_numeric),
-      N = nrow(data),
-      P = 2, #will be dynamic
-      y = data[[outcome]],
-      ITT = data[[treatment]],
-      site = site_numeric
-    )
+    if(model == "full")
+      out <- list(
+        K = max(site_numeric),
+        N = nrow(data),
+        P = 2, #will be dynamic
+        y = data[[outcome]],
+        ITT = data[[treatment]],
+        site = site_numeric
+      )
+    if(model == "quantiles"){
+      if((any(quantiles < 0)) ||
+         (any(quantiles > 1)))
+        stop("quantiles must be between 0 and 1")
+      if(length(quantiles) < 3)
+        stop("cannot model less then 3 quantiles")
+      data[[grouping]] <- site_numeric
+      message("Data has been automatically summarised for quantiles model.")
+      out <- summarise_quantiles_data(data, quantiles,
+                                      grouping, outcome, treatment)
+    }
   }
 
   # summary data: treatment effect only -----

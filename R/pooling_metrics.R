@@ -22,7 +22,11 @@
 
 
 pooling <- function(bg, metric = "gelman-hill") {
-  #we have to rig it, because sigma_tau may be allowed to wander freely
+  if(bg$model == "quantiles")
+    return(0)
+
+  # we have to rig it for no pooling cases
+  # because sigma_tau parameter might be meaningless then
   if(bg$pooling == "none")
     return(matrix(0, bg$n_sites, 3))
   if(bg$pooling == "full")
@@ -46,7 +50,20 @@ pooling <- function(bg, metric = "gelman-hill") {
       quantile(x, c(.025, .5, .975))
     }))
     return(ret)
+  } else if(bg$model == "quantiles") {
+    # compared to individual-level, here we are dealing with 1 more dimension
+    # which is number of quantiles; so if sigma_tau above is sigma of trt effect
+    # here it is N effects on N quantiles etc.
+
+    # discard everything off-diagonal, we only care about variances here:
+    sigma_tau <- rstan::extract(bg$fit, "Sigma_1")[[1]]
+    for(i in 1:dim(sigma_tau)[2])
+      sigma_tau[,i,1] <- sigma_tau[,i,i]
+    sigma_tau <- sigma_tau[,,1] #rows are samples, columns are
+
   }
+
+  # for summary level data cases:
   ret <- t(sapply(sigma_k, function(se) {
     x <- se^2 / (se^2 + sigma_tau^2)
     quantile(x, c(.025, .5, .975))
