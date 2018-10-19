@@ -24,16 +24,21 @@ study_effects <- function(bg, interval = FALSE) {
         m <- m[,,2]
     } else if(bg$model == "full") {
       m <- rstan::extract(bg$fit, pars = "mutau_k")[[1]][,,2]
-      #replace by extract:
-      # m <- m[, grepl("^mutau_k", colnames(m))]
-      # m <- m[, grepl(",2]", colnames(m))]
+    } else if(bg$model == "quantiles") {
+      # In this case we have 3D array, last dim is quantiles
+      m <- rstan::extract(bg$fit, pars = "beta_1_k")[[1]]
     }
   }
+  # for consistency with quantiles, except we have 1 parameter only
+  if(length(dim(m)) == 2)
+    m <- array(m, dim = c(dim(m), 1))
+
   par_names <- attr(bg$inputs, "site_label")
+
   if(!is.null(par_names))
-    colnames(m) <- par_names
+    dimnames(m)[[2]] <- par_names
   else
-    colnames(m) <- paste0("Site ", 1:attr(bg$inputs, "n_sites"))
+    dimnames(m)[[2]] <- paste0("Site ", 1:attr(bg$inputs, "n_sites"))
 
   # will summarise if requested:
   if(interval) {

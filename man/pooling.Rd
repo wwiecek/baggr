@@ -4,7 +4,7 @@
 \alias{pooling}
 \title{Pooling metrics}
 \usage{
-pooling(bg, metric = "gelman-hill")
+pooling(bg, metric = "gelman-hill", summary = TRUE)
 }
 \arguments{
 \item{bg}{output of a baggr() function}
