@@ -69,6 +69,11 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   # remember number of sites:
   n_sites <- attr(stan_data, "n_sites")
 
+  # labels for what the effect parameters represent:
+  if(model == "quantiles")
+    effects <- paste0(100*quantiles, "% quantile mean")
+  else
+    effects <- "Treatment mean"
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {
@@ -95,11 +100,14 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
 
   fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
 
+
+
   result <- list(
     "data" = data,
     "inputs" = stan_data,
     "prior" = prior,
     "n_sites" = n_sites,
+    "effects" = effects,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model

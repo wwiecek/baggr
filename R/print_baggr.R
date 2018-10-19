@@ -26,33 +26,41 @@ print.baggr <- function(x, ...) {
 
   cat("Aggregate treatment effect:\n")
   if(x$pooling == "none") {
-    cat("No treatment effect estimated as pooling = 'none'.\n")
+    cat("No treatment effect estimated as pooling = 'none'.\n\n")
   } else {
+    # Means:
     te <- treatment_effect(x)
-    tau <- te[[1]]; sigma_tau <- te[[2]]
-    cat("Mean(tau) = ", round(mean(tau), 2), "; 95% interval", round(quantile(tau, .025),2), "to", round(quantile(tau, .975), 2))
-    cat("\n")
-    if(x$pooling == "partial")
-      cat("SD(tau) = ", round(mean(sigma_tau), 2), "; 95% interval",
-          round(quantile(sigma_tau, .025), 2), "to", round(quantile(sigma_tau, .975), 2), "\n")
-    if(x$pooling == "full")
-      cat("(SD(tau) undefined.)\n")
-    cat("\n")
+    tau       <- format(mint(te[[1]]), digits = 2)
+    sigma_tau <- format(mint(te[[2]]), digits = 2)
+    if(x$model != "quantiles"){
+      cat("Mean(tau) =", tau[1], "; 95% interval", tau[2], "to", tau[3], "\n")
+      if(x$pooling == "partial")
+        cat("SD(tau) =", sigma_tau[1], "; 95% interval", sigma_tau[2], "to", sigma_tau[3], "\n")
+    } else { #quantiles
+      print(tau)
+      if(x$pooling == "partial"){
+        cat("\nSD of treatement effects:")
+        print(sigma_tau)
+      }
+    }
   }
+  if(x$pooling == "full")
+    cat("(SD(tau) undefined.)\n")
+  cat("\n")
+
   if(x$pooling != "full") {
-    cat("Study effects:\n")
-    study_eff_tab <- t(apply(study_effects(x), 2,
-                             function(x) c("mean" = mean(x), "sd" = sd(x))))
-    names(dimnames(study_eff_tab))[1] <- ""
+    study_eff_tab <- apply(study_effects(x), c(2,3),
+                             function(x) c("mean" = mean(x), "sd" = sd(x)))
     # attach pooling metric:
-    study_eff_tab <- cbind(study_eff_tab, pooling(x)[,2])
+    pooling_tab <- pooling(x, summary = TRUE)
 
-    colnames(study_eff_tab) <- c("mean", "SD", "pooling")
-    print(study_eff_tab, digits = 2)
+    for(i in 1:dim(study_eff_tab)[3]){
+      cat("Treatment effects on ", x$effects[i] , " per group:\n")
+      tab <- cbind(t(study_eff_tab[,,i]), pooling_tab[2,,i])
+      colnames(tab) <- c("mean", "SD", "pooling")
+      print(tab, digits = 2)
+    }
     cat("\n")
   }
-
-
   invisible(x)
 }
-
