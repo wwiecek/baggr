@@ -8,8 +8,7 @@
 #' @param data data.frame with desired modelling input
 #' @param model valid model name used by baggr;
 #'              see \code{?baggr} for allowed models
-#' @param distribution Probability distribution of the outcome.
-#'                     For now one of \code{normal} and \code{lognormal}.
+#' @param log logical; set to TRUE to log-transform data before analysis
 #' @param grouping name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
@@ -24,7 +23,7 @@
 
 convert_inputs <- function(data,
                            model,
-                           distribution,
+                           log,
                            grouping  = "site",
                            outcome   = "outcome",
                            treatment = "treatment",
@@ -87,7 +86,7 @@ convert_inputs <- function(data,
     site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
     site_label <- unique(as.character(data[[grouping]]))
 
-    if(distribution == "lognormal")
+    if(log)
       data[[outcome]] <- log(data[[outcome]])
     if(standardise)
       data[[outcome]] <- as.vector(scale(data[[outcome]]))

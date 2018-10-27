@@ -9,7 +9,7 @@
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
 #' @param pooling choose from \code{none}, \code{partial} (default) and \code{full}
-#' @param distribution Probability distribution of the outcome. For now one of \code{normal} and \code{lognormal}.
+#' @param log logical; set to TRUE to log-transform data before analysis
 #' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
@@ -43,11 +43,12 @@
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
-                  distribution = "normal",
+                  log = FALSE,
                   joint_prior = TRUE, standardise = FALSE,
                   test_data = NULL,
                   outcome = "outcome", grouping = "site", treatment = "treatment", ...) {
-  stan_data <- convert_inputs(data, model, distribution,
+  stan_data <- convert_inputs(data, model,
+                              log,
                               outcome = outcome,
                               grouping = grouping,
                               treatment = treatment,
