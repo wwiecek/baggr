@@ -5,8 +5,9 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  joint_prior = TRUE, standardise = FALSE, test_data = NULL,
-  outcome = "outcome", grouping = "site", treatment = "treatment", ...)
+  log = FALSE, joint_prior = TRUE, standardise = FALSE,
+  test_data = NULL, outcome = "outcome", grouping = "site",
+  treatment = "treatment", ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -17,6 +18,8 @@ otherwise choose from \code{rubin}, \code{mutau}, \code{individual}}
 \item{prior}{list of prior arguments passed directly to each model (see Details)}
 
 \item{pooling}{choose from \code{none}, \code{partial} (default) and \code{full}}
+
+\item{log}{logical; set to TRUE to log-transform data before analysis}
 
 \item{joint_prior}{If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 If \code{FALSE}, they have independent priors. Ignored if no control

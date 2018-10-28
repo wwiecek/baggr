@@ -2,9 +2,9 @@
 % Please edit documentation in R/convert_inputs.R
 \name{convert_inputs}
 \alias{convert_inputs}
-\title{Convert inputs for baggr Stan models}
+\title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, grouping = "site", outcome = "outcome",
+convert_inputs(data, model, log, grouping = "site", outcome = "outcome",
   treatment = "treatment", standardise = FALSE, test_data = NULL)
 }
 \arguments{
@@ -12,6 +12,8 @@ convert_inputs(data, model, grouping = "site", outcome = "outcome",
 
 \item{model}{valid model name used by baggr;
 see \code{?baggr} for allowed models}
+
+\item{log}{logical; set to TRUE to log-transform data before analysis}
 
 \item{grouping}{name of the column with grouping variable}
 
@@ -24,15 +26,10 @@ see \code{?baggr} for allowed models}
 \value{
 data.frame of class baggr_data that baggr() uses
 }
-\description{
-Allows conversions from full to reduced (summary) data and
-in summary between long (control and treatment on separate rows)
-and wide data (control and treatment in separate columns).
-}
 \details{
 The conversions will typically happen automatically when data is fed to baggr()
-function. This function can be used to explicitly convert from full to reduced
-data without analysing it in a model.
+function. This function can be used to explicitly obtain inputs formatted the way
+that Stan models use data.
 }
 \author{
 Witold Wiecek, Rachael Meager

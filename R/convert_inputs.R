@@ -1,10 +1,5 @@
 #' @title Convert inputs for baggr models
 #'
-#' @description
-#' Allows conversions from full to reduced (summary) data and
-#' in summary between long (control and treatment on separate rows)
-#' and wide data (control and treatment in separate columns).
-#'
 #' @param data data.frame with desired modelling input
 #' @param model valid model name used by baggr;
 #'              see \code{?baggr} for allowed models
@@ -16,8 +11,8 @@
 #' @return data.frame of class baggr_data that baggr() uses
 #' @details
 #' The conversions will typically happen automatically when data is fed to baggr()
-#' function. This function can be used to explicitly convert from full to reduced
-#' data without analysing it in any model.
+#' function. This function can be used to explicitly obtain inputs formatted the way
+#' that Stan models use data.
 #' @author Witold Wiecek, Rachael Meager
 #' @export
 
