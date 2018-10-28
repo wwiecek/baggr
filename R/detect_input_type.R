@@ -4,7 +4,7 @@
 
 detect_input_type <- function(data, grouping) {
   # if(class == "baggr_data")
-  if(class(data) != "data.frame")
+  if(!("data.frame" %in% class(data)))
     stop("Can't detect input type because it's not data.frame")
 
   if("tau" %in% names(data) && "se" %in% names(data)){

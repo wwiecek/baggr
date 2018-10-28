@@ -150,6 +150,11 @@ convert_inputs <- function(data,
     }
   }
 
+  na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
+  if(any(na_cols))
+    stop(paste0("baggr() does not allow NA values in inputs (see vectors ",
+                paste(names(out)[na_cols], collapse = ", "), ")"))
+
 
   return(structure(
     out,
