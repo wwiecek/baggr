@@ -78,8 +78,9 @@ convert_inputs <- function(data,
     if(is.null(data[[treatment]]))
       stop("No treatment column in data.")
 
-    site_numeric <- as.numeric(as.factor(as.character(data[[grouping]])))
-    site_label <- unique(as.character(data[[grouping]]))
+    sites <- as.factor(as.character(data[[grouping]]))
+    site_numeric <- as.numeric(sites)
+    site_label <- levels(sites)
 
     if(log)
       data[[outcome]] <- log(data[[outcome]])
