@@ -9,7 +9,7 @@ summarise_ma(data)
 \arguments{
 \item{data}{data.frame of individual-level observations
 with columns \code{outcome} (numeric),
-\code{treatment} (values 0 and 1) and \code{grouping}}
+\code{treatment} (values 0 and 1) and \code{site}}
 }
 \value{
 data.frame with columns \code{mu}, \code{se.mu}, \code{tau} and \code{se.tau}

@@ -56,6 +56,11 @@ bg5_p <- baggr(df_pooled, "rubin", pooling = "partial", grouping = "state",
 bg5_f <- baggr(df_pooled, "rubin", pooling = "full", grouping = "state",
                iter = 200, chains = 2)
 
+bg_ind1 <- baggr(df_ind, pooling = "none", iter = 200, chains = 2)
+bg_ind2 <- baggr(df_ind, iter = 1000, chains = 2)
+bg_ind3 <- baggr(df_ind, pooling = "full", iter = 200, chains = 2)
+bg_mutau2 <- baggr(summarise_ma(df_ind), iter = 1000, chains = 2)
+
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200)
 })
@@ -78,33 +83,39 @@ test_that("Pooling metrics are what they should be", {
 
 })
 
-# test_that("Basic Rubin model has sensible results", {
-# ...
-# })
-
-
-#
-
-# Work in progress -----
-
-bg_mu1 <- baggr(df_pooled_mu, "mutau", joint_prior = 1, iter = 200, chains = 2)
-bg_mu2 <- baggr(df_pooled_mu, "mutau", joint_prior = 0, iter = 200, chains = 2)
-bg_ind1 <- baggr(df_ind, pooling = "none", iter = 200, chains = 2)
-bg_ind2 <- baggr(df_ind, iter = 200, chains = 2)
-bg_ind3 <- baggr(df_ind, pooling = "full", iter = 200, chains = 2)
-
-
-
 test_that("Different pooling methods work (don't crash) for full data", {
   expect_is(bg_ind1, "baggr")
   expect_is(bg_ind2, "baggr")
   expect_is(bg_ind3, "baggr")
 })
 
+test_that("Basic Rubin model has sensible results", {
+  # compare Rubin model vs full information model
+  ise <- apply(study_effects(bg_ind2), 2, mean)
+  ase <- apply(study_effects(bg_mutau2), 2, mean)
+  expect_less_than(max(ise - ase), .05)
+
+})
+
+
+#
+
+# Work in progress -----
+
+# bg_mu1 <- baggr(df_pooled_mu, "mutau", joint_prior = 1, iter = 200, chains = 2)
+# bg_mu2 <- baggr(df_pooled_mu, "mutau", joint_prior = 0, iter = 200, chains = 2)
+
+
+
+
+
+
+
+
 test_that("Plotting works", {
   # plots happen at all with vanilla settings
   expect_is(plot(bg_ind1), "gg")
-  expect_is(plot(bg_mu1), "gg")
+  # expect_is(plot(bg_mu1), "gg")
   expect_is(plot(bg5_f), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")

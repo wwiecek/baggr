@@ -4,11 +4,13 @@
 \alias{plot.baggr}
 \title{Plotting method in baggr package}
 \usage{
-\method{plot}{baggr}(bg, style = "intervals", prob = 0.5,
+\method{plot}{baggr}(bg, mean = FALSE, style = "intervals", prob = 0.5,
   prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}
+
+\item{mean}{logical; plot mean treatment effect alongside individual study effects?}
 
 \item{style}{one of \code{areas}, \code{intervals}}
 
@@ -16,11 +18,9 @@
 
 \item{prob_outer}{Probability mass for the outer interval in visualisation}
 
-\item{vline}{logical; show vertical line through 0 in the plot}
+\item{vline}{logical; show vertical line through 0 in the plot?}
 
 \item{order}{logical; sort groups by magnitude of treatment effect?}
-
-\item{...}{extra arguments passed to bayesplot functions}
 }
 \value{
 ggplot2 object
@@ -28,6 +28,9 @@ ggplot2 object
 \description{
 Extracts study effects from the  \code{baggr} model and sends them to
 one of \code{bayesplot} package plotting functions (with minimal embelishments).
+}
+\seealso{
+\code{\link{bayesplot::mcmc_areas}}
 }
 \author{
 Witold Wiecek, Rachael Meager
