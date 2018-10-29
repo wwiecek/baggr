@@ -1,5 +1,7 @@
 # mint = mean and interval function for matrices and vectors
 mint <- function(y, int=0.95, digits = NULL){
+  if(class(y) == "array" && length(dim(y)) == 1)
+    y <- as.vector(y)
   if (class(y) == "matrix")
     t(apply(y, 2, mintv, int = int, digits = digits))
   else if (class(y) == "numeric")

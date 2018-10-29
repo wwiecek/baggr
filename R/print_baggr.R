@@ -23,7 +23,6 @@ print.baggr <- function(x, ...) {
   cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
   cat("\n")
 
-
   cat("Aggregate treatment effect:\n")
   if(x$pooling == "none") {
     cat("No treatment effect estimated as pooling = 'none'.\n\n")
@@ -55,7 +54,7 @@ print.baggr <- function(x, ...) {
     pooling_tab <- pooling(x, summary = TRUE)
 
     for(i in 1:dim(study_eff_tab)[3]){
-      cat("Treatment effects on ", x$effects[i] , " per group:\n")
+      cat("Treatment effects on", x$effects[i] , "per group:\n")
       tab <- cbind(t(study_eff_tab[,,i]), pooling_tab[2,,i])
       colnames(tab) <- c("mean", "SD", "pooling")
       print(tab, digits = 2)

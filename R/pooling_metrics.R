@@ -17,7 +17,8 @@
 #' \deqn{\omega(\tau_k) = \frac{WIP}}
 #'
 #'
-#' @return Matrix with mean and intervals for chosen pooling metric, each row corresponding to one meta-analysis group.
+#' @return Matrix with mean and intervals for chosen pooling metric,
+#'         each row corresponding to one meta-analysis group.
 #' @author Witold Wiecek, Rachael Meager
 
 
@@ -50,11 +51,10 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
     #replace by extract:
     sigma_k <- m[, grepl("^sigma_y_k", colnames(m))]
     sigma_tau <- rstan::extract(bg$fit, pars = "sigma_mutau[2,2]")[[1]]
-    ret <- t(apply(sigma_k, 2, function(sigma) {
-      x <- sigma^2 / (sigma^2 + sigma_tau^2)
-      quantile(x, c(.025, .5, .975))
-    }))
-    return(ret)
+    # we add 3rd dimension to allow more than 1 parameter (in the future), e.g. Var
+    ret <- array(0, dim = c(dim(sigma_k), 1))
+    ret[,,1] <- apply(sigma_k, 2, function(sigma) sigma^2 / (sigma^2 + sigma_tau^2))
+
   } else if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension
     # which is number of quantiles; so if sigma_tau above is sigma of trt effect

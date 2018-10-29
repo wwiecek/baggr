@@ -73,7 +73,7 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   if(model == "quantiles")
     effects <- paste0(100*quantiles, "% quantile mean")
   else
-    effects <- "Treatment mean"
+    effects <- "mean"
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {
