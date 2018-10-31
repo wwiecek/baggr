@@ -2,6 +2,7 @@ context("Basic baggr() calls")
 library(baggr)
 
 # prepare inputs ----------------------------------------------------------
+set.seed(1990)
 
 # pooled, with equal SE's!
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
@@ -80,9 +81,9 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Pooling metrics are what they should be", {
   # all pooling metric are the same as SE's are the same
-  expect_equal(length(unique(bg5_p$pooling_metric[,1])), 1) #expect_length()
-  expect_equal(length(unique(bg5_p$pooling_metric[,2])), 1)
-  expect_equal(length(unique(bg5_p$pooling_metric[,3])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[1,,1])), 1) #expect_length()
+  expect_equal(length(unique(bg5_p$pooling_metric[2,,1])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[3,,1])), 1)
   # all pooling stats are 0 if no pooling
   expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
   # full pooling means 1's everywhere
@@ -111,12 +112,6 @@ test_that("Basic Rubin model has sensible results", {
 
 # bg_mu1 <- baggr(df_pooled_mu, "mutau", joint_prior = 1, iter = 200, chains = 2)
 # bg_mu2 <- baggr(df_pooled_mu, "mutau", joint_prior = 0, iter = 200, chains = 2)
-
-
-
-
-
-
 
 
 test_that("Plotting works", {

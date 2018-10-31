@@ -26,9 +26,9 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
   # we have to rig it for no pooling cases
   # because sigma_tau parameter might be meaningless then
   if(bg$pooling == "none")
-    return(matrix(0, bg$n_sites, 3))
+    return(array(0, c(3, bg$n_sites, bg$n_parameters)))
   if(bg$pooling == "full")
-    return(matrix(1, bg$n_sites, 3))
+    return(array(1, c(3, bg$n_sites, bg$n_parameters)))
 
   # we'll replace by switch() in the future
   if(bg$model == "rubin" || bg$model == "mutau") {
