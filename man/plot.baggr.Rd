@@ -4,8 +4,8 @@
 \alias{plot.baggr}
 \title{Plotting method in baggr package}
 \usage{
-\method{plot}{baggr}(bg, mean = FALSE, style = "intervals", prob = 0.5,
-  prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
+\method{plot}{baggr}(bg, mean = FALSE, style = "intervals",
+  prob = 0.5, prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}

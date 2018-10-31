@@ -4,7 +4,7 @@
 \alias{pooling}
 \title{Pooling metrics}
 \usage{
-pooling(bg, metric = "gelman-hill")
+pooling(bg, metric = "gelman-hill", summary = TRUE)
 }
 \arguments{
 \item{bg}{output of a baggr() function}
@@ -12,7 +12,8 @@ pooling(bg, metric = "gelman-hill")
 \item{metric}{\code{"gelman-hill"} or \code{WIP}}
 }
 \value{
-Matrix with mean and intervals for chosen pooling metric, each row corresponding to one meta-analysis group.
+Matrix with mean and intervals for chosen pooling metric,
+each row corresponding to one meta-analysis group.
 }
 \description{
 Compute pooling metrics (of a few different varieties)

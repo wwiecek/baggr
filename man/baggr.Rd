@@ -6,8 +6,9 @@
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
   log = FALSE, joint_prior = TRUE, standardise = FALSE,
-  test_data = NULL, outcome = "outcome", grouping = "site",
-  treatment = "treatment", ...)
+  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome", grouping = "site", treatment = "treatment",
+  ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -29,6 +30,9 @@ If \code{FALSE}, they have independent priors. Ignored if no control
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument (see \code{\link[baggr]{loocv}} for automation)}
+
+\item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
+(with values between 0 and 1)}
 
 \item{outcome}{character; column name in (individual-level) \code{data} with outcome variable values}
 

@@ -4,8 +4,9 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, log, grouping = "site", outcome = "outcome",
-  treatment = "treatment", standardise = FALSE, test_data = NULL)
+convert_inputs(data, model, log, quantiles, grouping = "site",
+  outcome = "outcome", treatment = "treatment", standardise = FALSE,
+  test_data = NULL)
 }
 \arguments{
 \item{data}{data.frame with desired modelling input}
@@ -25,6 +26,9 @@ see \code{?baggr} for allowed models}
 }
 \value{
 data.frame of class baggr_data that baggr() uses
+}
+\description{
+Convert inputs for baggr models
 }
 \details{
 The conversions will typically happen automatically when data is fed to baggr()

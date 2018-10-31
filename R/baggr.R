@@ -20,6 +20,8 @@
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
 #' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
+#' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
+#'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
 #'                  with the same columns as `data` argument (see \code{\link[baggr]{loocv}} for automation)
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
@@ -40,15 +42,19 @@
 #' # correct labels & passing some options to Stan
 #' baggr(df_pooled, grouping = "state", iter = 200)
 #'
+#' @importFrom broom tidyMCMC
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
                   log = FALSE,
                   joint_prior = TRUE, standardise = FALSE,
                   test_data = NULL,
+                  quantiles = seq(.05, .95, .1),
                   outcome = "outcome", grouping = "site", treatment = "treatment", ...) {
-  stan_data <- convert_inputs(data, model,
+  stan_data <- convert_inputs(data,
+                              model,
                               log,
+                              quantiles = quantiles,
                               outcome = outcome,
                               grouping = grouping,
                               treatment = treatment,
@@ -67,6 +73,11 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   # remember number of sites:
   n_sites <- attr(stan_data, "n_sites")
 
+  # labels for what the effect parameters represent:
+  if(model == "quantiles")
+    effects <- paste0(100*quantiles, "% quantile mean")
+  else
+    effects <- "mean"
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {
@@ -82,7 +93,8 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
 
   # default priors
   if(is.null(prior)) {
-    prior <- auto_prior(data, model, outcome = outcome)
+    prior <- auto_prior(data, stan_data, model,
+                        outcome = outcome, quantiles = quantiles)
 
   } else {
     # !!!check for allowed priors here!!!
@@ -92,11 +104,14 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
 
   fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
 
+
+
   result <- list(
     "data" = data,
     "inputs" = stan_data,
     "prior" = prior,
     "n_sites" = n_sites,
+    "effects" = effects,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model
@@ -105,6 +120,17 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   class(result) <- c("baggr")
 
   result[["pooling_metric"]] <- pooling(result)
+  if(model == "quantiles")
+    result[["quantiles"]] <- quantiles
+
+  # Check convergence
+  rhat <- rstan::summary(fit)$summary[,"Rhat"]
+  rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters
+  if(any(rhat > 1.05))
+    cat(crayon::red(paste0("Rhat statistic for ", sum(rhat > 1.05),
+                           " parameters exceeded 1.05, with maximum equal to ",
+                           round(max(rhat),2), ". This suggests lack of convergence.",
+                           "\n No further warning will be issued. \n")))
 
   return(result)
 }
