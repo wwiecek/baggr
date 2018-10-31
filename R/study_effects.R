@@ -1,7 +1,7 @@
 # Given a model return treatment effects
 # (Used as a helper for plotting and printing of results)
 
-study_effects <- function(bg, interval = FALSE) {
+study_effects <- function(bg, summary = FALSE, interval = .95) {
   if(class(bg) != "baggr")
     stop("study_effects only works with 'baggr' class objects")
 
@@ -41,13 +41,13 @@ study_effects <- function(bg, interval = FALSE) {
     dimnames(m)[[2]] <- paste0("Site ", 1:attr(bg$inputs, "n_sites"))
 
   # will summarise if requested:
-  if(interval) {
+  if(summary) {
     intval <- c((1-interval)/2, .5, 1 - (1-interval)/2)
-    m <- t(apply(m, 2, function(x) quantile(x, intval)))
-    if(is.null(rownames(m)))
-      rownames(m) <- 1:nrow(m)
-    m <- data.frame(rownames(m), m)
-    colnames(m) <- c("parameter", "lci", "median", "uci")
+    m <- apply(m, c(2,3), function(x) c(quantile(x, intval), mean(x), sd(x)))
+    if(is.null(dimnames(m)[[2]]))
+      dimnames(m)[[2]] <- 1:nrow(m)
+    dimnames(m)[[1]] <- c("lci", "median", "uci", "mean", "sd")
+    m <- aperm(m, c(2,1,3))
   }
 
   return(m)

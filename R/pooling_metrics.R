@@ -46,14 +46,13 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
     ret <- replicate(1, ret) #third dim is always N parameters, by convention
 
   } else if(bg$model == "full") {
-    #now it will be vectors, not a single value
-    m <- as.matrix(bg$fit)
-    #replace by extract:
-    sigma_k <- m[, grepl("^sigma_y_k", colnames(m))]
+    # note that we use a point estimate for sigma_k, so it's not fully Bayesian
+    # but in the end we usually report a point estimate so this is acceptable for now
+    sigma_k <- study_effects(bg, summary = TRUE)[, "sd", 1]
     sigma_tau <- rstan::extract(bg$fit, pars = "sigma_mutau[2,2]")[[1]]
     # we add 3rd dimension to allow more than 1 parameter (in the future), e.g. Var
-    ret <- array(0, dim = c(dim(sigma_k), 1))
-    ret[,,1] <- apply(sigma_k, 2, function(sigma) sigma^2 / (sigma^2 + sigma_tau^2))
+    ret <- array(0, dim = c(length(sigma_tau), bg$n_sites, 1))
+    ret[,,1] <- sapply(sigma_k, function(sigma) sigma^2 / (sigma^2 + sigma_tau^2))
 
   } else if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension

@@ -49,7 +49,7 @@ baggr_compare <- function(...,
     # Note: pipe operators are not used here for compatibility and
     # to reduce dependencies
     df <- dplyr::bind_rows(
-      lapply(models, function(x) as.data.frame(study_effects(x, interval = T))),
+      lapply(models, function(x) as.data.frame(study_effects(x, summary = TRUE))),
       .id = "model")
     df <- dplyr::mutate(df, parameter = factor(parameter, levels = unique(parameter[order(median)])))
     ggplot2::ggplot(df, aes(x = parameter, y = median, ymin = lci, ymax = uci,
@@ -59,7 +59,7 @@ baggr_compare <- function(...,
       # geom_jitter(size = 2) +
       geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
       coord_flip() +
-      labs(x = "", y = "Treatment effect",
+      labs(x = "", y = "Treatment effect (95% interval)",
            title = "Comparison of treatment effects by site")
   }
 }
