@@ -19,7 +19,7 @@
 
 print.baggr <- function(x, ...) {
   cat(crayon::red("---this Baggr printing module is under construction---\n\n"))
-  cat("Model type:", crayon::bold(x$model), "\n")
+  cat("Model type:", crayon::bold(model_names[x$model]), "\n")
   cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
   cat("\n")
 
@@ -29,12 +29,13 @@ print.baggr <- function(x, ...) {
   } else {
     # Means:
     te <- treatment_effect(x)
-    tau       <- format(mint(te[[1]]), digits = 2)
-    sigma_tau <- format(mint(te[[2]]), digits = 2)
+    #trim=T avoids whitespace in place of minus sign
+    tau       <- format(mint(te[[1]]), digits = 2, trim = T)
+    sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
     if(x$model != "quantiles"){
-      cat("Mean(tau) =", tau[1], "; 95% interval", tau[2], "to", tau[3], "\n")
+      cat("Mean(tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
       if(x$pooling == "partial")
-        cat("SD(tau) =", sigma_tau[1], "; 95% interval", sigma_tau[2], "to", sigma_tau[3], "\n")
+        cat("SD(tau) =", sigma_tau[2], "with 95% interval", sigma_tau[1], "to", sigma_tau[3], "\n")
     } else { #quantiles
       print(tau)
       if(x$pooling == "partial"){
@@ -54,7 +55,7 @@ print.baggr <- function(x, ...) {
     # attach pooling metric:
     pooling_tab <- pooling(x, summary = TRUE)
     for(i in 1:dim(study_eff_tab)[3]){
-      cat("Treatment effects on", x$effects[i] , "per group:\n")
+      cat(paste0("Treatment effects on ", x$effects[i] , ":\n"))
       tab <- cbind(study_eff_tab[,c("mean", "sd"),i], pooling = pooling_tab[2,,i])
       print(tab, digits = 2)
     }
