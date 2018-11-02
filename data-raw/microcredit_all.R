@@ -1,7 +1,7 @@
 library(dplyr)
 library(purrr)
 # load("data-raw/microcredit_project_data_with_replication_profit.RData")
-# load("data-raw/microcredit_project_data.RData")
+load("data-raw/microcredit_project_data.RData")
 obj <- ls()
 
 nall_na <- function(x) !all(is.na(x))
@@ -29,6 +29,6 @@ microcredit <- lapply(microcredit_all, function(x) {
     if(!(nm %in% names(x)))
       x[[nm]] <- NA
     x[, vars]
-}) %>% setNames(study) %>% bind_rows(.id = "study")
+}) %>% setNames(study) %>% bind_rows(.id = "group")
 
 devtools::use_data(microcredit, overwrite = TRUE)
