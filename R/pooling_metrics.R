@@ -26,9 +26,9 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
   # we have to rig it for no pooling cases
   # because sigma_tau parameter might be meaningless then
   if(bg$pooling == "none")
-    return(array(0, c(3, bg$n_sites, bg$n_parameters)))
+    return(array(0, c(3, bg$n_groups, bg$n_parameters)))
   if(bg$pooling == "full")
-    return(array(1, c(3, bg$n_sites, bg$n_parameters)))
+    return(array(1, c(3, bg$n_groups, bg$n_parameters)))
 
   # we'll replace by switch() in the future
   if(bg$model == "rubin" || bg$model == "mutau") {
@@ -51,7 +51,7 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
     sigma_k <- study_effects(bg, summary = TRUE)[, "sd", 1]
     sigma_tau <- rstan::extract(bg$fit, pars = "sigma_mutau[2,2]")[[1]]
     # we add 3rd dimension to allow more than 1 parameter (in the future), e.g. Var
-    ret <- array(0, dim = c(length(sigma_tau), bg$n_sites, 1))
+    ret <- array(0, dim = c(length(sigma_tau), bg$n_groups, 1))
     ret[,,1] <- sapply(sigma_k, function(sigma) sigma^2 / (sigma^2 + sigma_tau^2))
 
   } else if(bg$model == "quantiles") {

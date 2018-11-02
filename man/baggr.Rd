@@ -7,8 +7,7 @@
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
   log = FALSE, joint_prior = TRUE, standardise = FALSE,
   test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", grouping = "site", treatment = "treatment",
-  ...)
+  outcome = "outcome", group = "group", treatment = "treatment", ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -36,7 +35,7 @@ with the same columns as \code{data} argument (see \code{\link[baggr]{loocv}} fo
 
 \item{outcome}{character; column name in (individual-level) \code{data} with outcome variable values}
 
-\item{grouping}{character; column name in \code{data} with grouping factor;
+\item{group}{character; column name in \code{data} with grouping factor;
 it's necessary for individual-level data, for summarised data
 it will be used as labels for groups when displaying results}
 
@@ -64,7 +63,7 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 "state" = datasets::state.name[1:8])
 baggr(df_pooled) #automatically detects the input data
 # correct labels & passing some options to Stan
-baggr(df_pooled, grouping = "state", iter = 200)
+baggr(df_pooled, group = "state", iter = 200)
 
 }
 \author{

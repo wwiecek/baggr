@@ -6,30 +6,30 @@
 #' @importFrom quantreg rq
 #'
 summarise_quantiles_data <- function(data, quantiles,
-                                     grouping  = "site",
+                                     group  = "group",
                                      outcome   = "outcome",
                                      treatment = "treatment") {
   N <- length(quantiles)
-  K <- length(unique(data[[grouping]]))
+  K <- length(unique(data[[group]]))
 
   # Calculate means and SE's of our quantiles via quantreg::qr()
   # Not very elegant & very slow.
-  # for(group in unique(data[[grouping]])) {
-  #   qr <- quantreg::rq(data[[outcome]][data[[grouping]] == group] ~ data[[treatment]][data[[grouping]] == group],
+  # for(group in unique(data[[group]])) {
+  #   qr <- quantreg::rq(data[[outcome]][data[[group]] == group] ~ data[[treatment]][data[[group]] == group],
   #                tau = quantiles_list)
   #   y_0 <- qr$coef[1,]
   #   y_1 <- qr$coef[2,]
   # }
   i <- 0 #there's no shame in a loop
-  groups <- unique(data[[grouping]])
+  groups <- unique(data[[group]])
   y_0 <- matrix(NA, length(groups), length(quantiles))
   y_1 <- matrix(NA, length(groups), length(quantiles))
   y_0_se <- matrix(NA, length(groups), length(quantiles))
   y_1_se <- matrix(NA, length(groups), length(quantiles))
   for(i in 1:length(groups)) {
     gr <- groups[i]
-    a <- quantreg::rq(data[[outcome]][data[[grouping]] == gr] ~
-                        data[[treatment]][data[[grouping]] == gr],
+    a <- quantreg::rq(data[[outcome]][data[[group]] == gr] ~
+                        data[[treatment]][data[[group]] == gr],
                       tau = quantiles)
     for(j in 1:length(quantiles)) {
       y_0[i,j] <- summary(a, se = "iid")[[j]]$coef[1,1]

@@ -10,7 +10,7 @@ study_effects <- function(bg, summary = FALSE, interval = .95) {
   if(bg$pooling == "full"){
     # tau <- m[,"tau"]
     tau <- treatment_effect(bg)[["tau"]] #for consistency we have a separate function for this
-    k <- attr(bg$inputs, "n_sites")
+    k <- attr(bg$inputs, "n_groups")
     m <- matrix(tau, nrow(m), k, byrow = F)
     # return(NULL) #for now we don't compute them at all, they're all the same as avg effect
   } else{
@@ -33,12 +33,12 @@ study_effects <- function(bg, summary = FALSE, interval = .95) {
   if(length(dim(m)) == 2)
     m <- array(m, dim = c(dim(m), 1))
 
-  par_names <- attr(bg$inputs, "site_label")
+  par_names <- attr(bg$inputs, "group_label")
 
   if(!is.null(par_names))
     dimnames(m)[[2]] <- par_names
   else
-    dimnames(m)[[2]] <- paste0("Site ", 1:attr(bg$inputs, "n_sites"))
+    dimnames(m)[[2]] <- paste0("Groups ", 1:attr(bg$inputs, "n_groups"))
 
   # will summarise if requested:
   if(summary) {

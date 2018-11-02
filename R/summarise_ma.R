@@ -4,7 +4,7 @@
 #'
 #' @param data data.frame of individual-level observations
 #'             with columns \code{outcome} (numeric),
-#'             \code{treatment} (values 0 and 1) and \code{site}
+#'             \code{treatment} (values 0 and 1) and \code{group}
 #' @return data.frame with columns \code{mu}, \code{se.mu}, \code{tau} and \code{se.tau}
 #' @details
 #' The conversions will typically happen automatically when data is fed to baggr()
@@ -15,18 +15,18 @@
 #' @export
 
 summarise_ma <- function(data) {
-  if(any(!complete.cases(data[,c("treatment", "site", "outcome")])))
+  if(any(!complete.cases(data[,c("treatment", "group", "outcome")])))
     warning("NA values present in data - they were dropped when summarising")
 
-  magg  <- aggregate(outcome ~ treatment + site,
+  magg  <- aggregate(outcome ~ treatment + group,
                      mean, data = data)
-  seagg <- aggregate(outcome ~ treatment + site,
+  seagg <- aggregate(outcome ~ treatment + group,
                      function(x) sd(x)/sqrt(length(x)), data = data)
   mwide <- stats::reshape(data = magg, timevar = "treatment",
-                          idvar = "site", direction = "wide")
+                          idvar = "group", direction = "wide")
   sewide <- stats::reshape(data = seagg, timevar = "treatment",
-                           idvar = "site", direction = "wide")
-  data.frame(site = mwide$site,
+                           idvar = "group", direction = "wide")
+  data.frame(group = mwide$group,
              mu = mwide$outcome.0,
              tau = mwide$outcome.1 - mwide$outcome.0,
              se.mu = sewide$outcome.0,

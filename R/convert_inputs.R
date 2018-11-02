@@ -4,7 +4,7 @@
 #' @param model valid model name used by baggr;
 #'              see \code{?baggr} for allowed models
 #' @param log logical; set to TRUE to log-transform data before analysis
-#' @param grouping name of the column with grouping variable
+#' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param standardise logical; whether to standardise data when converting
@@ -20,7 +20,7 @@ convert_inputs <- function(data,
                            model,
                            log,
                            quantiles,
-                           grouping  = "site",
+                           group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
                            standardise = FALSE,
@@ -31,7 +31,7 @@ convert_inputs <- function(data,
                         "mutau" = "pool_wide",
                         "full" = "individual",
                         "quantiles" = "individual") #for now no quantiles model from summary level data
-  available_data <- detect_input_type(data, grouping)
+  available_data <- detect_input_type(data, group)
 
   # if(available_data == "unknown")
   # stop("Cannot automatically determine type of input data.")
@@ -42,7 +42,7 @@ convert_inputs <- function(data,
     available_data <- "individual" #in future can call it 'inferred ind.'
 
   if(available_data == "individual")
-    check_columns(data, outcome, grouping, treatment)
+    check_columns(data, outcome, group, treatment)
 
 
   if(is.null(model)) {
@@ -68,16 +68,16 @@ convert_inputs <- function(data,
   if(required_data == "individual"){
     # # check correctness of inputs:
     # (This check moved up now.)
-    # if(is.null(data[[grouping]]))
-    #   stop("No 'site' column in data.")
+    # if(is.null(data[[group]]))
+    #   stop("No 'group' column in data.")
     # if(is.null(data[[outcome]]))
     #   stop("No outcome column in data.")
     # if(is.null(data[[treatment]]))
     #   stop("No treatment column in data.")
 
-    sites <- as.factor(as.character(data[[grouping]]))
-    site_numeric <- as.numeric(sites)
-    site_label <- levels(sites)
+    groups <- as.factor(as.character(data[[group]]))
+    group_numeric <- as.numeric(groups)
+    group_label <- levels(groups)
 
     if(log)
       data[[outcome]] <- log(data[[outcome]])
@@ -86,12 +86,12 @@ convert_inputs <- function(data,
 
     if(model == "full")
       out <- list(
-        K = max(site_numeric),
+        K = max(group_numeric),
         N = nrow(data),
         P = 2, #will be dynamic
         y = data[[outcome]],
         ITT = data[[treatment]],
-        site = site_numeric
+        site = group_numeric
       )
     if(model == "quantiles"){
       if((any(quantiles < 0)) ||
@@ -99,16 +99,16 @@ convert_inputs <- function(data,
         stop("quantiles must be between 0 and 1")
       if(length(quantiles) < 3)
         stop("cannot model less then 3 quantiles")
-      data[[grouping]] <- site_numeric
+      data[[group]] <- group_numeric
       message("Data has been automatically summarised for quantiles model.")
       out <- summarise_quantiles_data(data, quantiles,
-                                      grouping, outcome, treatment)
+                                      group, outcome, treatment)
     }
   }
 
   # summary data: treatment effect only -----
   if(required_data == "pool_noctrl_narrow"){
-    site_label <- data[[grouping]]
+    group_label <- data[[group]]
     out <- list(
       K = nrow(data),
       tau_hat_k = data[["tau"]],
@@ -132,7 +132,7 @@ convert_inputs <- function(data,
 
   # summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
-    site_label <- data[[grouping]]
+    group_label <- data[[group]]
     nr <- nrow(data)
     out <- list(
       K = nr,
@@ -169,8 +169,8 @@ convert_inputs <- function(data,
   return(structure(
     out,
     standardised = standardise,
-    site_label = site_label,
-    n_sites = out[["K"]],
+    group_label = group_label,
+    n_groups = out[["K"]],
     model = model))
 
 }

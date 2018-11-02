@@ -6,7 +6,7 @@
 #'            function, but with `pooling = ...` omitted.
 #'            In the latter case 3 models will be run, with
 #'            pooling set to `none`, `partial` and `full`.
-#' @param compare can be 'site' (compare different sites in each model),
+#' @param compare can be 'groups' (compare different groups in each model),
 #'                or 'ate' (compare aggregate treatment effects only)
 #' @param style What kind of plot to display - see options for `plot.baggr`
 #' @param arrange If `single`, generate a single plot, if `grid`
@@ -24,7 +24,7 @@
 #' @author Witold Wiecek, Rachael Meager
 
 baggr_compare <- function(...,
-                          compare = "site",
+                          compare = "group",
                           style = "areas",
                           arrange = "single") {
   l <- list(...)
@@ -60,7 +60,7 @@ baggr_compare <- function(...,
       geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
       coord_flip() +
       labs(x = "", y = "Treatment effect (95% interval)",
-           title = "Comparison of treatment effects by site")
+           title = "Comparison of treatment effects by group")
   }
 }
 

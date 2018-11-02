@@ -4,7 +4,7 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, log, quantiles, grouping = "site",
+convert_inputs(data, model, log, quantiles, group = "group",
   outcome = "outcome", treatment = "treatment", standardise = FALSE,
   test_data = NULL)
 }
@@ -16,7 +16,7 @@ see \code{?baggr} for allowed models}
 
 \item{log}{logical; set to TRUE to log-transform data before analysis}
 
-\item{grouping}{name of the column with grouping variable}
+\item{group}{name of the column with grouping variable}
 
 \item{outcome}{name of column with outcome variable}
 

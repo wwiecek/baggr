@@ -19,7 +19,7 @@ comment = "#>"
 
 _Vignette under construction (duh)_
 
-Baggr, pronounced "bagger" or "badger" and short for Bayesian Aggregator, is a package for aggregating evidence on causal effects measured in different studies, locations or "sites" however conceptualised. When the "site" is a study, the user is typically doing meta-analysis. One of the most basic objects of interest in this setting is the average treatment effect estimated using all the evidence from all the sites. 
+Baggr, pronounced "bagger" or "badger" and short for Bayesian Aggregator, is a package for aggregating evidence on causal effects measured in different studies, locations or "sites" however conceptualised (we refer to them as groups). When the group is a study, the user is typically doing meta-analysis. One of the most basic objects of interest in this setting is the average treatment effect estimated using all the evidence from all the studies. 
 
 We will consider the simplest case where each study compares the outcomes in the treatment and control groups of a randomized experiment, and does not consider any covariate information neither within nor across studies. 
 

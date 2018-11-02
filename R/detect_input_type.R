@@ -2,7 +2,7 @@
 # given a data.frame try to infer
 # what kind of data we're dealing with
 
-detect_input_type <- function(data, grouping) {
+detect_input_type <- function(data, group) {
   # if(class == "baggr_data")
   if(!("data.frame" %in% class(data)))
     stop("Can't detect input type because it's not data.frame")
@@ -18,8 +18,8 @@ detect_input_type <- function(data, grouping) {
                       names(data)))))
     return("pool_wide")
 
-  if(!is.null(data[[grouping]]))
-    if(nrow(data) > length(unique(data[[grouping]])))
+  if(!is.null(data[[group]]))
+    if(nrow(data) > length(unique(data[[group]])))
       return("individual")
 
   return("unknown")

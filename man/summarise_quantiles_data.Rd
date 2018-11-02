@@ -7,7 +7,7 @@ Given individual level data, return list of summary statistics
 Of quantile means and Sigma's, as well as K, N
 Already formatted as a valid input into a Stan model of quantiles}
 \usage{
-summarise_quantiles_data(data, quantiles, grouping = "site",
+summarise_quantiles_data(data, quantiles, group = "group",
   outcome = "outcome", treatment = "treatment")
 }
 \description{

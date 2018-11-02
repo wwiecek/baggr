@@ -16,7 +16,7 @@
 #'                    (\code{mu}) data exists.
 #' @param standardise logical; determines if data inputs are standardised
 #' @param outcome   character; column name in (individual-level) \code{data} with outcome variable values
-#' @param grouping  character; column name in \code{data} with grouping factor;
+#' @param group     character; column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
 #' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
@@ -40,7 +40,7 @@
 #' "state" = datasets::state.name[1:8])
 #' baggr(df_pooled) #automatically detects the input data
 #' # correct labels & passing some options to Stan
-#' baggr(df_pooled, grouping = "state", iter = 200)
+#' baggr(df_pooled, group = "state", iter = 200)
 #'
 #' @importFrom broom tidyMCMC
 #' @export
@@ -50,13 +50,13 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
                   joint_prior = TRUE, standardise = FALSE,
                   test_data = NULL,
                   quantiles = seq(.05, .95, .1),
-                  outcome = "outcome", grouping = "site", treatment = "treatment", ...) {
+                  outcome = "outcome", group = "group", treatment = "treatment", ...) {
   stan_data <- convert_inputs(data,
                               model,
                               log,
                               quantiles = quantiles,
                               outcome = outcome,
-                              grouping = grouping,
+                              group = group,
                               treatment = treatment,
                               standardise = standardise,
                               test_data = test_data)
@@ -70,8 +70,8 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   if(model != "rubin")
     stan_data[["joint"]] <- joint_prior
 
-  # remember number of sites:
-  n_sites <- attr(stan_data, "n_sites")
+  # remember number of groups:
+  n_groups <- attr(stan_data, "n_groups")
 
   # labels for what the effect parameters represent:
   if(model == "quantiles")
@@ -110,7 +110,7 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
     "data" = data,
     "inputs" = stan_data,
     "prior" = prior,
-    "n_sites" = n_sites,
+    "n_groups" = n_groups,
     "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
     "effects" = effects,
     "pooling" = pooling,

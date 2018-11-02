@@ -4,7 +4,7 @@
 \alias{baggr_compare}
 \title{Compare a(ny) number of baggr models side by side}
 \usage{
-baggr_compare(..., compare = "site", style = "areas",
+baggr_compare(..., compare = "group", style = "areas",
   arrange = "single")
 }
 \arguments{
@@ -15,7 +15,7 @@ function, but with \code{pooling = ...} omitted.
 In the latter case 3 models will be run, with
 pooling set to \code{none}, \code{partial} and \code{full}.}
 
-\item{compare}{can be 'site' (compare different sites in each model),
+\item{compare}{can be 'groups' (compare different groups in each model),
 or 'ate' (compare aggregate treatment effects only)}
 
 \item{style}{What kind of plot to display - see options for \code{plot.baggr}}

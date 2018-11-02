@@ -1,11 +1,11 @@
 # When working with inidividual-level data, check that correct columns are used correctly.
 
-check_columns <- function(data, outcome, grouping, treatment)  {
+check_columns <- function(data, outcome, group, treatment)  {
   # Do columns exist?
   if(is.null(data[[outcome]]))
     stop(paste0("There's no column ", outcome, " in data"))
-  if(is.null(data[[grouping]]))
-    stop(paste0("There's no column ", grouping, " in data"))
+  if(is.null(data[[group]]))
+    stop(paste0("There's no column ", group, " in data"))
   if(is.null(data[[treatment]]))
     stop(paste0("There's no column ", treatment, " in data"))
 
@@ -20,8 +20,8 @@ check_columns <- function(data, outcome, grouping, treatment)  {
     stop("Some of treatment values are NA")
   if(any(is.na(data[[outcome]])))
     stop("Some of outcome values are NA")
-  if(any(is.na(data[[grouping]])))
-    stop("Some of grouping values are NA")
+  if(any(is.na(data[[group]])))
+    stop("Some of group values are NA")
 
   # Treatment has to be dichotomous
   if(!any(data[[treatment]] == 0 || data[[treatment]] == 1))

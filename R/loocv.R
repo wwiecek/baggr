@@ -26,7 +26,7 @@
 loocv <- function(data, return_models = FALSE, ...) {
   K <- nrow(data)
   if(K > 50)
-    message(paste("Large number of sites - note that the
+    message(paste("Large number of groups - note that the
                    model will be repeated", K, "times"))
 
   # Set prior, if not specified by the user
