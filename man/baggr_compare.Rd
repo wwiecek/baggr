@@ -15,9 +15,6 @@ function, but with \code{pooling = ...} omitted.
 In the latter case 3 models will be run, with
 pooling set to \code{none}, \code{partial} and \code{full}.}
 
-\item{compare}{can be 'groups' (compare different groups in each model),
-or 'ate' (compare aggregate treatment effects only)}
-
 \item{style}{What kind of plot to display - see options for \code{plot.baggr}}
 
 \item{arrange}{If \code{single}, generate a single plot, if \code{grid}
