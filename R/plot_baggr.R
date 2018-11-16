@@ -12,7 +12,7 @@
 #' @param order logical; sort groups by magnitude of treatment effect?
 #'
 #' @return ggplot2 object
-#'
+#' @export
 #' @import ggplot2
 #' @import bayesplot
 #' @author Witold Wiecek, Rachael Meager

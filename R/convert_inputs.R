@@ -97,8 +97,8 @@ convert_inputs <- function(data,
       if((any(quantiles < 0)) ||
          (any(quantiles > 1)))
         stop("quantiles must be between 0 and 1")
-      if(length(quantiles) < 3)
-        stop("cannot model less then 3 quantiles")
+      if(length(quantiles) < 2)
+        stop("cannot model less then 2 quantiles")
       data[[group]] <- group_numeric
       message("Data has been automatically summarised for quantiles model.")
       out <- summarise_quantiles_data(data, quantiles,

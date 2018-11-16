@@ -4,7 +4,8 @@
 #'
 #' @param data data.frame of individual-level observations
 #'             with columns \code{outcome} (numeric),
-#'             \code{treatment} (values 0 and 1) and \code{group}
+#'             \code{treatment} (values 0 and 1) and \code{group} (numeric, character or factor)
+#' @param standardise logical; if TRUE, values of outcome are standardised within each group
 #' @return data.frame with columns \code{mu}, \code{se.mu}, \code{tau} and \code{se.tau}
 #' @details
 #' The conversions will typically happen automatically when data is fed to baggr()
@@ -14,9 +15,18 @@
 #' @seealso \code{\link{convert_inputs}}
 #' @export
 
-summarise_ma <- function(data) {
+summarise_ma <- function(data, standardise = FALSE) {
   if(any(!complete.cases(data[,c("treatment", "group", "outcome")])))
     warning("NA values present in data - they were dropped when summarising")
+
+  if(standardise) {
+    agg <- aggregate(outcome ~ group, function(x) {c(mean=mean(x), sd=sd(x))}, data = data)
+    means <- agg$outcome[,"mean"]
+    sds <- agg$outcome[,"sd"]
+    names(means) <- names(sds) <- agg$group
+
+    data$outcome <- (data$outcome - means[data$group]) / sds[data$group]
+  }
 
   magg  <- aggregate(outcome ~ treatment + group,
                      mean, data = data)
