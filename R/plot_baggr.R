@@ -32,10 +32,12 @@ plot.baggr <- function(bg, mean = FALSE,
 
   ret_list <- lapply(as.list(1:dim(m)[3]), function(i) {
     if(order)
-      m[,,i] <- m[,order(apply(m[,,i], 2, mean)),i]
+      mat_to_plot <- m[,order(apply(m[,,i], 2, mean)),i] #assigning to m[,,i] wouldn't reorder dimnames
+    else
+      mat_to_plot <- m[,,i]
     p <- switch(style,
-                "areas"     = bayesplot::mcmc_areas(m[,,i],     prob = prob, prob_outer = prob_outer, ...),
-                "intervals" = bayesplot::mcmc_intervals(m[,,i], prob = prob, prob_outer = prob_outer, ...))
+                "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob, prob_outer = prob_outer, ...),
+                "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob, prob_outer = prob_outer, ...))
     p + ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
     {if(vline) geom_vline(xintercept = 0, lty = "dashed")}
   })
