@@ -48,6 +48,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   }
 
   # LOO CV models
+  cat("\n")
   pb <- txtProgressBar(style = 3)
   # should sink() Stan print()'s?
   kfits <- lapply(as.list(1:K), function(i) {

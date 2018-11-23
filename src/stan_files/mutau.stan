@@ -55,7 +55,7 @@ if(pooling_type == 0) {
   //tau_k's 'take over' tau's prior distribution
   for (k in 1:K)
     tau_k[k] ~ multi_normal(prior_tau_mean, prior_tau_scale);
-  //tau is allowed to wander (but not too much)
+  //tau is allowed to wander (but not too much), but we won't use it
   for(p in 1:P){
     tau[p] ~ normal(0, 1);
 }}

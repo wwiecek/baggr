@@ -24,6 +24,7 @@
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
 #'                  with the same columns as `data` argument (see \code{\link[baggr]{loocv}} for automation)
+#' @param warn print warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
 #' @return `baggr` class structure: list with Stan model fit embedded inside it,
@@ -50,7 +51,9 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
                   joint_prior = TRUE, standardise = FALSE,
                   test_data = NULL,
                   quantiles = seq(.05, .95, .1),
-                  outcome = "outcome", group = "group", treatment = "treatment", ...) {
+                  outcome = "outcome", group = "group", treatment = "treatment",
+                  warn = TRUE,
+                  ...) {
   stan_data <- convert_inputs(data,
                               model,
                               log,
@@ -127,11 +130,11 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   # Check convergence
   rhat <- rstan::summary(fit)$summary[,"Rhat"]
   rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters
-  if(any(rhat > 1.05))
-    cat(crayon::red(paste0("Rhat statistic for ", sum(rhat > 1.05),
-                           " parameters exceeded 1.05, with maximum equal to ",
-                           round(max(rhat),2), ". This suggests lack of convergence.",
-                           "\n No further warning will be issued. \n")))
+  if(warn && any(rhat > 1.05))
+    message(paste0("Rhat statistic for ", sum(rhat > 1.05),
+                   " parameters exceeded 1.05, with maximum equal to ",
+                   round(max(rhat),2), ". This suggests lack of convergence.",
+                   "\n No further warning will be issued. \n"))
 
   return(result)
 }

@@ -29,7 +29,7 @@ auto_prior <- function(data, stan_data, model, outcome = "outcome",
   if(model == "full") {
     # empirical variance of outcome:
     vhat <- var(data[[outcome]]) #this may give trouble, look out!
-    message(paste("* Prior variance set to 5 times the observed variance in outcome."))
+    # message(paste("* Treatment effect SD set to (U) 10 times the observed variance in outcome."))
     prior_list[["P"]] <- 2
     prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
     prior_list[["mutau_prior_sigma"]] <- 10*vhat*diag(prior_list$P)
