@@ -23,24 +23,27 @@ print.baggr <- function(x, ...) {
   cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
   cat("\n")
 
-  cat("Aggregate treatment effect:\n")
+  cat(crayon::bold("Aggregate treatment effect:\n"))
   if(x$pooling == "none") {
     cat("No treatment effect estimated as pooling = 'none'.\n\n")
   } else {
     # Means:
     te <- treatment_effect(x)
     #trim=T avoids whitespace in place of minus sign
-    tau       <- format(mint(te[[1]]), digits = 2, trim = T)
-    sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
     if(x$model != "quantiles"){
+      tau       <- format(mint(te[[1]]), digits = 2, trim = T)
+      sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
       cat("Mean(tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
       if(x$pooling == "partial")
         cat("SD(tau) =", sigma_tau[2], "with 95% interval", sigma_tau[1], "to", sigma_tau[3], "\n")
     } else { #quantiles
-      print(tau)
+      tau <- mint(te[[1]])
+      sigma_tau <- mint(te[[2]])
+      rownames(tau) <- rownames(sigma_tau) <- paste0(100*fitmc$quantiles, "% quantile")
+      print(tau, digits = 2)
       if(x$pooling == "partial"){
-        cat("\nSD of treatement effects:")
-        print(sigma_tau)
+        cat(crayon::bold("\nSD of treatement effects:"))
+        print(sigma_tau, digits = 2)
       }
     }
   }

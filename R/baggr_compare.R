@@ -28,58 +28,73 @@ baggr_compare <- function(...,
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
   if(all(unlist(lapply(l, class)) == "baggr")) {
+    return_models_flag <- 0
     models <- l
   } else {
     if("pooling" %in% names(l))
       stop("Can't run the model comparison with pooling setting
             already set to a particular value.")
-
+    return_models_flag <- 1
     # This is where the models are run:
     models <- lapply(list("none", "partial", "full"), function(pool){
       try(do.call(baggr, c(l, "pooling" = pool)))
     })
     names(models) <- c("none", "partial", "full")
   }
+
+  effect_names <- lapply(models, function(x) x$effects)
+  # quite a mouthful:
+  if(!all(unlist(lapply(effect_names, function(x) all.equal(effect_names[[1]], x))) == 1))
+    stop("Models must have the same effects to be comparable")
+  effect_names <- effect_names[[1]]
+
   if(arrange == "grid") {
     plots <- lapply(models, plot, style = style)
     gridExtra::grid.arrange(grobs = plots, ncol = length(plots))
   }
   if(arrange == "single") {
-    # Note: pipe operators are not used here for compatibility and
-    # to reduce dependencies but i still went for dplyr as it's so much simpler
-    df_groups <- dplyr::bind_rows(
-      lapply(models, function(x) {
-        # will need to be modified for quantiles models case:
-        m <- as.data.frame(study_effects(x, summary = TRUE)[,,1])
-        m$parameter <- rownames(m)
-        m
-      }), .id = "model")
-    df_groups$parameter <- factor(df_groups$parameter,
-                                  levels = unique(df_groups$parameter[order(df_groups$median)]))
+    plots <- lapply(as.list(1:(length(effect_names))), function(i) {
+      # Note: pipe operators are not used here for compatibility and
+      # to reduce dependencies but i still went for dplyr as it's so much simpler
+      df_groups <- dplyr::bind_rows(
+        lapply(models, function(x) {
+          # will need to be modified for quantiles models case:
+          m <- as.data.frame(study_effects(x, summary = TRUE)[,,i])
+          m$group <- rownames(m)
+          m
+        }), .id = "model")
+      df_groups$group <- factor(df_groups$group,
+                                    levels = unique(df_groups$group[order(df_groups$median)]))
 
-    # now treatment effect:
-    # df_trt <- dplyr::bind_rows(
-    #   lapply(models, function(x) {
-    #     m <- mint(treatment_effect(x)$tau)
-    #     m$parameter <- rownames(m)
-    #     m
-    #   }), .id = "model")
+      # now treatment effect:
+      # df_trt <- dplyr::bind_rows(
+      #   lapply(models, function(x) {
+      #     m <- mint(treatment_effect(x)$tau)
+      #     m$group <- rownames(m)
+      #     m
+      #   }), .id = "model")
 
-    # df <- rbind(df_groups, df_trt)
-    df <- df_groups
-    comparison_plot <- ggplot2::ggplot(df, aes(x = parameter, y = median, ymin = lci, ymax = uci,
-                            group = interaction(model),
-                            color = model)) +
-      geom_point(size = 2, position=position_dodge(width=0.5)) +
-      # geom_jitter(size = 2) +
-      geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
-      coord_flip() +
-      labs(x = "", y = "Treatment effect (95% interval)",
-           title = "Comparison of treatment effects by group")
+      # df <- rbind(df_groups, df_trt)
+      df <- df_groups
+      comparison_plot <- ggplot2::ggplot(df, aes(x = group, y = median, ymin = lci, ymax = uci,
+                                                 group = interaction(model),
+                                                 color = model)) +
+        geom_point(size = 2, position=position_dodge(width=0.5)) +
+        # geom_jitter(size = 2) +
+        geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
+        coord_flip() +
+        labs(x = "", y = "Treatment effect (95% interval)",
+             title = effect_names[i])+ theme(legend.position="top")
+      # plot(comparison_plot)
+      return(comparison_plot)
+    })
   }
 
-  # render the plot (for now not saved)
-  plot(comparison_plot)
+  if(length(plots) == 1)
+    plots <- plots[[1]]
 
-  return(models)
+  if(return_models_flag)
+    return(list(plot = plots, models = models))
+  else
+    return(plots)
 }

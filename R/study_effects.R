@@ -5,14 +5,15 @@ study_effects <- function(bg, summary = FALSE, interval = .95) {
   if(class(bg) != "baggr")
     stop("study_effects only works with 'baggr' class objects")
 
-  m <- as.matrix(bg$fit)
+  # m <- as.matrix(bg$fit)
 
   if(bg$pooling == "full"){
-    # tau <- m[,"tau"]
     tau <- treatment_effect(bg)[["tau"]] #for consistency we have a separate function for this
     k <- attr(bg$inputs, "n_groups")
-    m <- matrix(tau, nrow(m), k, byrow = F)
-    # return(NULL) #for now we don't compute them at all, they're all the same as avg effect
+    m <- replicate(k, tau)
+    if(length(dim(m)) == 3)
+      m <- aperm(m, c(1, 3, 2))
+
   } else{
     # choose correct columns for the given models:
     if(bg$model %in% c("rubin", "mutau")) {

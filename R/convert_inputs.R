@@ -100,7 +100,7 @@ convert_inputs <- function(data,
       if(length(quantiles) < 2)
         stop("cannot model less then 2 quantiles")
       data[[group]] <- group_numeric
-      message("Data has been automatically summarised for quantiles model.")
+      message("Data have been automatically summarised for quantiles model.")
       out <- summarise_quantiles_data(data, quantiles,
                                       group, outcome, treatment)
     }

@@ -26,13 +26,13 @@ transformed data {
   }
 }
 parameters {
-  positive_ordered[N] beta_0; // true (level 2) DIFFERENCE in treatment and control quantiles
-  positive_ordered[N] beta_0_k[K_pooled]; // intermediate treatment EFFECT
+  ordered[N] beta_0; // true (level 2) DIFFERENCE in treatment and control quantiles
+  ordered[N] beta_0_k[K_pooled]; // intermediate treatment EFFECT
 
   //means:
-  // positive_ordered[N] treatment_quantiles;
-  positive_ordered[N] treatment_quantiles;
-  positive_ordered[N] treatment_quantiles_k[K_pooled];
+  // ordered[N] treatment_quantiles;
+  ordered[N] treatment_quantiles;
+  ordered[N] treatment_quantiles_k[K_pooled];
 
   //variances:
   cholesky_factor_corr[N] L_Omega_0; // cholesky factor of correlation matrix
@@ -43,7 +43,7 @@ parameters {
 transformed parameters {
   cov_matrix[N] Sigma_0;
   cov_matrix[N] Sigma_1;
-  // positive_ordered[N] beta_1;
+  // ordered[N] beta_1;
   vector[N] beta_1;
   vector[N] beta_1_k[K_pooled];
   beta_1 =  treatment_quantiles - beta_0;
