@@ -39,7 +39,7 @@ print.baggr <- function(x, ...) {
     } else { #quantiles
       tau <- mint(te[[1]])
       sigma_tau <- mint(te[[2]])
-      rownames(tau) <- rownames(sigma_tau) <- paste0(100*fitmc$quantiles, "% quantile")
+      rownames(tau) <- rownames(sigma_tau) <- paste0(100*x$quantiles, "% quantile")
       print(tau, digits = 2)
       if(x$pooling == "partial"){
         cat(crayon::bold("\nSD of treatement effects:"))

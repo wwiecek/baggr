@@ -1,6 +1,9 @@
 context("Cross-validation methods")
 library(baggr)
-options(mc.cores = 4) #assuming test are for now always executed on WW's machine or similar
+
+# assuming test are for now always executed on WW's machine or similar
+# we could enable this:
+# options(mc.cores = 4)
 
 # tests ----------------------------------------------------------
 test_that("LOO CV runs for all models", {

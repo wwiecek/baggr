@@ -11,6 +11,7 @@
 #' For each model we calculate log predictive density l.p.d. (TBC)
 #'
 #' @examples
+#' #even simple examples may take a long moment
 #' loocv(schools, pooling = "partial")
 #' loocv(schools, pooling = "full")
 #'
@@ -21,6 +22,8 @@
 #'             \href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{(PDF link)}
 #'
 #' @export
+#' @importFrom utils txtProgressBar
+#' @importFrom utils setTxtProgressBar
 #'
 
 loocv <- function(data, return_models = FALSE, ...) {
@@ -49,13 +52,13 @@ loocv <- function(data, return_models = FALSE, ...) {
 
   # LOO CV models
   cat("\n")
-  pb <- txtProgressBar(style = 3)
+  pb <- utils::txtProgressBar(style = 3)
   # should sink() Stan print()'s?
   kfits <- lapply(as.list(1:K), function(i) {
     # baggr(data = data[-i,], test_data = data[i,], ...)
     args$data <- data[-i,]
     args$test_data <- data[i,]
-    setTxtProgressBar(pb, (i-1)/K)
+    utils::setTxtProgressBar(pb, (i-1)/K)
     do.call(baggr, args)
   })
   close(pb)
@@ -79,8 +82,6 @@ loocv <- function(data, return_models = FALSE, ...) {
   class(out) <- "baggr_cv"
   return(out)
 }
-
-
 
 print.baggr_cv <- function(x, ...) {
   attributes(x) <- NULL

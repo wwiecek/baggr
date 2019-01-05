@@ -19,7 +19,6 @@
 #' @author Witold Wiecek, Rachael Meager
 
 baggr_compare <- function(...,
-                          compare = "group",
                           style   = "areas",
                           arrange = "single") {
   l <- list(...)
@@ -27,6 +26,8 @@ baggr_compare <- function(...,
     stop("Must provide baggr models or model specification.")
   if(all(unlist(lapply(l, class)) == "baggr")) {
     return_models_flag <- 0
+    if(is.null(names(l)))
+      names(l) <- paste("Model", 1:length(l))
     models <- l
   } else {
     if("pooling" %in% names(l))
@@ -47,8 +48,12 @@ baggr_compare <- function(...,
   effect_names <- effect_names[[1]]
 
   if(arrange == "grid") {
-    plots <- lapply(models, plot, style = style)
-    gridExtra::grid.arrange(grobs = plots, ncol = length(plots))
+    plots <- lapply(models, baggr_plot, style = style)
+    grid_width <- length(plots)
+    # if each plots element contains multiple plots (like with quantiles):
+    if(class(plots[[1]]) == "list")
+      plots <- unlist(plots, recursive = FALSE)
+    gridExtra::grid.arrange(grobs = plots, ncol = grid_width)
   }
   if(arrange == "single") {
     plots <- lapply(as.list(1:(length(effect_names))), function(i) {
@@ -76,6 +81,12 @@ baggr_compare <- function(...,
 
       # df <- rbind(df_groups, df_trt)
       df <- df_groups
+
+      # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
+      # https://stackoverflow.com/questions/9439256/
+      #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+      lci <- uci <- model <- group <- NULL
+
       comparison_plot <- ggplot2::ggplot(df, aes(x = group, y = median, ymin = lci, ymax = uci,
                                                  group = interaction(model),
                                                  color = model)) +

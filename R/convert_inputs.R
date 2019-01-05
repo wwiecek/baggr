@@ -1,13 +1,15 @@
 #' @title Convert inputs for baggr models
 #'
-#' @param data data.frame with desired modelling input
+#' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
 #'              see \code{?baggr} for allowed models
 #' @param log logical; set to TRUE to log-transform data before analysis
+#' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param standardise logical; whether to standardise data when converting
+#' @param test_data same format as `data` argument, gets left aside for testing purposes (see \code{link{baggr}})
 #' @return data.frame of class baggr_data that baggr() uses
 #' @details
 #' The conversions will typically happen automatically when data is fed to baggr()
@@ -102,7 +104,7 @@ convert_inputs <- function(data,
       data[[group]] <- group_numeric
       message("Data have been automatically summarised for quantiles model.")
       out <- summarise_quantiles_data(data, quantiles,
-                                      group, outcome, treatment)
+                                      outcome, group, treatment)
     }
   }
 

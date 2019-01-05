@@ -1,7 +1,7 @@
 #' Plotting method in baggr package
 #'
 #' Extracts study effects from the  \code{baggr} model and sends them to
-#' one of \code{bayesplot} package plotting functions (with minimal embelishments).
+#' one of \code{bayesplot} package plotting functions (with some embelishments).
 #'
 #' @param bg object of class \code{baggr}
 #' @param mean logical; plot mean treatment effect alongside individual study effects?
@@ -10,15 +10,23 @@
 #' @param prob_outer Probability mass for the outer interval in visualisation
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param order logical; sort groups by magnitude of treatment effect?
+#' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
+#'
+#' @examples
+#' fit <- baggr(schools, pooling = "none")
+#' plot(fit)
+#' plot(fit, style = "areas", order = FALSE)
+#'
 #' @export
 #' @import ggplot2
 #' @import bayesplot
+#'
 #' @author Witold Wiecek, Rachael Meager
-#' @seealso \code{\link{bayesplot::mcmc_areas}}
+#' @seealso \code{\link[bayesplot]{MCMC-intervals}}
 
-plot.baggr <- function(bg, mean = FALSE,
+baggr_plot <- function(bg, mean = FALSE,
                        style = "intervals",
                        prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {

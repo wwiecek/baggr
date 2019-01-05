@@ -25,6 +25,7 @@ Leave one out cross-validation for \code{baggr} models
 For each model we calculate log predictive density l.p.d. (TBC)
 }
 \examples{
+#even simple examples may take a long moment
 loocv(schools, pooling = "partial")
 loocv(schools, pooling = "full")
 

@@ -1,6 +1,10 @@
 context("Basic baggr() calls")
 library(baggr)
-options(mc.cores = 4) #assuming test are for now always executed on WW's machine or similar
+
+# assuming test are for now always executed on WW's machine or similar
+# we could enable this:
+# options(mc.cores = 4)
+
 warn_temp <- getOption("warn")
 # options(warn = -1)
 
@@ -104,7 +108,7 @@ test_that("Basic Rubin model has sensible results", {
   # compare Rubin model vs full information model
   ise <- apply(study_effects(bg_ind2), 2, mean)
   ase <- apply(study_effects(bg_mutau2), 2, mean)
-  expect_less_than(max(ise - ase), .05)
+  expect_lt(max(ise - ase), .05)
 
 })
 

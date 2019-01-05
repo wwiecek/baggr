@@ -9,12 +9,14 @@ convert_inputs(data, model, log, quantiles, group = "group",
   test_data = NULL)
 }
 \arguments{
-\item{data}{data.frame with desired modelling input}
+\item{data}{`data.frame`` with desired modelling input}
 
 \item{model}{valid model name used by baggr;
 see \code{?baggr} for allowed models}
 
 \item{log}{logical; set to TRUE to log-transform data before analysis}
+
+\item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
 
 \item{group}{name of the column with grouping variable}
 
@@ -23,6 +25,8 @@ see \code{?baggr} for allowed models}
 \item{treatment}{name of column with treatment variable}
 
 \item{standardise}{logical; whether to standardise data when converting}
+
+\item{test_data}{same format as \code{data} argument, gets left aside for testing purposes (see \code{link{baggr}})}
 }
 \value{
 data.frame of class baggr_data that baggr() uses

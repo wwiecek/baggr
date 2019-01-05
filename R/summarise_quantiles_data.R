@@ -1,19 +1,40 @@
 #' summarise_quantiles_data
+#'
 #' Given individual level data, return list of summary statistics
-#' Of quantile means and Sigma's, as well as K, N
+#' Of quantile means and Sigma's, as well as K, N.
 #' Already formatted as a valid input into a Stan model of quantiles
-# summarise_quantiles_data(microcredit, c(.2, .4, .6), "study", "profit")
+#'
+#' @param data a data.frame with appropriate grouping, outcome, treatment variables
+#' @param quantiles a vector of quantiles (between 0 and 1)
+#' @param outcome   character: column name in `data` for outcome variable
+#' @param group     character: column name in `data` for grouping variable
+#' @param treatment character: column name in `data` for treatment variable
+#'
+#' @details Estimates are obtained externally via \code{\link[quantreg]{rq}}
+#' See \code{\link{baggr}} for documentation of how columns should be formatted.
+#'
+#' @examples
+#' summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),
+#'                          outcome = "consumerdurables")
+#'
 #' @importFrom quantreg rq
+#' @import stats
 #' @export
 
 summarise_quantiles_data <- function(data, quantiles,
-                                     group  = "group",
                                      outcome   = "outcome",
+                                     group  = "group",
                                      treatment = "treatment") {
   N <- length(quantiles)
   K <- length(unique(data[[group]]))
   if(!all(quantiles[-1] - quantiles[-length(quantiles)] > 0))
     stop("Vector of quantiles should be strictly monotonic")
+  if(N < 2)
+    stop("At least 2 quantiles needed")
+  if(K < 2)
+    stop("Needs at least 2 groups to summarise data for")
+
+  check_columns(data, outcome, group, treatment)
 
   # Calculate means and SE's of our quantiles via quantreg::qr()
   # Not very elegant & very slow.
@@ -28,7 +49,7 @@ summarise_quantiles_data <- function(data, quantiles,
   #   y_0 <- qr$coef[1,]
   #   y_1 <- qr$coef[2,]
   # }
-  calc <- aggregate(outcome ~ group + treatment, function(x) {
+  calc <- stats::aggregate(outcome ~ group + treatment, function(x) {
     qr <- quantreg::rq(x ~ 1, tau = quantiles)
     qs <- summary(qr, se = "iid")
     unlist(lapply(qs, function(coef) {

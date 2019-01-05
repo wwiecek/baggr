@@ -14,13 +14,14 @@
 #' @author Witold Wiecek, Rachael Meager
 #' @seealso \code{\link{convert_inputs}}
 #' @export
+#' @import stats
 
 summarise_ma <- function(data, standardise = FALSE) {
-  if(any(!complete.cases(data[,c("treatment", "group", "outcome")])))
+  if(any(!stats::complete.cases(data[,c("treatment", "group", "outcome")])))
     warning("NA values present in data - they were dropped when summarising")
 
   if(standardise) {
-    agg <- aggregate(outcome ~ group, function(x) {c(mean=mean(x), sd=sd(x))}, data = data)
+    agg <- stats::aggregate(outcome ~ group, function(x) {c(mean=mean(x), sd=sd(x))}, data = data)
     means <- agg$outcome[,"mean"]
     sds <- agg$outcome[,"sd"]
     names(means) <- names(sds) <- agg$group
@@ -28,9 +29,9 @@ summarise_ma <- function(data, standardise = FALSE) {
     data$outcome <- (data$outcome - means[data$group]) / sds[data$group]
   }
 
-  magg  <- aggregate(outcome ~ treatment + group,
+  magg  <- stats::aggregate(outcome ~ treatment + group,
                      mean, data = data)
-  seagg <- aggregate(outcome ~ treatment + group,
+  seagg <- stats::aggregate(outcome ~ treatment + group,
                      function(x) sd(x)/sqrt(length(x)), data = data)
   mwide <- stats::reshape(data = magg, timevar = "treatment",
                           idvar = "group", direction = "wide")
