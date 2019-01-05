@@ -7,7 +7,8 @@
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
   log = FALSE, joint_prior = TRUE, standardise = FALSE,
   test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", group = "group", treatment = "treatment", ...)
+  outcome = "outcome", group = "group", treatment = "treatment",
+  warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -40,6 +41,8 @@ it's necessary for individual-level data, for summarised data
 it will be used as labels for groups when displaying results}
 
 \item{treatment}{character; column name in (individual-level) \code{data} with treatment factor;}
+
+\item{warn}{print warning if Rhat exceeds 1.05}
 
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 number of iterations etc.}

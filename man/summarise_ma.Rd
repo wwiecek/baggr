@@ -4,12 +4,14 @@
 \alias{summarise_ma}
 \title{Convert from individual to summary data in meta-analyses}
 \usage{
-summarise_ma(data)
+summarise_ma(data, standardise = FALSE)
 }
 \arguments{
 \item{data}{data.frame of individual-level observations
 with columns \code{outcome} (numeric),
-\code{treatment} (values 0 and 1) and \code{group}}
+\code{treatment} (values 0 and 1) and \code{group} (numeric, character or factor)}
+
+\item{standardise}{logical; if TRUE, values of outcome are standardised within each group}
 }
 \value{
 data.frame with columns \code{mu}, \code{se.mu}, \code{tau} and \code{se.tau}

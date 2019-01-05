@@ -39,7 +39,7 @@ study_effects <- function(bg, summary = FALSE, interval = .95) {
   if(!is.null(par_names))
     dimnames(m)[[2]] <- par_names
   else
-    dimnames(m)[[2]] <- paste0("Groups ", 1:attr(bg$inputs, "n_groups"))
+    dimnames(m)[[2]] <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
 
   # will summarise if requested:
   if(summary) {

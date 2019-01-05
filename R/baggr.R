@@ -43,7 +43,6 @@
 #' # correct labels & passing some options to Stan
 #' baggr(df_pooled, group = "state", iter = 200)
 #'
-#' @importFrom broom tidyMCMC
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",

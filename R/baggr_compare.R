@@ -14,8 +14,6 @@
 #'         the models, the plot and printed summaries. (WIP)
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
-#' @importFrom dplyr bind_rows
-#' @importFrom tidyr gather
 #' @import ggplot2
 #' @export
 #' @author Witold Wiecek, Rachael Meager
@@ -54,15 +52,17 @@ baggr_compare <- function(...,
   }
   if(arrange == "single") {
     plots <- lapply(as.list(1:(length(effect_names))), function(i) {
-      # Note: pipe operators are not used here for compatibility and
-      # to reduce dependencies but i still went for dplyr as it's so much simpler
-      df_groups <- dplyr::bind_rows(
-        lapply(models, function(x) {
-          # will need to be modified for quantiles models case:
-          m <- as.data.frame(study_effects(x, summary = TRUE)[,,i])
-          m$group <- rownames(m)
-          m
-        }), .id = "model")
+      # Note: pipe operators are dplyr not used here for compatibility
+      ll <- lapply(models, function(x) {
+        # will need to be modified for quantiles models case:
+        m <- as.data.frame(study_effects(x, summary = TRUE)[,,i])
+        m$group <- rownames(m)
+        m
+      })
+      df_groups <- data.frame()
+      for(j in 1:length(ll))
+        df_groups <- rbind(df_groups,
+                           data.frame(model = names(ll)[j], ll[[j]]))
       df_groups$group <- factor(df_groups$group,
                                     levels = unique(df_groups$group[order(df_groups$median)]))
 
@@ -84,7 +84,8 @@ baggr_compare <- function(...,
         geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
         coord_flip() +
         labs(x = "", y = "Treatment effect (95% interval)",
-             title = effect_names[i])+ theme(legend.position="top")
+             title = effect_names[i]) +
+        theme(legend.position="top")
       # plot(comparison_plot)
       return(comparison_plot)
     })
