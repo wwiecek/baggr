@@ -31,7 +31,7 @@ The default (\code{"gelman-hill"}) "pooling factor" statistic by Gelman & Hill (
 }
 \references{
 Gelman, Andrew, and Jennifer Hill. Data Analysis Using Regression and Multilevel/Hierarchical
-Models. 1 edition. Cambridge ; New York: Cambridge University Press, 2006.
+Models. 1 edition. Cambridge; New York: Cambridge University Press, 2006.
 }
 \author{
 Witold Wiecek, Rachael Meager

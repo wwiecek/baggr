@@ -15,7 +15,7 @@
 #' loocv(schools, pooling = "partial")
 #' loocv(schools, pooling = "full")
 #'
-#' @author Witold Wiecek, Rachael Meager
+#' @author Witold Wiecek
 #' @references Gelman A, Hwang J, Vehtari A.
 #'             Understanding predictive information criteria for Bayesian models.
 #'             Statistics and Computing. 2014 Nov 24(6):997-1016.

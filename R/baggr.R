@@ -106,8 +106,6 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
 
   fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
 
-
-
   result <- list(
     "data" = data,
     "inputs" = stan_data,
@@ -133,7 +131,8 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
     message(paste0("Rhat statistic for ", sum(rhat > 1.05),
                    " parameters exceeded 1.05, with maximum equal to ",
                    round(max(rhat),2), ". This suggests lack of convergence.",
-                   "\n No further warning will be issued. \n"))
+                   "\n No further warning will be issued.",
+                   "\n Stan model saved as $fit in the returned object. \n"))
 
   return(result)
 }

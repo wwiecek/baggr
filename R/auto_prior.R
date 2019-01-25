@@ -6,7 +6,6 @@ auto_prior <- function(data, stan_data, model, outcome = "outcome",
   prior_list <- list()
 
   message("Automatically setting prior values:")
-
   if(model %in% c("rubin")) {
     prior_list[["prior_upper_sigma_tau"]] <- 10*var(data$tau)
     message(paste0("* sigma_tau ~ Uniform(0, ",
@@ -28,11 +27,13 @@ auto_prior <- function(data, stan_data, model, outcome = "outcome",
   }
   if(model == "full") {
     # empirical variance of outcome:
-    vhat <- var(data[[outcome]]) #this may give trouble, look out!
-    # message(paste("* Treatment effect SD set to (U) 10 times the observed variance in outcome."))
+    vhat <- var(stan_data$y) #this may give trouble, look out!
+    message(paste0("SD of treatment effect is Uniform(0, ",
+                  format(10*sqrt(vhat), digits=2),
+                  "); 10*(observed outcome SD)"))
     prior_list[["P"]] <- 2
     prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
-    prior_list[["mutau_prior_sigma"]] <- 10*vhat*diag(prior_list$P)
+    prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)
   }
   if(model == "quantiles") {
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$N)

@@ -48,10 +48,10 @@ baggr_compare <- function(...,
   effect_names <- effect_names[[1]]
 
   if(arrange == "grid") {
-    plots <- lapply(models, baggr_plot, style = style)
+    plots <- lapply(models, baggr_plot, style = style, order = FALSE)
     grid_width <- length(plots)
     # if each plots element contains multiple plots (like with quantiles):
-    if(class(plots[[1]]) == "list")
+    if(class(plots[[1]])[1] == "list")
       plots <- unlist(plots, recursive = FALSE)
     gridExtra::grid.arrange(grobs = plots, ncol = grid_width)
   }

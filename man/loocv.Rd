@@ -37,5 +37,5 @@ Statistics and Computing. 2014 Nov 24(6):997-1016.
 \href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{(PDF link)}
 }
 \author{
-Witold Wiecek, Rachael Meager
+Witold Wiecek
 }

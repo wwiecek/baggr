@@ -18,7 +18,7 @@
 #'
 
 print.baggr <- function(x, ...) {
-  cat(crayon::red("---this Baggr printing module is under construction---\n\n"))
+  # cat(crayon::red("---this Baggr printing module is under construction---\n\n"))
   cat("Model type:", crayon::bold(model_names[x$model]), "\n")
   cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
   cat("\n")

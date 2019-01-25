@@ -15,7 +15,7 @@
 ggplot2 object from \code{baggr_plot}
 }
 \description{
-Using generic \code{plot()} on \code{baggr} output invokes \code{\link{baggr::baggr_plot}} visual.
+Using generic \code{plot()} on \code{baggr} output invokes \code{\link{baggr_plot}} visual.
 See therein for customisation options. Note that plot output is \code{ggplot2} object.`
 }
 \author{

@@ -1,6 +1,6 @@
 #' Generic plot for baggr package
 #'
-#' Using generic `plot()` on `baggr` output invokes \code{\link{baggr::baggr_plot}} visual.
+#' Using generic `plot()` on `baggr` output invokes \code{\link{baggr_plot}} visual.
 #' See therein for customisation options. Note that plot output is `ggplot2` object.`
 #'
 #' @param x object of class `baggr`
