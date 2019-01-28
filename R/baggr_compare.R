@@ -90,9 +90,9 @@ baggr_compare <- function(...,
       comparison_plot <- ggplot2::ggplot(df, aes(x = group, y = median, ymin = lci, ymax = uci,
                                                  group = interaction(model),
                                                  color = model)) +
-        geom_point(size = 2, position=position_dodge(width=0.5)) +
         # geom_jitter(size = 2) +
-        geom_errorbar(size = 1.2, width = 0, alpha = .5, position=position_dodge(width=0.5)) +
+        geom_errorbar(size = 1.2, width = 0, position=position_dodge(width=0.5)) +
+        geom_point(size = 2, stroke = 1.5, fill = "white", position=position_dodge(width=0.5), pch = 21) +
         coord_flip() +
         labs(x = "", y = "Treatment effect (95% interval)",
              title = effect_names[i]) +
