@@ -9,12 +9,10 @@
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
 #' @param pooling choose from \code{none}, \code{partial} (default) and \code{full}
-#' @param log logical; set to TRUE to log-transform data before analysis
 #' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
 #'                    (\code{mu}) data exists.
-#' @param standardise logical; determines if data inputs are standardised
 #' @param outcome   character; column name in (individual-level) \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
@@ -31,7 +29,13 @@
 #'          alongside input data, pooling metrics, various model properties
 #'
 #' @details
-#' This part of documentation is in development.
+#' Most of data preparation steps can be done automatically through \code{\link[baggr]{prepare_ma}}.
+#' Same function can also be used to convert individual level data to aggregate data.
+#' While the preparation step is optional it will also automatically format data inputs to be
+#' immediately recognisable by `baggr()`.
+#'
+#' (OTHER SECTIONS OF THIS HELP ARE STILL WORK IN PROGRESS)
+#'
 #'
 #' @author Witold Wiecek, Rachael Meager
 #'
@@ -46,21 +50,27 @@
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
-                  log = FALSE,
+                  log = FALSE, cfb = FALSE,
                   joint_prior = TRUE, standardise = FALSE,
-                  test_data = NULL,
-                  quantiles = seq(.05, .95, .1),
-                  outcome = "outcome", group = "group", treatment = "treatment",
+                  test_data = NULL, quantiles = seq(.05, .95, .1),
+                  outcome = "outcome", group = "group",
+                  treatment = "treatment", baseline = NULL,
                   warn = TRUE,
                   ...) {
+
+  # For now we recommend that users format their data before passing to baggr()
+  # data <- prepare_ma(data,
+  #                    standardise = standardise, log = log,
+  #                    summarise = FALSE, cfb = cfb,
+  #                    treatment=treatment, group=group,
+  #                    outcome=outcome, baseline=baseline)
+
   stan_data <- convert_inputs(data,
                               model,
-                              log,
                               quantiles = quantiles,
                               outcome = outcome,
                               group = group,
                               treatment = treatment,
-                              standardise = standardise,
                               test_data = test_data)
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged

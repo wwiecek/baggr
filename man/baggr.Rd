@@ -5,10 +5,10 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  log = FALSE, joint_prior = TRUE, standardise = FALSE,
-  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", group = "group", treatment = "treatment",
-  warn = TRUE, ...)
+  log = FALSE, cfb = FALSE, joint_prior = TRUE,
+  standardise = FALSE, test_data = NULL, quantiles = seq(0.05, 0.95,
+  0.1), outcome = "outcome", group = "group",
+  treatment = "treatment", baseline = NULL, warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -20,13 +20,9 @@ otherwise choose from \code{rubin}, \code{mutau}, \code{individual}}
 
 \item{pooling}{choose from \code{none}, \code{partial} (default) and \code{full}}
 
-\item{log}{logical; set to TRUE to log-transform data before analysis}
-
 \item{joint_prior}{If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 If \code{FALSE}, they have independent priors. Ignored if no control
 (\code{mu}) data exists.}
-
-\item{standardise}{logical; determines if data inputs are standardised}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument (see \code{\link[baggr]{loocv}} for automation)}
@@ -58,7 +54,12 @@ individual- or group-level data.
 (For overall package help file see \code{?baggr_package})
 }
 \details{
-This part of documentation is in development.
+Most of data preparation steps can be done automatically through \code{\link[baggr]{prepare_ma}}.
+Same function can also be used to convert individual level data to aggregate data.
+While the preparation step is optional it will also automatically format data inputs to be
+immediately recognisable by \code{baggr()}.
+
+(OTHER SECTIONS OF THIS HELP ARE STILL WORK IN PROGRESS)
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),

@@ -4,17 +4,14 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, log, quantiles, group = "group",
-  outcome = "outcome", treatment = "treatment", standardise = FALSE,
-  test_data = NULL)
+convert_inputs(data, model, quantiles, group = "group",
+  outcome = "outcome", treatment = "treatment", test_data = NULL)
 }
 \arguments{
 \item{data}{`data.frame`` with desired modelling input}
 
 \item{model}{valid model name used by baggr;
 see \code{?baggr} for allowed models}
-
-\item{log}{logical; set to TRUE to log-transform data before analysis}
 
 \item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
 
@@ -23,8 +20,6 @@ see \code{?baggr} for allowed models}
 \item{outcome}{name of column with outcome variable}
 
 \item{treatment}{name of column with treatment variable}
-
-\item{standardise}{logical; whether to standardise data when converting}
 
 \item{test_data}{same format as \code{data} argument, gets left aside for testing purposes (see \code{link{baggr}})}
 }

@@ -74,7 +74,7 @@ bg5_f <- baggr(df_pooled, "rubin", pooling = "full", group = "state",
 bg_ind1 <- baggr(df_ind, pooling = "none", iter = 200, chains = 2)
 bg_ind2 <- baggr(df_ind, iter = 1000, chains = 2)
 bg_ind3 <- baggr(df_ind, pooling = "full", iter = 200, chains = 2)
-bg_mutau2 <- baggr(summarise_ma(df_ind), iter = 1000, chains = 2)
+bg_mutau2 <- baggr(prepare_ma(df_ind), iter = 1000, chains = 2)
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200)

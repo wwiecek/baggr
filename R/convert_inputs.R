@@ -3,12 +3,10 @@
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
 #'              see \code{?baggr} for allowed models
-#' @param log logical; set to TRUE to log-transform data before analysis
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
-#' @param standardise logical; whether to standardise data when converting
 #' @param test_data same format as `data` argument, gets left aside for testing purposes (see \code{link{baggr}})
 #' @return data.frame of class baggr_data that baggr() uses
 #' @details
@@ -20,12 +18,10 @@
 
 convert_inputs <- function(data,
                            model,
-                           log,
                            quantiles,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
-                           standardise = FALSE,
                            test_data = NULL) {
 
   # check what kind of data is required for the model & what's available
@@ -81,10 +77,6 @@ convert_inputs <- function(data,
     group_numeric <- as.numeric(groups)
     group_label <- levels(groups)
 
-    if(log)
-      data[[outcome]] <- log(data[[outcome]])
-    if(standardise)
-      data[[outcome]] <- as.vector(scale(data[[outcome]]))
 
     if(model == "full")
       out <- list(
@@ -170,7 +162,6 @@ convert_inputs <- function(data,
 
   return(structure(
     out,
-    standardised = standardise,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))
