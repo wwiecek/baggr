@@ -2,6 +2,11 @@
 #'
 #' Internal function used as a helper for plotting and printing of results.
 #'
+#' @param bg baggr object
+#' @param summary logical; summarise result?
+#' @param interval uncertainy interval width (numeric between 0 and 1) if summarising
+#'
+#' @return a matrix with MCMC samples or summaries
 #' @export
 
 study_effects <- function(bg, summary = FALSE, interval = .95) {

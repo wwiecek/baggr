@@ -44,7 +44,9 @@ plot_quantiles <- function(fit, ncol, hline = TRUE) {
   }
 
   colnames(df) <- c("lci", "mean", "uci", "group", "quantile")
-  library(ggplot2)
+
+  lci <- uci <- group <- NULL #check fix
+
   ggplot2::ggplot(df, aes(y = mean, x=quantile, ymin = lci, ymax = uci)) +
     theme_bw() +
     {if(hline) geom_hline(yintercept = 0, lty = "dashed")} +

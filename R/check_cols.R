@@ -3,11 +3,11 @@
 check_columns <- function(data, outcome, group, treatment)  {
   # Do columns exist?
   if(is.null(data[[outcome]]))
-    stop(paste0("There's no column ", outcome, " in data"))
+    stop(paste0("There's no column '", outcome, "' in data"))
   if(is.null(data[[group]]))
-    stop(paste0("There's no column ", group, " in data"))
+    stop(paste0("There's no column '", group, "' in data"))
   if(is.null(data[[treatment]]))
-    stop(paste0("There's no column ", treatment, " in data"))
+    stop(paste0("There's no column '", treatment, "' in data"))
 
   # Are they the correct type
   if(!(is.numeric(data[[outcome]])))

@@ -1,4 +1,5 @@
 #' @title Convert from individual to summary data in meta-analyses
+#'
 #' @description Allows only one-way conversion from full to summary data.
 #'              Input must be pre-formatted appropriately.
 #'
@@ -8,16 +9,27 @@
 #'             \code{group} (numeric, character or factor)
 #' @param standardise logical; if TRUE, values of outcome
 #'                    are standardised within each group
+#' @param log logical; log-transform data?
+#' @param cfb logical; calculate change from baseline?
+#' @param summarise logical; convert to aggregate level data?
+#' @param group name of the column with grouping variable
+#' @param outcome name of column with outcome variable
+#' @param treatment name of column with treatment variable
+#' @param baseline name of column with baseline variable
+#'
 #' @return data.frame with columns \code{mu}, \code{se.mu},
 #'         \code{tau} and \code{se.tau}
+#'
 #' @details
 #' The conversions are typically not needed and may happen automatically
 #' when data is fed to baggr(). However, this function can be used to explicitly
 #' convert from full to reduced data without analysing it in any model.
-#' @author Witold Wiecek, Rachael Meager
-#' @seealso \code{\link{convert_inputs}}
+#'
+#' @author Witold Wiecek
+#' @seealso \code{\link{convert_inputs}} for how data is converted into Stan inputs
 #' @export
 #' @import stats
+#'
 
 prepare_ma <- function(data, standardise = NULL,
                          log = FALSE, cfb = FALSE, summarise = TRUE,
@@ -25,6 +37,9 @@ prepare_ma <- function(data, standardise = NULL,
                          baseline = NULL,
                          group="group",
                          outcome="outcome") {
+  if(grepl("pool", detect_input_type(data, group)))
+    stop("Data must be individual-level to use prepare_ma.")
+  check_columns(data, outcome, group, treatment)
 
   # Input checks and prep
   data <- data[,c(treatment, group, outcome, baseline)]
