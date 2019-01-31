@@ -1,5 +1,8 @@
-# Given a model return treatment effects
-# (Used as a helper for plotting and printing of results)
+#' Extract baggr study effects
+#'
+#' Internal function used as a helper for plotting and printing of results.
+#'
+#' @export
 
 study_effects <- function(bg, summary = FALSE, interval = .95) {
   if(class(bg) != "baggr")
