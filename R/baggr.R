@@ -5,120 +5,124 @@
 #' individual- or group-level data.
 #' (For overall package help file see \code{?baggr_package})
 #'
-#' @param data data frame with columns 'outcome', 'treatment' and 'site'
+#' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
-#' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param pooling choose from \code{none}, \code{partial} (default) and \code{full}
+#' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
 #'                    (\code{mu}) data exists.
-#' @param standardise logical; determines if data inputs are standardised
 #' @param outcome   character; column name in (individual-level) \code{data} with outcome variable values
-#' @param grouping  character; column name in \code{data} with grouping factor;
+#' @param group     character; column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
 #' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
+#' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
+#'                  (with values between 0 and 1)
+#' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
+#'                  with the same columns as `data` argument (see \code{\link[baggr]{loocv}} for automation)
+#' @param warn print warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
 #' @return `baggr` class structure: list with Stan model fit embedded inside it,
 #'          alongside input data, pooling metrics, various model properties
 #'
 #' @details
-#' This part of documentation is in development.
+#' Most of data preparation steps can be done automatically through \code{\link[baggr]{prepare_ma}}.
+#' Same function can also be used to convert individual level data to aggregate data.
+#' While the preparation step is optional it will also automatically format data inputs to be
+#' immediately recognisable by `baggr()`.
 #'
-#' @author Witold Wiecek
+#' (OTHER SECTIONS OF THIS HELP ARE STILL WORK IN PROGRESS)
+#'
+#'
+#' @author Witold Wiecek, Rachael Meager
+#'
 #' @examples
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 #' "se" = rep(1, 8),
 #' "state" = datasets::state.name[1:8])
 #' baggr(df_pooled) #automatically detects the input data
 #' # correct labels & passing some options to Stan
-#' baggr(df_pooled, grouping = "state", iter = 200)
+#' baggr(df_pooled, group = "state", iter = 200)
+#'
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
+                  log = FALSE, cfb = FALSE,
                   joint_prior = TRUE, standardise = FALSE,
-                  outcome = "outcome", grouping = "site", treatment = "treatment", ...) {
+                  test_data = NULL, quantiles = seq(.05, .95, .1),
+                  outcome = "outcome", group = "group",
+                  treatment = "treatment", baseline = NULL,
+                  warn = TRUE,
+                  ...) {
 
+  # For now we recommend that users format their data before passing to baggr()
+  # data <- prepare_ma(data,
+  #                    standardise = standardise, log = log,
+  #                    summarise = FALSE, cfb = cfb,
+  #                    treatment=treatment, group=group,
+  #                    outcome=outcome, baseline=baseline)
 
-
-  stan_data <- convert_inputs(data, model,
+  stan_data <- convert_inputs(data,
+                              model,
+                              quantiles = quantiles,
                               outcome = outcome,
-                              grouping = grouping,
+                              group = group,
                               treatment = treatment,
-                              standardise = standardise)
-  # model might've been chosen automatically
-  # when we prepared inputs, take note:
+                              test_data = test_data)
+  # model might've been chosen automatically (if NULL)
+  # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
+
 
   # choice whether the parameters have a joint prior or not
   # for now fixed
   if(model != "rubin")
     stan_data[["joint"]] <- joint_prior
 
-  # remember number of sites:
-  n_sites <- attr(stan_data, "n_sites")
+  # remember number of groups:
+  n_groups <- attr(stan_data, "n_groups")
 
+  # labels for what the effect parameters represent:
+  if(model == "quantiles")
+    effects <- paste0(100*quantiles, "% quantile mean")
+  else
+    effects <- "mean"
 
-
-  # default priors
+  # pooling type
   if(pooling %in% c("none", "partial", "full")) {
     # if(model %in% c("rubin", "mutau")) {
-      # switch? separate scripts for each pooling type? third way?
-      stan_data[["pooling_type"]] <- switch(pooling,
-                                            "none" = 0,
-                                            "partial" = 1,
-                                            "full" = 2)
+    # switch? separate scripts for each pooling type? third way?
+    stan_data[["pooling_type"]] <- switch(pooling,
+                                          "none" = 0,
+                                          "partial" = 1,
+                                          "full" = 2)
   } else {
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
 
+  # default priors
   if(is.null(prior)) {
-    message("Automatically setting prior values.")
-    if(model %in% c("rubin")) {
-      stan_data[["prior_upper_sigma_tau"]] <- 5*var(data$tau)
-      message(paste0("sigma_tau ~ Uniform(0, ",
-                     round(stan_data[["prior_upper_sigma_tau"]], 2), ")"))
-      stan_data[["prior_tau_mean"]] <- 0
-      stan_data[["prior_tau_scale"]] <- 1000
-      message(paste0("tau ~ Normal(0, 1000)"))
-    }
-    if(model == "mutau") {
-      # Remember, first row is always mu (baseline), second row is tau (effect)
-      stan_data[["prior_upper_sigma_tau"]] <- c(5*var(data$mu), 5*var(data$tau))
-      message(paste0("sigma_mu ~ Uniform(0, ",
-                     round(stan_data[["prior_upper_sigma_tau"]][1], 2), ")"))
-      message(paste0("sigma_tau ~ Uniform(0, ",
-                     round(stan_data[["prior_upper_sigma_tau"]][2], 2), ")"))
-      stan_data[["prior_tau_mean"]] <- c(0,0)
-      stan_data[["prior_tau_scale"]] <- 1000*diag(2)
-      message(paste0("(mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
-    }
-    if(model == "full") {
-      # empirical variance of outcome:
-      vhat <- var(stan_data[["y"]])
-      message(paste("Prior variance set to 5 times the observed variance in outcome."))
-      stan_data[["P"]] <- 2
-      stan_data[["mutau_prior_mean"]]  <- rep(0, stan_data$P)
-      stan_data[["mutau_prior_sigma"]] <- 5*vhat*diag(stan_data$P)
-    }
+    prior <- auto_prior(data, stan_data, model,
+                        outcome = outcome, quantiles = quantiles)
+
   } else {
     # !!!check for allowed priors here!!!
-    for(nm in names(prior))
-      stan_data[[nm]] <- prior[[nm]]
   }
+  for(nm in names(prior))
+    stan_data[[nm]] <- prior[[nm]]
 
-  # if(warnings)
-    # fit <- rstan::sampling(stan_model, data = stan_data, ...)
   fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
-  # else
-    # fit <- suppressWarnings(rstan::sampling(stan_model, data = stan_data, ...))
 
   result <- list(
     "data" = data,
     "inputs" = stan_data,
-    "n_sites" = n_sites,
+    "prior" = prior,
+    "n_groups" = n_groups,
+    "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
+    "effects" = effects,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model
@@ -127,6 +131,18 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   class(result) <- c("baggr")
 
   result[["pooling_metric"]] <- pooling(result)
+  if(model == "quantiles")
+    result[["quantiles"]] <- quantiles
+
+  # Check convergence
+  rhat <- rstan::summary(fit)$summary[,"Rhat"]
+  rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters
+  if(warn && any(rhat > 1.05))
+    message(paste0("Rhat statistic for ", sum(rhat > 1.05),
+                   " parameters exceeded 1.05, with maximum equal to ",
+                   round(max(rhat),2), ". This suggests lack of convergence.",
+                   "\n No further warning will be issued.",
+                   "\n Stan model saved as $fit in the returned object. \n"))
 
   return(result)
 }

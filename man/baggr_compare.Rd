@@ -4,32 +4,31 @@
 \alias{baggr_compare}
 \title{Compare a(ny) number of baggr models side by side}
 \usage{
-baggr_compare(..., compare = "site", style = "areas", arrange = "single")
+baggr_compare(..., style = "areas", arrange = "single")
 }
 \arguments{
-\item{...}{Either any number of objects of class `baggr`
+\item{...}{Either any number of objects of class \code{baggr}
 (you can name your objects, see example below)
 or the same arguments you'd pass to baggr()
-function, but with `pooling = ...` omitted.
+function, but with \code{pooling = ...} omitted.
 In the latter case 3 models will be run, with
-pooling set to `none`, `partial` and `full`.}
+pooling set to \code{none}, \code{partial} and \code{full}.}
 
-\item{compare}{can be 'site' (compare different sites in each model),
-or 'ate' (compare aggregate treatment effects only)}
+\item{style}{What kind of plot to display - see options for \code{plot.baggr}}
 
-\item{style}{What kind of plot to display - see options for `plot.baggr`}
-
-\item{arrange}{If `single`, generate a single plot, if `grid`
+\item{arrange}{If \code{single}, generate a single plot, if \code{grid}
 display multiple plots side-by-side.}
 }
 \value{
 ggplot is plotted and an extra comparison printed.
-        Returned value is a list that contains
-        the models, the plot and printed summaries. (WIP)
+Returned value is a list that contains
+the models, the plot and printed summaries. (WIP)
 }
 \description{
 Compare a(ny) number of baggr models side by side
 }
 \author{
 Witold Wiecek
+
+Witold Wiecek, Rachael Meager
 }

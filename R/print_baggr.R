@@ -18,41 +18,51 @@
 #'
 
 print.baggr <- function(x, ...) {
-  cat(crayon::red("---this Baggr printing module is under construction---\n\n"))
-  cat("Model type:", crayon::bold(x$model), "\n")
+  # cat(crayon::red("---this Baggr printing module is under construction---\n\n"))
+  cat("Model type:", crayon::bold(model_names[x$model]), "\n")
   cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
   cat("\n")
 
-
-  cat("Aggregate treatment effect:\n")
+  cat(crayon::bold("Aggregate treatment effect:\n"))
   if(x$pooling == "none") {
-    cat("No treatment effect estimated as pooling = 'none'.\n")
+    cat("No treatment effect estimated as pooling = 'none'.\n\n")
   } else {
+    # Means:
     te <- treatment_effect(x)
-    tau <- te[[1]]; sigma_tau <- te[[2]]
-    cat("Mean(tau) = ", round(mean(tau), 2), "; 95% interval", round(quantile(tau, .025),2), "to", round(quantile(tau, .975), 2))
-    cat("\n")
-    if(x$pooling == "partial")
-      cat("SD(tau) = ", round(mean(sigma_tau), 2), "; 95% interval",
-          round(quantile(sigma_tau, .025), 2), "to", round(quantile(sigma_tau, .975), 2), "\n")
-    if(x$pooling == "full")
-      cat("(SD(tau) undefined.)\n")
-    cat("\n")
+    #trim=T avoids whitespace in place of minus sign
+    if(x$model != "quantiles"){
+      tau       <- format(mint(te[[1]]), digits = 2, trim = T)
+      sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
+      cat("Mean(tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
+      if(x$pooling == "partial")
+        cat("SD(tau) =", sigma_tau[2], "with 95% interval", sigma_tau[1], "to", sigma_tau[3], "\n")
+    } else { #quantiles
+      tau <- mint(te[[1]])
+      sigma_tau <- mint(te[[2]])
+      rownames(tau) <- rownames(sigma_tau) <- paste0(100*x$quantiles, "% quantile")
+      print(tau, digits = 2)
+      if(x$pooling == "partial"){
+        cat(crayon::bold("\nSD of treatement effects:"))
+        print(sigma_tau, digits = 2)
+      }
+    }
   }
+  if(x$pooling == "full")
+    cat("(SD(tau) undefined.)\n")
+  cat("\n")
+
   if(x$pooling != "full") {
-    cat("Study effects:\n")
-    study_eff_tab <- t(apply(study_effects(x), 2,
-                             function(x) c("mean" = mean(x), "sd" = sd(x))))
-    names(dimnames(study_eff_tab))[1] <- ""
+    # study_eff_tab <- apply(study_effects(x), c(2,3),
+                             # function(x) c("mean" = mean(x), "sd" = sd(x)))
+    study_eff_tab <- study_effects(x, summary = TRUE)
     # attach pooling metric:
-    study_eff_tab <- cbind(study_eff_tab, pooling(x)[,2])
-
-    colnames(study_eff_tab) <- c("mean", "SD", "pooling")
-    print(study_eff_tab, digits = 2)
+    pooling_tab <- pooling(x, summary = TRUE)
+    for(i in 1:dim(study_eff_tab)[3]){
+      cat(paste0("Treatment effects on ", x$effects[i] , ":\n"))
+      tab <- cbind(study_eff_tab[,c("mean", "sd"),i], pooling = pooling_tab[2,,i])
+      print(tab, digits = 2)
+    }
     cat("\n")
   }
-
-
   invisible(x)
 }
-

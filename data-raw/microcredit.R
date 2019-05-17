@@ -6,9 +6,9 @@ load("data-raw/microcredit_project_data.RData")
 
 # This preps data so that the model can be written efficiently -
 # it's not necessary but it's the best way I know to code it in STAN
-site <- c( attanasio_indicator, augsberg_indicator,
+group <- c( attanasio_indicator, augsberg_indicator,
            banerjee_indicator, crepon_indicator)
-site <- site - 1
+group <- group - 1
 consumerdurables <- c( attanasio_consumerdurables,
                        augsberg_consumerdurables,banerjee_consumerdurables,
                        crepon_consumerdurables)
@@ -30,13 +30,13 @@ expanded_standardiser_USD_PPP_per_fortnight <- c(
 consumerdurables <- consumerdurables*expanded_standardiser_USD_PPP_per_fortnight
 
 # bind everything into a data frame
-data <- data.frame(site, consumerdurables, treatment)
+data <- data.frame(group, consumerdurables, treatment)
 
 # We gotta remove the NA values for analyses
 data <- data[complete.cases(data),]
 
 # WW: now export for use in the package
 microcredit_simplified <- data
-# names(microcredit) <- c("site", "outcome", "treatment")
-devtools::use_data(microcredit_simplified)
+# names(microcredit) <- c("group", "outcome", "treatment")
+devtools::use_data(microcredit_simplified, overwrite = TRUE)
 

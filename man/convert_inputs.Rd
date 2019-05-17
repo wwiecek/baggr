@@ -2,38 +2,38 @@
 % Please edit documentation in R/convert_inputs.R
 \name{convert_inputs}
 \alias{convert_inputs}
-\title{Convert inputs for baggr Stan models}
+\title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, grouping = "site", outcome = "outcome",
-  treatment = "treatment", standardise = FALSE)
+convert_inputs(data, model, quantiles, group = "group",
+  outcome = "outcome", treatment = "treatment", test_data = NULL)
 }
 \arguments{
-\item{data}{data.frame with desired modelling input}
+\item{data}{`data.frame`` with desired modelling input}
 
 \item{model}{valid model name used by baggr;
 see \code{?baggr} for allowed models}
 
-\item{grouping}{name of the column with grouping variable}
+\item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
+
+\item{group}{name of the column with grouping variable}
 
 \item{outcome}{name of column with outcome variable}
 
 \item{treatment}{name of column with treatment variable}
 
-\item{standardise}{logical; whether to standardise data when converting}
+\item{test_data}{same format as \code{data} argument, gets left aside for testing purposes (see \code{link{baggr}})}
 }
 \value{
 data.frame of class baggr_data that baggr() uses
 }
 \description{
-Allows conversions from full to reduced (summary) data and
-in summary between long (control and treatment on separate rows)
-and wide data (control and treatment in separate columns).
+Convert inputs for baggr models
 }
 \details{
 The conversions will typically happen automatically when data is fed to baggr()
-function. This function can be used to explicitly convert from full to reduced
-data without analysing it in a model.
+function. This function can be used to explicitly obtain inputs formatted the way
+that Stan models use data.
 }
 \author{
-Witold Wiecek
+Witold Wiecek, Rachael Meager
 }

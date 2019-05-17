@@ -8,15 +8,16 @@ Maintainer: Witold Wiecek <witold.wiecek@gmail.com>
 Description: Running and comparing meta-analyses of data with hierarchical 
     Bayesian models in Stan, including convenience functions for formatting
     data, plotting and pooling measures specific to meta-analysis.
-License: GPL
+License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 Depends: R (>= 3.4.0), Rcpp (>= 0.12.17), methods
-Imports: rstan (>= 2.17.3), rstantools (>= 1.5.0), bayesplot, crayon, dplyr, ggplot2, gridExtra, tidyr
-LinkingTo: StanHeaders (>= 2.17.2), rstan (>= 2.17.3), BH (>= 1.66.0-1), Rcpp (>= 0.12.17), RcppEigen (>= 0.3.3.4.0)
+Imports: rstan (>= 2.17.3), rstantools (>= 1.5.0), bayesplot, crayon, dplyr, ggplot2, gridExtra, quantreg, utils, stats
+LinkingTo: StanHeaders (>= 2.18.1), rstan (>= 2.18.1), BH (>= 1.66.0-1), Rcpp (>= 0.12.17), RcppEigen (>= 0.3.3.4.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
+Roxygen: list(markdown = TRUE)
 Suggests: testthat, knitr
 VignetteBuilder: knitr

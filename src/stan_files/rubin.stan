@@ -7,6 +7,12 @@ data {
   real prior_upper_sigma_tau;
   real prior_tau_mean;
   real prior_tau_scale;
+
+  //cross-validation variables:
+  int<lower=0> K_test; // number of sites
+  real test_tau_hat_k[K_test]; // estimated treatment effects
+  real<lower=0> test_se_k[K_test]; // s.e. of effect estimates
+
 }
 transformed data {
   int K_pooled; // number of modelled sites if we take into account pooling
@@ -41,7 +47,15 @@ model {
     }
 }
 
-generated quantities{
-  // real predicted_tau_k;
-  // predicted_tau_k = normal_rng(tau, sigma_tau);
+generated quantities {
+  real logpd = 0;
+  if(K_test > 0){
+    for(k in 1:K_test){
+      //sigma_tau[p,p] is questionable!
+      if(pooling_type == 1)
+        logpd += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(sigma_tau^2 + test_se_k[k]^2));
+      if(pooling_type == 2)
+        logpd += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(test_se_k[k]^2));
+    }
+  }
 }
