@@ -6,6 +6,16 @@
 \usage{
 study_effects(bg, summary = FALSE, interval = 0.95)
 }
+\arguments{
+\item{bg}{baggr object}
+
+\item{summary}{logical; summarise result?}
+
+\item{interval}{uncertainy interval width (numeric between 0 and 1) if summarising}
+}
+\value{
+a matrix with MCMC samples or summaries
+}
 \description{
 Internal function used as a helper for plotting and printing of results.
 }
