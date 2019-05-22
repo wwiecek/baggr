@@ -6,3 +6,5 @@
 ^README.Rmd
 ^data-raw
 ^cran-comments.md
+^doc$
+^Meta$

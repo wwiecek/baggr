@@ -20,3 +20,15 @@ ggplot2 object
 Plot results for baggr quantile models. Displays results facetted per group.
 Results are \code{ggplot2} plots and can be modified.
 }
+\examples{
+bg <- baggr(microcredit_simplified, model = "quantiles",
+            quantiles = c(.1, .2, .35, .5, .65, .75), iter = 1000,
+            outcome = "consumerdurables")
+#vanilla plot
+plot_quantiles(bg)
+
+plot_quantiles(bg, hline = TRUE) +
+  coord_cartesian(ylim = c(-2, 2)) +
+  ggtitle("Works like a ggplot2 plot!")
+
+}

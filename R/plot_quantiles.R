@@ -9,7 +9,7 @@
 #'
 #' @return ggplot2 object
 #'
-#' @example
+#' @examples
 #' bg <- baggr(microcredit_simplified, model = "quantiles",
 #'             quantiles = c(.1, .2, .35, .5, .65, .75), iter = 1000,
 #'             outcome = "consumerdurables")

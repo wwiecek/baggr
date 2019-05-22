@@ -50,7 +50,7 @@ test_that("Error messages for wrong inputs are in place", {
   # wrong column stops from finding what kind of data we're working with...
   expect_error(baggr(microcredit, outcome = "blabla"), "no column")
   # Default column doesn't exist
-  expect_error(baggr(microcredit, model = "quantiles"), "There's no column outcome")
+  expect_error(baggr(microcredit, model = "quantiles"), "There's no column ")
   # NA values are not allowed by default
   expect_error(baggr(microcredit, model = "quantiles",
                      quantiles = c(.1, .3, .5, .9), outcome = "profit"),

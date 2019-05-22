@@ -50,13 +50,12 @@
 #' @export
 
 baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
-                  log = FALSE, cfb = FALSE,
-                  joint_prior = TRUE, standardise = FALSE,
+                  # log = FALSE, cfb = FALSE, standardise = FALSE,
+                  # baseline = NULL,
+                  joint_prior = TRUE,
                   test_data = NULL, quantiles = seq(.05, .95, .1),
-                  outcome = "outcome", group = "group",
-                  treatment = "treatment", baseline = NULL,
-                  warn = TRUE,
-                  ...) {
+                  outcome = "outcome", group = "group", treatment = "treatment",
+                  warn = TRUE, ...) {
 
   # For now we recommend that users format their data before passing to baggr()
   # data <- prepare_ma(data,

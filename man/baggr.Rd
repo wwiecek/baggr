@@ -5,18 +5,17 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  log = FALSE, cfb = FALSE, joint_prior = TRUE,
-  standardise = FALSE, test_data = NULL, quantiles = seq(0.05, 0.95,
+  joint_prior = TRUE, test_data = NULL, quantiles = seq(0.05, 0.95,
   0.1), outcome = "outcome", group = "group",
-  treatment = "treatment", baseline = NULL, warn = TRUE, ...)
+  treatment = "treatment", warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
 
 \item{model}{if \code{NULL}, detected automatically from input data
-otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
+otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}}
 
-\item{prior}{list of prior arguments passed directly to each model as a vector of strings (see Details)}
+\item{prior}{list of prior arguments passed directly to each model (see Details)}
 
 \item{pooling}{choose from \code{none}, \code{partial} (default) and \code{full}}
 
@@ -58,8 +57,6 @@ Most of data preparation steps can be done automatically through \code{\link[bag
 Same function can also be used to convert individual level data to aggregate data.
 While the preparation step is optional it will also automatically format data inputs to be
 immediately recognisable by \code{baggr()}.
-
-The "prior" argument currently requires you to specify all priors if you are passing any manually. They should be specified as a vector of string arguments with names specific to the model you are using (see the vignette for more details).
 
 (OTHER SECTIONS OF THIS HELP ARE STILL WORK IN PROGRESS)
 }
