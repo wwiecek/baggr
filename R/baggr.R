@@ -7,7 +7,7 @@
 #'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
-#'              otherwise choose from \code{rubin}, \code{mutau}, \code{individual}
+#'              otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}
 #' @param pooling choose from \code{none}, \code{partial} (default) and \code{full}
 #' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.

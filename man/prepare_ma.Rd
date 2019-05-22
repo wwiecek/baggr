@@ -16,6 +16,20 @@ with columns \code{outcome} (numeric),
 
 \item{standardise}{logical; if TRUE, values of outcome
 are standardised within each group}
+
+\item{log}{logical; log-transform data?}
+
+\item{cfb}{logical; calculate change from baseline?}
+
+\item{summarise}{logical; convert to aggregate level data?}
+
+\item{treatment}{name of column with treatment variable}
+
+\item{baseline}{name of column with baseline variable}
+
+\item{group}{name of the column with grouping variable}
+
+\item{outcome}{name of column with outcome variable}
 }
 \value{
 data.frame with columns \code{mu}, \code{se.mu},
@@ -31,8 +45,8 @@ when data is fed to baggr(). However, this function can be used to explicitly
 convert from full to reduced data without analysing it in any model.
 }
 \seealso{
-\code{\link{convert_inputs}}
+\code{\link{convert_inputs}} for how data is converted into Stan inputs
 }
 \author{
-Witold Wiecek, Rachael Meager
+Witold Wiecek
 }
