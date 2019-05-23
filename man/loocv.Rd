@@ -7,34 +7,41 @@
 loocv(data, return_models = FALSE, ...)
 }
 \arguments{
-\item{data}{Input data frame - same as for \code{baggr()} function.}
+\item{data}{Input data frame - same as for \link{baggr} function.}
 
 \item{return_models}{logical; if FALSE, summary statistics will be returned and the
 models discarded;
 if TRUE, a list of models will be returned alongside summaries}
 
-\item{...}{Additional arguments passed to \code{baggr()}.}
+\item{...}{Additional arguments passed to \link{baggr}.}
 }
 \value{
-A data.frame of results and list of baggr models
+log predictive density value, an object of class \code{baggr_cv};
+full model, prior values and \emph{lpd} of each model are also returned
+these can be examined by using \code{attributes()} function
 }
 \description{
-Leave one out cross-validation for \code{baggr} models
+Creates $k$ \code{baggr} models by leaving out one group at the time
+and calculating log predictive density \eqn{lpd_{k}}
+for that group (see Gelman \emph{et al}). Returned value is a \eqn{-2\sum lpd_{k}}.
+Inputs to this function are same as to \link{baggr}, with additional
+option to return individual models.
 }
 \details{
-For each model we calculate log predictive density l.p.d. (TBC)
+\strong{Under construction}
 }
 \examples{
 #even simple examples may take a long moment
-loocv(schools, pooling = "partial")
-loocv(schools, pooling = "full")
+cv <- loocv(schools, pooling = "partial")
+print(cv) #returns the lpd value
+attributes(cv) #more information is included in the object
 
 }
 \references{
 Gelman A, Hwang J, Vehtari A.
 Understanding predictive information criteria for Bayesian models.
 Statistics and Computing. 2014 Nov 24(6):997-1016.
-\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{(PDF link)}
+\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{PDF link.}
 }
 \author{
 Witold Wiecek
