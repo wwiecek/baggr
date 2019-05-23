@@ -17,9 +17,13 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 
 
-# baggr
+# _baggr_
 
-`baggr` (pronounced as _bagger_ or _badger_) is a Bayesian meta-analysis package for R using [Stan](https://mc-stan.org/). `baggr` is intended to be user-friendly and transparent so that it's easier to understand the models you are building and criticise them. The current version is a stable prototype of a tool that's in active development so we are counting on your feedback.
+This is _baggr_ (pronounced as _bagger_ or _badger_), a Bayesian meta-analysis package for R using [Stan](https://mc-stan.org/). _Baggr_ is intended to be user-friendly and transparent so that it's easier to understand the models you are building and criticise them. The current version is a stable prototype of a tool that's in active development so we are counting on your feedback.
+
+_Baggr_ provides a suite of Bayesian aggregation models for both summary statistics and full data sets to synthesise evidence collected from different groups, contexts or time periods. 
+
+The `baggr()` command automatically detects the data type and, by default, fits Rubin's (1981) partial pooling model with weakly informative priors by calling Stan under the hood. Modelling of variances or quantiles, standardisation and transformation of data is also possible.
 
 
 
@@ -40,16 +44,23 @@ devtools::install_github("wwiecek/baggr",
 
 ## Basic use case
 
-`baggr` is designed to work well with both individual-level ("full") and aggregate/summary ("group") data on treatment effect. In basic cases only the summary information on treatment effects (such as means and their standard errors) is needed. Data are always specified in a single data frame and the same `baggr()` function is used for all models. For the "standard" cases of modelling means, the appropriate model is detected from the shape of data:
+`baggr` is designed to work well with both individual-level ("full") and aggregate/summary ("group") data on treatment effect. In basic cases only the summary information on treatment effects (such as means and their standard errors) is needed. Data are always specified in a single data frame and the same `baggr()` function is used for all models. 
+
+For the "standard" cases of modelling means, the appropriate model is detected from the shape of data.
 
 ```{r, eval = FALSE}
 library(baggr)
 df_pooled <- data.frame("tau" = c(28,8,-3,7,-1,1,18,12),
                         "se"  = c(15,10,16,11,9,11,10,18))
-bgfit <- baggr(df_pooled, pooling = "full")
+bgfit <- baggr(df_pooled, pooling = "partial")
 ```
 
+The user has access to the underlying `stanfit` object and full joint posterior distribution at all times. The user can also specify the model type from several choices, the pooling type (none, partial or full), and certain aspects of the priors. 
+
+
 Flexible plotting methods are included, together with automatic comparison of multiple models (e.g. comparing no, partial and full pooling). Try `vignette('baggr')` for example of meta-analysis workflow with `baggr`. 
+
+In particular, the `baggr_compare()` command automatically runs the no-pooling, partial-pooling and full-pooling version of the chosen model, and compares them by producing a `ggplot2` graphic. The baggr package's `loocv()` command automatically performs leave-one-group-out cross-validation, allowing us to criticise and compare models.
 
 
 

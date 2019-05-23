@@ -26,7 +26,7 @@ my_baggr_plot <- baggr_compare(schools)
 
 
 
-_This vignette is under construction._
+_This vignette is - like the package itself - still under construction. We encourage your feedback._
 
 _Baggr_ (pronounced "bagger" or "badger" and short for Bayesian Aggregator) is a package for aggregating evidence on causal effects measured in several separate and different instances. These instances may be different studies, groups, locations or "sites" however conceptualised. We refer to these separate pieces of evidence as "groups" for the remainder of this document. When each group is a study, the user is typically doing meta-analysis, but aggregation is not limited to this case.
 
@@ -150,27 +150,29 @@ Other warnings you may see involve "divergent transitions". While not as serious
 
 
 
-# Plotting and model comparison in _baggr_
+## Plotting and model comparison in _baggr_
 
-The first step to understanding the model is to plot the posterior inference. _baggr_ has several automatic plot functions using the command baggr_plot() which calls bayesplot under the hood.  This command takes in a _baggr_ object as its argument and automatically generates a plot of the posterior mean and central 95\% posterior intervals of the effects in each group. Here we have the plot for the 8 schools Rubin model, and I've opted not to order by effect size because I prefer alphabetical.
+A fundamental step to understanding the model is to plot the posterior distributions. _baggr_ has several automatic plot functions which you can access by calling `baggr_plot()`; these visuals are based on `bayesplot` package. 
+Plotting functions always take `baggr` class object as their first argument. By default, means and 95\% posterior intervals of the effects _in each group_ are shown. Extra options are available, such as whether to order the results by effect size. For the 8 schools Rubin model we have
 
 ```{r }
 baggr_plot(baggr_schools, order = FALSE)
 ```
 
-The second step to understanding the model is to compare it to other models we could have fit: this can be done automatically in _baggr_ using the command baggr_compare. The default Rubin model (which we have selected explicitly above) is partial pooling. If you run the code below, _baggr_ will fit the full pooling, no pooling and partial pooling versions of the Rubin model and print the results of each for you in the console:
+The second step to understanding the model is to compare it to other models we could have fit: this can be done automatically in _baggr_ using the command `baggr_compare`. The default Rubin model (which we have selected explicitly above) is that of partial pooling. When using `baggr_compare` without any extra arguments, full pooling, no pooling and partial pooling versions of the model will be fit:
 
 ```{r eval=FALSE}
 baggr_compare(schools)
 ```
 
-The baggr_compare command also produces an automatic comparison plot made by calling ggplot2 under the hood, in a format we've tweaked in `ggplot2` to look pretty (we think). Because the output object of baggr_compare is a `ggplot` object you can edit it further yourself and built on it as you would any `ggplot` object. For example, the default title for the plot is just "mean", so here I've changed it to be more descriptive:
+Different comparisons, e.g. of models using different priors, are also possible. 
 
-```{r eval=FALSE}
+__[Here we will include a comparison of priors for 8 schools model]__
+
+The `baggr_compare` command also produces an automatic comparison plot made by calling `ggplot2` under the hood. Because the output object of baggr_compare is a `ggplot` object you can edit it further yourself and built on it as you would any `ggplot` object. For example, the default title for the plot is just "mean", so here I've changed it to be more descriptive:
+
+```{r eval=FALSE, fig.width=7, fig.height=4}
 my_baggr_plot <- baggr_compare(schools)
-```
-
-```{r fig.width=7, fig.height=4}
 my_baggr_plot$plot + ggtitle("8 Schools Model Comparison")
 ```
 
@@ -178,7 +180,7 @@ my_baggr_plot$plot + ggtitle("8 Schools Model Comparison")
 
 ## Cross-validation in _baggr_
 
-Baggr has automated leave-one-out cross validation for its models, where the "one" always refers to one group. This naturally corresponds to the question of how much any one group has contributed to the overall inference, which is often pertinent. Therefore, if you have K groups, using the loocv() _baggr_ command entails running your model of choice K times. Be aware that this may take a while even for simple models. The loocv() _baggr_ command takes in a data argument, the option for whether to return all the models or just the summary statistics, and then the usual _baggr_ arguments such as which model and what kind of pooling. For example the code below does leave-one-school-out cross-validation on the Rubin model with partial pooling.
+_Baggr_ has automated leave-one-out cross validation for its models, where the "one" always refers to one group. This naturally corresponds to the question of how much any one group has contributed to the overall inference. Therefore, if you have $K$ groups, using the `loocv()` entails running your model of choice $K$ times. Be aware that this may take a while even for simple models. The `loocv()` function takes in the same arguments as `baggr()`, plus an  option for whether to return all the models or just the summary statistics. For the 8 schools example we can do
 
 ```{r loocv, eval = FALSE}
 loocv(schools, return_models = FALSE, "rubin", pooling = "partial")

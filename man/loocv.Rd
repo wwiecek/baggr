@@ -28,7 +28,9 @@ Inputs to this function are same as to \link{baggr}, with additional
 option to return individual models.
 }
 \details{
-\strong{Under construction}
+\strong{It is recommended to set \code{mc.cores} option before running \code{loocv}, e.g. \code{options(mc.cores = 4)}.}
+
+\strong{This section is under construction}
 }
 \examples{
 #even simple examples may take a long moment
