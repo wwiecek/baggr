@@ -114,6 +114,8 @@ loocv <- function(data, return_models = FALSE, ...) {
 
   tau_estimate <-
     lapply(kfits, function(x) mean(treatment_effect(x)[[1]]))
+  sd_estimate <-
+    lapply(kfits, function(x) mean(treatment_effect(x)[[2]]))
   loglik <-
     lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd"), 2, mean))
 
@@ -121,6 +123,7 @@ loocv <- function(data, return_models = FALSE, ...) {
     -2*sum(unlist(loglik)),
     df = data.frame(
       "tau" = unlist(tau_estimate),
+      "sigma_tau" = unlist(sd_estimate),
       "lpd" = unlist(loglik)),
     full_model = full_fit,
     prior = args[["prior"]]

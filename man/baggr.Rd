@@ -53,12 +53,29 @@ individual- or group-level data.
 (For overall package help file see \code{?baggr_package})
 }
 \details{
-Most of data preparation steps can be done automatically through \code{\link[baggr]{prepare_ma}}.
-Same function can also be used to convert individual level data to aggregate data.
+Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
+All three are discussed in depth in \href{baggr.html}{the package vignette}.
+
+\strong{Data.} For aggregate data models you need a data frame with columns \code{tau} and \code{se} or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu}.
+For individual level data three columns are needed: outcome, treatment, group. These
+are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
+
+Most of data preparation steps (summarising, standardisation etc.) can be done
+automatically through \code{\link[baggr]{prepare_ma}}.
 While the preparation step is optional it will also automatically format data inputs to be
 immediately recognisable by \code{baggr()}.
 
-(OTHER SECTIONS OF THIS HELP ARE STILL WORK IN PROGRESS)
+\strong{Models.} Available models are:
+\itemize{
+\item for the means: \code{"rubin"`` model for average treatment effect, }"mutau"\code{version which takes into account means in control group,}"full"`` model which reduces to "mu and tau" (if no covariates are used)
+\item "quantiles" model is also available (see Meager, 2019 and \href{baggr.html}{vignette} for details)
+}
+
+If no model is specified, the function tries to infer the appropriate model automatically.
+
+\strong{Priors.} It is optional to specify priors yourself, as the package will try propose an appropriate
+prior for the input data if \code{prior=NULL}.
+To priors yourself, please refer to the list in the \href{baggr.html}{vignette}.
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),

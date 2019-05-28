@@ -29,12 +29,30 @@
 #'          alongside input data, pooling metrics, various model properties
 #'
 #' @details
-#' Most of data preparation steps can be done automatically through \code{\link[baggr]{prepare_ma}}.
-#' Same function can also be used to convert individual level data to aggregate data.
+#'
+#' Running `baggr` requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
+#' All three are discussed in depth in [the package vignette](baggr.html).
+#'
+#' __Data.__ For aggregate data models you need a data frame with columns `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
+#' For individual level data three columns are needed: outcome, treatment, group. These
+#' are identified by using the `outcome`, `treatment` and `group` arguments.
+#'
+#' Most of data preparation steps (summarising, standardisation etc.) can be done
+#' automatically through \code{\link[baggr]{prepare_ma}}.
 #' While the preparation step is optional it will also automatically format data inputs to be
 #' immediately recognisable by `baggr()`.
 #'
-#' (OTHER SECTIONS OF THIS HELP ARE STILL WORK IN PROGRESS)
+#' __Models.__ Available models are:
+#'
+#' * for the means: `"rubin"`` model for average treatment effect, `"mutau"` version which takes into account means in control group, `"full"`` model which reduces to "mu and tau" (if no covariates are used)
+#' * "quantiles" model is also available (see Meager, 2019 and [vignette](baggr.html) for details)
+#'
+#'  If no model is specified, the function tries to infer the appropriate model automatically.
+#'
+#' __Priors.__ It is optional to specify priors yourself, as the package will try propose an appropriate
+#' prior for the input data if `prior=NULL`.
+#' To priors yourself, please refer to the list in the [vignette](baggr.html).
+#'
 #'
 #'
 #' @author Witold Wiecek, Rachael Meager
