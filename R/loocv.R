@@ -138,10 +138,8 @@ loocv <- function(data, return_models = FALSE, ...) {
   return(out)
 }
 
-
-
 #' @export
 print.baggr_cv <- function(x, ...) {
   attributes(x) <- NULL
-  print(x)
+  print(paste("log predictive density = ", format(x)))
 }

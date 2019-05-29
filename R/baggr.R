@@ -150,7 +150,10 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   result[["pooling_metric"]] <- pooling(result)
   if(model == "quantiles")
     result[["quantiles"]] <- quantiles
-
+  if(!is.null(test_data)){
+    result[["test_data"]] <- test_data
+    result[["mean_lpd"]] <- mean(rstan::extract(fit, "logpd")[[1]])
+  }
   # Check convergence
   rhat <- rstan::summary(fit)$summary[,"Rhat"]
   rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters

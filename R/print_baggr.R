@@ -64,5 +64,9 @@ print.baggr <- function(x, ...) {
     }
     cat("\n")
   }
+
+  if(!is.null(x[["mean_lpd"]]))
+    cat("Cross-validation result: mean lpd =", crayon::bold(format(x$mean_lpd)), "\n")
+
   invisible(x)
 }
