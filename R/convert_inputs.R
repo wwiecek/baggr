@@ -1,18 +1,25 @@
 #' @title Convert inputs for baggr models
 #'
+#' Converts data to Stan inputs, checks intergrity of data
+#' and suggests default model if needed.
+#'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
-#'              see \code{?baggr} for allowed models
+#'              see [baggr()] for allowed models
+#'              if `model = NULL`, this function will try to find appropriate model
+#'              automatically
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
-#' @param test_data same format as `data` argument, gets left aside for testing purposes (see \code{link{baggr}})
-#' @return data.frame of class baggr_data that baggr() uses
-#' @details
-#' The conversions will typically happen automatically when data is fed to baggr()
-#' function. This function can be used to explicitly obtain inputs formatted the way
-#' that Stan models use data.
+#' @param test_data same format as `data` argument, gets left aside for
+#'                  testing purposes (see [baggr()] and [loocv()])
+#' @return R structure that's appropriate for use by [baggr()] Stan models;
+#'         `group_label`, `model` and `n_groups` are incuded as attributes
+#'         and are necessary for [baggr()] to work correctly
+#' @details Typically this function is only called within [baggr()] and you do
+#'          not need to use it yourself. It can be useful to understand inputs
+#'          or to run models which you modified yourself.
 #' @author Witold Wiecek, Rachael Meager
 #' @export
 

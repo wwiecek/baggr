@@ -22,8 +22,9 @@
 #'
 #' @details
 #' The conversions are typically not needed and may happen automatically
-#' when data is fed to baggr(). However, this function can be used to explicitly
+#' when data is fed to [baggr()]. However, this function can be used to explicitly
 #' convert from full to reduced data without analysing it in any model.
+#' It can be useful for examining your data.
 #'
 #' @author Witold Wiecek
 #' @seealso \code{\link{convert_inputs}} for how data is converted into Stan inputs
