@@ -31,8 +31,8 @@ summarise_quantiles_data <- function(data, quantiles,
     stop("Vector of quantiles should be strictly monotonic")
   if(N < 2)
     stop("At least 2 quantiles needed")
-  if(K < 2)
-    stop("Needs at least 2 groups to summarise data for")
+  # if(K < 2)
+    # stop("Needs at least 2 groups to summarise data for")
 
   check_columns(data, outcome, group, treatment)
 
@@ -59,10 +59,10 @@ summarise_quantiles_data <- function(data, quantiles,
   }, data = data)
 
   # Proceed carefully, as the ordering of columns is crucial here!
-  y_0    <- calc$outcome[calc$treatment == 0, 2*(1:length(quantiles)) - 1]
-  y_0_se <- calc$outcome[calc$treatment == 0, 2*(1:length(quantiles))]
-  y_1    <- calc$outcome[calc$treatment == 1, 2*(1:length(quantiles)) - 1]
-  y_1_se <- calc$outcome[calc$treatment == 1, 2*(1:length(quantiles))]
+  y_0    <- calc$outcome[calc$treatment == 0, 2*(1:length(quantiles)) - 1, drop = F]
+  y_0_se <- calc$outcome[calc$treatment == 0, 2*(1:length(quantiles)), drop = F]
+  y_1    <- calc$outcome[calc$treatment == 1, 2*(1:length(quantiles)) - 1, drop = F]
+  y_1_se <- calc$outcome[calc$treatment == 1, 2*(1:length(quantiles)), drop = F]
   colnames(y_0) <- colnames(y_1) <- quantiles
   rownames(y_0) <- calc$group[calc$treatment == 0]
   rownames(y_1) <- calc$group[calc$treatment == 1]

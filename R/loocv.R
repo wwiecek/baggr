@@ -47,7 +47,7 @@ loocv <- function(data, return_models = FALSE, ...) {
 
   # Set parallel up...
   if(is.null(getOption("mc.cores"))){
-    cat(paste0("loocv() automatically set options(mc.cores = parallel::detectCores()) \n"))
+    cat(paste0("loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
     temp_cores <- TRUE
     options(mc.cores = parallel::detectCores())
   } else {
@@ -59,7 +59,6 @@ loocv <- function(data, return_models = FALSE, ...) {
   if(class(full_fit) == "try-error")
     stop("Inference failed for the full model")
 
-
   # Prepare the arguments
   args[["data"]] <- data
   args[["model"]] <- full_fit$model
@@ -69,7 +68,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   }
 
   # Determine number and names of groups
-  if(args[["model"]] == "full") {
+  if(args[["model"]] %in% c("full", "quantiles")) {
     if(!is.null(args[["group"]]))
       group_col <- args[["group"]]
     else
@@ -86,12 +85,11 @@ loocv <- function(data, return_models = FALSE, ...) {
     message(paste0("Repeating baggr() for ", K, " separate models"))
   }
 
-
   # LOO CV models
   cat("\n")
   pb <- utils::txtProgressBar(style = 3)
   kfits <- lapply(as.list(1:K), function(i) {
-    if(args[["model"]] == "full") {
+    if(args[["model"]] %in% c("full", "quantiles")) {
       args$data      <- data[data[[group_col]] != group_names[i], ]
       args$test_data <- data[data[[group_col]] == group_names[i], ]
     } else {
@@ -101,13 +99,16 @@ loocv <- function(data, return_models = FALSE, ...) {
 
     utils::setTxtProgressBar(pb, (i-1)/K)
 
-    # Run baggr models but sinking their outputs
-    res <- try(do.call(baggr, args))
-    if(class(res) == "try-error") {
-      stop(paste0("Inference failed for model number ", i, " out of ", K))
-    } else {
-      return(res)
-    }
+    # Run baggr models:
+    res <- do.call(baggr, args)
+
+    # Sanitized version:
+    # res <- try(do.call(baggr, args))
+    # if(class(res) == "try-error") {
+    #   stop(paste0("Inference failed for model number ", i, " out of ", K))
+    # } else {
+    #   return(res)
+    # }
   })
   utils::setTxtProgressBar(pb, 1)
   close(pb)

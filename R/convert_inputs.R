@@ -20,6 +20,10 @@
 #' @details Typically this function is only called within [baggr()] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
+#'
+#'          For quantile models, [summarise_quantiles_data()] is called from within
+#'          this function.
+#'
 #' @author Witold Wiecek, Rachael Meager
 #' @export
 
@@ -84,7 +88,6 @@ convert_inputs <- function(data,
     group_numeric <- as.numeric(groups)
     group_label <- levels(groups)
 
-
     if(model == "full")
       out <- list(
         K = max(group_numeric),
@@ -101,9 +104,24 @@ convert_inputs <- function(data,
       if(length(quantiles) < 2)
         stop("cannot model less then 2 quantiles")
       data[[group]] <- group_numeric
-      message("Data have been automatically summarised for quantiles model.")
       out <- summarise_quantiles_data(data, quantiles,
                                       outcome, group, treatment)
+      message("Data have been automatically summarised for quantiles model.")
+    }
+
+    # Cross-validation:
+    if(is.null(test_data)){
+      out$K_test <- 0
+      out$test_tau_hat_k <- array(0, dim = 0)
+      out$test_se_k <- array(0, dim = 0)
+    } else {
+      out_test <- summarise_quantiles_data(test_data, quantiles,
+                                      outcome, group, treatment)
+      out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles
+      out$test_y_0 <- out_test$y_0
+      out$test_y_1 <- out_test$y_1
+      out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
+      out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
     }
   }
 

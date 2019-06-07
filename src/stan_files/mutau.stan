@@ -80,14 +80,14 @@ if(pooling_type == 2) {
 }
 
 generated quantities {
-  real loglik = 0;
+  real logpd = 0;
   if(K_test > 0)
     for(k in 1:K_test){
       for(p in 1:P) {
       //sigma_tau[p,p] is questionable!
       if(pooling_type == 1)
-        loglik += normal_lpdf(test_tau_hat_k[p,k] | tau, sqrt(sigma_tau[p,p]^2 + test_se_k[p,k]^2));
+        logpd += normal_lpdf(test_tau_hat_k[p,k] | tau, sqrt(sigma_tau[p,p]^2 + test_se_k[p,k]^2));
       if(pooling_type == 2)
-        loglik += normal_lpdf(test_tau_hat_k[p,k] | tau, sqrt(test_se_k[p,k]^2));
+        logpd += normal_lpdf(test_tau_hat_k[p,k] | tau, sqrt(test_se_k[p,k]^2));
     }}
 }

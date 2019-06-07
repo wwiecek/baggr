@@ -27,7 +27,8 @@
 #' It can be useful for examining your data.
 #'
 #' @author Witold Wiecek
-#' @seealso \code{\link{convert_inputs}} for how data is converted into Stan inputs
+#' @seealso [convert_inputs()] for how data is converted into Stan inputs;
+#'          [summarise_quantiles_data()] for summarising data per quantile
 #' @export
 #' @import stats
 #'
