@@ -144,7 +144,7 @@ baggr_schools
 <!-- # ``` -->
 <!-- # _baggr_ will only understand the 3 types of formatting described above, and while we have already stacked this dataset, we now need to choose a single outcome to focus on.  ] -->
 
-
+Currently, all our models specify Gaussian effects distributions across groups. This is generally appropriate as a first pass at the problem (see Rubin 1981, Gelman et al 2004 and McCollough and Nuehaus 2011 for more) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyperdistribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependences between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself. 
 
 ## Understanding and criticising _baggr_ model performance
 
@@ -226,7 +226,7 @@ loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 loocv_res
 ```
 
-The main output is the log predictive density (_lpd_) averaged over 8 models.
+The main output is $-2$ times the log predictive density (_lpd_) averaged over 8 models, which corresponds to the Watanabe-Aikake Information Criterion. A WAIC value closer to zero (i.e. a smaller number in magnitude) means a better fit. 
 
 More data are stored in `loocv()` output, and can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _lpd_ for each model that are stored in the attribute `df`:
 
@@ -235,9 +235,7 @@ names(attributes(loocv_res))
 attr(loocv_res, "df")
 ```
 
-This data frame can then be used to examine or compute the variation in the inference on $\tau$ in the absence of each group.
-
-If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. 
+This data frame can then be used to examine or compute the variation in the inference on $\tau$ in the absence of each group. If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. For example, suppose that we want to run the Rubin model on school groups 1-7 and predict the effect in the 8th school. The code below shows how you can specify a subset of the dataframe as your "data" argument, and then designate another subset as the "testing" holdout set by assigning it to the argument "test_data" in the baggr command. Here we have done it for both partial and full pooling:
 
 ```{r, echo = FALSE, include = FALSE}
 fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
@@ -248,7 +246,7 @@ fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", po
 fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
 fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "full")
 ```
-
+We can now ordinally compare the performance of the two models using the mean log predictive density. This itself is a density as the name suggests so we will compute the log expected value of this density: here, as before, a number closer to zero is better. In this case the full pooling model actually does slightly better:
 ```{r}
 fit1$mean_lpd
 fit2$mean_lpd
