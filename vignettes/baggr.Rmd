@@ -100,8 +100,8 @@ If you have only few groups, the priors on $V$ will need to be relatively strong
 |--------------------|--------------------------------|-------------------------------------------------|-----------------------------------------|----------|
 | "Rubin"            | `tau` and `se`                 | $\hat{\tau_k} \sim N(\tau_k, \hat{se_k}^2)$     | $\tau_k \sim N(\tau, \sigma_{\tau}^2)$  | $\tau \sim \mathcal{N}(0, \sigma^2)$, $\sigma_{\tau} \sim \mathcal{U}(0, u)$  | 
 | "$\mu$ and $\tau$" | `tau`, `mu`, `se.tau`, `se.mu` | $\hat{\tau_k} \sim N(\tau_k, \hat{se_{\tau,k}}^2)$, $\hat{\mu_k} \sim N(\mu_k, \hat{se_{\mu,k}}^2)$  | $\pmatrix{\mu_k \\ \tau_k} \sim N(\pmatrix{\mu \\ \tau}, V)$ | $V = \theta \Omega \theta'$ where $\theta \sim Cauchy(0,10)$ and $\Omega \sim LKJCorr(3)$. $\pmatrix{\mu \\ \tau} \sim N(0,\Xi )$ |
-| Full data          | outcome, treatment, group  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | ... |
-| Quantiles          | outcome, treatment, group  | See Meager (2019)    | See Meager (2019)          | ... |
+| Full data          | outcome, treatment, group  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" |
+| Quantiles          | outcome, treatment, group  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  |
 
 
 
@@ -122,7 +122,7 @@ baggr_schools <- baggr(schools, model = "rubin", pooling = "partial")
 
 This creates a `baggr` class object, and you can access the underlying `stanfit` object by calling `baggr_schools$fit`. If you don't change the default priors, then _baggr_ will print a message informing you of the priors it has chosen. 
 
-Printing `baggr_schools` returns a summary of the posterior inference.
+Printing `baggr_schools` returns a summary of the posterior inference. First _baggr_ records the model type and the pooling regime chosen by the user or implemented by default. Second, _baggr_ returns inference on the aggregate treatment effect $\tau$ by reporting its posterior mean and 95\% credible interval, and similar inference on the hypervariance $\sigma^2_{\tau}$. Lastly it prints the "updated" inference on each of the groups' treatment effects, displaying their new posterior means, standard deviations and pooling factors (see below).
 
 ```{r}
 print(baggr_schools)
@@ -130,7 +130,7 @@ print(baggr_schools)
 
 This is quite similar to the output from the version of the model suggested in ["How to use rstan"]((https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)) tutorial, the small difference probably arising from the different default priors.
 
-The first parameter you can change is the upper bound of the uniform prior on $\sigma_{\tau}$, called `"prior_upper_sigma_tau"`, the second is the mean of the prior on $\tau$ itself called `"prior_tau_mean"`, the third is the scale (standard deviation) of the prior on $\tau$ itself called `"prior_tau_scale"`. Here I have changed all three as an example (at this stage in _baggr_ if you want to alter one you must provide the full vector): 
+As discussed above, it is possible for the user to override the default priors and specify her own priors. The first parameter you can change is the upper bound of the uniform prior on $\sigma_{\tau}$, called `"prior_upper_sigma_tau"`, the second is the mean of the prior on $\tau$ itself called `"prior_tau_mean"`, the third is the scale (standard deviation) of the prior on $\tau$ itself called `"prior_tau_scale"`. Here I have changed all three as an example (at this stage in _baggr_ if you want to alter one you must provide the full vector): 
 ```{r eval=FALSE}
 baggr(schools, "rubin", prior = c("prior_upper_sigma_tau" = 10000, 
                                   "prior_tau_mean" = -10, 
@@ -144,7 +144,7 @@ baggr_schools
 <!-- # ``` -->
 <!-- # _baggr_ will only understand the 3 types of formatting described above, and while we have already stacked this dataset, we now need to choose a single outcome to focus on.  ] -->
 
-
+Currently, all our models specify Gaussian effects distributions across groups. This is generally appropriate as a first pass at the problem (see Rubin 1981, Gelman et al 2004 and McCollough and Nuehaus 2011 for more) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyperdistribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependences between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself. 
 
 ## Understanding and criticising _baggr_ model performance
 
@@ -161,9 +161,15 @@ Other warnings you may see involve "divergent transitions". While not as serious
 
 ## Measuring "pooling"
 
-__[RM to suggest?]__
+It is often useful to measure the extent to which the hierarchical model is "pooling" or sharing information across the $K$ groups in the process of aggregation. Baggr automatically computes such a metric, and as one can see above, printing a baggr object displays a column called "pooling". This column contains the classical pooling metric that describes the extent to which each of the group effects is "shrunk" towards their common mean in the process of aggregating information across groups. While there are many different measures of pooling, and the appropriate metric depends on the specific research question, baggr computes by default the @gelman_bayesian_2006 metric, which delivers the percentage of total variation in $\hat{\tau_k}$ around $\tau$ which is attributed to sampling variation within group $k$:
+\begin{equation}
+\omega_{\tau_k} = \frac{\hat{se}^2_{k}}{\hat{se}^2_{k} + \sigma^2_{\tau}}.
+\end{equation}
+Baggr uses the posterior mean of $\sigma^2_{\tau}$ to compute this metric (capacity to print bounds is coming soon). 
 
-@gelman_bayesian_2006
+One can interpret the metric as follows: if this pooling metric is large and approaching 1, the analyst gains a lot by pooling information across groups; if this is small and approaching 0, one gains little from the aggregated analysis relative to inference on each group separately ("no pooling"). For further discussion see @gelman_bayesian_2006, Gelman and Pardoe (2006) or Meager (2019). 
+
+
 
 
 
@@ -220,7 +226,7 @@ loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 loocv_res
 ```
 
-The main output is the log predictive density (_lpd_) averaged over 8 models.
+The main output is $-2$ times the log predictive density (_lpd_) averaged over 8 models, which corresponds to the Watanabe-Aikake Information Criterion. A WAIC value closer to zero (i.e. a smaller number in magnitude) means a better fit. 
 
 More data are stored in `loocv()` output, and can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _lpd_ for each model that are stored in the attribute `df`:
 
@@ -229,9 +235,7 @@ names(attributes(loocv_res))
 attr(loocv_res, "df")
 ```
 
-This data frame can then be used to examine or compute the variation in the inference on $\tau$ in the absence of each group.
-
-If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. 
+This data frame can then be used to examine or compute the variation in the inference on $\tau$ in the absence of each group. If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. For example, suppose that we want to run the Rubin model on school groups 1-7 and predict the effect in the 8th school. The code below shows how you can specify a subset of the dataframe as your "data" argument, and then designate another subset as the "testing" holdout set by assigning it to the argument "test_data" in the baggr command. Here we have done it for both partial and full pooling:
 
 ```{r, echo = FALSE, include = FALSE}
 fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
@@ -242,7 +246,7 @@ fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", po
 fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
 fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "full")
 ```
-
+We can now ordinally compare the performance of the two models using the mean log predictive density. This itself is a density as the name suggests so we will compute the log expected value of this density: here, as before, a number closer to zero is better. In this case the full pooling model actually does slightly better:
 ```{r}
 fit1$mean_lpd
 fit2$mean_lpd
