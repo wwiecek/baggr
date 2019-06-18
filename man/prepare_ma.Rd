@@ -46,7 +46,8 @@ convert from full to reduced data without analysing it in any model.
 It can be useful for examining your data.
 }
 \seealso{
-\code{\link{convert_inputs}} for how data is converted into Stan inputs
+\code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs;
+\code{\link[=summarise_quantiles_data]{summarise_quantiles_data()}} for summarising data per quantile
 }
 \author{
 Witold Wiecek

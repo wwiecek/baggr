@@ -26,7 +26,8 @@
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
 #' @return `baggr` class structure: list with Stan model fit embedded inside it,
-#'          alongside input data, pooling metrics, various model properties
+#'          alongside input data, pooling metrics, various model properties.
+#'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
 #'
 #' @details
 #'
@@ -44,7 +45,9 @@
 #'
 #' __Models.__ Available models are:
 #'
-#' * for the means: `"rubin"`` model for average treatment effect, `"mutau"` version which takes into account means in control group, `"full"`` model which reduces to "mu and tau" (if no covariates are used)
+#' * for the means: `"rubin"`` model for average treatment effect, `"mutau"` version which takes
+#'   into account means in control group, `"full"`` model which reduces to "mu and tau"
+#'   (if no covariates are used)
 #' * "quantiles" model is also available (see Meager, 2019 and [vignette](baggr.html) for details)
 #'
 #'  If no model is specified, the function tries to infer the appropriate model automatically.
@@ -152,7 +155,7 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
     result[["quantiles"]] <- quantiles
   if(!is.null(test_data)){
     result[["test_data"]] <- test_data
-    result[["mean_lpd"]] <- mean(rstan::extract(fit, "logpd")[[1]])
+    result[["mean_lpd"]] <- -2*mean(rstan::extract(fit, "logpd")[[1]])
   }
   # Check convergence
   rhat <- rstan::summary(fit)$summary[,"Rhat"]

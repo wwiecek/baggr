@@ -44,7 +44,8 @@ number of iterations etc.}
 }
 \value{
 \code{baggr} class structure: list with Stan model fit embedded inside it,
-alongside input data, pooling metrics, various model properties
+alongside input data, pooling metrics, various model properties.
+If test data is used, mean value of -2*lpd is reported as \code{mean_lpd}
 }
 \description{
 Estimate parameters of an ATE model
@@ -67,7 +68,8 @@ immediately recognisable by \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"`` model for average treatment effect, }"mutau"\code{version which takes into account means in control group,}"full"`` model which reduces to "mu and tau" (if no covariates are used)
+\item for the means: \code{"rubin"`` model for average treatment effect, }"mutau"\code{version which takes into account means in control group,}"full"`` model which reduces to "mu and tau"
+(if no covariates are used)
 \item "quantiles" model is also available (see Meager, 2019 and \href{baggr.html}{vignette} for details)
 }
 

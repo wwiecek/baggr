@@ -43,7 +43,9 @@ and suggests default model if needed.
 \details{
 Typically this function is only called within \code{\link[=baggr]{baggr()}} and you do
 not need to use it yourself. It can be useful to understand inputs
-or to run models which you modified yourself.
+or to run models which you modified yourself.\preformatted{     For quantile models, [summarise_quantiles_data()] is called from within
+     this function.
+}
 }
 \author{
 Witold Wiecek, Rachael Meager

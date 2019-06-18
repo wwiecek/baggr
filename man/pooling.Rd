@@ -11,7 +11,8 @@ pooling(bg, metric = "gelman-hill", summary = TRUE)
 
 \item{metric}{\code{"gelman-hill"} or \code{WIP}}
 
-\item{summary}{logical; if FALSE a whole vector is returned, otherwise only mean and uncertainty interval}
+\item{summary}{logical; if FALSE a whole vector of pooling statistics is returned,
+otherwise only the means and intervals}
 }
 \value{
 Matrix with mean and intervals for chosen pooling metric,
@@ -22,16 +23,19 @@ Compute pooling metrics (of a few different varieties)
 given a baggr meta-analysis model
 }
 \details{
-Pooling statistic describes the extent to which group-level estimates of treatment effect are shrunk toward
+Pooling statistic describes the extent to which group-level estimates of treatment
+effect are shrunk toward
 average treatment effect in the meta-analysis model.
 
-Different measures of pooling can be estimated and choosing the right one depends on the research questions.
+Different measures of pooling can be estimated and choosing the right one
+depends on the research questions.
 The default (\code{"gelman-hill"}) "pooling factor" statistic by Gelman & Hill (2007) is
 \deqn{\omega(\tau_k) = \frac{WIP}}
 }
 \references{
-Gelman, Andrew, and Jennifer Hill. Data Analysis Using Regression and Multilevel/Hierarchical
-Models. 1 edition. Cambridge; New York: Cambridge University Press, 2006.
+Gelman, Andrew, and Jennifer Hill. Data Analysis Using Regression
+and Multilevel/Hierarchical Models. 1 edition. Cambridge; New York:
+Cambridge University Press, 2006.
 }
 \author{
 Witold Wiecek, Rachael Meager
