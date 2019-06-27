@@ -51,7 +51,7 @@ For average effects aggregation, _baggr_ allows 3 types of data inputs. The user
 
 As an example of an individual-level data set we include in data frames `microcredit` and `microcredit_simplified`. The former contains all the microcredit outcome data used in @meager_aggregating_2019-1, standardized to USD PPP in 2009 terms per two weeks (a time period is necessary as these are flow variables). It therefore contains NAs and other undesirable features, to allow the user to see how _baggr_ handles these common data issues. The data set `microcredit_simplified` has these issues cleaned up and contains only one outcome of interest, consumer durables spending. 
 
-_baggr_ also has a function  that automatically produces summary data from full data sets, in case one wishes to run the comparatively faster summary-data models. The "prepare_ma()" function applied to a dataframe with columns named "group", "outcome", and "treatment" automatically computes the control group means, treatment effects, and associated standard errors for each group: 
+_baggr_ also has a function  that automatically produces summary data from full data sets, in case one wishes to run the comparatively faster summary-data models. The "prepare_ma()" function applied to a dataframe with columns named "group", "outcome", and "treatment" automatically estimates the control group means, treatment effects, and associated standard errors for each group using an Ordinary Least Squares regression. The resulting output is already formatted as a valid input to the _baggr_ command itself: 
 
 ```{r}
 colnames(microcredit_simplified) <- c(group, outcome, treatment)
