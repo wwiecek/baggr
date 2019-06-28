@@ -9,6 +9,26 @@
 microcredit
 }
 \description{
-Rachael will write this up.
+This dataframe contains the data used in Meager (2019) to estimate hierarchical
+models on the data from 7 randomized controlled trials of expanding access to microcredit.
+}
+\details{
+The columns include the group indicator which gives the name of the lead author
+on each of the respective studies, the value of the 6 outcome variables of most
+interest (consumer durables spending, business expenditures, business profit,
+business revenues, temptation goods spending and consumption spending) all of
+which are standardised to USD PPP in 2009 dollars per two weeks (these are flow variables),
+and finally a treatment assignment status indicator.
+
+The dataset has not otherwise been cleaned and therefore includes NAs and other
+issues common to real-world datasets.
+
+For more information on how and why these variables were chosen and standardised,
+see Meager (2019) or consult the associated code repository which includes the
+standardisation scripts:
+\href{https://bitbucket.org/rmeager/aggregate-average-impacts-microcredit/src/master/}{link}
+}
+\references{
+Meager, Rachael (2019) Understanding the average impact of microcredit expansions: A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal: Applied Economics, 11(1), 57-91.
 }
 \keyword{datasets}
