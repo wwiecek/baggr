@@ -107,6 +107,13 @@ convert_inputs <- function(data,
       out <- summarise_quantiles_data(data, quantiles,
                                       outcome, group, treatment)
       message("Data have been automatically summarised for quantiles model.")
+
+      # Fix for R 3.5.1. on Windows
+      # https://stackoverflow.com/questions/51343022/
+      out$temp <- out[["y_0"]]
+      out$y_0 <- NULL
+      out[["y_0"]] <- out$temp
+      out$temp <- NULL
     }
 
     # Cross-validation:
@@ -114,6 +121,10 @@ convert_inputs <- function(data,
       out$K_test <- 0
       out$test_tau_hat_k <- array(0, dim = 0)
       out$test_se_k <- array(0, dim = 0)
+      out$test_y_0 <- array(0, dim = c(0, ncol(out$y_0)))
+      out$test_y_1 <- array(0, dim = c(0, ncol(out$y_0)))
+      out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
+      out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
     } else {
       out_test <- summarise_quantiles_data(test_data, quantiles,
                                       outcome, group, treatment)
