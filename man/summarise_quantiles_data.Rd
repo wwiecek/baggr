@@ -8,7 +8,7 @@ summarise_quantiles_data(data, quantiles, outcome = "outcome",
   group = "group", treatment = "treatment")
 }
 \arguments{
-\item{data}{a data.frame with appropriate grouping, outcome, treatment variables}
+\item{data}{a data.frame with grouping, outcome, treatment variables}
 
 \item{quantiles}{a vector of quantiles (between 0 and 1)}
 
@@ -18,14 +18,25 @@ summarise_quantiles_data(data, quantiles, outcome = "outcome",
 
 \item{treatment}{character: column name in \code{data} for treatment variable}
 }
+\value{
+A list with mean estimates for control and treatment (\code{y_0} and \code{y_1}) and
+variance-covariance matrices (\code{Sigma_y_k_0} and \code{Sigma_y_k_1}).
+}
 \description{
 Given individual level data, return list of summary statistics
 Of quantile means and Sigma's, as well as K, N.
-Already formatted as a valid input into a Stan model of quantiles
+This operation is done automatically inside \code{\link[=baggr]{baggr()}} function
+but it can be used for exploring input data.
 }
 \details{
-Estimates are obtained externally via \code{\link[quantreg]{rq}}
-See \code{\link{baggr}} for documentation of how columns should be formatted.
+This function is intended for data exploration outside of \code{\link[=baggr]{baggr()}}
+function. When calling \code{\link[=baggr]{baggr()}}, individual-level data should be supplied --
+they will be summarised automatically.
+(See \code{\link{baggr}} for documentation of how columns should be formatted.)
+
+Estimates are obtained externally via \code{\link[quantreg]{rq}} function of the
+\code{quantreg} package. This implementation is experimental and will change in the
+future versions of the package.
 }
 \examples{
 summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),
