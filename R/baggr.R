@@ -6,6 +6,9 @@
 #' (For overall package help file see [baggr_package])
 #'
 #'
+#' @importFrom rstan summary
+#' @importFrom rstan sampling
+#'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
