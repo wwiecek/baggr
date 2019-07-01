@@ -5,8 +5,6 @@
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 #' (For overall package help file see [baggr_package])
 #'
-#' @importFrom rstan summary
-#' @importFrom rstan sampling
 #'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
@@ -40,6 +38,7 @@
 #' @return `baggr` class structure: a list including Stan model fit
 #'          alongside input data, pooling metrics, various model properties.
 #'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
+#'
 #'
 #' @details
 #'
@@ -88,6 +87,8 @@
 #' #change the priors:
 #' baggr(df_pooled, prior_hypermean = normal(5,5))
 #'
+#' @importFrom rstan summary
+#' @importFrom rstan sampling
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
