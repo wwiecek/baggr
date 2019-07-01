@@ -5,6 +5,9 @@
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 #' (For overall package help file see \code{?baggr_package})
 #'
+#' @importFrom rstan summary
+#' @importFrom rstan sampling
+#'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
