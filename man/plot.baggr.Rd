@@ -4,7 +4,7 @@
 \alias{plot.baggr}
 \title{Generic plot for baggr package}
 \usage{
-\method{plot}{baggr}(x, ...)
+plot.baggr(x, ...)
 }
 \arguments{
 \item{x}{object of class \code{baggr}}
