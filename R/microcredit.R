@@ -19,7 +19,9 @@
 #' [link](https://bitbucket.org/rmeager/aggregate-average-impacts-microcredit/src/master/)
 #'
 #' @format A data frame with 40267 rows, 7 study idenfitifiers and 7 outcomes
-#' @references Meager, Rachael (2019) Understanding the average impact of microcredit expansions: A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal: Applied Economics, 11(1), 57-91.
+#' @references Meager, Rachael (2019) Understanding the average impact of microcredit expansions:
+#' A Bayesian hierarchical analysis of seven randomized experiments.
+#' American Economic Journal: Applied Economics, 11(1), 57-91.
 "microcredit"
 
 
@@ -44,7 +46,9 @@
 #' This dataset includes only complete cases and only the consumer durables outcome variable.
 #'
 #' @format A data frame with 14224 rows, 7 study idenfitifiers and 1 outcome
-#' @references Meager, Rachael (2019) Understanding the average impact of microcredit expansions: A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal: Applied Economics, 11(1), 57-91.
+#' @references Meager, Rachael (2019) Understanding the average impact of microcredit expansions:
+#' A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal:
+#' Applied Economics, 11(1), 57-91.
 "microcredit_simplified"
 
 

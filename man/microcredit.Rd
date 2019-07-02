@@ -29,6 +29,8 @@ standardisation scripts:
 \href{https://bitbucket.org/rmeager/aggregate-average-impacts-microcredit/src/master/}{link}
 }
 \references{
-Meager, Rachael (2019) Understanding the average impact of microcredit expansions: A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal: Applied Economics, 11(1), 57-91.
+Meager, Rachael (2019) Understanding the average impact of microcredit expansions:
+A Bayesian hierarchical analysis of seven randomized experiments.
+American Economic Journal: Applied Economics, 11(1), 57-91.
 }
 \keyword{datasets}

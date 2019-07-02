@@ -28,6 +28,8 @@ see Meager (2019) or consult the associated code repository:
 This dataset includes only complete cases and only the consumer durables outcome variable.
 }
 \references{
-Meager, Rachael (2019) Understanding the average impact of microcredit expansions: A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal: Applied Economics, 11(1), 57-91.
+Meager, Rachael (2019) Understanding the average impact of microcredit expansions:
+A Bayesian hierarchical analysis of seven randomized experiments. American Economic Journal:
+Applied Economics, 11(1), 57-91.
 }
 \keyword{datasets}
