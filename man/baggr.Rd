@@ -13,11 +13,11 @@ baggr(data, model = NULL, prior = NULL, pooling = "partial",
 \item{data}{data frame with summary or individual level data to meta-analyse}
 
 \item{model}{if \code{NULL}, detected automatically from input data
-otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}}
+otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
 
 \item{prior}{list of prior arguments passed directly to each model (see Details)}
 
-\item{pooling}{choose from \code{none}, \code{partial} (default) and \code{full}}
+\item{pooling}{choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}}
 
 \item{joint_prior}{If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 If \code{FALSE}, they have independent priors. Ignored if no control
@@ -48,9 +48,9 @@ alongside input data, pooling metrics, various model properties.
 If test data is used, mean value of -2*lpd is reported as \code{mean_lpd}
 }
 \description{
-Estimate parameters of an ATE model
+Bayesian inference on parameters of an average treatment effects model
 that's appropriate to the supplied
-individual- or group-level data.
+individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 (For overall package help file see \code{?baggr_package})
 }
 \details{
