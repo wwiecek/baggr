@@ -4,18 +4,15 @@
 \alias{prepare_ma}
 \title{Convert from individual to summary data in meta-analyses}
 \usage{
-prepare_ma(data, standardise = NULL, log = FALSE, cfb = FALSE,
-  summarise = TRUE, treatment = "treatment", baseline = NULL,
-  group = "group", outcome = "outcome")
+prepare_ma(data, log = FALSE, cfb = FALSE, summarise = TRUE,
+  treatment = "treatment", baseline = NULL, group = "group",
+  outcome = "outcome")
 }
 \arguments{
 \item{data}{data.frame of individual-level observations
 with columns \code{outcome} (numeric),
 \code{treatment} (values 0 and 1) and
 \code{group} (numeric, character or factor)}
-
-\item{standardise}{logical; if TRUE, values of outcome
-are standardised within each group}
 
 \item{log}{logical; log-transform data?}
 

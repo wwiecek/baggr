@@ -7,8 +7,6 @@
 #'             with columns \code{outcome} (numeric),
 #'             \code{treatment} (values 0 and 1) and
 #'             \code{group} (numeric, character or factor)
-#' @param standardise logical; if TRUE, values of outcome
-#'                    are standardised within each group
 #' @param log logical; log-transform data?
 #' @param cfb logical; calculate change from baseline?
 #' @param summarise logical; convert to aggregate level data?
@@ -33,7 +31,7 @@
 #' @import stats
 #'
 
-prepare_ma <- function(data, standardise = NULL,
+prepare_ma <- function(data, #standardise = NULL,
                          log = FALSE, cfb = FALSE, summarise = TRUE,
                          treatment="treatment",
                          baseline = NULL,
