@@ -13,7 +13,7 @@
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
-#'                  testing purposes (see [baggr()] and [loocv()])
+#'                  testing purposes (see [baggr()])
 #' @return R structure that's appropriate for use by [baggr()] Stan models;
 #'         `group_label`, `model` and `n_groups` are incuded as attributes
 #'         and are necessary for [baggr()] to work correctly
@@ -21,8 +21,6 @@
 #'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'
-#'          For quantile models, [summarise_quantiles_data()] is called from within
-#'          this function.
 #'
 #' @author Witold Wiecek, Rachael Meager
 #' @export
@@ -64,6 +62,11 @@ convert_inputs <- function(data,
       stop("Unrecognised model, can't format data.")
   }
 
+  # Prompt and stop conversion for the CRAN release version of the package:
+  if(model != "rubin")
+    stop("In baggr v0.1 only Rubin model is enabled. More models will be available in the next release.")
+
+
   required_data <- model_data_types[[model]]
 
 
@@ -104,8 +107,8 @@ convert_inputs <- function(data,
       if(length(quantiles) < 2)
         stop("cannot model less then 2 quantiles")
       data[[group]] <- group_numeric
-      out <- summarise_quantiles_data(data, quantiles,
-                                      outcome, group, treatment)
+      # out <- summarise_quantiles_data(data, quantiles,
+                                      # outcome, group, treatment)
       message("Data have been automatically summarised for quantiles model.")
 
       # Fix for R 3.5.1. on Windows
@@ -126,8 +129,8 @@ convert_inputs <- function(data,
       out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
       out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
     } else {
-      out_test <- summarise_quantiles_data(test_data, quantiles,
-                                      outcome, group, treatment)
+      # out_test <- summarise_quantiles_data(test_data, quantiles,
+                                      # outcome, group, treatment)
       out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles
       out$test_y_0 <- out_test$y_0
       out$test_y_1 <- out_test$y_1
@@ -139,6 +142,9 @@ convert_inputs <- function(data,
   # summary data: treatment effect only -----
   if(required_data == "pool_noctrl_narrow"){
     group_label <- data[[group]]
+    if(is.null(data[[group]]) && (group != "group"))
+      warning(paste0("Column '", group, "' does not exist in data. No labels will be added."))
+    check_columns_numeric(data[,c("tau", "se")])
     out <- list(
       K = nrow(data),
       tau_hat_k = data[["tau"]],
@@ -163,6 +169,10 @@ convert_inputs <- function(data,
   # summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
     group_label <- data[[group]]
+    group_label <- data[[group]]
+    if(is.null(data[[group]]) && (group != "group"))
+      warning(paste0("Column '", group, "' does not exist in data. No labels will be added."))
+    check_columns_numeric(data[,c("tau", "se.tau", "mu", "se.mu")])
     nr <- nrow(data)
     out <- list(
       K = nr,
