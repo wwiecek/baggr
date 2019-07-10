@@ -21,7 +21,6 @@
 #'   ggtitle("Works like a ggplot2 plot!")
 #'
 #' @import ggplot2
-#' @export
 
 plot_quantiles <- function(fit, ncol, hline = TRUE) {
   if(!("baggr" %in% class(fit)) || (fit$model != "quantiles"))

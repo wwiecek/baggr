@@ -24,7 +24,7 @@ If \code{FALSE}, they have independent priors. Ignored if no control
 (\code{mu}) data exists.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
-with the same columns as \code{data} argument (see \code{\link[baggr]{loocv}} for automation)}
+with the same columns as \code{data} argument}
 
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}

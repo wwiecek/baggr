@@ -33,7 +33,6 @@
 #'             Statistics and Computing. 2014 Nov 24(6):997-1016.
 #'             [PDF link.](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
 #'
-#' @export
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
 #'

@@ -33,7 +33,6 @@
 #'
 #' @author Witold Wiecek
 #' @seealso [convert_inputs()] for how data is converted into Stan inputs;
-#'          [summarise_quantiles_data()] for summarising data per quantile
 #' @export
 #' @import stats
 #'
@@ -47,6 +46,7 @@ prepare_ma <- function(data, #standardise = NULL,
   if(grepl("pool", detect_input_type(data, group)))
     stop("Data must be individual-level to use prepare_ma.")
   check_columns(data, outcome, group, treatment)
+
 
   # Input checks and prep
   data <- data[,c(treatment, group, outcome, baseline)]
@@ -78,6 +78,7 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   # 3. Standardise
+  standardise <- NULL #until standardisation is fixed, we cauterise this
   if(!is.null(standardise)) {
     # Whole sample
     if(standardise == "all")

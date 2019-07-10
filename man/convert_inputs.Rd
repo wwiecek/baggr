@@ -27,7 +27,7 @@ automatically}
 \item{treatment}{name of column with treatment variable}
 
 \item{test_data}{same format as \code{data} argument, gets left aside for
-testing purposes (see \code{\link[=baggr]{baggr()}} and \code{\link[=loocv]{loocv()}})}
+testing purposes (see \code{\link[=baggr]{baggr()}})}
 }
 \value{
 R structure that's appropriate for use by \code{\link[=baggr]{baggr()}} Stan models;
@@ -43,9 +43,7 @@ and suggests default model if needed.
 \details{
 Typically this function is only called within \code{\link[=baggr]{baggr()}} and you do
 not need to use it yourself. It can be useful to understand inputs
-or to run models which you modified yourself.\preformatted{     For quantile models, [summarise_quantiles_data()] is called from within
-     this function.
-}
+or to run models which you modified yourself.
 }
 \author{
 Witold Wiecek, Rachael Meager

@@ -31,7 +31,6 @@
 #'
 #' @importFrom quantreg rq
 #' @import stats
-#' @export
 
 summarise_quantiles_data <- function(data, quantiles,
                                      outcome   = "outcome",

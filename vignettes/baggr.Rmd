@@ -19,9 +19,9 @@ knitr::opts_chunk$set(
 library(baggr)
 library(ggplot2)
 baggr_schools <- baggr(schools, model = "rubin", pooling = "partial")
-baggr_plot(baggr_schools)
-baggr_compare(schools)
-my_baggr_plot <- baggr_compare(schools)
+# baggr_plot(baggr_schools)
+# baggr_compare(schools)
+# my_baggr_plot <- baggr_compare(schools)
 
 ```
 
@@ -188,6 +188,8 @@ Plotting functions always take `baggr` class object as their first argument. By 
 baggr_plot(baggr_schools, order = FALSE)
 ```
 
+__[Model comparison will be included in the next package release.]__
+
 The second step to understanding the model is to compare it to other models we could have fit: this can be done automatically in _baggr_ using the command `baggr_compare`. The default Rubin model (which we have selected explicitly above) is that of partial pooling. When using `baggr_compare` without any extra arguments, full pooling, no pooling and partial pooling versions of the model will be fit:
 
 ```{r eval=FALSE}
@@ -196,19 +198,17 @@ baggr_compare(schools)
 
 (We will show the output of this function below.) Different comparisons, e.g. of models using different priors, are also possible. 
 
-__[Here we will include a comparison of priors for 8 schools model]__
-
 The `baggr_compare` command also produces an automatic comparison plot made by calling `ggplot2` package. Because the output object of baggr_compare is a `ggplot` object you can edit it further yourself and built on it as you would any `ggplot` object. For example, the default title for the plot is just "mean", so here I've changed it to be more descriptive:
 
 ```{r, echo=FALSE, eval = TRUE, include = FALSE}
-my_baggr_plot <- baggr_compare(schools)
+# my_baggr_plot <- baggr_compare(schools)
 ```
 
 ```{r, echo=TRUE, eval = FALSE}
 my_baggr_plot <- baggr_compare(schools)
 ```
 
-```{r fig.width=7, fig.height=4}
+```{r fig.width=7, fig.height=4, eval = FALSE, echo = TRUE}
 my_baggr_plot$plot + ggtitle("8 schools: model comparison")
 ```
 
@@ -216,18 +216,20 @@ my_baggr_plot$plot + ggtitle("8 schools: model comparison")
 
 ## Cross-validation in _baggr_
 
+__[Automated cross-validation will be included in the next package release. For this version only the "manual" method is available, as presented at the end of this section.]__
+
 _Baggr_ has built-in, automated leave-one-out cross validation for its models, where the "one" always refers to one group. This naturally corresponds to the question of how much any one group has contributed to the overall inference. Therefore, if you have $K$ groups, using the `loocv()` will run your model of choice $K$ times. Be aware that this may take a while even for simple models. (You should see a progress bar in your terminal window.) The `loocv()` function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics. For the 8 schools example we can do
 
 ```{r loocv, eval = FALSE}
 loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 ```
 
-```{r echo = FALSE, include = FALSE}
+```{r echo = FALSE, include = FALSE, eval = FALSE}
 #this is ugly but effective way to stop output from loocv getting printed
 loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 ```
 
-```{r}
+```{r, eval = FALSE}
 loocv_res
 ```
 
@@ -235,7 +237,7 @@ The main output is $-2$ times the log predictive density (_lpd_) averaged over 8
 
 More data are stored in `loocv()` output, and can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _lpd_ for each model that are stored in the attribute `df`:
 
-```{r}
+```{r, eval = FALSE}
 names(attributes(loocv_res))
 attr(loocv_res, "df")
 ```
