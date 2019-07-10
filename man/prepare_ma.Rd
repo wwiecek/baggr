@@ -53,7 +53,6 @@ If multiple operations are performed, they are taken in this order:
 }
 \seealso{
 \code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs;
-\code{\link[=summarise_quantiles_data]{summarise_quantiles_data()}} for summarising data per quantile
 }
 \author{
 Witold Wiecek
