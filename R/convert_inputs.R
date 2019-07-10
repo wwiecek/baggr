@@ -1,7 +1,7 @@
-#' @title Convert inputs for baggr models
+#' Convert inputs for baggr models
 #'
-#' Converts data to Stan inputs, checks intergrity of data
-#' and suggests default model if needed.
+#' Converts dataframe to format for Stan inputs, renames variables for \code{baggr} models, checks intergrity of data
+#' and suggests default model if needed. Typically used under the hood, but may be used explicitly if desired for debugging or similar.
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
@@ -10,21 +10,22 @@
 #'              automatically
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
-#' @param outcome name of column with outcome variable
+#' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr()] and [loocv()])
 #' @return R structure that's appropriate for use by [baggr()] Stan models;
 #'         `group_label`, `model` and `n_groups` are incuded as attributes
 #'         and are necessary for [baggr()] to work correctly
-#' @details Typically this function is only called within [baggr()] and you do
-#'          not need to use it yourself. It can be useful to understand inputs
+#' @details Typically this function is only used under the hood within [baggr()] and you do
+#'          not need to use it explicitly yourself. However, it can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'
 #'          For quantile models, [summarise_quantiles_data()] is called from within
 #'          this function.
 #'
 #' @author Witold Wiecek, Rachael Meager
+#' @examples convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
 #' @export
 
 convert_inputs <- function(data,
