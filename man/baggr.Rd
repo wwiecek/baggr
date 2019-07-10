@@ -5,9 +5,9 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  joint_prior = TRUE, test_data = NULL, quantiles = seq(0.05, 0.95,
-  0.1), outcome = "outcome", group = "group",
-  treatment = "treatment", warn = TRUE, ...)
+  joint_prior = TRUE, test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome", group = "group", treatment = "treatment",
+  warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -68,7 +68,7 @@ immediately recognisable by \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"`` model for average treatment effect, }"mutau"\code{version which takes into account means in control group,}"full"`` model which reduces to "mu and tau"
+\item for the means: \code{"rubin"`` model for average treatment effect,}"mutau"\code{version which takes into account means in control group,}"full"`` model which reduces to "mu and tau"
 (if no covariates are used)
 \item "quantiles" model is also available (see Meager, 2019 and \href{baggr.html}{vignette} for details)
 }
