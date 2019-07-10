@@ -22,7 +22,7 @@ Results are \code{ggplot2} plots and can be modified.
 }
 \examples{
 bg <- baggr(microcredit_simplified, model = "quantiles",
-            quantiles = c(.1, .2, .35, .5, .65, .75), iter = 1000,
+            quantiles = c(.1, .25, .5, .75, .95), iter = 1000,
             outcome = "consumerdurables")
 #vanilla plot
 plot_quantiles(bg)
