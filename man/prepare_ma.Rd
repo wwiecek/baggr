@@ -10,13 +10,15 @@ prepare_ma(data, log = FALSE, cfb = FALSE, summarise = TRUE,
 }
 \arguments{
 \item{data}{data.frame of individual-level observations
-with columns \code{outcome} (numeric),
-\code{treatment} (values 0 and 1) and
-\code{group} (numeric, character or factor)}
+with columns for outcome (numeric), treatment (values 0 and 1) and
+group (numeric, character or factor);
+column names can be user-defined (see below)}
 
-\item{log}{logical; log-transform data?}
+\item{log}{logical; log-transform the outcome variable?}
 
-\item{cfb}{logical; calculate change from baseline?}
+\item{cfb}{logical; calculate change from baseline? If yes, the outcome
+variable is taken as a difference between values in \code{outcome} and
+\code{baseline} columns}
 
 \item{summarise}{logical; convert to aggregate level data?}
 
@@ -33,14 +35,21 @@ data.frame with columns \code{mu}, \code{se.mu},
 \code{tau} and \code{se.tau}
 }
 \description{
-Allows only one-way conversion from full to summary data.
+Allows one-way conversion from full to summary data.
 Input must be pre-formatted appropriately.
 }
 \details{
-The conversions are typically not needed and may happen automatically
+The conversions done by this function are not typically needed and may happen automatically
 when data is fed to \code{\link[=baggr]{baggr()}}. However, this function can be used to explicitly
-convert from full to reduced data without analysing it in any model.
+convert from full to reduced (summarised) data without analysing it in any model.
 It can be useful for examining your data.
+
+If multiple operations are performed, they are taken in this order:
+\enumerate{
+\item conversion to log scale,
+\item calculating change from baseline,
+\item summarising data.
+}
 }
 \seealso{
 \code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs;

@@ -1,14 +1,16 @@
 #' @title Convert from individual to summary data in meta-analyses
 #'
-#' @description Allows only one-way conversion from full to summary data.
+#' @description Allows one-way conversion from full to summary data.
 #'              Input must be pre-formatted appropriately.
 #'
 #' @param data data.frame of individual-level observations
-#'             with columns \code{outcome} (numeric),
-#'             \code{treatment} (values 0 and 1) and
-#'             \code{group} (numeric, character or factor)
-#' @param log logical; log-transform data?
-#' @param cfb logical; calculate change from baseline?
+#'             with columns for outcome (numeric), treatment (values 0 and 1) and
+#'             group (numeric, character or factor);
+#'             column names can be user-defined (see below)
+#' @param log logical; log-transform the outcome variable?
+#' @param cfb logical; calculate change from baseline? If yes, the outcome
+#'            variable is taken as a difference between values in `outcome` and
+#'            `baseline` columns
 #' @param summarise logical; convert to aggregate level data?
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
@@ -19,10 +21,15 @@
 #'         \code{tau} and \code{se.tau}
 #'
 #' @details
-#' The conversions are typically not needed and may happen automatically
+#' The conversions done by this function are not typically needed and may happen automatically
 #' when data is fed to [baggr()]. However, this function can be used to explicitly
-#' convert from full to reduced data without analysing it in any model.
+#' convert from full to reduced (summarised) data without analysing it in any model.
 #' It can be useful for examining your data.
+#'
+#' If multiple operations are performed, they are taken in this order:
+#' 1) conversion to log scale,
+#' 2) calculating change from baseline,
+#' 3) summarising data.
 #'
 #' @author Witold Wiecek
 #' @seealso [convert_inputs()] for how data is converted into Stan inputs;
