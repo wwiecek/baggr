@@ -22,10 +22,12 @@
 #' __This section is under construction__
 #'
 #' @examples
+#' \donttest{
 #' #even simple examples may take a long moment
 #' cv <- loocv(schools, pooling = "partial")
 #' print(cv) #returns the lpd value
 #' attributes(cv) #more information is included in the object
+#' }
 #'
 #' @author Witold Wiecek
 #' @references Gelman A, Hwang J, Vehtari A.

@@ -39,7 +39,8 @@ Estimates are obtained externally via \code{\link[quantreg]{rq}} function of the
 future versions of the package.
 }
 \examples{
+\donttest{
 summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),
                          outcome = "consumerdurables")
-
+}
 }

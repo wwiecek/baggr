@@ -26,9 +26,10 @@
 #' variance-covariance matrices (`Sigma_y_k_0` and `Sigma_y_k_1`).
 #'
 #' @examples
+#' \donttest{
 #' summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),
 #'                          outcome = "consumerdurables")
-#'
+#' }
 #' @importFrom quantreg rq
 #' @import stats
 

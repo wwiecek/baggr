@@ -129,13 +129,14 @@ convert_inputs <- function(data,
       out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
       out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
     } else {
+      # Disabled until summarise_qunatiles_data() gets included in the release again.
       # out_test <- summarise_quantiles_data(test_data, quantiles,
                                       # outcome, group, treatment)
-      out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles
-      out$test_y_0 <- out_test$y_0
-      out$test_y_1 <- out_test$y_1
-      out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
-      out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
+      # out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles
+      # out$test_y_0 <- out_test$y_0
+      # out$test_y_1 <- out_test$y_1
+      # out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
+      # out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
     }
   }
 
