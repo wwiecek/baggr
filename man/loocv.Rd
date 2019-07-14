@@ -17,8 +17,8 @@ if TRUE, a list of models will be returned alongside summaries}
 }
 \value{
 log predictive density value, an object of class \code{baggr_cv};
-full model, prior values and \emph{lpd} of each model are also returned
-these can be examined by using \code{attributes()} function
+full model, prior values and \emph{lpd} of each model are also returned.
+These can be examined by using \code{attributes()} function.
 }
 \description{
 Performs leave-one-out cross-validation on a \code{baggr} model at the group level.
@@ -49,5 +49,5 @@ Statistics and Computing. 2014 Nov 24(6):997-1016.
 \href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{PDF link.}
 }
 \author{
-Witold Wiecek
+Witold Wiecek, Rachael Meager
 }

@@ -4,8 +4,8 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, quantiles, group = "group", outcome = "outcome",
-  treatment = "treatment", test_data = NULL)
+convert_inputs(data, model, quantiles, group = "group",
+  outcome = "outcome", treatment = "treatment", test_data = NULL)
 }
 \arguments{
 \item{data}{`data.frame`` with desired modelling input}
