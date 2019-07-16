@@ -1,7 +1,8 @@
 #' @title Convert from individual to summary data in meta-analyses
 #'
-#' @description Allows one-way conversion from full to summary data.
-#'              Input must be pre-formatted appropriately.
+#' @description Allows one-way conversion from full individual-level data to summary data.
+#' Here the summary is focused on average treatment effects and their standard errors, as well as the average outcome in the control groups and the associated standard errors.
+#'              Input must be pre-formatted appropriately for this function to work; see below.
 #'
 #' @param data data.frame of individual-level observations
 #'             with columns for outcome (numeric), treatment (values 0 and 1) and
@@ -17,8 +18,8 @@
 #' @param treatment name of column with treatment variable
 #' @param baseline name of column with baseline variable
 #'
-#' @return data.frame with columns \code{mu}, \code{se.mu},
-#'         \code{tau} and \code{se.tau}
+#' @return data.frame with columns corresponding to each group's control group mean value  \code{mu},
+#'         the standard error of this estimate\code{se.mu}, each group's average treatment effect \code{tau}, and the standard error of this estimate  \code{se.tau}.
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
@@ -31,7 +32,10 @@
 #' 2) calculating change from baseline,
 #' 3) summarising data.
 #'
-#' @author Witold Wiecek
+#' @examples
+#' prepare_ma(microcredit_simplified, outcome = "consumerdurables")
+#'
+#' @author Witold Wiecek, Rachael Meager
 #' @seealso [convert_inputs()] for how data is converted into Stan inputs;
 #'          [summarise_quantiles_data()] for summarising data per quantile
 #' @export
