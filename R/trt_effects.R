@@ -3,6 +3,8 @@
 # these are not summarised but full sample
 
 treatment_effect <- function(bg) {
+  if(class(bg) != "baggr")
+    stop("treatment_effect requires a baggr object")
   if(bg$pooling == "none"){
     message("There is no treatment effect estimated when pooling = 'none'.")
     return(NULL)

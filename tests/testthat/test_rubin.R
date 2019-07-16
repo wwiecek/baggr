@@ -12,8 +12,9 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
-  # model doesn't exist
+  # model or pooling type doesn't exist
   expect_error(baggr(df_pooled, "made_up_model"), "Unrecognised model")
+  expect_error(baggr(df_pooled, pooling = "nune"), "Wrong pooling")
 
   # NA or NULL inputs
   df_na <- df_pooled; df_na$tau[1] <- NA
@@ -26,6 +27,7 @@ test_that("Error messages for wrong inputs are in place", {
   expect_error(baggr(df_na),"no column")
   df_na <- df_pooled; df_na$tau <- as.character(df_na$tau)
   expect_error(baggr(df_na),"are not numeric")
+
 
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
@@ -112,6 +114,55 @@ test_that("Plotting works", {
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
+
+test_that("Test data can be used in the Rubin model", {
+
+  bg_lpd <- baggr(df_pooled[1:6,], test_data = df_pooled[7:8,], iter = 500)
+  expect_is(bg_lpd, "baggr")
+  # make sure that we have 6 sites, not 8:
+  expect_equal(dim(study_effects(bg_lpd)), c(1000, 6, 1))
+  # make sure it's not 0
+  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -3.6, tolerance = 1)
+
+  # wrong test_data
+  df_na <- df_pooled[7:8,]; df_na$tau <- NULL
+  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "must be of the same format as input")
+})
+
+
+# test helpers -----
+
+test_that("Extracting treatment/study effects works", {
+  expect_error(treatment_effect(df_pooled), "treatment_effect requires a baggr object")
+  expect_is(treatment_effect(bg5_p), "list")
+  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_is(treatment_effect(bg5_p)$tau, "array")
+  expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
+
+})
+
+
+
+# to-do list for tests -----
+
+# show_model()
+# check_columns()
+# convert_inputs(): if(required_data != available_data)
+# detect_input_type()
+# mint()
+# prepare_ma()
+# print_baggr()
+# study_effects() (above)
+
+# v0.2
+# baggr_compare()
+# loocv()
+# plot_quantiles()
+# summarise_quantiles_data()
+# mutau, full, qunatiles in
+#   baggr, study effects, trt effects, convert_inputs, pooling_metrics
+# baggr_plot() with multiple effects
+
 
 
 # 8 schools test -----
