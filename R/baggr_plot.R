@@ -24,7 +24,7 @@
 #' @import bayesplot
 #'
 #' @author Witold Wiecek, Rachael Meager
-#' @seealso \code{\link[bayesplot]{MCMC-intervals}}
+#' @seealso [bayesplot::MCMC-intervals]
 
 baggr_plot <- function(bg, mean = FALSE,
                        style = "intervals",

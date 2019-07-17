@@ -25,12 +25,12 @@ variance-covariance matrices (\code{Sigma_y_k_0} and \code{Sigma_y_k_1}).
 \description{
 Given individual level data, return list of summary statistics
 Of quantile means and Sigma's, as well as K, N.
-This operation is done automatically inside \code{\link[=baggr]{baggr()}} function
+This operation is done automatically inside \link{baggr} function
 but it can be used for exploring input data.
 }
 \details{
-This function is intended for data exploration outside of \code{\link[=baggr]{baggr()}}
-function. When calling \code{\link[=baggr]{baggr()}}, individual-level data should be supplied --
+This function is intended for data exploration outside of \link{baggr}
+function. When calling \link{baggr}, individual-level data should be supplied --
 they will be summarised automatically.
 (See \code{\link{baggr}} for documentation of how columns should be formatted.)
 

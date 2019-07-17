@@ -1,22 +1,15 @@
-#' Pooling metrics
+#' Pooling metrics for baggr
 #'
-#' Compute pooling metrics (of a few different varieties)
-#' given a baggr meta-analysis model
+#' Compute pooling metrics given a baggr meta-analysis model
 #'
 #' @param bg output of a baggr() function
-#' @param metric \code{"gelman-hill"} or \code{WIP}
+#' @param metric for now we use \code{"gelman-hill"}, other options will be added in the future
 #' @param summary logical; if FALSE a whole vector of pooling statistics is returned,
 #'                otherwise only the means and intervals
 #'
 #' @details
 #' Pooling statistic describes the extent to which group-level estimates of treatment
-#' effect are shrunk toward
-#' average treatment effect in the meta-analysis model.
-#'
-#' Different measures of pooling can be estimated and choosing the right one
-#' depends on the research questions.
-#' The default (\code{"gelman-hill"}) "pooling factor" statistic by Gelman & Hill (2007) is
-#' \deqn{\omega(\tau_k) = \frac{WIP}}
+#' effect are shrunk toward average treatment effect in the meta-analysis model.
 #'
 #' @references Gelman, Andrew, and Jennifer Hill. Data Analysis Using Regression
 #' and Multilevel/Hierarchical Models. 1 edition. Cambridge; New York:

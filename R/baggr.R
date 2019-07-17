@@ -3,7 +3,7 @@
 #' Bayesian inference on parameters of an average treatment effects model
 #' that's appropriate to the supplied
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-#' (For overall package help file see \code{?baggr_package})
+#' (For overall package help file see [baggr_package])
 #'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data

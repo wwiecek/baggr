@@ -29,8 +29,8 @@ bg <- baggr(microcredit_simplified, model = "quantiles",
 plot_quantiles(bg)
 
 plot_quantiles(bg, hline = TRUE) +
-  coord_cartesian(ylim = c(-2, 2)) +
-  ggtitle("Works like a ggplot2 plot!")
+  ggplot2::coord_cartesian(ylim = c(-2, 2)) +
+  ggplot2::ggtitle("Works like a ggplot2 plot!")
 }
 
 }

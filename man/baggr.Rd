@@ -51,7 +51,7 @@ If test data is used, mean value of -2*lpd is reported as \code{mean_lpd}
 Bayesian inference on parameters of an average treatment effects model
 that's appropriate to the supplied
 individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-(For overall package help file see \code{?baggr_package})
+(For overall package help file see \link{baggr_package})
 }
 \details{
 Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.

@@ -14,7 +14,7 @@ convert_inputs(data, model, quantiles, group = "group",
 \item{data}{`data.frame`` with desired modelling input}
 
 \item{model}{valid model name used by baggr;
-see \code{\link[=baggr]{baggr()}} for allowed models
+see \link{baggr} for allowed models
 if \code{model = NULL}, this function will try to find appropriate model
 automatically}
 
@@ -27,12 +27,12 @@ automatically}
 \item{treatment}{name of column with treatment variable}
 
 \item{test_data}{same format as \code{data} argument, gets left aside for
-testing purposes (see \code{\link[=baggr]{baggr()}})}
+testing purposes (see \link{baggr})}
 }
 \value{
-R structure that's appropriate for use by \code{\link[=baggr]{baggr()}} Stan models;
+R structure that's appropriate for use by \link{baggr} Stan models;
 \code{group_label}, \code{model} and \code{n_groups} are incuded as attributes
-and are necessary for \code{\link[=baggr]{baggr()}} to work correctly
+and are necessary for \link{baggr} to work correctly
 }
 \description{
 Convert inputs for baggr models
@@ -41,7 +41,7 @@ Converts data to Stan inputs, checks intergrity of data
 and suggests default model if needed.
 }
 \details{
-Typically this function is only called within \code{\link[=baggr]{baggr()}} and you do
+Typically this function is only called within \link{baggr} and you do
 not need to use it yourself. It can be useful to understand inputs
 or to run models which you modified yourself.
 }

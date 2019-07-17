@@ -2,7 +2,7 @@
 #'
 #' Given individual level data, return list of summary statistics
 #' Of quantile means and Sigma's, as well as K, N.
-#' This operation is done automatically inside [baggr()] function
+#' This operation is done automatically inside [baggr] function
 #' but it can be used for exploring input data.
 #'
 #' @param data      a data.frame with grouping, outcome, treatment variables
@@ -12,8 +12,8 @@
 #' @param treatment character: column name in `data` for treatment variable
 #'
 #' @details
-#' This function is intended for data exploration outside of [baggr()]
-#' function. When calling [baggr()], individual-level data should be supplied --
+#' This function is intended for data exploration outside of [baggr]
+#' function. When calling [baggr], individual-level data should be supplied --
 #' they will be summarised automatically.
 #' (See \code{\link{baggr}} for documentation of how columns should be formatted.)
 #'

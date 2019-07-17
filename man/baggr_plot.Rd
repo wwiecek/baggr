@@ -38,7 +38,7 @@ plot(fit, style = "areas", order = FALSE)
 
 }
 \seealso{
-\code{\link[bayesplot]{MCMC-intervals}}
+\link[bayesplot:MCMC-intervals]{bayesplot::MCMC-intervals}
 }
 \author{
 Witold Wiecek, Rachael Meager

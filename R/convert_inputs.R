@@ -5,7 +5,7 @@
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
-#'              see [baggr()] for allowed models
+#'              see [baggr] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
@@ -13,11 +13,11 @@
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
-#'                  testing purposes (see [baggr()])
-#' @return R structure that's appropriate for use by [baggr()] Stan models;
+#'                  testing purposes (see [baggr])
+#' @return R structure that's appropriate for use by [baggr] Stan models;
 #'         `group_label`, `model` and `n_groups` are incuded as attributes
-#'         and are necessary for [baggr()] to work correctly
-#' @details Typically this function is only called within [baggr()] and you do
+#'         and are necessary for [baggr] to work correctly
+#' @details Typically this function is only called within [baggr] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'

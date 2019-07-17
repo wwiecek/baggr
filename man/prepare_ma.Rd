@@ -40,7 +40,7 @@ Input must be pre-formatted appropriately.
 }
 \details{
 The conversions done by this function are not typically needed and may happen automatically
-when data is fed to \code{\link[=baggr]{baggr()}}. However, this function can be used to explicitly
+when data is fed to \link{baggr}. However, this function can be used to explicitly
 convert from full to reduced (summarised) data without analysing it in any model.
 It can be useful for examining your data.
 
@@ -52,7 +52,7 @@ If multiple operations are performed, they are taken in this order:
 }
 }
 \seealso{
-\code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs;
+\link{convert_inputs} for how data is converted into Stan inputs;
 }
 \author{
 Witold Wiecek

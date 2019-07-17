@@ -22,7 +22,7 @@
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
-#' when data is fed to [baggr()]. However, this function can be used to explicitly
+#' when data is fed to [baggr]. However, this function can be used to explicitly
 #' convert from full to reduced (summarised) data without analysing it in any model.
 #' It can be useful for examining your data.
 #'
@@ -32,7 +32,7 @@
 #' 3) summarising data.
 #'
 #' @author Witold Wiecek
-#' @seealso [convert_inputs()] for how data is converted into Stan inputs;
+#' @seealso [convert_inputs] for how data is converted into Stan inputs;
 #' @export
 #' @import stats
 #'
