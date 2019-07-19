@@ -7,6 +7,12 @@ check_columns_numeric <- function(data) {
 }
 
 check_columns <- function(data, outcome, group, treatment)  {
+
+  lapply(list(outcome, group, treatment), is.character)
+
+  if(!(is.character(outcome) && is.character(group) && is.character(treatment)))
+    stop('Arguments "outcome", "group", "treatment" must be of character type')
+
   # Do columns exist?
   if(is.null(data[[outcome]]))
     stop(paste0("There's no column '", outcome, "' in data"))
@@ -30,7 +36,7 @@ check_columns <- function(data, outcome, group, treatment)  {
     stop("Some of group values are NA")
 
   # Treatment has to be dichotomous
-  if(!any(data[[treatment]] == 0 || data[[treatment]] == 1))
+  if(!any((data[[treatment]] = 0) | (data[[treatment]] = 1)))
     stop("Treatment column has to have values 0 or 1")
 
 }
