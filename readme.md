@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![Travis build
-status](https://travis-ci.org/wwiecek/baggr.svg?branch=master)](https://travis-ci.org/wwiecek/baggr)
+status](https://travis-ci.org/wwiecek/baggr.svg?branch=cran)](https://travis-ci.org/wwiecek/baggr)
 <!-- badges: end -->
 
 This is *baggr* (pronounced as *bagger*, not *badger*), a Bayesian
