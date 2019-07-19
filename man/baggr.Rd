@@ -13,7 +13,8 @@ baggr(data, model = NULL, prior = NULL, pooling = "partial",
 \item{data}{data frame with summary or individual level data to meta-analyse}
 
 \item{model}{if \code{NULL}, detected automatically from input data
-otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
+otherwise choose from
+\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
 
 \item{prior}{list of prior arguments passed directly to each model (see Details)}
 
@@ -57,7 +58,11 @@ individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
 All three are discussed in depth in \href{baggr.html}{the package vignette}.
 
-\strong{Data.} For aggregate data models you need a data frame with columns \code{tau} and \code{se} or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu}.
+\strong{Data.} For aggregate data models you need a data frame with columns
+\code{tau} and \code{se} or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu}.
+An additional column can be used to provide labels for each group
+(by default column \code{group} is used if available, but this can be
+customised -- see the example below).
 For individual level data three columns are needed: outcome, treatment, group. These
 are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
 
@@ -75,7 +80,8 @@ immediately recognisable by \code{baggr()}.
 
 If no model is specified, the function tries to infer the appropriate model automatically.
 
-\strong{Priors.} It is optional to specify priors yourself, as the package will try propose an appropriate
+\strong{Priors.} It is optional to specify priors yourself,
+as the package will try propose an appropriate
 prior for the input data if \code{prior=NULL}.
 To priors yourself, please refer to the list in the \href{baggr.html}{vignette}.
 }

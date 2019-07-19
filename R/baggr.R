@@ -37,6 +37,9 @@
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
 #' `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
+#' An additional column can be used to provide labels for each group
+#' (by default column `group` is used if available, but this can be
+#' customised -- see the example below).
 #' For individual level data three columns are needed: outcome, treatment, group. These
 #' are identified by using the `outcome`, `treatment` and `group` arguments.
 #'
