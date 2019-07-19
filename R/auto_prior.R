@@ -7,12 +7,12 @@ auto_prior <- function(data, stan_data, model, outcome = "outcome",
 
   message("Automatically setting prior values:")
   if(model %in% c("rubin")) {
-    prior_list[["prior_upper_sigma_tau"]] <- 10*var(data$tau)
+    prior_list[["prior_upper_sigma_tau"]] <- 10*sd(data$tau)
     message(paste0("* sigma_tau ~ Uniform(0, ",
                    round(prior_list[["prior_upper_sigma_tau"]], 2), ")"))
     prior_list[["prior_tau_mean"]] <- 0
-    prior_list[["prior_tau_scale"]] <- 1000
-    message(paste0("* tau ~ Normal(0, 1000)"))
+    prior_list[["prior_tau_scale"]] <- 100
+    message(paste0("* tau ~ Normal(0, 100)"))
   }
   if(model == "mutau") {
     # Remember, first row is always mu (baseline), second row is tau (effect)

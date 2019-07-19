@@ -7,7 +7,8 @@
 #'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
-#'              otherwise choose from \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+#'              otherwise choose from
+#'              \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
 #' @param pooling choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}
 #' @param prior list of prior arguments passed directly to each model (see Details)
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
@@ -34,7 +35,8 @@
 #' Running `baggr` requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
 #' All three are discussed in depth in [the package vignette](baggr.html).
 #'
-#' __Data.__ For aggregate data models you need a data frame with columns `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
+#' __Data.__ For aggregate data models you need a data frame with columns
+#' `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
 #' For individual level data three columns are needed: outcome, treatment, group. These
 #' are identified by using the `outcome`, `treatment` and `group` arguments.
 #'
@@ -52,7 +54,8 @@
 #'
 #'  If no model is specified, the function tries to infer the appropriate model automatically.
 #'
-#' __Priors.__ It is optional to specify priors yourself, as the package will try propose an appropriate
+#' __Priors.__ It is optional to specify priors yourself,
+#' as the package will try propose an appropriate
 #' prior for the input data if `prior=NULL`.
 #' To priors yourself, please refer to the list in the [vignette](baggr.html).
 #'
@@ -131,6 +134,12 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
   } else {
     # !!!check for allowed priors here!!!
   }
+
+  # Check priors
+  if(model %in% c("rubin"))
+    if(prior[["prior_upper_sigma_tau"]] < 10*sd(data$tau))
+      message("Prior for SD(tau) is lower than 10*observed SD of effects. Please use caution.")
+
   for(nm in names(prior))
     stan_data[[nm]] <- prior[[nm]]
 
