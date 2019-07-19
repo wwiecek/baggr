@@ -23,8 +23,8 @@ A list with mean estimates for control and treatment (\code{y_0} and \code{y_1})
 variance-covariance matrices (\code{Sigma_y_k_0} and \code{Sigma_y_k_1}).
 }
 \description{
-Given individual level data, return list of summary statistics
-Of quantile means and Sigma's, as well as K, N.
+Given individual-level data, returns a list of summary statistics
+for a specified set of quantiles in both the treatment and control groups along with their sampling covariance matrices, for each group.
 This operation is done automatically inside \code{\link[=baggr]{baggr()}} function
 but it can be used for exploring input data.
 }
@@ -36,7 +36,8 @@ they will be summarised automatically.
 
 Estimates are obtained externally via \code{\link[quantreg]{rq}} function of the
 \code{quantreg} package. This implementation is experimental and will change in the
-future versions of the package.
+future versions of the package. The covariance matrices are computed from this output using the Mosteller (1946) asymptotic result.
+The current version of the function also returns K and N in the list.
 }
 \examples{
 summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),

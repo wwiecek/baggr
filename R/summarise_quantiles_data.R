@@ -1,7 +1,7 @@
 #' summarise_quantiles_data
 #'
-#' Given individual level data, return list of summary statistics
-#' Of quantile means and Sigma's, as well as K, N.
+#' Given individual-level data, returns a list of summary statistics
+#' for a specified set of quantiles in both the treatment and control groups along with their sampling covariance matrices, for each group.
 #' This operation is done automatically inside [baggr()] function
 #' but it can be used for exploring input data.
 #'
@@ -19,7 +19,8 @@
 #'
 #' Estimates are obtained externally via \code{\link[quantreg]{rq}} function of the
 #' `quantreg` package. This implementation is experimental and will change in the
-#' future versions of the package.
+#' future versions of the package. The covariance matrices are computed from this output using the Mosteller (1946) asymptotic result.
+#' The current version of the function also returns K and N in the list.
 #'
 #' @return
 #' A list with mean estimates for control and treatment (`y_0` and `y_1`) and
