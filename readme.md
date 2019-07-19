@@ -3,6 +3,12 @@
 
 # *baggr*
 
+<!-- badges: start -->
+
+[![Travis build
+status](https://travis-ci.org/wwiecek/baggr.svg?branch=master)](https://travis-ci.org/wwiecek/baggr)
+<!-- badges: end -->
+
 This is *baggr* (pronounced as *bagger*, not *badger*), a Bayesian
 meta-analysis package for R using [Stan](https://mc-stan.org/). *Baggr*
 is intended to be user-friendly and transparent so that it’s easier to
