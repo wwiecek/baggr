@@ -14,7 +14,8 @@
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
 #'                    (\code{mu}) data exists.
-#' @param outcome   character; column name in (individual-level) \code{data} with outcome variable values
+#' @param outcome   character; column name in (individual-level)
+#'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
@@ -50,7 +51,7 @@
 #'
 #' __Models.__ Available models are:
 #'
-#' * for the means: `"rubin"`` model for average treatment effect, `"mutau"` version which takes
+#' * for the means: `"rubin"` model for average treatment effect, `"mutau"` version which takes
 #'   into account means in control group, `"full"`` model which reduces to "mu and tau"
 #'   (if no covariates are used)
 #' * "quantiles" model is also available (see Meager, 2019 in references)

@@ -29,6 +29,4 @@ Compare a(ny) number of baggr models side by side
 }
 \author{
 Witold Wiecek
-
-Witold Wiecek, Rachael Meager
 }

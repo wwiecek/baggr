@@ -15,7 +15,6 @@
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
-#' @author Witold Wiecek, Rachael Meager
 
 baggr_compare <- function(...,
                           style   = "areas",

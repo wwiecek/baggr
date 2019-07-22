@@ -32,9 +32,9 @@ but it can be used for exploring input data.
 This function is intended for data exploration outside of \link{baggr}
 function. When calling \link{baggr}, individual-level data should be supplied --
 they will be summarised automatically.
-(See \code{\link{baggr}} for documentation of how columns should be formatted.)
+(See \link{baggr} for documentation of how columns should be formatted.)
 
-Estimates are obtained externally via \code{\link[quantreg]{rq}} function of the
+Estimates are obtained externally via \code{quantreg::rq} function of the
 \code{quantreg} package. This implementation is experimental and will change in the
 future versions of the package.
 }

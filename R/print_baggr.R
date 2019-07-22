@@ -13,8 +13,6 @@
 #' @importFrom crayon blue
 #' @export
 #' @method print baggr
-#' @details
-#' TBC
 #'
 
 print.baggr <- function(x, ...) {

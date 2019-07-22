@@ -15,9 +15,9 @@
 #' This function is intended for data exploration outside of [baggr]
 #' function. When calling [baggr], individual-level data should be supplied --
 #' they will be summarised automatically.
-#' (See \code{\link{baggr}} for documentation of how columns should be formatted.)
+#' (See [baggr] for documentation of how columns should be formatted.)
 #'
-#' Estimates are obtained externally via \code{\link[quantreg]{rq}} function of the
+#' Estimates are obtained externally via `quantreg::rq` function of the
 #' `quantreg` package. This implementation is experimental and will change in the
 #' future versions of the package.
 #'

@@ -30,7 +30,8 @@ with the same columns as \code{data} argument}
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}
 
-\item{outcome}{character; column name in (individual-level) \code{data} with outcome variable values}
+\item{outcome}{character; column name in (individual-level)
+\code{data} with outcome variable values}
 
 \item{group}{character; column name in \code{data} with grouping factor;
 it's necessary for individual-level data, for summarised data
@@ -56,7 +57,7 @@ individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 }
 \details{
 Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-All three are discussed in depth in \href{baggr.html}{the package vignette}.
+All three are discussed in depth in the package vignette (\code{vignette("baggr")}).
 
 \strong{Data.} For aggregate data models you need a data frame with columns
 \code{tau} and \code{se} or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu}.
@@ -73,9 +74,10 @@ immediately recognisable by \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"`` model for average treatment effect, }"mutau"\code{version which takes into account means in control group,}"full"`` model which reduces to "mu and tau"
+\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"} version which takes
+into account means in control group, `"full"`` model which reduces to "mu and tau"
 (if no covariates are used)
-\item "quantiles" model is also available (see Meager, 2019 and \href{baggr.html}{vignette} for details)
+\item "quantiles" model is also available (see Meager, 2019 in references)
 }
 
 If no model is specified, the function tries to infer the appropriate model automatically.
@@ -83,7 +85,7 @@ If no model is specified, the function tries to infer the appropriate model auto
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate
 prior for the input data if \code{prior=NULL}.
-To priors yourself, please refer to the list in the \href{baggr.html}{vignette}.
+To priors yourself, please refer to the list in the \code{vignette("baggr")}
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),

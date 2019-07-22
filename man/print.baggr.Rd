@@ -16,6 +16,3 @@ to or from other methods (\code{print}  requirement)}
 This \code{print} method for a very concise summary of main model features.
 More info is included in the summary of the model and its attributes.
 }
-\details{
-TBC
-}
