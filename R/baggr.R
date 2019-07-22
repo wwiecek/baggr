@@ -33,7 +33,7 @@
 #' @details
 #'
 #' Running `baggr` requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-#' All three are discussed in depth in [the package vignette](baggr.html).
+#' All three are discussed in depth in the package vignette (`vignette("baggr")`).
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
 #' `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
@@ -53,14 +53,14 @@
 #' * for the means: `"rubin"`` model for average treatment effect, `"mutau"` version which takes
 #'   into account means in control group, `"full"`` model which reduces to "mu and tau"
 #'   (if no covariates are used)
-#' * "quantiles" model is also available (see Meager, 2019 and [vignette](baggr.html) for details)
+#' * "quantiles" model is also available (see Meager, 2019 in references)
 #'
 #'  If no model is specified, the function tries to infer the appropriate model automatically.
 #'
 #' __Priors.__ It is optional to specify priors yourself,
 #' as the package will try propose an appropriate
 #' prior for the input data if `prior=NULL`.
-#' To priors yourself, please refer to the list in the [vignette](baggr.html).
+#' To priors yourself, please refer to the list in the `vignette("baggr")`
 #'
 #'
 #'

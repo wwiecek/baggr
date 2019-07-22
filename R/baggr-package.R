@@ -9,7 +9,7 @@
 #' This is only a sumple package help file.
 #' For documentation of the main function for conducting analyses see [baggr].
 #' For description of models, data types and priors available in the package,
-#' try the built-in [vignette](baggr.html).
+#' try the built-in vignette (`vignette("baggr")`).
 #'
 #' @docType package
 #' @name baggr_package
@@ -19,8 +19,6 @@
 #' @import rstantools
 #' @importFrom rstan sampling
 #'
-#' @references
-#' Stan Development Team (2018). RStan: the R interface to Stan. R package version 2.17.3. http://mc-stan.org
 #' @author Witold Wiecek, Rachael Meager
 
 NULL
