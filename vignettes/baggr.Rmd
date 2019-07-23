@@ -149,7 +149,7 @@ baggr_schools
 <!-- # ``` -->
 <!-- # _baggr_ will only understand the 3 types of formatting described above, and while we have already stacked this dataset, we now need to choose a single outcome to focus on.  ] -->
 
-Currently, all our models specify Gaussian effects distributions across groups. This is generally appropriate as a first pass at the problem (see Rubin 1981, Gelman et al 2004 and McCollough and Nuehaus 2011 for more) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyperdistribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependences between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself. 
+Currently, all our models specify Gaussian effects distributions across groups. This is generally appropriate as a first pass at the problem (see Rubin 1981, Gelman et al 2004 and McCollough and Nuehaus 2011 for more) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyperdistribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependencies between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself. 
 
 ## Understanding and criticising _baggr_ model performance
 
@@ -253,7 +253,9 @@ fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", po
 fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
 fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "full")
 ```
-We can now ordinally compare the performance of the two models using the mean log predictive density. This itself is a density as the name suggests so we will compute the log expected value of this density: here, as before, a number closer to zero is better. In this case the full pooling model actually does slightly better:
+
+We can compare the performance of the two models using the mean log predictive density. This itself is a density as the name suggests so we will compute the log expected value of this density: here, as before, a number closer to zero is better. In this case the full pooling model actually does slightly better:
+
 ```{r}
 fit1$mean_lpd
 fit2$mean_lpd

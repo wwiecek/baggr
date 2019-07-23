@@ -29,7 +29,7 @@ ggplot2 object
 }
 \description{
 Extracts study effects from the  \code{baggr} model and sends them to
-one of \code{bayesplot} package plotting functions (with some embelishments).
+one of \code{bayesplot} package plotting functions.
 }
 \examples{
 fit <- baggr(schools, pooling = "none")

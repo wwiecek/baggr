@@ -1,7 +1,7 @@
 #' Plotting method in baggr package
 #'
 #' Extracts study effects from the  \code{baggr} model and sends them to
-#' one of \code{bayesplot} package plotting functions (with some embelishments).
+#' one of \code{bayesplot} package plotting functions.
 #'
 #' @param bg object of class \code{baggr}
 #' @param mean logical; plot mean treatment effect alongside individual study effects?

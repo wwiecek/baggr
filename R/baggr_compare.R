@@ -11,7 +11,7 @@
 #'                display multiple plots side-by-side.
 #' @return ggplot is plotted and an extra comparison printed.
 #'         Returned value is a list that contains
-#'         the models, the plot and printed summaries. (WIP)
+#'         the models, the plot and printed summaries.
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2

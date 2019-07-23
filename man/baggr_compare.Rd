@@ -22,7 +22,7 @@ display multiple plots side-by-side.}
 \value{
 ggplot is plotted and an extra comparison printed.
 Returned value is a list that contains
-the models, the plot and printed summaries. (WIP)
+the models, the plot and printed summaries.
 }
 \description{
 Compare a(ny) number of baggr models side by side
