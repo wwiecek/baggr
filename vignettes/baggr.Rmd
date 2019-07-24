@@ -119,7 +119,7 @@ schools
 ```
 
 
-To fit this model in Stan (having followed the installation instructions) we can follow ["How to use rstan" example](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-use-rstan). To fit the model in _baggr_ (also having followed the installation instructions and loaded the package): 
+To fit the model in _baggr_ (having followed the installation instructions and loaded the package): 
 
 ```{r eval=FALSE}
 baggr_schools <- baggr(schools, model = "rubin", pooling = "partial")
@@ -133,7 +133,7 @@ Printing `baggr_schools` returns a summary of the posterior inference. First _ba
 print(baggr_schools)
 ```
 
-This is quite similar to the output from the version of the model suggested in ["How to use rstan"]((https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)) tutorial, the small difference probably arising from the different default priors.
+This is quite similar to the output from the version of the model suggested in ["How to use rstan"](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started) tutorial, the small difference probably arising from the different default priors.
 
 As discussed above, it is possible for the user to override the default priors and specify her own priors. The first parameter you can change is the upper bound of the uniform prior on $\sigma_{\tau}$, called `"prior_upper_sigma_tau"`, the second is the mean of the prior on $\tau$ itself called `"prior_tau_mean"`, the third is the scale (standard deviation) of the prior on $\tau$ itself called `"prior_tau_scale"`. Here I have changed all three as an example (at this stage in _baggr_ if you want to alter one you must provide the full vector): 
 ```{r eval=FALSE}
