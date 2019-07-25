@@ -39,13 +39,13 @@ it will be used as labels for groups when displaying results}
 
 \item{treatment}{character; column name in (individual-level) \code{data} with treatment factor;}
 
-\item{warn}{print warning if Rhat exceeds 1.05}
+\item{warn}{print an additional warning if Rhat exceeds 1.05}
 
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 number of iterations etc.}
 }
 \value{
-\code{baggr} class structure: list with Stan model fit embedded inside it,
+\code{baggr} class structure: a list including Stan model fit
 alongside input data, pooling metrics, various model properties.
 If test data is used, mean value of -2*lpd is reported as \code{mean_lpd}
 }
@@ -67,15 +67,16 @@ customised -- see the example below).
 For individual level data three columns are needed: outcome, treatment, group. These
 are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
 
-Most of data preparation steps (summarising, standardisation etc.) can be done
-automatically through \code{\link[baggr]{prepare_ma}}.
-While the preparation step is optional it will also automatically format data inputs to be
-immediately recognisable by \code{baggr()}.
+When working with individual-level data,
+many data preparation steps (summarising, standardisation etc.)
+can be done through a helper function \link{prepare_ma}.
+Using it will also automatically format data inputs to be
+work with \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
 \item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"} version which takes
-into account means in control group, `"full"`` model which reduces to "mu and tau"
+into account means of control groups, `"full"`` model which reduces to "mu and tau"
 (if no covariates are used)
 \item "quantiles" model is also available (see Meager, 2019 in references)
 }
@@ -85,15 +86,15 @@ If no model is specified, the function tries to infer the appropriate model auto
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate
 prior for the input data if \code{prior=NULL}.
-To priors yourself, please refer to the list in the \code{vignette("baggr")}
+To set the priors yourself, please refer to the list in the \code{vignette("baggr")}
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-"se" = rep(1, 8),
-"state" = datasets::state.name[1:8])
-baggr(df_pooled) #automatically detects the input data
-# correct labels & passing some options to Stan
-baggr(df_pooled, group = "state", iter = 200)
+                        "se" = rep(1, 8),
+                        "state" = datasets::state.name[1:8])
+baggr(df_pooled) #baggr automatically detects the input data
+# correct labels, different pooling & passing some options to Stan
+baggr(df_pooled, group = "state", pooling = "full", iter = 500)
 
 }
 \author{
