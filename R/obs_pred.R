@@ -1,6 +1,6 @@
 obs_pred <- function(bg, interval = .8) {
   # rbind(
-  #   as.data.frame(study_effects(bg, interval = interval), type = "model"),
+  #   as.data.frame(group_effects(bg, interval = interval), type = "model"),
   #
   #
   #

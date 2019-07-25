@@ -30,7 +30,7 @@ baggr_plot <- function(bg, mean = FALSE,
                        style = "intervals",
                        prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {
-  m <- study_effects(bg)
+  m <- group_effects(bg)
   # if(mean)
   #   m <- cbind(m,
   #              "Mean treatment effect" = treatment_effect(bg)$tau)

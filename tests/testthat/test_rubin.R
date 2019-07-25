@@ -97,12 +97,12 @@ test_that("Pooling metrics", {
 
 
 test_that("Calculation of effects works", {
-  expect_is(study_effects(bg5_p), "array")
+  expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
 
-  expect_identical(dim(study_effects(bg5_n)), as.integer(c(200, 8 , 1)))
-  expect_identical(dim(study_effects(bg5_p)), as.integer(c(200, 8 , 1)))
-  expect_identical(dim(study_effects(bg5_f)), as.integer(c(200, 8 , 1)))
+  expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
+  expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
+  expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
 })
 
@@ -126,7 +126,7 @@ test_that("Test data can be used in the Rubin model", {
   bg_lpd <- baggr(df_pooled[1:6,], test_data = df_pooled[7:8,], iter = 500)
   expect_is(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
-  expect_equal(dim(study_effects(bg_lpd)), c(1000, 6, 1))
+  expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
   # make sure it's not 0
   expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -3.6, tolerance = 1)
 
@@ -159,7 +159,7 @@ test_that("Extracting treatment/study effects works", {
 # mint()
 # prepare_ma()
 # print_baggr()
-# study_effects() (above)
+# group_effects() (above)
 
 # v0.2
 # baggr_compare()

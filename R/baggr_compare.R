@@ -73,7 +73,7 @@ baggr_compare <- function(...,
       # Note: pipe operators are dplyr not used here for compatibility
       ll <- lapply(models, function(x) {
         # will need to be modified for quantiles models case:
-        m <- as.data.frame(study_effects(x, summary = TRUE)[,,i])
+        m <- as.data.frame(group_effects(x, summary = TRUE)[,,i])
         m$group <- rownames(m)
         m
       })
