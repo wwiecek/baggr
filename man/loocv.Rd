@@ -34,7 +34,7 @@ option to return individual models.
 }
 \examples{
 \donttest{
-#even simple examples may take a long moment
+# even simple examples may take a while
 cv <- loocv(schools, pooling = "partial")
 print(cv) #returns the lpd value
 attributes(cv) #more information is included in the object

@@ -8,24 +8,39 @@ baggr_compare(..., style = "areas", arrange = "single")
 }
 \arguments{
 \item{...}{Either any number of objects of class \code{baggr}
-(you can name your objects, see example below)
+(you can name your objects, see the example below)
 or the same arguments you'd pass to baggr()
 function, but with \code{pooling = ...} omitted.
 In the latter case 3 models will be run, with
 pooling set to \code{none}, \code{partial} and \code{full}.}
 
-\item{style}{What kind of plot to display - see options for \code{plot.baggr}}
+\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
+passed to \code{style} argument in \link{baggr_plot}}
 
-\item{arrange}{If \code{single}, generate a single plot, if \code{grid}
-display multiple plots side-by-side.}
+\item{arrange}{If \code{single}, generate a comparison single plot;
+if \code{grid}, display multiple plots side-by-side.}
 }
 \value{
-ggplot is plotted and an extra comparison printed.
-Returned value is a list that contains
-the models, the plot and printed summaries.
+\code{ggplot} graphic is rendered
 }
 \description{
 Compare a(ny) number of baggr models side by side
+}
+\examples{
+# Most basic comparison between no, partial and full pooling
+# (This will run the models)
+baggr_compare(schools)
+
+# Compare existing models:
+bg1 <- baggr(schools, pooling = "partial")
+bg2 <- baggr(schools, pooling = "full")
+baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2,
+              arrange = "grid")
+
+# You can also compare different subsets of input data
+bg1_small <- baggr(schools[1:6,], pooling = "partial")
+baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)
+
 }
 \author{
 Witold Wiecek
