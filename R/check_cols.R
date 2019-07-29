@@ -8,8 +8,6 @@ check_columns_numeric <- function(data) {
 
 check_columns <- function(data, outcome, group, treatment)  {
 
-  lapply(list(outcome, group, treatment), is.character)
-
   if(!(is.character(outcome) && is.character(group) && is.character(treatment)))
     stop('Arguments "outcome", "group", "treatment" must be of character type')
 

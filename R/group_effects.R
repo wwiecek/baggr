@@ -9,9 +9,9 @@
 #' @return a matrix with MCMC samples or summaries
 #' @export
 
-study_effects <- function(bg, summary = FALSE, interval = .95) {
+group_effects <- function(bg, summary = FALSE, interval = .95) {
   if(class(bg) != "baggr")
-    stop("study_effects only works with 'baggr' class objects")
+    stop("group_effects only works with 'baggr' class objects")
 
   # m <- as.matrix(bg$fit)
 

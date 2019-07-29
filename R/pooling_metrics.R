@@ -45,7 +45,7 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
   } else if(bg$model == "full") {
     # note that we use a point estimate for sigma_k, so it's not fully Bayesian
     # but in the end we usually report a point estimate so this is acceptable for now
-    sigma_k <- study_effects(bg, summary = TRUE)[, "sd", 1]
+    sigma_k <- group_effects(bg, summary = TRUE)[, "sd", 1]
     sigma_tau <- sqrt(rstan::extract(bg$fit, pars = "sigma_mutau[2,2]")[[1]])
     # we add 3rd dimension to allow more than 1 parameter (in the future), e.g. Var
     ret <- array(0, dim = c(length(sigma_tau), bg$n_groups, 1))

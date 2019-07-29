@@ -38,6 +38,9 @@ convert_inputs <- function(data,
                         "mutau" = "pool_wide",
                         "full" = "individual",
                         "quantiles" = "individual") #for now no quantiles model from summary level data
+  data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
+                       "pool_wide" = "Aggregate (control and effects)",
+                       "individual" = "Individual-level")
   available_data <- detect_input_type(data, group)
 
   # if(available_data == "unknown")
@@ -51,7 +54,6 @@ convert_inputs <- function(data,
   if(available_data == "individual")
     check_columns(data, outcome, group, treatment)
 
-
   if(is.null(model)) {
     message("Attempting to infer the correct model for data.")
     # we take FIRST MODEL THAT SUITS OUR DATA!
@@ -63,17 +65,26 @@ convert_inputs <- function(data,
   }
 
   # Prompt and stop conversion for the CRAN release version of the package:
-  if(model != "rubin")
-    stop("In baggr v0.1 only Rubin model is enabled. More models will be available in the next release.")
+  # if(model != "rubin")
+    # stop("In baggr v0.1 only Rubin model is enabled.
+  # More models will be available in the next release.")
 
+  # Convert mutau data to Rubin model data if requested
+  # (For now disabled as it won't work with functions that then
+  #  re-use the input data)
+  # if(model == "rubin" && available_data == "pool_wide"){
+  #   data$se <- data$se.tau
+  #   data$se.tau <- data$se.mu <- data$mu <- NULL
+  #   available_data <- "pool_noctrl_narrow"
+  # }
 
   required_data <- model_data_types[[model]]
 
 
   if(required_data != available_data)
     stop(paste(
-      "Data provided is of type", available_data,
-      "and the model requires", required_data))
+      "Data provided is of type", data_type_names[available_data],
+      "and the model requires", data_type_names[required_data]))
   #for now this means no automatic conversion of individual->pooled
 
   # individual level data -----

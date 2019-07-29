@@ -23,7 +23,7 @@
 #'
 #' @examples
 #' \donttest{
-#' #even simple examples may take a long moment
+#' # even simple examples may take a while
 #' cv <- loocv(schools, pooling = "partial")
 #' print(cv) #returns the lpd value
 #' attributes(cv) #more information is included in the object
@@ -37,6 +37,7 @@
 #'
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
+#' @export
 #'
 
 loocv <- function(data, return_models = FALSE, ...) {
@@ -58,7 +59,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   # Model with all of data:
   full_fit <- try(baggr(data, ...))
   if(class(full_fit) == "try-error")
-    stop("Inference failed for the full model")
+    stop("Inference failed for the model with all data")
 
   # Prepare the arguments
   args[["data"]] <- data
@@ -121,9 +122,9 @@ loocv <- function(data, return_models = FALSE, ...) {
   loglik <-
     lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd"), 2, mean))
 
-  out <- structure(
-    -2*sum(unlist(loglik)),
-    df = data.frame(
+  out <- list(
+    lpd = -2*sum(unlist(loglik)),
+    df  = data.frame(
       "tau" = unlist(tau_estimate),
       "sigma_tau" = unlist(sd_estimate),
       "lpd" = unlist(loglik)),
@@ -142,6 +143,5 @@ loocv <- function(data, return_models = FALSE, ...) {
 
 #' @export
 print.baggr_cv <- function(x, ...) {
-  attributes(x) <- NULL
-  print(paste("log predictive density = ", format(x)))
+  print(paste("log predictive density = ", format(x$lpd)))
 }

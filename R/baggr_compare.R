@@ -1,20 +1,35 @@
 #' Compare a(ny) number of baggr models side by side
 #'
 #' @param ... Either any number of objects of class `baggr`
-#'            (you can name your objects, see example below)
+#'            (you can name your objects, see the example below)
 #'            or the same arguments you'd pass to baggr()
 #'            function, but with `pooling = ...` omitted.
 #'            In the latter case 3 models will be run, with
 #'            pooling set to `none`, `partial` and `full`.
-#' @param style What kind of plot to display - see options for `plot.baggr`
-#' @param arrange If `single`, generate a single plot, if `grid`
-#'                display multiple plots side-by-side.
-#' @return ggplot is plotted and an extra comparison printed.
-#'         Returned value is a list that contains
-#'         the models, the plot and printed summaries.
+#' @param style What kind of plot to display (if `arrange = "grid"`),
+#'              passed to `style` argument in [baggr_plot]
+#' @param arrange If `single`, generate a comparison single plot;
+#'                if `grid`, display multiple plots side-by-side.
+#' @return `ggplot` graphic is rendered
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
+#' @export
+#' @examples
+#' # Most basic comparison between no, partial and full pooling
+#' # (This will run the models)
+#' baggr_compare(schools)
+#'
+#' # Compare existing models:
+#' bg1 <- baggr(schools, pooling = "partial")
+#' bg2 <- baggr(schools, pooling = "full")
+#' baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2,
+#'               arrange = "grid")
+#'
+#' # You can also compare different subsets of input data
+#' bg1_small <- baggr(schools[1:6,], pooling = "partial")
+#' baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)
+#'
 
 baggr_compare <- function(...,
                           style   = "areas",
@@ -58,7 +73,7 @@ baggr_compare <- function(...,
       # Note: pipe operators are dplyr not used here for compatibility
       ll <- lapply(models, function(x) {
         # will need to be modified for quantiles models case:
-        m <- as.data.frame(study_effects(x, summary = TRUE)[,,i])
+        m <- as.data.frame(group_effects(x, summary = TRUE)[,,i])
         m$group <- rownames(m)
         m
       })
@@ -68,14 +83,6 @@ baggr_compare <- function(...,
                            data.frame(model = names(ll)[j], ll[[j]]))
       df_groups$group <- factor(df_groups$group,
                                     levels = unique(df_groups$group[order(df_groups$median)]))
-
-      # now treatment effect:
-      # df_trt <- dplyr::bind_rows(
-      #   lapply(models, function(x) {
-      #     m <- mint(treatment_effect(x)$tau)
-      #     m$group <- rownames(m)
-      #     m
-      #   }), .id = "model")
 
       # df <- rbind(df_groups, df_trt)
       df <- df_groups
@@ -102,6 +109,25 @@ baggr_compare <- function(...,
 
   if(length(plots) == 1)
     plots <- plots[[1]]
+
+  # Print treatment effects
+  mean_trt_effects <- do.call(rbind, (
+    lapply(models, function(x) {
+      if(x$pooling != "none")
+        mint(treatment_effect(x)$tau)
+    })))
+  sd_trt_effects <- do.call(rbind, (
+    lapply(models, function(x) {
+      if(x$pooling != "none")
+        mint(treatment_effect(x)$sigma_tau)
+    })))
+
+  cat("Mean treatment effects:\n")
+  print(mean_trt_effects)
+  cat("\n")
+  cat("SD for treatment effects:\n")
+  print(sd_trt_effects)
+
 
   if(return_models_flag)
     return(list(plot = plots, models = models))

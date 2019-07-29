@@ -31,7 +31,7 @@ plot_quantiles <- function(fit, ncol, hline = TRUE) {
   if(missing(ncol))
     ncol <- round((length(fit$quantiles) + 1)/2)
 
-  ste <- apply(baggr::study_effects(fit), c(2,3),
+  ste <- apply(group_effects(fit), c(2,3),
                function(x) c(quantile(x, .025), "mean" = mean(x), quantile(x, .975)))
   dimnames(ste)[[3]] <- fit$quantiles
 

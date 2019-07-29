@@ -97,22 +97,28 @@ test_that("Pooling metrics", {
 
 
 test_that("Calculation of effects works", {
-  expect_is(study_effects(bg5_p), "array")
+  expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
 
-  expect_identical(dim(study_effects(bg5_n)), as.integer(c(200, 8 , 1)))
-  expect_identical(dim(study_effects(bg5_p)), as.integer(c(200, 8 , 1)))
-  expect_identical(dim(study_effects(bg5_f)), as.integer(c(200, 8 , 1)))
+  expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
+  expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
+  expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
 })
 
 
 test_that("Plotting works", {
   expect_is(plot(bg5_n), "gg")
-  expect_is(plot(bg5_p), "gg")
-  expect_is(plot(bg5_f), "gg")
+  expect_is(plot(bg5_p, order = TRUE), "gg")
+  expect_is(plot(bg5_f, order = FALSE), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
+})
+
+test_that("printing works", {
+  print(bg5_n)
+  print(bg5_p)
+  print(bg5_f)
 })
 
 test_that("Test data can be used in the Rubin model", {
@@ -120,7 +126,7 @@ test_that("Test data can be used in the Rubin model", {
   bg_lpd <- baggr(df_pooled[1:6,], test_data = df_pooled[7:8,], iter = 500)
   expect_is(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
-  expect_equal(dim(study_effects(bg_lpd)), c(1000, 6, 1))
+  expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
   # make sure it's not 0
   expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -3.6, tolerance = 1)
 
@@ -146,13 +152,14 @@ test_that("Extracting treatment/study effects works", {
 # to-do list for tests -----
 
 # show_model()
+# For this we need a pre-commit hook to copy models from src/ to inst/models
 # check_columns()
 # convert_inputs(): if(required_data != available_data)
 # detect_input_type()
 # mint()
 # prepare_ma()
 # print_baggr()
-# study_effects() (above)
+# group_effects() (above)
 
 # v0.2
 # baggr_compare()
@@ -162,6 +169,43 @@ test_that("Extracting treatment/study effects works", {
 # mutau, full, qunatiles in
 #   baggr, study effects, trt effects, convert_inputs, pooling_metrics
 # baggr_plot() with multiple effects
+
+
+
+# tests for helper functions -----
+
+test_that("baggr_compare", {
+  # If I pass nothing
+  expect_error(baggr_compare(), "Must provide baggr models")
+  # pooling
+  expect_error(baggr_compare(schools, pooling = "full"))
+  # if I pass rubbish
+  expect_error(baggr_compare(cars))
+  # if I pass list of rubbish
+  expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
+  # Run models from baggr_compare:
+  bgcomp <- baggr_compare(schools, refresh = 0)
+  expect_is(bgcomp, "list")
+  # Compare existing models:
+  bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "single")
+  bgcomp3 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "grid")
+  expect_is(bgcomp2, "gg")
+  expect_is(bgcomp3, "list")
+  expect_is(bgcomp3[[1]], "gg")
+
+})
+
+test_that("loocv", {
+  # Rubbish model
+  expect_error(loocv(schools, model = "mutau"))
+  # Can't do pooling none
+  expect_error(loocv(schools, pooling = "none"))
+
+  loo_model <- loocv(schools, return_models = TRUE, refresh = 0)
+  expect_is(loo_model, "baggr_cv")
+  print(loo_model)
+})
+
 
 
 
