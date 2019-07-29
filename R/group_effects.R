@@ -4,7 +4,7 @@
 #'
 #' @param bg baggr object
 #' @param summary logical; summarise result?
-#' @param interval uncertainy interval width (numeric between 0 and 1) if summarising
+#' @param interval uncertainty interval width (numeric between 0 and 1), used if summarising
 #'
 #' @return a matrix with MCMC samples or summaries
 #' @export

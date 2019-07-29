@@ -1,6 +1,6 @@
 #' @title Convert inputs for baggr models
 #'
-#' Converts data to Stan inputs, checks intergrity of data
+#' Converts data to Stan inputs, checks integrity of data
 #' and suggests default model if needed.
 #'
 #' @param data `data.frame`` with desired modelling input
@@ -15,7 +15,7 @@
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
 #' @return R structure that's appropriate for use by [baggr] Stan models;
-#'         `group_label`, `model` and `n_groups` are incuded as attributes
+#'         `group_label`, `model` and `n_groups` are included as attributes
 #'         and are necessary for [baggr] to work correctly
 #' @details Typically this function is only called within [baggr] and you do
 #'          not need to use it yourself. It can be useful to understand inputs

@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{object of class \code{baggr}}
 
-\item{...}{currently unused by this pacakge: further arguments passed
+\item{...}{currently unused by this package: further arguments passed
 to or from other methods (\code{print}  requirement)}
 }
 \description{

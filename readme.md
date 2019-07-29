@@ -81,7 +81,7 @@ example of meta-analysis workflow with `baggr`.
 Included in baggr v0.1:
 
   - Hierarchical models for continuous outcomes
-  - Meta-analysis specfic summaries and plots
+  - Meta-analysis specific summaries and plots
   - Compatibility with `rstan` and `bayesplot` features
   - Both full and aggregate data sets can be used
   - Automatic choice of priors

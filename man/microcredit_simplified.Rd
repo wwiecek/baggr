@@ -4,7 +4,7 @@
 \name{microcredit_simplified}
 \alias{microcredit_simplified}
 \title{Simplified version of the microcredit dataset.}
-\format{A data frame with 14224 rows, 7 study idenfitifiers and 1 outcome}
+\format{A data frame with 14224 rows, 7 study identifiers and 1 outcome}
 \usage{
 microcredit_simplified
 }

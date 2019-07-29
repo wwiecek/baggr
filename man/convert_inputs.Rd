@@ -4,7 +4,7 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models
 
-Converts data to Stan inputs, checks intergrity of data
+Converts data to Stan inputs, checks integrity of data
 and suggests default model if needed.}
 \usage{
 convert_inputs(data, model, quantiles, group = "group",
@@ -31,13 +31,13 @@ testing purposes (see \link{baggr})}
 }
 \value{
 R structure that's appropriate for use by \link{baggr} Stan models;
-\code{group_label}, \code{model} and \code{n_groups} are incuded as attributes
+\code{group_label}, \code{model} and \code{n_groups} are included as attributes
 and are necessary for \link{baggr} to work correctly
 }
 \description{
 Convert inputs for baggr models
 
-Converts data to Stan inputs, checks intergrity of data
+Converts data to Stan inputs, checks integrity of data
 and suggests default model if needed.
 }
 \details{

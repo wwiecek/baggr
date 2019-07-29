@@ -5,7 +5,7 @@
 #' More info is included in the summary of the model and its attributes.
 #'
 #' @param x object of class `baggr`
-#' @param ... currently unused by this pacakge: further arguments passed
+#' @param ... currently unused by this package: further arguments passed
 #'            to or from other methods (\code{print}  requirement)
 #' @importFrom stats sd var median quantile
 #' @importFrom crayon bold

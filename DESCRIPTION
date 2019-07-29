@@ -24,3 +24,4 @@ Suggests: testthat, knitr
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
+Language: en-GB

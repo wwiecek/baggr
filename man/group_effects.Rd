@@ -11,7 +11,7 @@ group_effects(bg, summary = FALSE, interval = 0.95)
 
 \item{summary}{logical; summarise result?}
 
-\item{interval}{uncertainy interval width (numeric between 0 and 1) if summarising}
+\item{interval}{uncertainty interval width (numeric between 0 and 1), used if summarising}
 }
 \value{
 a matrix with MCMC samples or summaries
