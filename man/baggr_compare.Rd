@@ -27,6 +27,7 @@ if \code{grid}, display multiple plots side-by-side.}
 Compare a(ny) number of baggr models side by side
 }
 \examples{
+\donttest{
 # Most basic comparison between no, partial and full pooling
 # (This will run the models)
 baggr_compare(schools)
@@ -40,7 +41,7 @@ baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2,
 # You can also compare different subsets of input data
 bg1_small <- baggr(schools[1:6,], pooling = "partial")
 baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)
-
+}
 }
 \author{
 Witold Wiecek
