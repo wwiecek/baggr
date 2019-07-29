@@ -23,6 +23,9 @@
 #' As a default, rstan runs "silently" (`refresh=0`). To see sampling progress, please
 #' set e.g. `loocv(data, refresh = 500)`.
 #'
+#' For more information on cross-validation see
+#' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
+#'
 #' @examples
 #' \donttest{
 #' # even simple examples may take a while
@@ -32,11 +35,6 @@
 #' }
 #'
 #' @author Witold Wiecek
-#' @references Gelman A, Hwang J, Vehtari A.
-#'             Understanding predictive information criteria for Bayesian models.
-#'             Statistics and Computing. 2014 Nov 24(6):997-1016.
-#'             [PDF link.](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
-#'
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
 #' @export

@@ -25,11 +25,6 @@ Compute pooling metrics given a baggr meta-analysis model
 Pooling statistic describes the extent to which group-level estimates of treatment
 effect are shrunk toward average treatment effect in the meta-analysis model.
 }
-\references{
-Gelman, Andrew, and Jennifer Hill. Data Analysis Using Regression
-and Multilevel/Hierarchical Models. 1 edition. Cambridge; New York:
-Cambridge University Press, 2006.
-}
 \author{
 Witold Wiecek, Rachael Meager
 }

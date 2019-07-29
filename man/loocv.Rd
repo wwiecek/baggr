@@ -33,6 +33,9 @@ option before running \code{loocv}, e.g. \code{options(mc.cores = 4)} (by defaul
 4 MCMC chains in parallel).
 As a default, rstan runs "silently" (\code{refresh=0}). To see sampling progress, please
 set e.g. \code{loocv(data, refresh = 500)}.
+
+For more information on cross-validation see
+\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
 }
 \examples{
 \donttest{
@@ -42,12 +45,6 @@ print(cv)      # returns the lpd value
 attributes(cv) # more information is included in the object
 }
 
-}
-\references{
-Gelman A, Hwang J, Vehtari A.
-Understanding predictive information criteria for Bayesian models.
-Statistics and Computing. 2014 Nov 24(6):997-1016.
-\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{PDF link.}
 }
 \author{
 Witold Wiecek
