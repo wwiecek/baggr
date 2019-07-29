@@ -21,6 +21,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/wwiecek/baggr.svg?branch=cran)](https://travis-ci.org/wwiecek/baggr)
+[![codecov](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr)
 <!-- badges: end -->
 
 This is _baggr_, an [R package](https://www.r-project.org/) for Bayesian meta-analysis using [Stan](https://mc-stan.org/). _Baggr_ is intended to be user-friendly and transparent so that it's easier to understand the models you are building and criticise them. 

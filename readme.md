@@ -7,6 +7,7 @@
 
 [![Travis build
 status](https://travis-ci.org/wwiecek/baggr.svg?branch=cran)](https://travis-ci.org/wwiecek/baggr)
+[![codecov](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr)
 <!-- badges: end -->
 
 This is *baggr*, an [R package](https://www.r-project.org/) for Bayesian
