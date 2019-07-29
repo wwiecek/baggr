@@ -39,7 +39,7 @@ test_that("Error messages for wrong inputs are in place", {
 })
 
 
-test_that("We can run Rubin model with mutau outputs", {
+test_that("We can't run Rubin model with mutau outputs", {
   expect_error(baggr(df_mutau, model = "rubin", iter = 200, refresh = 0))
 })
 
@@ -49,7 +49,7 @@ bg5_p <- baggr(df_mutau, pooling = "partial", group = "state",
                iter = 200, chains = 2, refresh = 0)
 bg5_f <- baggr(df_mutau, pooling = "full", group = "state",
                iter = 200, chains = 2, refresh = 0)
-test_that("Different pooling methods work for Rubin model", {
+test_that("Different pooling methods work for mu tau model", {
   expect_is(bg5_n, "baggr")
   expect_is(bg5_p, "baggr")
   expect_is(bg5_f, "baggr")
@@ -118,7 +118,7 @@ test_that("Plotting works", {
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
 
-test_that("Test data can be used in the Rubin model", {
+test_that("Test data can be used in the mu tau model", {
 
   bg_lpd <- baggr(df_mutau[1:6,], test_data = df_mutau[7:8,], iter = 2000, chains = 2, refresh = 0)
   expect_is(bg_lpd, "baggr")

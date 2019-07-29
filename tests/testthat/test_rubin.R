@@ -33,18 +33,19 @@ test_that("Error messages for wrong inputs are in place", {
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
                    c("K", "tau_hat_k", "se_tau_k", "K_test", "test_tau_hat_k", "test_se_k"))
 
-  expect_warning(baggr(df_pooled, group = "state1000", iter = 50), "No labels will be added.")
+  expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
+                 "No labels will be added.")
 
 })
 
 
 
 bg5_n <- baggr(df_pooled, "rubin", pooling = "none", group = "state",
-               iter = 200, chains = 2)
+               iter = 200, chains = 2, refresh = 0)
 bg5_p <- baggr(df_pooled, "rubin", pooling = "partial", group = "state",
-               iter = 200, chains = 2)
+               iter = 200, chains = 2, refresh = 0)
 bg5_f <- baggr(df_pooled, "rubin", pooling = "full", group = "state",
-               iter = 200, chains = 2)
+               iter = 200, chains = 2, refresh = 0)
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
@@ -123,7 +124,7 @@ test_that("printing works", {
 
 test_that("Test data can be used in the Rubin model", {
 
-  bg_lpd <- baggr(df_pooled[1:6,], test_data = df_pooled[7:8,], iter = 500)
+  bg_lpd <- baggr(df_pooled[1:6,], test_data = df_pooled[7:8,], iter = 500, refresh = 0)
   expect_is(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
@@ -211,7 +212,7 @@ test_that("loocv", {
 
 # 8 schools test -----
 
-bg_s <- baggr(schools)
+bg_s <- baggr(schools, refresh = 0)
 
 test_that("The default 8 schools result is close to the result in BDA", {
   expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
