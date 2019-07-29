@@ -7,9 +7,8 @@ Test environments:
 * builder.r-hub.io/ (all platforms)
 
 Check results:
-There are no WARNINGs or ERRORs and 2 NOTEs:
+There are no WARNINGs or ERRORs and 3 NOTEs:
 
-(only on Windows)
 N checking installed package size ... NOTE
     installed size is  8.2Mb
     sub-directories of 1Mb or more:
@@ -17,4 +16,8 @@ N checking installed package size ... NOTE
 
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements.    
-
+  
+* checking examples ... NOTE
+Examples with CPU or elapsed time > 5s
+               user system elapsed
+baggr_compare 6.912   0.14   7.364
