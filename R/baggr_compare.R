@@ -16,6 +16,7 @@
 #' @import ggplot2
 #' @export
 #' @examples
+#' \donttest{
 #' # Most basic comparison between no, partial and full pooling
 #' # (This will run the models)
 #' baggr_compare(schools)
@@ -29,7 +30,7 @@
 #' # You can also compare different subsets of input data
 #' bg1_small <- baggr(schools[1:6,], pooling = "partial")
 #' baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)
-#'
+#' }
 
 baggr_compare <- function(...,
                           style   = "areas",
