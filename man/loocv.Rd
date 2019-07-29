@@ -28,16 +28,18 @@ Inputs to this function are same as to \link{baggr}, with additional
 option to return individual models.
 }
 \details{
-\strong{It is recommended to set \code{mc.cores} option before running \code{loocv}, e.g. \code{options(mc.cores = 4)}.}
-
-\strong{This section is under construction}
+For running more computation-intensive models, consider setting the \code{mc.cores}
+option before running \code{loocv}, e.g. \code{options(mc.cores = 4)} (by default \code{baggr} runs
+4 MCMC chains in parallel).
+As a default, rstan runs "silently" (\code{refresh=0}). To see sampling progress, please
+set e.g. \code{loocv(data, refresh = 500)}.
 }
 \examples{
 \donttest{
 # even simple examples may take a while
 cv <- loocv(schools, pooling = "partial")
-print(cv) #returns the lpd value
-attributes(cv) #more information is included in the object
+print(cv)      # returns the lpd value
+attributes(cv) # more information is included in the object
 }
 
 }

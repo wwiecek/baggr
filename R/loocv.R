@@ -17,16 +17,18 @@
 #' these can be examined by using `attributes()` function
 #'
 #' @details
-#' __It is recommended to set `mc.cores` option before running `loocv`, e.g. `options(mc.cores = 4)`.__
-#'
-#' __This section is under construction__
+#' For running more computation-intensive models, consider setting the `mc.cores`
+#' option before running `loocv`, e.g. `options(mc.cores = 4)` (by default `baggr` runs
+#' 4 MCMC chains in parallel).
+#' As a default, rstan runs "silently" (`refresh=0`). To see sampling progress, please
+#' set e.g. `loocv(data, refresh = 500)`.
 #'
 #' @examples
 #' \donttest{
 #' # even simple examples may take a while
 #' cv <- loocv(schools, pooling = "partial")
-#' print(cv) #returns the lpd value
-#' attributes(cv) #more information is included in the object
+#' print(cv)      # returns the lpd value
+#' attributes(cv) # more information is included in the object
 #' }
 #'
 #' @author Witold Wiecek
@@ -48,16 +50,17 @@ loocv <- function(data, return_models = FALSE, ...) {
     stop("For a model with no pooling LOO CV doesn't exist.")
 
   # Set parallel up...
-  if(is.null(getOption("mc.cores"))){
-    cat(paste0("loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
-    temp_cores <- TRUE
-    options(mc.cores = parallel::detectCores())
-  } else {
-    temp_cores <- FALSE
-  }
+  # if(is.null(getOption("mc.cores"))){
+  #   cat(paste0("loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
+  #   temp_cores <- TRUE
+  #   options(mc.cores = parallel::detectCores())
+  # } else {
+  #   temp_cores <- FALSE
+  # }
+  temp_cores <- FALSE
 
   # Model with all of data:
-  full_fit <- try(baggr(data, ...))
+  full_fit <- try(baggr(data, refresh = 0, ...))
   if(class(full_fit) == "try-error")
     stop("Inference failed for the model with all data")
 
@@ -102,6 +105,8 @@ loocv <- function(data, return_models = FALSE, ...) {
     utils::setTxtProgressBar(pb, (i-1)/K)
 
     # Run baggr models:
+    if(is.null(args[["refresh"]]))
+      args[["refresh"]] <- 0
     res <- do.call(baggr, args)
 
     # Sanitized version:
