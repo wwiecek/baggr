@@ -89,6 +89,8 @@ test_that("Pooling metrics", {
   expect_is(pp, "array")
   expect_gt(min(pp), 0)
   expect_lt(max(pp), 1)
+  expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
+
   # since all SEs are the same, pooling should be the same for all sites
   print(pp)
   # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
@@ -206,6 +208,7 @@ test_that("loocv", {
   expect_is(loo_model, "baggr_cv")
   print(loo_model)
 })
+
 
 
 

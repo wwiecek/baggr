@@ -30,7 +30,7 @@ test_that("Error messages for wrong inputs are in place", {
   df_na <- df_mutau; df_na$mu <- as.character(df_na$mu)
   expect_error(baggr(df_na),"are not numeric")
 
-  expect_warning(baggr(df_mutau, group = "state1000", iter = 50), "No labels will be added.")
+  expect_warning(baggr(df_mutau, group = "state1000", iter = 50, refresh = 0), "No labels will be added.")
   expect_identical(names(convert_inputs(df_mutau, "mutau")),
                    c("K", "P", "tau_hat_k", "se_tau_k", "K_test", "test_tau_hat_k", "test_se_k"))
 
