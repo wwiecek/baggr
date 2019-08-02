@@ -1,10 +1,12 @@
 #' Leave one out cross-validation for \code{baggr} models
 #'
-#' Creates $k$ `baggr` models by leaving out one group at the time
-#' and calculating log predictive density \eqn{lpd_{k}}
-#' for that group (see Gelman _et al_). Returned value is a \eqn{-2\sum lpd_{k}}.
-#' Inputs to this function are same as to [baggr], with additional
-#' option to return individual models.
+#' Performs leave-one-out cross-validation on a \code{baggr} model at the group level.
+#' This function automatically runs K `baggr` models, leaving out one group at a time,
+#' and then calculating log predictive density for that group (see Gelman _et al_ 2014).
+#' The main output is -2 times the log predictive density averaged over the K models,
+#' which corresponds to the Watanabe-Akaike Information Criterion.
+#' This function takes in the same arguments as `baggr()`, plus an option
+#' (`return_models`) for whether to return all the models or just the summary statistics.
 #'
 #'
 #' @param data Input data frame - same as for [baggr] function.
@@ -13,18 +15,29 @@
 #'                      if TRUE, a list of models will be returned alongside summaries
 #' @param ... Additional arguments passed to [baggr].
 #' @return log predictive density value, an object of class `baggr_cv`;
-#' full model, prior values and _lpd_ of each model are also returned
-#' these can be examined by using `attributes()` function
+#' full model, prior values and _lpd_ of each model are also returned.
+#' These can be examined by using `attributes()` function.
 #'
 #' @details
+#' This function can be used to understand how any one group affects
+#' the overall result, as well as how well the model predicts
+#' the omitted group. Because this function runs K models in total,
+#' it is recommended to set `mc.cores` option before running `loocv`,
+#' e.g. `options(mc.cores = 4)`.
+#' Even with this option enabled, this function often has a long
+#' runtime even for simple examples.
+#' The main output is -2 times the log predictive density averaged
+#' over `K`` models, which corresponds to the Watanabe-Akaike
+#' Information Criterion. A WAIC value closer to zero (i.e. a smaller
+#' number in magnitude) means a better fit.
+#' For more information on cross-validation see
+#' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
+#'
 #' For running more computation-intensive models, consider setting the `mc.cores`
 #' option before running `loocv`, e.g. `options(mc.cores = 4)` (by default `baggr` runs
 #' 4 MCMC chains in parallel).
 #' As a default, rstan runs "silently" (`refresh=0`). To see sampling progress, please
 #' set e.g. `loocv(data, refresh = 500)`.
-#'
-#' For more information on cross-validation see
-#' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
 #'
 #' @examples
 #' \donttest{
@@ -49,7 +62,8 @@ loocv <- function(data, return_models = FALSE, ...) {
 
   # Set parallel up...
   # if(is.null(getOption("mc.cores"))){
-  #   cat(paste0("loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
+  #   cat(paste0(
+  #     "loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
   #   temp_cores <- TRUE
   #   options(mc.cores = parallel::detectCores())
   # } else {

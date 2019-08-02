@@ -1,7 +1,8 @@
-#' @title Convert inputs for baggr models
+#' Convert inputs for baggr models
 #'
 #' Converts data to Stan inputs, checks integrity of data
-#' and suggests default model if needed.
+#' and suggests default model if needed. Typically used
+#' automatically by [baggr] but useful for debugging.
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
@@ -10,7 +11,7 @@
 #'              automatically
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
-#' @param outcome name of column with outcome variable
+#' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
@@ -23,6 +24,7 @@
 #'
 #'
 #' @author Witold Wiecek, Rachael Meager
+#' @examples convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
 #' @export
 
 convert_inputs <- function(data,

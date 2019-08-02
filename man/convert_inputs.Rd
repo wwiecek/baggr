@@ -2,10 +2,7 @@
 % Please edit documentation in R/convert_inputs.R
 \name{convert_inputs}
 \alias{convert_inputs}
-\title{Convert inputs for baggr models
-
-Converts data to Stan inputs, checks integrity of data
-and suggests default model if needed.}
+\title{Convert inputs for baggr models}
 \usage{
 convert_inputs(data, model, quantiles, group = "group",
   outcome = "outcome", treatment = "treatment", test_data = NULL)
@@ -22,7 +19,7 @@ automatically}
 
 \item{group}{name of the column with grouping variable}
 
-\item{outcome}{name of column with outcome variable}
+\item{outcome}{name of column with outcome variable (designated as string)}
 
 \item{treatment}{name of column with treatment variable}
 
@@ -35,15 +32,17 @@ R structure that's appropriate for use by \link{baggr} Stan models;
 and are necessary for \link{baggr} to work correctly
 }
 \description{
-Convert inputs for baggr models
-
 Converts data to Stan inputs, checks integrity of data
-and suggests default model if needed.
+and suggests default model if needed. Typically used
+automatically by \link{baggr} but useful for debugging.
 }
 \details{
 Typically this function is only called within \link{baggr} and you do
 not need to use it yourself. It can be useful to understand inputs
 or to run models which you modified yourself.
+}
+\examples{
+convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
 }
 \author{
 Witold Wiecek, Rachael Meager

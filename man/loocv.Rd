@@ -17,25 +17,38 @@ if TRUE, a list of models will be returned alongside summaries}
 }
 \value{
 log predictive density value, an object of class \code{baggr_cv};
-full model, prior values and \emph{lpd} of each model are also returned
-these can be examined by using \code{attributes()} function
+full model, prior values and \emph{lpd} of each model are also returned.
+These can be examined by using \code{attributes()} function.
 }
 \description{
-Creates $k$ \code{baggr} models by leaving out one group at the time
-and calculating log predictive density \eqn{lpd_{k}}
-for that group (see Gelman \emph{et al}). Returned value is a \eqn{-2\sum lpd_{k}}.
-Inputs to this function are same as to \link{baggr}, with additional
-option to return individual models.
+Performs leave-one-out cross-validation on a \code{baggr} model at the group level.
+This function automatically runs K \code{baggr} models, leaving out one group at a time,
+and then calculating log predictive density for that group (see Gelman \emph{et al} 2014).
+The main output is -2 times the log predictive density averaged over the K models,
+which corresponds to the Watanabe-Akaike Information Criterion.
+This function takes in the same arguments as \code{baggr()}, plus an option
+(\code{return_models}) for whether to return all the models or just the summary statistics.
 }
 \details{
+This function can be used to understand how any one group affects
+the overall result, as well as how well the model predicts
+the omitted group. Because this function runs K models in total,
+it is recommended to set \code{mc.cores} option before running \code{loocv},
+e.g. \code{options(mc.cores = 4)}.
+Even with this option enabled, this function often has a long
+runtime even for simple examples.
+The main output is -2 times the log predictive density averaged
+over `K`` models, which corresponds to the Watanabe-Akaike
+Information Criterion. A WAIC value closer to zero (i.e. a smaller
+number in magnitude) means a better fit.
+For more information on cross-validation see
+\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
+
 For running more computation-intensive models, consider setting the \code{mc.cores}
 option before running \code{loocv}, e.g. \code{options(mc.cores = 4)} (by default \code{baggr} runs
 4 MCMC chains in parallel).
 As a default, rstan runs "silently" (\code{refresh=0}). To see sampling progress, please
 set e.g. \code{loocv(data, refresh = 500)}.
-
-For more information on cross-validation see
-\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
 }
 \examples{
 \donttest{
