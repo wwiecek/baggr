@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version-last-release/baggr?color=green)](http://cran.r-project.org/package=baggr)
 [![Travis build
 status](https://travis-ci.org/wwiecek/baggr.svg?branch=cran)](https://travis-ci.org/wwiecek/baggr)
 [![codecov](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr)
@@ -24,7 +25,7 @@ under the hood to carry out Bayesian inference. Modelling of variances
 or quantiles, standardisation and transformation of data is also
 possible.
 
-The current version (v0.1, June 2019) is a stable prototype of a tool
+The current version (v0.1, July 2019) is a stable prototype of a tool
 that’s in active development so we are counting on your feedback.
 
 ## Installation
@@ -86,12 +87,11 @@ Included in baggr v0.1:
   - Both full and aggregate data sets can be used
   - Automatic choice of priors
   - Automatic calculation of pooling metrics
-  - Cross-validation
+  - Cross-validation (including leave-one-out)
 
 v0.2 will follow soon, enabling more models and more features such as:
 
-  - Modelling of quantiles and SE’s
+  - Modelling of quantiles and of SE’s
   - Modelling of log-normal data
   - Automatic standardisation of variables
   - New way to specify priors
-  - Leave-one-out cross-validation
