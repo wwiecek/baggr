@@ -1,48 +1,39 @@
 #' @title Convert from individual to summary data in meta-analyses
 #'
-#' @description Allows one-way conversion from full individual-level data to summary data.
-#' Here the summary is focused on average treatment effects and their standard errors, as well as the average outcome in the control groups and the associated standard errors.
-#'              Input must be pre-formatted appropriately for this function to work; see below.
+#' @description Allows only one-way conversion from full to summary data.
+#'              Input must be pre-formatted appropriately.
 #'
 #' @param data data.frame of individual-level observations
-#'             with columns for outcome (numeric), treatment (values 0 and 1) and
-#'             group (numeric, character or factor);
-#'             column names can be user-defined (see below)
-#' @param log logical; log-transform the outcome variable?
-#' @param cfb logical; calculate change from baseline? If yes, the outcome
-#'            variable is taken as a difference between values in `outcome` and
-#'            `baseline` columns
+#'             with columns \code{outcome} (numeric),
+#'             \code{treatment} (values 0 and 1) and
+#'             \code{group} (numeric, character or factor)
+#' @param standardise logical; if TRUE, values of outcome
+#'                    are standardised within each group
+#' @param log logical; log-transform data?
+#' @param cfb logical; calculate change from baseline?
 #' @param summarise logical; convert to aggregate level data?
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param baseline name of column with baseline variable
 #'
-#' @return data.frame with columns corresponding to each group's control group mean value  \code{mu},
-#'         the standard error of this estimate\code{se.mu}, each group's average treatment effect \code{tau}, and the standard error of this estimate  \code{se.tau}.
+#' @return data.frame with columns \code{mu}, \code{se.mu},
+#'         \code{tau} and \code{se.tau}
 #'
 #' @details
-#' The conversions done by this function are not typically needed and may happen automatically
+#' The conversions are typically not needed and may happen automatically
 #' when data is fed to [baggr()]. However, this function can be used to explicitly
-#' convert from full to reduced (summarised) data without analysing it in any model.
+#' convert from full to reduced data without analysing it in any model.
 #' It can be useful for examining your data.
 #'
-#' If multiple operations are performed, they are taken in this order:
-#' 1) conversion to log scale,
-#' 2) calculating change from baseline,
-#' 3) summarising data.
-#'
-#' @examples
-#' prepare_ma(microcredit_simplified, outcome = "consumerdurables")
-#'
-#' @author Witold Wiecek, Rachael Meager
+#' @author Witold Wiecek
 #' @seealso [convert_inputs()] for how data is converted into Stan inputs;
 #'          [summarise_quantiles_data()] for summarising data per quantile
 #' @export
 #' @import stats
 #'
 
-prepare_ma <- function(data, #standardise = NULL,
+prepare_ma <- function(data, standardise = NULL,
                          log = FALSE, cfb = FALSE, summarise = TRUE,
                          treatment="treatment",
                          baseline = NULL,
@@ -82,7 +73,6 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   # 3. Standardise
-  standardise <- NULL #until v0.2 we will not use standardise argument
   if(!is.null(standardise)) {
     # Whole sample
     if(standardise == "all")
