@@ -4,14 +4,14 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, quantiles, group = "group", outcome = "outcome",
-  treatment = "treatment", test_data = NULL)
+convert_inputs(data, model, quantiles, group = "group",
+  outcome = "outcome", treatment = "treatment", test_data = NULL)
 }
 \arguments{
 \item{data}{`data.frame`` with desired modelling input}
 
 \item{model}{valid model name used by baggr;
-see \code{\link[=baggr]{baggr()}} for allowed models
+see \link{baggr} for allowed models
 if \code{model = NULL}, this function will try to find appropriate model
 automatically}
 
@@ -24,23 +24,22 @@ automatically}
 \item{treatment}{name of column with treatment variable}
 
 \item{test_data}{same format as \code{data} argument, gets left aside for
-testing purposes (see \code{\link[=baggr]{baggr()}} and \code{\link[=loocv]{loocv()}})}
+testing purposes (see \link{baggr})}
 }
 \value{
-R structure that's appropriate for use by \code{\link[=baggr]{baggr()}} Stan models;
-\code{group_label}, \code{model} and \code{n_groups} are incuded as attributes
-and are necessary for \code{\link[=baggr]{baggr()}} to work correctly
+R structure that's appropriate for use by \link{baggr} Stan models;
+\code{group_label}, \code{model} and \code{n_groups} are included as attributes
+and are necessary for \link{baggr} to work correctly
 }
 \description{
-Converts dataframe to format for Stan inputs, renames variables for \code{baggr} models, checks intergrity of data
-and suggests default model if needed. Typically used under the hood, but may be used explicitly if desired for debugging or similar.
+Converts data to Stan inputs, checks integrity of data
+and suggests default model if needed. Typically used
+automatically by \link{baggr} but useful for debugging.
 }
 \details{
-Typically this function is only used under the hood within \code{\link[=baggr]{baggr()}} and you do
-not need to use it explicitly yourself. However, it can be useful to understand inputs
-or to run models which you modified yourself.\preformatted{     For quantile models, [summarise_quantiles_data()] is called from within
-     this function.
-}
+Typically this function is only called within \link{baggr} and you do
+not need to use it yourself. It can be useful to understand inputs
+or to run models which you modified yourself.
 }
 \examples{
 convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")

@@ -3,8 +3,10 @@
 #' Performs leave-one-out cross-validation on a \code{baggr} model at the group level.
 #' This function automatically runs K `baggr` models, leaving out one group at a time,
 #' and then calculating log predictive density for that group (see Gelman _et al_ 2014).
-#' The main output is -2 times the log predictive density averaged over the K models, which corresponds to the Watanabe-Aikake Information Criterion.
-#' This function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics.
+#' The main output is -2 times the log predictive density averaged over the K models,
+#' which corresponds to the Watanabe-Akaike Information Criterion.
+#' This function takes in the same arguments as `baggr()`, plus an option
+#' (`return_models`) for whether to return all the models or just the summary statistics.
 #'
 #'
 #' @param data Input data frame - same as for [baggr] function.
@@ -17,27 +19,38 @@
 #' These can be examined by using `attributes()` function.
 #'
 #' @details
-#' This function can be used to understand how any one group affects the overall result, as well as how well the model predicts
-#' the omitted group. Because this function runs K models in total, it is recommended to set `mc.cores` option before running `loocv`, e.g. `options(mc.cores = 4)`.
-#' Even with this option enabled, this function often has a long runtime even for simple examples.
-#' The main output is -2 times the log predictive density averaged over K models, which corresponds to the Watanabe-Aikake Information Criterion.
-#' A WAIC value closer to zero (i.e. a smaller number in magnitude) means a better fit.
+#' This function can be used to understand how any one group affects
+#' the overall result, as well as how well the model predicts
+#' the omitted group. Because this function runs K models in total,
+#' it is recommended to set `mc.cores` option before running `loocv`,
+#' e.g. `options(mc.cores = 4)`.
+#' Even with this option enabled, this function often has a long
+#' runtime even for simple examples.
+#' The main output is -2 times the log predictive density averaged
+#' over `K`` models, which corresponds to the Watanabe-Akaike
+#' Information Criterion. A WAIC value closer to zero (i.e. a smaller
+#' number in magnitude) means a better fit.
+#' For more information on cross-validation see
+#' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
 #'
-#'More data are stored in `loocv()` output, and can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _lpd_ for each model that are stored in the attribute `df`.
+#' For running more computation-intensive models, consider setting the `mc.cores`
+#' option before running `loocv`, e.g. `options(mc.cores = 4)` (by default `baggr` runs
+#' 4 MCMC chains in parallel).
+#' As a default, rstan runs "silently" (`refresh=0`). To see sampling progress, please
+#' set e.g. `loocv(data, refresh = 500)`.
+#'
 #' @examples
-#' cv <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
-#' print(cv) #returns the lpd value
-#' attributes(cv) #more information is included in the object
+#' \donttest{
+#' # even simple examples may take a while
+#' cv <- loocv(schools, pooling = "partial")
+#' print(cv)      # returns the lpd value
+#' attributes(cv) # more information is included in the object
+#' }
 #'
-#' @author Witold Wiecek, Rachael Meager
-#' @references Gelman A, Hwang J, Vehtari A.
-#'             Understanding predictive information criteria for Bayesian models.
-#'             Statistics and Computing. 2014 Nov 24(6):997-1016.
-#'             [PDF link.](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
-#'
-#' @export
+#' @author Witold Wiecek
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
+#' @export
 #'
 
 loocv <- function(data, return_models = FALSE, ...) {
@@ -48,18 +61,20 @@ loocv <- function(data, return_models = FALSE, ...) {
     stop("For a model with no pooling LOO CV doesn't exist.")
 
   # Set parallel up...
-  if(is.null(getOption("mc.cores"))){
-    cat(paste0("loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
-    temp_cores <- TRUE
-    options(mc.cores = parallel::detectCores())
-  } else {
-    temp_cores <- FALSE
-  }
+  # if(is.null(getOption("mc.cores"))){
+  #   cat(paste0(
+  #     "loocv() temporarily set options(mc.cores = parallel::detectCores()) \n"))
+  #   temp_cores <- TRUE
+  #   options(mc.cores = parallel::detectCores())
+  # } else {
+  #   temp_cores <- FALSE
+  # }
+  temp_cores <- FALSE
 
   # Model with all of data:
-  full_fit <- try(baggr(data, ...))
+  full_fit <- try(baggr(data, refresh = 0, ...))
   if(class(full_fit) == "try-error")
-    stop("Inference failed for the full model")
+    stop("Inference failed for the model with all data")
 
   # Prepare the arguments
   args[["data"]] <- data
@@ -102,6 +117,8 @@ loocv <- function(data, return_models = FALSE, ...) {
     utils::setTxtProgressBar(pb, (i-1)/K)
 
     # Run baggr models:
+    if(is.null(args[["refresh"]]))
+      args[["refresh"]] <- 0
     res <- do.call(baggr, args)
 
     # Sanitized version:
@@ -122,9 +139,9 @@ loocv <- function(data, return_models = FALSE, ...) {
   loglik <-
     lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd"), 2, mean))
 
-  out <- structure(
-    -2*sum(unlist(loglik)),
-    df = data.frame(
+  out <- list(
+    lpd = -2*sum(unlist(loglik)),
+    df  = data.frame(
       "tau" = unlist(tau_estimate),
       "sigma_tau" = unlist(sd_estimate),
       "lpd" = unlist(loglik)),
@@ -143,6 +160,5 @@ loocv <- function(data, return_models = FALSE, ...) {
 
 #' @export
 print.baggr_cv <- function(x, ...) {
-  attributes(x) <- NULL
-  print(paste("log predictive density = ", format(x)))
+  print(paste("log predictive density = ", format(x$lpd)))
 }

@@ -9,13 +9,10 @@
 \arguments{
 \item{x}{object of class \code{baggr}}
 
-\item{...}{currently unused by this pacakge: further arguments passed
+\item{...}{currently unused by this package: further arguments passed
 to or from other methods (\code{print}  requirement)}
 }
 \description{
 This \code{print} method for a very concise summary of main model features.
 More info is included in the summary of the model and its attributes.
-}
-\details{
-TBC
 }

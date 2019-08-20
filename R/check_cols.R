@@ -1,8 +1,12 @@
-# When working with inidividual-level data, check that correct columns are used correctly.
+# When working with individual-level data, check that correct columns are used correctly.
+
+check_columns_numeric <- function(data) {
+  numcols <- unlist(lapply(data, is.numeric))
+  if(sum(!numcols) > 0)
+    stop(paste("Column(s)", paste(names(numcols)[numcols], collapse = ","), "are not numeric"))
+}
 
 check_columns <- function(data, outcome, group, treatment)  {
-
-  lapply(list(outcome, group, treatment), is.character)
 
   if(!(is.character(outcome) && is.character(group) && is.character(treatment)))
     stop('Arguments "outcome", "group", "treatment" must be of character type')

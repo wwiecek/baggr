@@ -1,26 +1,16 @@
-#' Pooling metrics
+#' Pooling metrics for baggr
 #'
-#' Compute pooling metrics (of a few different varieties)
-#' given a baggr meta-analysis model
+#' Compute pooling metrics given a baggr meta-analysis model
 #'
 #' @param bg output of a baggr() function
-#' @param metric \code{"gelman-hill"} or \code{WIP}
+#' @param metric for now we use \code{"gelman-hill"}, other options will be added in the future
 #' @param summary logical; if FALSE a whole vector of pooling statistics is returned,
 #'                otherwise only the means and intervals
 #'
 #' @details
 #' Pooling statistic describes the extent to which group-level estimates of treatment
-#' effect are shrunk toward
-#' average treatment effect in the meta-analysis model.
+#' effect are shrunk toward average treatment effect in the meta-analysis model.
 #'
-#' Different measures of pooling can be estimated and choosing the right one
-#' depends on the research questions.
-#' The default (\code{"gelman-hill"}) "pooling factor" statistic by Gelman & Hill (2007) is
-#' \deqn{\omega(\tau_k) = \frac{WIP}}
-#'
-#' @references Gelman, Andrew, and Jennifer Hill. Data Analysis Using Regression
-#' and Multilevel/Hierarchical Models. 1 edition. Cambridge; New York:
-#' Cambridge University Press, 2006.
 #' @return Matrix with mean and intervals for chosen pooling metric,
 #'         each row corresponding to one meta-analysis group.
 #' @author Witold Wiecek, Rachael Meager
@@ -52,7 +42,7 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
   } else if(bg$model == "full") {
     # note that we use a point estimate for sigma_k, so it's not fully Bayesian
     # but in the end we usually report a point estimate so this is acceptable for now
-    sigma_k <- study_effects(bg, summary = TRUE)[, "sd", 1]
+    sigma_k <- group_effects(bg, summary = TRUE)[, "sd", 1]
     sigma_tau <- sqrt(rstan::extract(bg$fit, pars = "sigma_mutau[2,2]")[[1]])
     # we add 3rd dimension to allow more than 1 parameter (in the future), e.g. Var
     ret <- array(0, dim = c(length(sigma_tau), bg$n_groups, 1))

@@ -1,11 +1,12 @@
 #' Convert inputs for baggr models
 #'
-#' Converts dataframe to format for Stan inputs, renames variables for \code{baggr} models, checks intergrity of data
-#' and suggests default model if needed. Typically used under the hood, but may be used explicitly if desired for debugging or similar.
+#' Converts data to Stan inputs, checks integrity of data
+#' and suggests default model if needed. Typically used
+#' automatically by [baggr] but useful for debugging.
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
-#'              see [baggr()] for allowed models
+#'              see [baggr] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
@@ -13,16 +14,14 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
-#'                  testing purposes (see [baggr()] and [loocv()])
-#' @return R structure that's appropriate for use by [baggr()] Stan models;
-#'         `group_label`, `model` and `n_groups` are incuded as attributes
-#'         and are necessary for [baggr()] to work correctly
-#' @details Typically this function is only used under the hood within [baggr()] and you do
-#'          not need to use it explicitly yourself. However, it can be useful to understand inputs
+#'                  testing purposes (see [baggr])
+#' @return R structure that's appropriate for use by [baggr] Stan models;
+#'         `group_label`, `model` and `n_groups` are included as attributes
+#'         and are necessary for [baggr] to work correctly
+#' @details Typically this function is only called within [baggr] and you do
+#'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'
-#'          For quantile models, [summarise_quantiles_data()] is called from within
-#'          this function.
 #'
 #' @author Witold Wiecek, Rachael Meager
 #' @examples convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
@@ -41,6 +40,9 @@ convert_inputs <- function(data,
                         "mutau" = "pool_wide",
                         "full" = "individual",
                         "quantiles" = "individual") #for now no quantiles model from summary level data
+  data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
+                       "pool_wide" = "Aggregate (control and effects)",
+                       "individual" = "Individual-level")
   available_data <- detect_input_type(data, group)
 
   # if(available_data == "unknown")
@@ -54,7 +56,6 @@ convert_inputs <- function(data,
   if(available_data == "individual")
     check_columns(data, outcome, group, treatment)
 
-
   if(is.null(model)) {
     message("Attempting to infer the correct model for data.")
     # we take FIRST MODEL THAT SUITS OUR DATA!
@@ -65,13 +66,27 @@ convert_inputs <- function(data,
       stop("Unrecognised model, can't format data.")
   }
 
+  # Prompt and stop conversion for the CRAN release version of the package:
+  # if(model != "rubin")
+    # stop("In baggr v0.1 only Rubin model is enabled.
+  # More models will be available in the next release.")
+
+  # Convert mutau data to Rubin model data if requested
+  # (For now disabled as it won't work with functions that then
+  #  re-use the input data)
+  # if(model == "rubin" && available_data == "pool_wide"){
+  #   data$se <- data$se.tau
+  #   data$se.tau <- data$se.mu <- data$mu <- NULL
+  #   available_data <- "pool_noctrl_narrow"
+  # }
+
   required_data <- model_data_types[[model]]
 
 
   if(required_data != available_data)
     stop(paste(
-      "Data provided is of type", available_data,
-      "and the model requires", required_data))
+      "Data provided is of type", data_type_names[available_data],
+      "and the model requires", data_type_names[required_data]))
   #for now this means no automatic conversion of individual->pooled
 
   # individual level data -----
@@ -105,8 +120,8 @@ convert_inputs <- function(data,
       if(length(quantiles) < 2)
         stop("cannot model less then 2 quantiles")
       data[[group]] <- group_numeric
-      out <- summarise_quantiles_data(data, quantiles,
-                                      outcome, group, treatment)
+      # out <- summarise_quantiles_data(data, quantiles,
+                                      # outcome, group, treatment)
       message("Data have been automatically summarised for quantiles model.")
 
       # Fix for R 3.5.1. on Windows
@@ -127,19 +142,23 @@ convert_inputs <- function(data,
       out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
       out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
     } else {
-      out_test <- summarise_quantiles_data(test_data, quantiles,
-                                      outcome, group, treatment)
-      out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles
-      out$test_y_0 <- out_test$y_0
-      out$test_y_1 <- out_test$y_1
-      out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
-      out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
+      # Disabled until summarise_qunatiles_data() gets included in the release again.
+      # out_test <- summarise_quantiles_data(test_data, quantiles,
+                                      # outcome, group, treatment)
+      # out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles
+      # out$test_y_0 <- out_test$y_0
+      # out$test_y_1 <- out_test$y_1
+      # out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
+      # out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
     }
   }
 
   # summary data: treatment effect only -----
   if(required_data == "pool_noctrl_narrow"){
     group_label <- data[[group]]
+    if(is.null(data[[group]]) && (group != "group"))
+      warning(paste0("Column '", group, "' does not exist in data. No labels will be added."))
+    check_columns_numeric(data[,c("tau", "se")])
     out <- list(
       K = nrow(data),
       tau_hat_k = data[["tau"]],
@@ -164,6 +183,10 @@ convert_inputs <- function(data,
   # summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
     group_label <- data[[group]]
+    group_label <- data[[group]]
+    if(is.null(data[[group]]) && (group != "group"))
+      warning(paste0("Column '", group, "' does not exist in data. No labels will be added."))
+    check_columns_numeric(data[,c("tau", "se.tau", "mu", "se.mu")])
     nr <- nrow(data)
     out <- list(
       K = nr,

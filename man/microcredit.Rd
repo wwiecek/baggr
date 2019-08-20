@@ -4,7 +4,7 @@
 \name{microcredit}
 \alias{microcredit}
 \title{7 studies on effect of microcredit supply}
-\format{A data frame with 40267 rows, 7 study idenfitifiers and 7 outcomes}
+\format{A data frame with 40267 rows, 7 study identifiers and 7 outcomes}
 \usage{
 microcredit
 }

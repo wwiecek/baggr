@@ -5,7 +5,7 @@
 #' More info is included in the summary of the model and its attributes.
 #'
 #' @param x object of class `baggr`
-#' @param ... currently unused by this pacakge: further arguments passed
+#' @param ... currently unused by this package: further arguments passed
 #'            to or from other methods (\code{print}  requirement)
 #' @importFrom stats sd var median quantile
 #' @importFrom crayon bold
@@ -13,8 +13,6 @@
 #' @importFrom crayon blue
 #' @export
 #' @method print baggr
-#' @details
-#' TBC
 #'
 
 print.baggr <- function(x, ...) {
@@ -52,9 +50,9 @@ print.baggr <- function(x, ...) {
   cat("\n")
 
   if(x$pooling != "full") {
-    # study_eff_tab <- apply(study_effects(x), c(2,3),
+    # study_eff_tab <- apply(group_effects(x), c(2,3),
                              # function(x) c("mean" = mean(x), "sd" = sd(x)))
-    study_eff_tab <- study_effects(x, summary = TRUE)
+    study_eff_tab <- group_effects(x, summary = TRUE)
     # attach pooling metric:
     pooling_tab <- pooling(x, summary = TRUE)
     for(i in 1:dim(study_eff_tab)[3]){

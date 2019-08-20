@@ -1,8 +1,15 @@
-# given a baggr model
-# extract list of 2 vectors: tau and sigma_tau
-# these are not summarised but full sample
+
+#' Average treatment effect in a baggr model
+#'
+#' @param bg a [baggr] model
+#' @return A list with 2 vectors (corresponding to MCMC samples)
+#'         `tau` (mean effect) and `sigma_tau` (SD)
+#' @export
+#' @importFrom rstan extract
 
 treatment_effect <- function(bg) {
+  if(class(bg) != "baggr")
+    stop("treatment_effect requires a baggr object")
   if(bg$pooling == "none"){
     message("There is no treatment effect estimated when pooling = 'none'.")
     return(NULL)

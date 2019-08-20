@@ -3,7 +3,7 @@
 #' Bayesian inference on parameters of an average treatment effects model
 #' that's appropriate to the supplied
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-#' (For overall package help file see \code{?baggr_package})
+#' (For overall package help file see [baggr_package])
 #'
 #' @importFrom rstan summary
 #' @importFrom rstan sampling
@@ -17,7 +17,8 @@
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
 #'                    (\code{mu}) data exists.
-#' @param outcome   character; column name in (individual-level) \code{data} with outcome variable values
+#' @param outcome   character; column name in (individual-level)
+#'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
@@ -25,18 +26,18 @@
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
-#'                  with the same columns as `data` argument (see \code{\link[baggr]{loocv}} for automation)
-#' @param warn print warning if Rhat exceeds 1.05
+#'                  with the same columns as `data` argument
+#' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
-#' @return `baggr` class structure: list with Stan model fit embedded inside it,
+#' @return `baggr` class structure: a list including Stan model fit
 #'          alongside input data, pooling metrics, various model properties.
 #'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
 #'
 #' @details
 #'
 #' Running `baggr` requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-#' All three are discussed in depth in [the package vignette](baggr.html).
+#' All three are discussed in depth in the package vignette (`vignette("baggr")`).
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
 #' `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
@@ -46,36 +47,35 @@
 #' For individual level data three columns are needed: outcome, treatment, group. These
 #' are identified by using the `outcome`, `treatment` and `group` arguments.
 #'
-#' Most of data preparation steps (summarising, standardisation etc.) can be done
-#' automatically through \code{\link[baggr]{prepare_ma}}.
-#' While the preparation step is optional it will also automatically format data inputs to be
-#' immediately recognisable by `baggr()`.
+#' When working with individual-level data,
+#' many data preparation steps (summarising, standardisation etc.)
+#' can be done through a helper function [prepare_ma].
+#' Using it will also automatically format data inputs to be
+#' work with `baggr()`.
 #'
 #' __Models.__ Available models are:
 #'
-#' * for the means: `"rubin"`` model for average treatment effect, `"mutau"` version which takes
-#'   into account means in control group, `"full"`` model which reduces to "mu and tau"
+#' * for the means: `"rubin"` model for average treatment effect, `"mutau"` version which takes
+#'   into account means of control groups, `"full"`` model which reduces to "mu and tau"
 #'   (if no covariates are used)
-#' * "quantiles" model is also available (see Meager, 2019 and [vignette](baggr.html) for details)
+#' * "quantiles" model is also available (see Meager, 2019 in references)
 #'
 #'  If no model is specified, the function tries to infer the appropriate model automatically.
 #'
 #' __Priors.__ It is optional to specify priors yourself,
 #' as the package will try propose an appropriate
 #' prior for the input data if `prior=NULL`.
-#' To priors yourself, please refer to the list in the [vignette](baggr.html).
-#'
-#'
+#' To set the priors yourself, please refer to the list in the `vignette("baggr")`
 #'
 #' @author Witold Wiecek, Rachael Meager
 #'
 #' @examples
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-#' "se" = rep(1, 8),
-#' "state" = datasets::state.name[1:8])
-#' baggr(df_pooled) #automatically detects the input data
-#' # correct labels & passing some options to Stan
-#' baggr(df_pooled, group = "state", iter = 200)
+#'                         "se" = rep(1, 8),
+#'                         "state" = datasets::state.name[1:8])
+#' baggr(df_pooled) #baggr automatically detects the input data
+#' # correct labels, different pooling & passing some options to Stan
+#' baggr(df_pooled, group = "state", pooling = "full", iter = 500)
 #'
 #' @export
 
@@ -143,8 +143,9 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
 
   # Check priors
   if(model %in% c("rubin"))
-    if(prior[["prior_upper_sigma_tau"]] < 10*sd(data$tau))
-      message("Prior for SD(tau) is lower than 10*observed SD of effects. Please use caution.")
+    if(prior[["prior_upper_sigma_tau"]] < 5*sd(data$tau))
+      message(paste0("Prior for SD(tau) is lower than 5 times the observed",
+                     "SD of effects. Please use caution."))
 
   for(nm in names(prior))
     stan_data[[nm]] <- prior[[nm]]

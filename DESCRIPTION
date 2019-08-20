@@ -3,7 +3,8 @@ Type: Package
 Title: Bayesian Aggregate Treatment Effects
 Version: 0.1.0
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
-             person("Rachael", "Meager", role="aut"))
+             person("Rachael", "Meager", role="aut"),
+             person("Trustees of", "Columbia University", role = "cph", comment = "tools/make_cc.R"))
 Maintainer: Witold Wiecek <witold.wiecek@gmail.com>
 Description: Running and comparing meta-analyses of data with hierarchical 
     Bayesian models in Stan, including convenience functions for formatting
@@ -13,7 +14,7 @@ Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 Depends: R (>= 3.5.0), Rcpp (>= 0.12.17), methods
-Imports: rstan (>= 2.18.1), rstantools (>= 1.5.0), bayesplot, crayon, ggplot2, gridExtra, quantreg, utils, stats
+Imports: rstan (>= 2.18.1), rstantools (>= 1.5.0), bayesplot, crayon, ggplot2, gridExtra, utils, stats
 LinkingTo: StanHeaders (>= 2.18.1), rstan (>= 2.18.1), BH (>= 1.66.0-1), Rcpp (>= 0.12.17), RcppEigen (>= 0.3.3.4.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
@@ -23,3 +24,4 @@ Suggests: testthat, knitr
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
+Language: en-GB

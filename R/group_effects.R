@@ -1,23 +1,29 @@
 #' Extract baggr study effects
 #'
-#' Given a baggr object, returns the raw MCMC draws of the posterior for each group's effect, or a summary of these draws. This is an internal function currently used as a helper for plotting and printing of results.
+#' Given a baggr object, returns the raw MCMC draws of the posterior for
+#' each group's effect, or a summary of these draws. This is an internal
+#' function currently used as a helper for plotting and printing of results.
 #'
 #' @param bg baggr object
 #' @param summary logical; if TRUE returns summary statistics as explained below.
-#' @param interval uncertainty interval width (numeric between 0 and 1) if summarising
+#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
 #'
-#' @return Either a matrix with MCMC samples (if summary = FALSE) or a summary of these samples (if summary = TRUE).
+#' @return Either a matrix with MCMC samples (if summary = FALSE)
+#'         or a summary of these samples (if summary = TRUE).
 #' @examples
 #' fit1 <- baggr(schools)
 #' study_effects(fit1, summary = TRUE, interval = 0.5)
-#' @details If summary = TRUE, the returned object contains for each study or group: the posterior medians, the lower and upper bounds of the uncertainty intervals
-#' using the central posterior credible interval of width specified in the argument "interval", the posterior mean, and the posterior standard deviation.
+#' @details If summary = TRUE, the returned object contains for each study
+#' or group: the posterior medians, the lower and upper bounds of the
+#' uncertainty intervals using the central posterior credible interval
+#' of width specified in the argument "interval", the posterior mean, and
+#' the posterior standard deviation.
 #'
 #' @export
 
-study_effects <- function(bg, summary = FALSE, interval = .95) {
+group_effects <- function(bg, summary = FALSE, interval = .95) {
   if(class(bg) != "baggr")
-    stop("study_effects only works with 'baggr' class objects")
+    stop("group_effects only works with 'baggr' class objects")
 
   # m <- as.matrix(bg$fit)
 
