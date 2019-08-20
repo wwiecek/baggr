@@ -31,17 +31,12 @@ variable is taken as a difference between values in \code{outcome} and
 \item{outcome}{name of column with outcome variable}
 }
 \value{
-data.frame with columns corresponding to each group's control
-group mean value \code{mu}, the standard error of this estimate \code{se.mu},
-each group's average treatment effect \code{tau}, and the standard error
-of this estimate \code{se.tau}.
+data.frame with columns \code{mu}, \code{se.mu},
+\code{tau} and \code{se.tau}
 }
 \description{
-Allows one-way conversion from full individual-level data to
-summary data. Here the summary is focused on average treatment effects and
-their standard errors, as well as the average outcome in the control groups
-and the associated standard errors. Input must be pre-formatted appropriately
-for this function to work; see below.
+Allows one-way conversion from full to summary data.
+Input must be pre-formatted appropriately.
 }
 \details{
 The conversions done by this function are not typically needed and may happen automatically
@@ -56,10 +51,9 @@ If multiple operations are performed, they are taken in this order:
 \item summarising data.
 }
 }
-\examples{
-data(microcredit_simplified)
-prepare_ma(microcredit_simplified, outcome = "consumerdurables")
-}
 \seealso{
-\code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs
+\link{convert_inputs} for how data is converted into Stan inputs;
+}
+\author{
+Witold Wiecek
 }
