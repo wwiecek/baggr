@@ -61,3 +61,6 @@ Witold Wiecek
 \author{
 Witold Wiecek
 }
+\author{
+Witold Wiecek
+}
