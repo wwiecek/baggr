@@ -26,7 +26,7 @@ transformed data {
 }
 parameters {
   real tau[pooling_type != 0? 1: 0];
-  real<lower=0> sigma_tau[pooling_type != 0? 1: 0];
+  real<lower=0> sigma_tau[pooling_type == 1? 1: 0];
   real eta[K_pooled];
 }
 transformed parameters {
@@ -39,21 +39,19 @@ transformed parameters {
   }
 }
 model {
-  if(pooling_type != 0)
-    sigma_tau ~ uniform(0, prior_upper_sigma_tau);
-
   if(pooling_type == 0){
     eta ~ normal(prior_tau_mean, prior_tau_scale);
     tau_hat_k ~ normal(tau_k, se_tau_k);
   }
   if(pooling_type == 1){
+    sigma_tau ~ uniform(0, prior_upper_sigma_tau);
     tau ~ normal(prior_tau_mean, prior_tau_scale);
     eta ~ normal(0,1);
     tau_hat_k ~ normal(tau_k, se_tau_k);
   }
   if(pooling_type == 2){
     tau ~ normal(prior_tau_mean, prior_tau_scale);
-    tau_hat_k ~ normal(tau, se_tau_k);
+    tau_hat_k ~ normal(tau[1], se_tau_k);
   }
 }
 
