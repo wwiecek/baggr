@@ -42,7 +42,11 @@ not need to use it yourself. It can be useful to understand inputs
 or to run models which you modified yourself.
 }
 \examples{
-convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
+# simple meta-analysis example:
+con_s <- convert_inputs(schools, "rubin")
+# large example of individual-level data:
+con <- convert_inputs(microcredit_simplified,
+                      "full", outcome = "consumerdurables")
 }
 \author{
 Witold Wiecek, Rachael Meager

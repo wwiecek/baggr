@@ -24,7 +24,12 @@
 #'
 #'
 #' @author Witold Wiecek, Rachael Meager
-#' @examples convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
+#' @examples
+#' # simple meta-analysis example:
+#' con_s <- convert_inputs(schools, "rubin")
+#' # large example of individual-level data:
+#' con <- convert_inputs(microcredit_simplified,
+#'                       "full", outcome = "consumerdurables")
 #' @export
 
 convert_inputs <- function(data,
