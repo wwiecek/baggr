@@ -2,7 +2,7 @@
 % Please edit documentation in R/loocv.R
 \name{loocv}
 \alias{loocv}
-\title{Leave one out cross-validation for \code{baggr} models}
+\title{Leave one group out cross-validation for \code{baggr} models}
 \usage{
 loocv(data, return_models = FALSE, ...)
 }
@@ -21,34 +21,26 @@ full model, prior values and \emph{lpd} of each model are also returned.
 These can be examined by using \code{attributes()} function.
 }
 \description{
-Performs leave-one-out cross-validation on a \code{baggr} model at the group level.
-This function automatically runs K \code{baggr} models, leaving out one group at a time,
-and then calculating log predictive density for that group (see Gelman \emph{et al} 2014).
-The main output is -2 times the log predictive density averaged over the K models,
-which corresponds to the Watanabe-Akaike Information Criterion.
-This function takes in the same arguments as \code{baggr()}, plus an option
-(\code{return_models}) for whether to return all the models or just the summary statistics.
+Performs exact leave-one-group-out cross-validation on a baggr model.
 }
 \details{
-This function can be used to understand how any one group affects
-the overall result, as well as how well the model predicts
-the omitted group. Because this function runs K models in total,
-it is recommended to set \code{mc.cores} option before running \code{loocv},
-e.g. \code{options(mc.cores = 4)}.
-Even with this option enabled, this function often has a long
-runtime even for simple examples.
-The main output is -2 times the log predictive density averaged
-over `K`` models, which corresponds to the Watanabe-Akaike
-Information Criterion. A WAIC value closer to zero (i.e. a smaller
-number in magnitude) means a better fit.
-For more information on cross-validation see
+The values returned by \code{loocv()} can be used to understand how any
+one group affects the overall result, as well as how well the model
+predicts the omitted group.
+
+This function automatically runs K baggr models, leaving out one group at a time,
+and then calculates expected log predictive density (ELPD) for
+that group (see Gelman et al 2013). The main output is the cross-validation
+information criterion, or -2 times the ELPD averaged over 'K' models.
+This is related to, and often approximated by, the Watanabe-Akaike
+Information Criterion. A value closer to zero (i.e. a smaller number in magnitude)
+means a better fit. For more information on cross-validation see
 \href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
 
-For running more computation-intensive models, consider setting the \code{mc.cores}
-option before running \code{loocv}, e.g. \code{options(mc.cores = 4)} (by default \code{baggr} runs
-4 MCMC chains in parallel).
-As a default, rstan runs "silently" (\code{refresh=0}). To see sampling progress, please
-set e.g. \code{loocv(data, refresh = 500)}.
+For running more computation-intensive models, consider setting the mc.cores option before running loocv, e.g. options(mc.cores = 4)
+(by default baggr runs 4 MCMC chains in parallel).
+As a default, rstan runs "silently" (refresh=0).
+To see sampling progress, please set e.g. loocv(data, refresh = 500).
 }
 \examples{
 \donttest{
@@ -58,6 +50,9 @@ print(cv)      # returns the lpd value
 attributes(cv) # more information is included in the object
 }
 
+}
+\references{
+Gelman, Andrew, et al. Bayesian data analysis. Chapman and Hall/CRC, 2013.
 }
 \author{
 Witold Wiecek
