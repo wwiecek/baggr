@@ -17,7 +17,6 @@ predict.baggr <- function(x, newdata = NULL,
 }
 
 #' Make model matrix for the rubin data
-#' @importFrom reshape2 dcast
 #' @param x model to get data from
 #' @param newdata new data to use with model
 #' @param allow_new_levels whether to allow for unobserved groups
