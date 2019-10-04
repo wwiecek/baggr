@@ -130,6 +130,4 @@ baggr(df_pooled, prior_hypermean = normal(5,5))
 }
 \author{
 Witold Wiecek, Rachael Meager
-
-Witold Wiecek, Rachael Meager
 }
