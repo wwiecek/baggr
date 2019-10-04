@@ -11,7 +11,6 @@
 #' full model, prior values and _lpd_ of each model are also returned.
 #' These can be examined by using `attributes()` function.
 #'
-# @references Gelman, Andrew, et al. Bayesian data analysis. Chapman and Hall/CRC, 2013.
 #' @details
 #'
 #' The values returned by `loocv()` can be used to understand how any
