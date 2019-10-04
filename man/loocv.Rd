@@ -51,9 +51,6 @@ attributes(cv) # more information is included in the object
 }
 
 }
-\references{
-Gelman, Andrew, et al. Bayesian data analysis. Chapman and Hall/CRC, 2013.
-}
 \author{
 Witold Wiecek
 }
