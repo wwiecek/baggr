@@ -14,7 +14,7 @@
 #' @return Matrix with mean and intervals for chosen pooling metric,
 #'         each row corresponding to one meta-analysis group.
 #' @author Witold Wiecek, Rachael Meager
-
+#' @export
 
 pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
   # we have to rig it for no pooling cases
