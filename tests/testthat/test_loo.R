@@ -50,7 +50,7 @@ baggr_kfold <- loocv(schools, control = list(adapt_delta = 0.99),
 
 baggr_ranef <- group_effects(baggr_fit, summary = T)[]
 
-tol = 0.2
+tol = 0.5
 test_that(desc = "baggr and brms are at least close", {
   # cross-validation scores
   expect_lt(brms_kfold$estimates[1,1] - baggr_kfold$elpd, 1)
@@ -62,4 +62,3 @@ test_that(desc = "baggr and brms are at least close", {
 
   }
 })
-

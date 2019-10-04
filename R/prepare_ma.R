@@ -1,5 +1,4 @@
 #' @title Convert from individual to summary data in meta-analyses
-#'
 #' @description Allows one-way conversion from full individual-level data to
 #' summary data. Here the summary is focused on average treatment effects and
 #' their standard errors, as well as the average outcome in the control groups
@@ -7,19 +6,19 @@
 #' for this function to work; see below.
 #'
 #' @param data data.frame of individual-level observations
-#'             with columns for outcome (numeric), treatment (values 0 and 1) and
-#'             group (numeric, character or factor);
-#'             column names can be user-defined (see below)
-#' @param log logical; log-transform the outcome variable?
-#' @param cfb logical; calculate change from baseline? If yes, the outcome
-#'            variable is taken as a difference between values in `outcome` and
-#'            `baseline` columns
+#'             with columns \code{outcome} (numeric),
+#'             \code{treatment} (values 0 and 1) and
+#'             \code{group} (numeric, character or factor)
+#' @param standardise logical; if TRUE, values of outcome
+#'                    are standardised within each group
+#' @param log logical; log-transform data?
+#' @param cfb logical; calculate change from baseline?
 #' @param summarise logical; convert to aggregate level data?
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param baseline name of column with baseline variable
-#'
+#' @author Witold Wiecek
 #' @return data.frame with columns corresponding to each group's control
 #'         group mean value `mu`, the standard error of this estimate `se.mu`,
 #'         each group's average treatment effect `tau`, and the standard error
@@ -45,7 +44,7 @@
 #' @import stats
 #'
 
-prepare_ma <- function(data, #standardise = NULL,
+prepare_ma <- function(data, standardise = NULL,
                          log = FALSE, cfb = FALSE, summarise = TRUE,
                          treatment="treatment",
                          baseline = NULL,
@@ -86,7 +85,6 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   # 3. Standardise
-  standardise <- NULL #until v0.2 we will not use standardise argument
   if(!is.null(standardise)) {
     # Whole sample
     if(standardise == "all")

@@ -114,4 +114,6 @@ baggr(df_pooled, group = "state", pooling = "full", iter = 500)
 }
 \author{
 Witold Wiecek, Rachael Meager
+
+Witold Wiecek, Rachael Meager
 }
