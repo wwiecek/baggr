@@ -4,22 +4,21 @@
 \alias{prepare_ma}
 \title{Convert from individual to summary data in meta-analyses}
 \usage{
-prepare_ma(data, standardise = NULL, log = FALSE, cfb = FALSE,
-  summarise = TRUE, treatment = "treatment", baseline = NULL,
-  group = "group", outcome = "outcome")
+prepare_ma(data, log = FALSE, cfb = FALSE, summarise = TRUE,
+  treatment = "treatment", baseline = NULL, group = "group",
+  outcome = "outcome")
 }
 \arguments{
 \item{data}{data.frame of individual-level observations
-with columns \code{outcome} (numeric),
-\code{treatment} (values 0 and 1) and
-\code{group} (numeric, character or factor)}
+with columns for outcome (numeric), treatment (values 0 and 1) and
+group (numeric, character or factor);
+column names can be user-defined (see below)}
 
-\item{standardise}{logical; if TRUE, values of outcome
-are standardised within each group}
+\item{log}{logical; log-transform the outcome variable?}
 
-\item{log}{logical; log-transform data?}
-
-\item{cfb}{logical; calculate change from baseline?}
+\item{cfb}{logical; calculate change from baseline? If yes, the outcome
+variable is taken as a difference between values in \code{outcome} and
+\code{baseline} columns}
 
 \item{summarise}{logical; convert to aggregate level data?}
 
@@ -54,12 +53,6 @@ If multiple operations are performed, they are taken in this order:
 }
 \seealso{
 \link{convert_inputs} for how data is converted into Stan inputs;
-}
-\author{
-Witold Wiecek
-}
-\author{
-Witold Wiecek
 }
 \author{
 Witold Wiecek

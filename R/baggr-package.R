@@ -19,6 +19,5 @@
 #' @import rstantools
 #' @importFrom rstan sampling
 #'
-#' @author Witold Wiecek, Rachael Meager
 
 NULL
