@@ -1,12 +1,18 @@
 #' Predict method for baggr objects
 #' @param x model to predict from
+#' @param newdata optional, new data to predict observations from
+#' @param allow_new_levels whether to allow the model to make predictions
+#' about unobserved groups. Without additional group-level information
+#' the model will use the unconditional, pooled estimate.
+#' @param nsamples Number of samples to draw from the posterior.
+#' Cannot exceed the number of samples in the fitted model.
 #' @param ... other arguments to pass to predict
 #' @export
 #' @details This is currently only implemented for the baggr model
 #' but could also be extended to the others. Currently a WIP, please
 #' report bugs.
 predict.baggr <- function(x, newdata = NULL,
-                          allow_new_levels = T, nsamples, ...) {
+                          allow_new_levels = T, nsamples = 100, ...) {
   switch(x$model,
          rubin = predict_rubin(x, newdata = newdata,
                                allow_new_levels = allow_new_levels,
@@ -69,6 +75,7 @@ rubin_data <- function(x, newdata = NULL, allow_new_levels = T) {
 #' @param newdata new data to predict, defaults to NULL
 #' @param allow_new_levels allow the predictive of new, unobserved groups
 #' @param nsamples number of samples to predict
+#' @param ... additional arguments, unused for now
 predict_rubin <- function(x,
                           newdata = NULL,
                           allow_new_levels = T,
@@ -99,6 +106,21 @@ predict_rubin <- function(x,
 
 }
 
+#' Predict function for the quantiles model
+#' @importFrom rstan extract
+#' @param x model to predict from
+#' @param newdata new data to predict, defaults to NULL
+#' @param allow_new_levels allow the predictive of new, unobserved groups
+#' @param nsamples number of samples to predict
+#' @param ... additional arguments, unused for now
+predict_quantiles <- function(x,
+                              newdata = NULL,
+                              allow_new_levels = T,
+                              nsamples,
+                              ...){
+  stop_not_implemented()
+}
+
 #' Stop with informative error
 stop_not_implemented <- function() {
   stop("Method not implemented.")
@@ -117,11 +139,23 @@ get_y <- function(x) {
          )
 }
 
+
 #' Posterior predictive checks for baggr model
+#'
+#' Performs posterior predictive checks with the
+#' \pkg{bayesplot} package
+#'
 #' @import bayesplot
 #' @param x Model to check
-#' @param type type of pp_check. For a list see \link{bayesplot::available_ppc}
+#' @param type type of pp_check. For a list see \pkg{\link[bayesplot:available_ppc]{here}}.
 #' @param nsamples number of samples to compare
+#' @aliases pp_check
+#'
+#'
+#' @details For a detailed explanation of each of the ppc functions,
+#' see the \code{\link[bayesplot:PPC-overview]{PPC}}
+#' documentation of the \pkg{\link[bayesplot:bayesplot]{bayesplot}}
+#' package.
 #' @export
 pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
   pp_fun <- getFromNamespace(paste0("ppc_",type),ns = "bayesplot")

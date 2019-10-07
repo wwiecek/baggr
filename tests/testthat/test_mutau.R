@@ -1,7 +1,8 @@
 context("baggr() calls with mu and tau model")
+
+
 library(baggr)
 library(testthat)
-
 
 # prepare inputs ----------------------------------------------------------
 set.seed(1990)

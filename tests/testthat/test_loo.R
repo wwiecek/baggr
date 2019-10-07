@@ -1,7 +1,7 @@
 context("test loo in baggr")
 
 # brms testing script
-library(brms)
+# library(brms)
 library(baggr)
 
 set.seed(1999)

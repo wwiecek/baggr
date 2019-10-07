@@ -3,7 +3,7 @@
 #' Bayesian inference on parameters of an average treatment effects model
 #' that's appropriate to the supplied
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-#' (For overall package help file see [baggr_package])
+#' (For overall package help file see [baggr-package])
 #'
 #' @importFrom rstan summary
 #' @importFrom rstan sampling
