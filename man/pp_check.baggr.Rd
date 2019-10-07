@@ -2,6 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{pp_check.baggr}
 \alias{pp_check.baggr}
+\alias{pp_check}
 \title{Posterior predictive checks for baggr model}
 \usage{
 \method{pp_check}{baggr}(x, type = "dens_overlay", nsamples = 40)
@@ -9,10 +10,17 @@
 \arguments{
 \item{x}{Model to check}
 
-\item{type}{type of pp_check. For a list see \link{bayesplot::available_ppc}}
+\item{type}{type of pp_check. For a list see \pkg{\link[bayesplot:available_ppc]{here}}.}
 
 \item{nsamples}{number of samples to compare}
 }
 \description{
-Posterior predictive checks for baggr model
+Performs posterior predictive checks with the
+\pkg{bayesplot} package
+}
+\details{
+For a detailed explanation of each of the ppc functions,
+see the \code{\link[bayesplot:PPC-overview]{PPC}}
+documentation of the \pkg{\link[bayesplot:bayesplot]{bayesplot}}
+package.
 }

@@ -69,7 +69,7 @@ This is \emph{baggr} (pronounced as \emph{bagger} or \emph{badger}), a Bayesian 
 Bayesian inference on parameters of an average treatment effects model
 that's appropriate to the supplied
 individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-(For overall package help file see \link{baggr_package})
+(For overall package help file see \link{baggr-package})
 }
 \details{
 \emph{Baggr} provides a suite of Bayesian aggregation models for both summary statistics and full data sets to synthesise evidence collected from different groups, contexts or time periods.
