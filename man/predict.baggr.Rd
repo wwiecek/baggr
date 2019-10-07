@@ -5,10 +5,19 @@
 \title{Predict method for baggr objects}
 \usage{
 \method{predict}{baggr}(x, newdata = NULL, allow_new_levels = T,
-  nsamples, ...)
+  nsamples = 100, ...)
 }
 \arguments{
 \item{x}{model to predict from}
+
+\item{newdata}{optional, new data to predict observations from}
+
+\item{allow_new_levels}{whether to allow the model to make predictions
+about unobserved groups. Without additional group-level information
+the model will use the unconditional, pooled estimate.}
+
+\item{nsamples}{Number of samples to draw from the posterior.
+Cannot exceed the number of samples in the fitted model.}
 
 \item{...}{other arguments to pass to predict}
 }
