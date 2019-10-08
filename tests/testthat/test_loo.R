@@ -5,7 +5,7 @@ context("test loo in baggr")
 library(baggr)
 
 set.seed(1999)
-#
+
 # fit <- brm(tau | se(se) ~ 1 + (1 | group),
 #            data = schools,
 #            control = list(adapt_delta = 0.95),
@@ -35,30 +35,13 @@ brms_kfold <- list(estimates = structure(c(-30.9625079222176, NA,
                                          .Dimnames = list(
                                            NULL, "elpd_kfold")))
 
-# effect estimates from brms
-brms_summary <- c(`School A` = 3.55131224940058, `School B` = -0.112896586758704,
-                  `School C` = -1.80885344259775, `School D` = -0.301007365270953,
-                  `School E` = -2.66427852221489, `School F` = -1.78083918373487,
-                  `School G` = 2.81562678557207, `School H` = 0.542576449908896
-) + 7.88433
-
-baggr_fit <- baggr(schools, control = list(adapt_delta = 0.99),
-                   iter = 5000)
-
 baggr_kfold <- loocv(schools, control = list(adapt_delta = 0.99),
                      iter = 5000)
-
-baggr_ranef <- group_effects(baggr_fit, summary = T)[]
 
 tol = 0.5
 test_that(desc = "baggr and brms are at least close", {
   # cross-validation scores
   expect_lt(brms_kfold$estimates[1,1] - baggr_kfold$elpd, 1)
 
-  # estimates within tolerance of each other
-  for(i in 1:nrow(baggr_ranef)){
-    expect_lt(abs(brms_summary[i] - baggr_ranef[i,"mean",]),
-              tol)
 
-  }
 })
