@@ -42,7 +42,7 @@ not need to use it yourself. It can be useful to understand inputs
 or to run models which you modified yourself.
 }
 \examples{
-convert_inputs(microcredit_simplified, "full", outcome = "consumerdurables")
+convert_inputs(schools, "rubin")
 }
 \author{
 Witold Wiecek, Rachael Meager
