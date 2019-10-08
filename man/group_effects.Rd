@@ -31,5 +31,5 @@ the posterior standard deviation.
 }
 \examples{
 fit1 <- baggr(schools)
-study_effects(fit1, summary = TRUE, interval = 0.5)
+group_effects(fit1, summary = TRUE, interval = 0.5)
 }

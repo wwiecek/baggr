@@ -12,7 +12,7 @@
 #'         or a summary of these samples (if summary = TRUE).
 #' @examples
 #' fit1 <- baggr(schools)
-#' study_effects(fit1, summary = TRUE, interval = 0.5)
+#' group_effects(fit1, summary = TRUE, interval = 0.5)
 #' @details If summary = TRUE, the returned object contains for each study
 #' or group: the posterior medians, the lower and upper bounds of the
 #' uncertainty intervals using the central posterior credible interval
