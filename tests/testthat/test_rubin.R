@@ -39,13 +39,23 @@ test_that("Error messages for wrong inputs are in place", {
 })
 
 
+# There will always be a divergent transition / ESS warning produced by Stan
+# at iter = 200.
+bg5_n <- expect_warning(baggr(df_pooled, "rubin", pooling = "none", group = "state",
+                         iter = 200, chains = 2, refresh = 0,
+                         show_messages = F))
+bg5_p <- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "state",
+                         iter = 200, chains = 2, refresh = 0,
+                         show_messages = F))
+bg5_f <- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
+                         iter = 200, chains = 2, refresh = 0,
+                         show_messages = F))
 
-bg5_n <- baggr(df_pooled, "rubin", pooling = "none", group = "state",
-               iter = 200, chains = 2, refresh = 0)
-bg5_p <- baggr(df_pooled, "rubin", pooling = "partial", group = "state",
-               iter = 200, chains = 2, refresh = 0)
-bg5_f <- baggr(df_pooled, "rubin", pooling = "full", group = "state",
-               iter = 200, chains = 2, refresh = 0)
+test_that("Different pooling methods work for Rubin model", {
+  expect_is(bg5_n, "baggr")
+  expect_is(bg5_p, "baggr")
+  expect_is(bg5_f, "baggr")
+})
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
@@ -69,12 +79,6 @@ test_that("Data are available in baggr object", {
   expect_identical(bg5_f$data, df_pooled)
 })
 
-test_that("Different pooling methods work for Rubin model", {
-  expect_is(bg5_n, "baggr")
-  expect_is(bg5_p, "baggr")
-  expect_is(bg5_f, "baggr")
-})
-
 test_that("Pooling metrics", {
   # all pooling metric are the same as SE's are the same
   expect_equal(length(unique(bg5_p$pooling_metric[1,,1])), 1) #expect_length()
@@ -92,7 +96,7 @@ test_that("Pooling metrics", {
   expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
 
   # since all SEs are the same, pooling should be the same for all sites
-  print(pp)
+  capture_output(print(pp))
   # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
   expect_equal(length(unique(pp[2,,1])), 1)
   expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
@@ -119,14 +123,14 @@ test_that("Plotting works", {
 })
 
 test_that("printing works", {
-  print(bg5_n)
-  print(bg5_p)
-  print(bg5_f)
+  capture_output(print(bg5_n))
+  capture_output(print(bg5_p))
+  capture_output(print(bg5_f))
 })
 
 test_that("Test data can be used in the Rubin model", {
-
-  bg_lpd <- baggr(df_pooled[1:6,], test_data = df_pooled[7:8,], iter = 500, refresh = 0)
+  bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],
+                  iter = 500, refresh = 0))
   expect_is(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
@@ -204,21 +208,20 @@ test_that("loocv", {
   # Can't do pooling none
   expect_error(loocv(schools, pooling = "none"))
 
-  loo_model <- loocv(schools, return_models = TRUE, refresh = 0)
+  loo_model <- expect_warning(loocv(schools, return_models = TRUE, iter = 200, refresh = 0))
   expect_is(loo_model, "baggr_cv")
-  print(loo_model)
+  capture_output(print(loo_model))
 })
 
 
 
 
 
-# 8 schools test -----
+# 8 schools correctness test -----
 
-bg_s <- baggr(schools, refresh = 0)
+bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
 
 test_that("The default 8 schools result is close to the result in BDA", {
   expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
   expect_equal(mean(treatment_effect(bg_s)$sigma_tau), 7, tolerance = .25)
-
 })
