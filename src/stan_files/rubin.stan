@@ -25,8 +25,8 @@ transformed data {
     K_pooled = K;
 }
 parameters {
-  real tau;
-  real<lower=0> sigma_tau;
+  real tau[pooling_type != 0? 1: 0];
+  real<lower=0> sigma_tau[pooling_type == 1? 1: 0];
   real eta[K_pooled];
 }
 transformed parameters {
@@ -35,24 +35,23 @@ transformed parameters {
     if(pooling_type == 0)
       tau_k[k] = eta[k];
     if(pooling_type == 1)
-      tau_k[k] = tau + eta[k]*sigma_tau;
+      tau_k[k] = tau[1] + eta[k]*sigma_tau[1];
   }
 }
 model {
-  sigma_tau ~ uniform(0, prior_upper_sigma_tau);
   if(pooling_type == 0){
-    tau ~ normal(0, 1); //wander tau but avoid divergent transitions
     eta ~ normal(prior_tau_mean, prior_tau_scale);
     tau_hat_k ~ normal(tau_k, se_tau_k);
   }
   if(pooling_type == 1){
+    sigma_tau ~ uniform(0, prior_upper_sigma_tau);
     tau ~ normal(prior_tau_mean, prior_tau_scale);
     eta ~ normal(0,1);
     tau_hat_k ~ normal(tau_k, se_tau_k);
   }
   if(pooling_type == 2){
     tau ~ normal(prior_tau_mean, prior_tau_scale);
-    tau_hat_k ~ normal(tau, se_tau_k);
+    tau_hat_k ~ normal(tau[1], se_tau_k);
   }
 }
 
@@ -61,9 +60,9 @@ generated quantities {
   if(K_test > 0){
     for(k in 1:K_test){
       if(pooling_type == 1)
-        logpd += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(sigma_tau^2 + test_se_k[k]^2));
+        logpd += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(sigma_tau[1]^2 + test_se_k[k]^2));
       if(pooling_type == 2)
-        logpd += normal_lpdf(test_tau_hat_k[k] | tau, sqrt(test_se_k[k]^2));
+        logpd += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(test_se_k[k]^2));
     }
   }
 }

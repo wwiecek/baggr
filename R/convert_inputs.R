@@ -26,10 +26,7 @@
 #' @author Witold Wiecek, Rachael Meager
 #' @examples
 #' # simple meta-analysis example:
-#' con_s <- convert_inputs(schools, "rubin")
-#' # large example of individual-level data:
-#' con <- convert_inputs(microcredit_simplified,
-#'                       "full", outcome = "consumerdurables")
+#' convert_inputs(schools, "rubin")
 #' @export
 
 convert_inputs <- function(data,
@@ -147,7 +144,7 @@ convert_inputs <- function(data,
       out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
       out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
     } else {
-      # Disabled until summarise_qunatiles_data() gets included in the release again.
+      # Disabled until summarise_quantiles_data() gets included in the release again.
       # out_test <- summarise_quantiles_data(test_data, quantiles,
                                       # outcome, group, treatment)
       # out$K_test <- out_test$K #reminder: K is number of sites, N is number of quantiles

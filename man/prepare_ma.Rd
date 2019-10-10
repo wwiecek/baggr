@@ -57,9 +57,9 @@ If multiple operations are performed, they are taken in this order:
 }
 }
 \examples{
+data(microcredit_simplified)
 prepare_ma(microcredit_simplified, outcome = "consumerdurables")
 }
 \seealso{
-\code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs;
-\code{\link[=summarise_quantiles_data]{summarise_quantiles_data()}} for summarising data per quantile
+\code{\link[=convert_inputs]{convert_inputs()}} for how data is converted into Stan inputs
 }

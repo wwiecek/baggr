@@ -38,9 +38,9 @@
 #' 3) summarising data.
 #'
 #' @examples
+#' data(microcredit_simplified)
 #' prepare_ma(microcredit_simplified, outcome = "consumerdurables")
-#' @seealso [convert_inputs()] for how data is converted into Stan inputs;
-#'          [summarise_quantiles_data()] for summarising data per quantile
+#' @seealso [convert_inputs()] for how data is converted into Stan inputs
 #' @export
 #' @import stats
 #'

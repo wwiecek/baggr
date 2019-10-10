@@ -29,11 +29,11 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
 
     if(bg$model == "mutau"){
       sigma_k <- bg$data$se.tau
-      sigma_tau <- sqrt(rstan::extract(bg$fit, pars = "sigma_tau")[[1]][,2,2])
+      sigma_tau <- treatment_effect(bg)$sigma_tau
     }
     if(bg$model == "rubin"){
       sigma_k <- bg$data$se
-      sigma_tau <- rstan::extract(bg$fit, pars = "sigma_tau")[[1]]
+      sigma_tau <- treatment_effect(bg)$sigma_tau
     }
     # for summary level data cases:
     ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
@@ -43,7 +43,7 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
     # note that we use a point estimate for sigma_k, so it's not fully Bayesian
     # but in the end we usually report a point estimate so this is acceptable for now
     sigma_k <- group_effects(bg, summary = TRUE)[, "sd", 1]
-    sigma_tau <- sqrt(rstan::extract(bg$fit, pars = "sigma_mutau[2,2]")[[1]])
+    sigma_tau <- treatment_effect(bg)$sigma_tau
     # we add 3rd dimension to allow more than 1 parameter (in the future), e.g. Var
     ret <- array(0, dim = c(length(sigma_tau), bg$n_groups, 1))
     ret[,,1] <- sapply(sigma_k, function(sigma) sigma^2 / (sigma^2 + sigma_tau^2))
@@ -54,7 +54,7 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
     # here it is N effects on N quantiles etc.
 
     # discard everything off-diagonal, we only care about variances here:
-    sigma_tau <- rstan::extract(bg$fit, "Sigma_1")[[1]]
+    sigma_tau <- treatment_effect(bg)$sigma_tau
     for(i in 1:dim(sigma_tau)[2])
       sigma_tau[,i,1] <- sigma_tau[,i,i]
     sigma_tau <- sigma_tau[,,1] #rows are samples, columns are quantiles

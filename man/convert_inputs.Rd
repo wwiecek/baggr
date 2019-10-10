@@ -43,10 +43,7 @@ or to run models which you modified yourself.
 }
 \examples{
 # simple meta-analysis example:
-con_s <- convert_inputs(schools, "rubin")
-# large example of individual-level data:
-con <- convert_inputs(microcredit_simplified,
-                      "full", outcome = "consumerdurables")
+convert_inputs(schools, "rubin")
 }
 \author{
 Witold Wiecek, Rachael Meager
