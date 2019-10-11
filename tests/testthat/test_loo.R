@@ -35,8 +35,9 @@ brms_kfold <- list(estimates = structure(c(-30.9625079222176, NA,
                                          .Dimnames = list(
                                            NULL, "elpd_kfold")))
 
-baggr_kfold <- loocv(schools, control = list(adapt_delta = 0.99),
-                     iter = 5000)
+baggr_kfold <- expect_warning(loocv(schools,
+                                    # control = list(adapt_delta = 0.9),
+                                    iter = 5000))
 
 # baggr_ranef <- group_effects(baggr_fit, summary = T)[]
 test_that(desc = "baggr and brms are at least close", {
