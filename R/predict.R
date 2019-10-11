@@ -151,14 +151,14 @@ get_y <- function(x) {
 #' @param nsamples number of samples to compare
 #' @aliases pp_check
 #'
-#'
+#' @importFrom utils getFromNamespace
 #' @details For a detailed explanation of each of the ppc functions,
 #' see the \code{\link[bayesplot:PPC-overview]{PPC}}
 #' documentation of the \pkg{\link[bayesplot:bayesplot]{bayesplot}}
 #' package.
 #' @export
 pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
-  pp_fun <- getFromNamespace(paste0("ppc_",type),ns = "bayesplot")
+  pp_fun <- utils::getFromNamespace(paste0("ppc_",type),ns = "bayesplot")
   model_type <- x$model
   y <- x$data[,get_y(x)]
   yrep <- predict(x, nsamples = nsamples)

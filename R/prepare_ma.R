@@ -78,6 +78,7 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   # 3. Standardise
+  standardise <- NULL #until standardisation is fixed, we cauterise this
   if(!is.null(standardise)) {
     # Whole sample
     if(standardise == "all")
