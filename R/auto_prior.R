@@ -1,7 +1,7 @@
 # Extracts priors specified by the user;
 # Then, if any priors are missing, sets priors for all baggr models
 
-auto_prior <- function(prior, data, stan_data, model,
+prepare_prior <- function(prior, data, stan_data, model,
                        quantiles = c()) {
   if(missing(prior))
     prior <- list()
@@ -29,14 +29,40 @@ auto_prior <- function(prior, data, stan_data, model,
 
   if(model == "mutau") {
     # Remember, first row is always mu (baseline), second row is tau (effect)
-    prior_list[["prior_upper_sigma_tau"]] <- c(10*sd(data$mu), 10*sd(data$tau))^2
-    message(paste0("* sigma_mu ~ Uniform(0, ",
-                   round(sqrt(prior_list[["prior_upper_sigma_tau"]][1]), 2), ")"))
-    message(paste0("* sigma_tau ~ Uniform(0, ",
-                   round(sqrt(prior_list[["prior_upper_sigma_tau"]][2]), 2), ")"))
-    prior_list[["prior_tau_mean"]] <- c(0,0)
-    prior_list[["prior_tau_scale"]] <- 1000*diag(2)
-    message(paste0("mean priors: (mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
+
+    # Hypermean
+    if(is.null(prior$hypermean)){
+      prior_list <- set_prior_val(prior_list, "prior_hypermean",
+                                  multinormal(c(0,0), 10000*diag(2)))
+      message(paste0("* hypermean (mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
+    } else {
+      if(prior$hypermean$dist == "normal")
+        prior$hypermean <- multinormal(rep(prior$hypermean$values[1], 2),
+                                       (prior$hypermean$values[2]^2)*diag(2))
+      if(prior$hypermean$dimension != 2)
+        stop("Prior for mu & tau model must have 2 dimensions.")
+      prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
+    }
+
+    # Hypervariance
+    if(is.null(prior$hypervar)){
+      prior_list <- set_prior_val(prior_list, "prior_hypervar", cauchy(0,10))
+      message(paste0("* hypervariance (mu, tau) ~ Cauchy(0,10)"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_hypervar", prior$hypervar)
+    }
+
+    # Hypercorrelation (Only LKJ enabled for now)
+    if(is.null(prior$hypercor)){
+      prior_list$prior_hypercor_val <- 3
+      message(paste0("* hypercorrelation (mu, tau) ~ LKJ(shape=3)"))
+    } else {
+      if(prior$hypercor$dist != "lkj")
+        stop("Only LKJ prior is allowed for correlation matrices.")
+      prior_list$prior_hypercor_val <- prior$hypercor$values
+    }
+    # Make sure prior_list$prior_hypercor_val is an array:
+    prior_list$prior_hypercor_val <- array(prior_list$prior_hypercor_val, dim=c(1))
   }
   if(model == "full") {
     # empirical variance of outcome:

@@ -12,13 +12,14 @@
 #' @param pooling choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
-#'              See Details below for more possible specifications.
+#'              See Details:Priors below for more possible specifications.
 #'              If unspecified, the priors will be derived automatically based on data
 #'              (and printed out in the console).
 #' @param prior_hypervar prior for hypervariance, same rules apply as for `_hypermean`;
-#' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
-#'                    If \code{FALSE}, they have independent priors. Ignored if no control
-#'                    (\code{mu}) data exists.
+#' @param prior_hypercor prior for hypercorrelation matrix; only used for models with
+#'                       multivariate effects;
+#' @param prior alternative way to specify all priors as a named list with `hypermean`,
+#'              `hypervar`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
@@ -82,10 +83,10 @@
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
-                  prior_hypermean = NULL, prior_hypervar = NULL,
+                  prior_hypermean = NULL, prior_hypervar = NULL, prior_hypercor=NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
-                  joint_prior = TRUE,
+                  prior = NULL,
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   warn = TRUE, ...) {
@@ -108,12 +109,6 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
 
-
-  # choice whether the parameters have a joint prior or not
-  # for now fixed
-  if(model != "rubin")
-    stan_data[["joint"]] <- joint_prior
-
   # remember number of groups:
   n_groups <- attr(stan_data, "n_groups")
 
@@ -135,28 +130,35 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
 
-  # Assume prior is of the format
-  # prior = list(hypermean = normal(0, 10), hypervar = uniform(0, 100))
-  prior <- list(hypermean = prior_hypermean,
-                hypervar = prior_hypervar)
-  # extract priors from inputs & fill in missing priors
-  prior <- auto_prior(prior, data, stan_data, model, quantiles = quantiles)
+  # Prior settings:
+  if(is.null(prior))
+    prior <- list(hypermean = prior_hypermean,
+                  hypervar = prior_hypervar,
+                  hypercor = prior_hypercor)
+  else if(!is.null(prior_hypermean) || !is.null(prior_hypervar) || !is.null(prior_hypercor))
+    message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
 
-  # Check for stupid priors
-  # if(model %in% c("rubin"))
-  #   if(prior[["prior_upper_sigma_tau"]] < 5*sd(data$tau))
-  #     message(paste0("Prior for SD(tau) is lower than 5 times the observed",
-  #                    "SD of effects. Please use caution."))
+  # If extracting prior from another model, we need to do a swapsie switcheroo:
+  stan_args <- list(...)
+  if("formatted_prior" %in% names(stan_args)){
+    formatted_prior <- stan_args$formatted_prior
+    stan_args$formatted_prior <- NULL
+  } else { # extract priors from inputs & fill in missing priors
+    formatted_prior <- prepare_prior(prior, data, stan_data, model, quantiles = quantiles)
+  }
+  for(nm in names(formatted_prior))
+    stan_data[[nm]] <- formatted_prior[[nm]]
 
-  for(nm in names(prior))
-    stan_data[[nm]] <- prior[[nm]]
+  stan_args$object <- stanmodels[[model]]
+  stan_args$data <- stan_data
 
-  fit <- rstan::sampling(stanmodels[[model]], data = stan_data, ...)
+  fit <- do.call(rstan::sampling, stan_args)
 
   result <- list(
     "data" = data,
     "inputs" = stan_data,
-    "prior" = prior,
+    "user_prior" = prior,
+    "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
     "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
     "effects" = effects,

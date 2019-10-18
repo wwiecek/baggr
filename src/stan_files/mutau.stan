@@ -4,11 +4,14 @@ data {
   real tau_hat_k[P,K]; // estimated treatment effects
   real<lower=0> se_tau_k[P,K]; // s.e. of effect estimates
   int pooling_type; //0 if none, 1 if partial, 2 if full
-  int<lower=0, upper=1> joint; //is the distribution on parameters (mu and tau) joint?
-  // real prior_upper_sigma_tau[P];
-  vector[P] prior_tau_mean;
-  vector[P] prior_upper_sigma_tau;
-  matrix<lower=0>[P,P] prior_tau_scale;
+
+  // priors:
+  int prior_hypermean_fam;
+  vector[P] prior_hypermean_mean;
+  matrix<lower=0>[P, P] prior_hypermean_scale;
+  int prior_hypervar_fam;
+  real prior_hypervar_val[2];
+  real prior_hypercor_val[1]; //only LKJ allowed
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites
@@ -40,24 +43,29 @@ transformed parameters {
 
 model {
 
-  if(pooling_type != 0) { //hyperparam only if there's pooling
-  if(joint == 1)
-  tau[1] ~ multi_normal(prior_tau_mean, prior_tau_scale);
-  if(joint == 0) {
-    for(p in 1:P)
-    tau[1][p] ~ normal(prior_tau_mean[p], prior_tau_scale[p,p]);
-  }
-  }
-  if(pooling_type == 0) {
-    //tau_k's 'take over' tau's prior distribution
+  // priors: hypermean
+  if(pooling_type == 0)
     for (k in 1:K)
-      tau_k[k] ~ multi_normal(prior_tau_mean, prior_tau_scale);
+      tau_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+  if(pooling_type != 0) {
+    if(prior_hypermean_fam == 3)
+      tau[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+  }
+
+  //priors variance/correlation
+  if(pooling_type == 1) {
+    if(prior_hypervar_fam == 0)
+      theta[1] ~ uniform(prior_hypervar_val[1], prior_hypervar_val[2]);
+    if(prior_hypervar_fam == 1)
+      theta[1] ~ normal(prior_hypervar_val[1], prior_hypervar_val[2]);
+    if(prior_hypervar_fam == 2)
+      theta[1] ~ cauchy(prior_hypervar_val[1], prior_hypervar_val[2]);
+
+    //for Omega only LKJ allowed for now
+    Omega[1] ~ lkj_corr(prior_hypercor_val[1]);
   }
 
   if(pooling_type == 1) {
-    // parameter variance priors
-    theta[1] ~ cauchy(0,10);
-    Omega[1] ~ lkj_corr(3); // pushes towards independence
     for (k in 1:K) {
       tau_k[k] ~ multi_normal(tau[1], sigma_tau[1]);
       for(p in 1:P)
@@ -65,12 +73,10 @@ model {
     }
   }
 
-  if(pooling_type == 2) {
-    for (k in 1:K) {
+  if(pooling_type == 2)
+    for (k in 1:K)
       for(p in 1:P)
-      tau_hat_k[p,k] ~ normal(tau[1][p], se_tau_k[p,k]);
-    }
-  }
+        tau_hat_k[p,k] ~ normal(tau[1][p], se_tau_k[p,k]);
 }
 
 generated quantities {
