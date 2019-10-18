@@ -7,18 +7,22 @@ data {
   real tau_hat_k[K]; // estimated treatment effects
   real<lower=0> se_tau_k[K]; // s.e. of effect estimates
   int pooling_type; //0 if none, 1 if partial, 2 if full
-  real prior_upper_sigma_tau;
-  real prior_tau_mean;
-  real prior_tau_scale;
+
+  //priors (proof of concept)
+  //0 = uniform, 1 = normal
+  int prior_hypermean_fam;
+  int prior_hypervar_fam;
+  real prior_hypermean_val[2];
+  real prior_hypervar_val[2];
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites
   real test_tau_hat_k[K_test]; // estimated treatment effects
   real<lower=0> test_se_k[K_test]; // s.e. of effect estimates
-
 }
+
 transformed data {
-  int K_pooled; // number of modelled sites if we take into account pooling
+  int K_pooled; // number of modelled sites if we take pooling into account
   if(pooling_type == 2)
     K_pooled = 0;
   if(pooling_type != 2)
@@ -39,18 +43,36 @@ transformed parameters {
   }
 }
 model {
+  //hypermean priors:
+  if(pooling_type > 0) {
+    if(prior_hypermean_fam == 0)
+      tau ~ uniform(prior_hypermean_val[1], prior_hypermean_val[2]);
+    if(prior_hypermean_fam == 1)
+      tau ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
+  } else {
+    if(prior_hypermean_fam == 0)
+      eta ~ uniform(prior_hypermean_val[1], prior_hypermean_val[2]);
+    if(prior_hypermean_fam == 1)
+      eta ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
+  }
+
+  //hypervariance priors:
+  if(pooling_type == 1){
+    if(prior_hypervar_fam == 0)
+      sigma_tau ~ uniform(prior_hypervar_val[1], prior_hypervar_val[2]);
+    if(prior_hypervar_fam == 1)
+      sigma_tau ~ normal(prior_hypervar_val[1], prior_hypervar_val[2]);
+  }
+
+  //likelihood
   if(pooling_type == 0){
-    eta ~ normal(prior_tau_mean, prior_tau_scale);
     tau_hat_k ~ normal(tau_k, se_tau_k);
   }
   if(pooling_type == 1){
-    sigma_tau ~ uniform(0, prior_upper_sigma_tau);
-    tau ~ normal(prior_tau_mean, prior_tau_scale);
     eta ~ normal(0,1);
     tau_hat_k ~ normal(tau_k, se_tau_k);
   }
   if(pooling_type == 2){
-    tau ~ normal(prior_tau_mean, prior_tau_scale);
     tau_hat_k ~ normal(tau[1], se_tau_k);
   }
 }

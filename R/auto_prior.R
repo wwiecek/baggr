@@ -1,19 +1,32 @@
-# This automatically sets priors for all baggr models
-# That is inferred from data
+# Extracts priors specified by the user;
+# Then, if any priors are missing, sets priors for all baggr models
 
-auto_prior <- function(data, stan_data, model, outcome = "outcome",
+auto_prior <- function(prior, data, stan_data, model,
                        quantiles = c()) {
+  if(missing(prior))
+    prior <- list()
+
   prior_list <- list()
 
   message("Automatically setting prior values:")
   if(model %in% c("rubin")) {
-    prior_list[["prior_upper_sigma_tau"]] <- 10*sd(data$tau)
-    message(paste0("* sigma_tau ~ Uniform(0, ",
-                   round(prior_list[["prior_upper_sigma_tau"]], 2), ")"))
-    prior_list[["prior_tau_mean"]] <- 0
-    prior_list[["prior_tau_scale"]] <- 100
-    message(paste0("* tau ~ Normal(0, 100)"))
+    # Hypervariance
+    if(is.null(prior$hypervar)){
+      prior_list <- set_prior_val(prior_list, "prior_hypervar", uniform(0, 10*sd(data$tau)))
+      message(paste0("* sigma_tau ~ Uniform(0, ",
+                     format(10*sd(data$tau), digits = 2), ")"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_hypervar", prior$hypervar)
+    }
+    # Hypermean
+    if(is.null(prior$hypermean)){
+      prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, 100))
+      message(paste0("* tau ~ Normal(0, 100^2)"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
+    }
   }
+
   if(model == "mutau") {
     # Remember, first row is always mu (baseline), second row is tau (effect)
     prior_list[["prior_upper_sigma_tau"]] <- c(10*sd(data$mu), 10*sd(data$tau))^2
@@ -29,8 +42,8 @@ auto_prior <- function(data, stan_data, model, outcome = "outcome",
     # empirical variance of outcome:
     vhat <- var(stan_data$y) #this may give trouble, look out!
     message(paste0("SD of treatment effect is Uniform(0, ",
-                  format(10*sqrt(vhat), digits=2),
-                  "); 10*(observed outcome SD)"))
+                   format(10*sqrt(vhat), digits=2),
+                   "); 10*(observed outcome SD)"))
     prior_list[["P"]] <- 2
     prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
     prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)

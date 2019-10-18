@@ -10,7 +10,12 @@
 #'              otherwise choose from
 #'              \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
 #' @param pooling choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}
-#' @param prior list of prior arguments passed directly to each model (see Details)
+#' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
+#'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
+#'              See Details below for more possible specifications.
+#'              If unspecified, the priors will be derived automatically based on data
+#'              (and printed out in the console).
+#' @param prior_hypervar prior for hypervariance, same rules apply as for `_hypermean`;
 #' @param joint_prior If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 #'                    If \code{FALSE}, they have independent priors. Ignored if no control
 #'                    (\code{mu}) data exists.
@@ -61,7 +66,7 @@
 #'
 #' __Priors.__ It is optional to specify priors yourself,
 #' as the package will try propose an appropriate
-#' prior for the input data if `prior=NULL`.
+#' prior for the input data if you do not pass a `prior` argument.
 #' To set the priors yourself, please refer to the list in the `vignette("baggr")`
 #'
 #' @author Witold Wiecek, Rachael Meager
@@ -76,7 +81,8 @@
 #'
 #' @export
 
-baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
+baggr <- function(data, model = NULL, pooling = "partial",
+                  prior_hypermean = NULL, prior_hypervar = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   joint_prior = TRUE,
@@ -129,20 +135,18 @@ baggr <- function(data, model = NULL, prior = NULL, pooling = "partial",
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
 
-  # default priors
-  if(is.null(prior)) {
-    prior <- auto_prior(data, stan_data, model,
-                        outcome = outcome, quantiles = quantiles)
+  # Assume prior is of the format
+  # prior = list(hypermean = normal(0, 10), hypervar = uniform(0, 100))
+  prior <- list(hypermean = prior_hypermean,
+                hypervar = prior_hypervar)
+  # extract priors from inputs & fill in missing priors
+  prior <- auto_prior(prior, data, stan_data, model, quantiles = quantiles)
 
-  } else {
-    # !!!check for allowed priors here!!!
-  }
-
-  # Check priors
-  if(model %in% c("rubin"))
-    if(prior[["prior_upper_sigma_tau"]] < 5*sd(data$tau))
-      message(paste0("Prior for SD(tau) is lower than 5 times the observed",
-                     "SD of effects. Please use caution."))
+  # Check for stupid priors
+  # if(model %in% c("rubin"))
+  #   if(prior[["prior_upper_sigma_tau"]] < 5*sd(data$tau))
+  #     message(paste0("Prior for SD(tau) is lower than 5 times the observed",
+  #                    "SD of effects. Please use caution."))
 
   for(nm in names(prior))
     stan_data[[nm]] <- prior[[nm]]

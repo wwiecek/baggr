@@ -4,10 +4,11 @@
 \alias{baggr}
 \title{Bayesian aggregate treatment effects model}
 \usage{
-baggr(data, model = NULL, prior = NULL, pooling = "partial",
-  joint_prior = TRUE, test_data = NULL, quantiles = seq(0.05, 0.95,
-  0.1), outcome = "outcome", group = "group",
-  treatment = "treatment", warn = TRUE, ...)
+baggr(data, model = NULL, pooling = "partial",
+  prior_hypermean = NULL, prior_hypervar = NULL, joint_prior = TRUE,
+  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome", group = "group", treatment = "treatment",
+  warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -16,9 +17,15 @@ baggr(data, model = NULL, prior = NULL, pooling = "partial",
 otherwise choose from
 \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
 
-\item{prior}{list of prior arguments passed directly to each model (see Details)}
-
 \item{pooling}{choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}}
+
+\item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
+\code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
+See Details below for more possible specifications.
+If unspecified, the priors will be derived automatically based on data
+(and printed out in the console).}
+
+\item{prior_hypervar}{prior for hypervariance, same rules apply as for \code{_hypermean};}
 
 \item{joint_prior}{If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
 If \code{FALSE}, they have independent priors. Ignored if no control
@@ -85,7 +92,7 @@ If no model is specified, the function tries to infer the appropriate model auto
 
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate
-prior for the input data if \code{prior=NULL}.
+prior for the input data if you do not pass a \code{prior} argument.
 To set the priors yourself, please refer to the list in the \code{vignette("baggr")}
 }
 \examples{
