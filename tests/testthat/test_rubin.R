@@ -12,6 +12,9 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
+  expect_error(baggr("Text"), "Can't detect input")
+  expect_error(baggr(5), "Can't detect input")
+
   # model or pooling type doesn't exist
   expect_error(baggr(df_pooled, "made_up_model"), "Unrecognised model")
   expect_error(baggr(df_pooled, pooling = "nune"), "Wrong pooling")

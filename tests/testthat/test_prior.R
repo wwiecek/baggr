@@ -3,6 +3,11 @@ set.seed(11241)
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                         "se" = rep(1, 8),
                         "state" = datasets::state.name[1:8])
+df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                       "se.tau" = rep(1, 8),
+                       "mu" = rnorm(8),
+                       "se.mu" = rep(1, 8),
+                       "state" = datasets::state.name[1:8])
 
 test_that("Wrong prior specifications crash baggr()", {
   expect_error(baggr(df_mutau, prior_hypervar = 2))
@@ -16,7 +21,8 @@ test_that("Prior specification via different arguments", {
   custom_prior <- list(hypermean = normal(0, 10), hypervar = uniform(0, 20))
   bg_prior1 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
-                                    prior = custom_prior))
+                                    prior_hypermean = normal(0, 2),
+                                    prior = custom_prior)) #custom_prior OVERRIDES hypermean!
   bg_prior2 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
                                     prior_hypermean = normal(0,10),
@@ -30,6 +36,13 @@ test_that("Prior specification via different arguments", {
   te1 <- sort(treatment_effect(bg_prior1)[[1]])
   expect_identical(te1, te2)
   expect_identical(te3, te2)
+
+  # Wrong names in the list
+  expect_error(baggr(df_pooled, prior = list(hypermeann = normal(0,5))),
+               "Prior argument")
+  expect_error(baggr(df_pooled, prior = list(hypermeann = normal(0,5),
+                                             hypermean = normal(0,5))),
+               "Prior argument")
 })
 
 test_that("All possible prior dist's work", {
@@ -42,4 +55,20 @@ test_that("All possible prior dist's work", {
   expect_error(multinormal(0, 10))
   expect_error(normal(c(0,0), diag(2)))
   expect_error(cauchy(0, 5, 8))
+
+  expect_error(normal(0, -1))
+  expect_error(uniform(0, -1))
+  expect_error(cauchy(0, -1))
+  expect_error(multinomial(c(0,0), matrix(c(-1,0,-1,1),2,2)))
+})
+
+test_that("Different priors for mutau model", {
+  bg1 <- expect_warning(baggr(df_mutau, prior_hypermean = normal(0, 5),
+                              iter = 200, chains = 2, refresh = 0))
+  bg2 <- expect_warning(baggr(df_mutau, prior_hypercor = lkj(4),
+                              iter = 200, chains = 2, refresh = 0))
+  expect_error(baggr(df_mutau, prior_hypermean = multinormal(c(0,0,0), diag(3))))
+  expect_error(baggr(df_mutau, prior_hypercor  = multinormal(c(0,0), diag(2))))
+  expect_is(bg1, "baggr")
+  expect_is(bg2, "baggr")
 })

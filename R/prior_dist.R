@@ -61,7 +61,7 @@ multinormal <- function(location, Sigma) {
     stop("Variance-covariance matrix must be positive semi-definite")
   if(ncol(Sigma) != length(location))
     stop("mean and variance-covariance must have matching dimensions")
-  return(list(dist = "multinormal", mean=location, scale=Sigma, dimension = length(mean)))
+  return(list(dist = "multinormal", mean=location, scale=Sigma, dimension = length(location)))
 }
 
 #' @rdname priors

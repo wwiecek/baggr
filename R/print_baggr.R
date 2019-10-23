@@ -31,9 +31,9 @@ print.baggr <- function(x, ...) {
     if(x$model != "quantiles"){
       tau       <- format(mint(te[[1]]), digits = 2, trim = T)
       sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
-      cat("Mean(tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
+      cat("Hypermean (tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
       if(x$pooling == "partial")
-        cat("SD(tau) =", sigma_tau[2], "with 95% interval", sigma_tau[1], "to", sigma_tau[3], "\n")
+        cat("Hypervariance (sigma_tau) =", sigma_tau[2], "with 95% interval", sigma_tau[1], "to", sigma_tau[3], "\n")
     } else { #quantiles
       tau <- mint(te[[1]])
       sigma_tau <- mint(te[[2]])
