@@ -42,14 +42,14 @@ test_that("Error messages for wrong inputs are in place", {
 # There will always be a divergent transition / ESS warning produced by Stan
 # at iter = 200.
 bg5_n <- expect_warning(baggr(df_pooled, "rubin", pooling = "none", group = "state",
-                         iter = 200, chains = 2, refresh = 0,
-                         show_messages = F))
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
 bg5_p <- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "state",
-                         iter = 200, chains = 2, refresh = 0,
-                         show_messages = F))
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
 bg5_f <- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
-                         iter = 200, chains = 2, refresh = 0,
-                         show_messages = F))
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
 
 test_that("Different pooling methods work for Rubin model", {
   expect_is(bg5_n, "baggr")
@@ -130,7 +130,7 @@ test_that("printing works", {
 
 test_that("Test data can be used in the Rubin model", {
   bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],
-                  iter = 500, refresh = 0))
+                                 iter = 500, refresh = 0))
   expect_is(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
@@ -223,4 +223,23 @@ bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .9
 test_that("The default 8 schools result is close to the result in BDA", {
   expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
   expect_equal(mean(treatment_effect(bg_s)$sigma_tau), 7, tolerance = .25)
+})
+
+
+# Bangert-Drowns correctness check -----
+
+# dt_bd <- metafor::dat.bangertdrowns2004 %>%
+# dplyr::mutate(study = paste(author, year), tau = yi, se = sqrt(vi))
+# write.table(dt_bd, file = "inst/tests/bangertdrowns2004.csv")
+dt_bd <- read.table(system.file("tests", "bangertdrowns2004.csv", package = "baggr"))
+bg_bd <- baggr(dt_bd, group = "study", model = "rubin", iter = 4000,
+               prior_hypervar = uniform(0, 10), refresh = 0)
+# RE results from metafor:
+# metafor::rma(yi, vi, data=dt2)
+test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
+  expect_equal(mean(treatment_effect(bg_bd)$tau), 0.22, tolerance = .01)
+  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .025)),
+               0.13, tolerance = .015)
+  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .975)),
+               0.31, tolerance = .015)
 })

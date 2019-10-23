@@ -5,10 +5,10 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, pooling = "partial",
-  prior_hypermean = NULL, prior_hypervar = NULL, joint_prior = TRUE,
-  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", group = "group", treatment = "treatment",
-  warn = TRUE, ...)
+  prior_hypermean = NULL, prior_hypervar = NULL,
+  prior_hypercor = NULL, prior = NULL, test_data = NULL,
+  quantiles = seq(0.05, 0.95, 0.1), outcome = "outcome",
+  group = "group", treatment = "treatment", warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -21,15 +21,17 @@ otherwise choose from
 
 \item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
 \code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
-See Details below for more possible specifications.
+See Details:Priors below for more possible specifications.
 If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
 \item{prior_hypervar}{prior for hypervariance, same rules apply as for \code{_hypermean};}
 
-\item{joint_prior}{If \code{TRUE}, \code{mu} and \code{tau} will have joint distribution.
-If \code{FALSE}, they have independent priors. Ignored if no control
-(\code{mu}) data exists.}
+\item{prior_hypercor}{prior for hypercorrelation matrix; only used for models with
+multivariate effects;}
+
+\item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
+\code{hypervar}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument}
