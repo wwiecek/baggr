@@ -2,7 +2,7 @@
 # Then, if any priors are missing, sets priors for all baggr models
 
 prepare_prior <- function(prior, data, stan_data, model,
-                       quantiles = c()) {
+                          quantiles = c()) {
   if(missing(prior))
     prior <- list()
 
@@ -13,7 +13,11 @@ prepare_prior <- function(prior, data, stan_data, model,
     # Hypervariance
     if(is.null(prior$hypervar)){
       prior_list <- set_prior_val(prior_list, "prior_hypervar", uniform(0, 10*sd(data$tau)))
-      message(paste0("* sigma_tau ~ Uniform(0, ",
+      if(nrow(data) < 5)
+        message(paste("/Dataset has only", nrow(data),
+                       "rows -- consider setting variance prior manually./"))
+
+      message(paste0("* hypervariance: sigma_tau ~ Uniform(0, ",
                      format(10*sd(data$tau), digits = 2), ")"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypervar", prior$hypervar)
@@ -35,6 +39,9 @@ prepare_prior <- function(prior, data, stan_data, model,
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
                                   multinormal(c(0,0), 10000*diag(2)))
       message(paste0("* hypermean (mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
+      if(nrow(data) < 5)
+        message(paste("/Dataset has only", nrow(data),
+                      "rows -- consider setting variance prior manually./"))
     } else {
       if(prior$hypermean$dist == "normal")
         prior$hypermean <- multinormal(rep(prior$hypermean$values[1], 2),

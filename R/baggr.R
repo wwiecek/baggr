@@ -93,6 +93,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
                   outcome = "outcome", group = "group", treatment = "treatment",
                   warn = TRUE, ...) {
 
+  # check that it is data.frame of at least 1 row
+  if(!inherits(data, "data.frame") || nrow(data) == 1)
+    stop("data argument must be a data.frame of >1 rows")
+
   # For now we recommend that users format their data before passing to baggr()
   # data <- prepare_ma(data,
   #                    standardise = standardise, log = log,
