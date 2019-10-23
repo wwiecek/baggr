@@ -81,7 +81,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   args[["model"]] <- full_fit$model
   if(!("prior" %in% names(args))) {
     message("(Prior distributions taken from the model with all data. See $prior.)")
-    args[["prior"]] <- full_fit$prior
+    args[["formatted_prior"]] <- full_fit$formatted_prior
   }
 
   # Determine number and names of groups

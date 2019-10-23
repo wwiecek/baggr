@@ -79,6 +79,8 @@
 #' baggr(df_pooled) #baggr automatically detects the input data
 #' # correct labels, different pooling & passing some options to Stan
 #' baggr(df_pooled, group = "state", pooling = "full", iter = 500)
+#' #change the priors:
+#' baggr(df_pooled, prior_hypermean = normal(5,5))
 #'
 #' @export
 
@@ -135,9 +137,13 @@ baggr <- function(data, model = NULL, pooling = "partial",
     prior <- list(hypermean = prior_hypermean,
                   hypervar = prior_hypervar,
                   hypercor = prior_hypercor)
-  else if(!is.null(prior_hypermean) || !is.null(prior_hypervar) || !is.null(prior_hypercor))
-    message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
-
+  else {
+    if(!is.null(prior_hypermean) || !is.null(prior_hypervar) || !is.null(prior_hypercor))
+      message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
+    if(class(prior) != "list" ||
+       !all(names(prior) %in% c('hypermean', 'hypervar', 'hypercor')))
+      stop("Prior argument must be a list with names 'hypermean', 'hypervar', 'hypercor'")
+  }
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){

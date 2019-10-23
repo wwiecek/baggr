@@ -104,6 +104,8 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 baggr(df_pooled) #baggr automatically detects the input data
 # correct labels, different pooling & passing some options to Stan
 baggr(df_pooled, group = "state", pooling = "full", iter = 500)
+#change the priors:
+baggr(df_pooled, prior_hypermean = normal(5,5))
 
 }
 \author{
