@@ -11,7 +11,8 @@ data {
   matrix<lower=0>[P, P] prior_hypermean_scale;
   int prior_hypervar_fam;
   real prior_hypervar_val[2];
-  real prior_hypercor_val[1]; //only LKJ allowed
+  int prior_hypercor_fam; //only LKJ allowed for now...
+  real prior_hypercor_val[1];
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites

@@ -18,7 +18,6 @@
 #'        as it is inferred directly in the model)
 NULL
 
-allowed_prior_dists <- c("uniform", "normal", "multinormal", "cauchy")
 check_scalar <- function(x) {
   if(length(x) > 1)
     stop("argument must be scalar")
@@ -26,12 +25,18 @@ check_scalar <- function(x) {
     stop("argument must be numeric")
 }
 
+prior_dist_fam <- c("uniform" = 0,
+                    "normal" = 1,
+                    "cauchy" = 2,
+                    "multinormal" = 3,
+                    "lkj" = 4)
+
 set_prior_val <- function(target, name, prior) {
   if(is.null(prior$dist))
     stop("Wrong prior specification")
-  if(!(prior$dist %in% allowed_prior_dists))
+  if(!(prior$dist %in% names(prior_dist_fam)))
     stop(paste("Prior family must be one of: ",
-               paste(allowed_prior_dists, collapse = ", ")))
+               paste(names(prior_dist_fam), collapse = ", ")))
 
   target[[paste0(name, "_fam")]] <- switch(prior$dist,
                                            "uniform" = 0,

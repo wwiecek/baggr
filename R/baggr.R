@@ -15,9 +15,10 @@
 #'              See Details:Priors below for more possible specifications.
 #'              If unspecified, the priors will be derived automatically based on data
 #'              (and printed out in the console).
-#' @param prior_hypervar prior for hypervariance, same rules apply as for `_hypermean`;
-#' @param prior_hypercor prior for hypercorrelation matrix; only used for models with
-#'                       multivariate effects;
+#' @param prior_hypersd  prior for hyper-standard deviation, used by Rubin model;
+#'                       same rules apply as for `_hypermean`;
+#' @param prior_hypervar prior for hypervariance, used by the `"mutau"` model
+#' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypervar`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
 #' @param outcome   character; column name in (individual-level)
@@ -68,7 +69,9 @@
 #' __Priors.__ It is optional to specify priors yourself,
 #' as the package will try propose an appropriate
 #' prior for the input data if you do not pass a `prior` argument.
-#' To set the priors yourself, please refer to the list in the `vignette("baggr")`
+#' To set the priors yourself, use `prior_` arguments. For specifying many priors at once
+#' (or re-using between models), a single `prior = list(...)` argument can be used instead.
+#' Appropriate examples are given in `vignette("baggr")`.
 #'
 #' @author Witold Wiecek, Rachael Meager
 #'
@@ -85,7 +88,8 @@
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
-                  prior_hypermean = NULL, prior_hypervar = NULL, prior_hypercor=NULL,
+                  prior_hypermean = NULL, prior_hypersd = NULL,
+                  prior_hypervar = NULL, prior_hypercor=NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL,
@@ -139,14 +143,17 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # Prior settings:
   if(is.null(prior))
     prior <- list(hypermean = prior_hypermean,
-                  hypervar = prior_hypervar,
-                  hypercor = prior_hypercor)
+                  hypervar  = prior_hypervar,
+                  hypercor  = prior_hypercor,
+                  hypersd   = prior_hypersd)
   else {
-    if(!is.null(prior_hypermean) || !is.null(prior_hypervar) || !is.null(prior_hypercor))
+    if(!is.null(prior_hypermean) || !is.null(prior_hypervar) ||
+       !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypervar', 'hypercor')))
-      stop("Prior argument must be a list with names 'hypermean', 'hypervar', 'hypercor'")
+       !all(names(prior) %in% c('hypermean', 'hypervar', 'hypercor', 'hypersd')))
+      stop(paste("Prior argument must be a list with names",
+                 "'hypermean', 'hypervar', 'hypercor', 'hypersd'"))
   }
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)

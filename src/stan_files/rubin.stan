@@ -11,9 +11,9 @@ data {
   //priors (proof of concept)
   //0 = uniform, 1 = normal
   int prior_hypermean_fam;
-  int prior_hypervar_fam;
+  int prior_hypersd_fam;
   real prior_hypermean_val[2];
-  real prior_hypervar_val[2];
+  real prior_hypersd_val[2];
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites
@@ -56,12 +56,14 @@ model {
       eta ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
   }
 
-  //hypervariance priors:
+  //hypersdiance priors:
   if(pooling_type == 1){
-    if(prior_hypervar_fam == 0)
-      sigma_tau ~ uniform(prior_hypervar_val[1], prior_hypervar_val[2]);
-    if(prior_hypervar_fam == 1)
-      sigma_tau ~ normal(prior_hypervar_val[1], prior_hypervar_val[2]);
+    if(prior_hypersd_fam == 0)
+      target += uniform_lpdf(sigma_tau |
+                             prior_hypersd_val[1], prior_hypersd_val[2]);
+    if(prior_hypersd_fam == 1)
+      target += normal_lpdf(sigma_tau |
+                            prior_hypersd_val[1], prior_hypersd_val[2]);
   }
 
   //likelihood

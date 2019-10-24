@@ -8,20 +8,21 @@ prepare_prior <- function(prior, data, stan_data, model,
 
   prior_list <- list()
 
-  message("Automatically setting prior values:")
+  # message("Automatically setting prior values:")
   if(model %in% c("rubin")) {
-    # Hypervariance
-    if(is.null(prior$hypervar)){
-      prior_list <- set_prior_val(prior_list, "prior_hypervar", uniform(0, 10*sd(data$tau)))
+    # Hyper-SD
+    if(is.null(prior$hypersd)){
+      prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
       if(nrow(data) < 5)
         message(paste("/Dataset has only", nrow(data),
                        "rows -- consider setting variance prior manually./"))
 
-      message(paste0("* hypervariance: sigma_tau ~ Uniform(0, ",
+      message(paste0("* Set hypersd: sigma_tau ~ Uniform(0, ",
                      format(10*sd(data$tau), digits = 2), ")"))
     } else {
-      prior_list <- set_prior_val(prior_list, "prior_hypervar", prior$hypervar)
+      prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
     }
+
     # Hypermean
     if(is.null(prior$hypermean)){
       prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, 100))
@@ -29,6 +30,10 @@ prepare_prior <- function(prior, data, stan_data, model,
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
     }
+
+    check_eligible_priors(prior_list,
+                          list("hypersd" = c("normal", "uniform"),
+                               "hypermean" = c("normal", "uniform", "cauchy")))
   }
 
   if(model == "mutau") {
@@ -61,15 +66,19 @@ prepare_prior <- function(prior, data, stan_data, model,
 
     # Hypercorrelation (Only LKJ enabled for now)
     if(is.null(prior$hypercor)){
+      prior_list$prior_hypercor_fam <- 4
       prior_list$prior_hypercor_val <- 3
       message(paste0("* hypercorrelation (mu, tau) ~ LKJ(shape=3)"))
     } else {
-      if(prior$hypercor$dist != "lkj")
-        stop("Only LKJ prior is allowed for correlation matrices.")
-      prior_list$prior_hypercor_val <- prior$hypercor$values
+      prior_list <- set_prior_val(prior_list, "prior_hypercor", prior$hypercor)
     }
     # Make sure prior_list$prior_hypercor_val is an array:
     prior_list$prior_hypercor_val <- array(prior_list$prior_hypercor_val, dim=c(1))
+
+    check_eligible_priors(prior_list,
+                          list("hypervar" = c("cauchy", "normal", "uniform"),
+                               "hypercor" = c("lkj"),
+                               "hypermean" = c("multinormal")))
   }
   if(model == "full") {
     # empirical variance of outcome:
@@ -88,4 +97,16 @@ prepare_prior <- function(prior, data, stan_data, model,
   }
 
   return(prior_list)
+}
+
+check_eligible_priors <- function(prior, eligible) {
+  for(i in seq_along(eligible)){
+    if(!(paste0("prior_", names(eligible)[i], "_fam") %in% names(prior)))
+      stop(paste("Prior needed for", names(eligible)[i]))
+
+    allowed_dist <- prior_dist_fam[eligible[[i]]]
+
+    if(!any(prior[[paste0("prior_", names(eligible)[i], "_fam")]] == allowed_dist))
+      stop("Prior for ", names(eligible)[i], " must be one of ", eligible[i])
+  }
 }
