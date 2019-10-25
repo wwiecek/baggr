@@ -12,7 +12,7 @@
 #' try the built-in vignette (`vignette("baggr")`).
 #'
 #' @docType package
-#' @name baggr
+#' @name baggr-package
 #' @useDynLib baggr, .registration = TRUE
 #' @import methods
 #' @import Rcpp
