@@ -205,3 +205,9 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   return(result)
 }
+
+check_if_baggr <- function(bg) {
+  if(!inherits(bg, "baggr"))
+     stop("Object of class 'baggr' required.")
+}
+

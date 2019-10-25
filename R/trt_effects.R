@@ -8,8 +8,8 @@
 #' @importFrom rstan extract
 
 treatment_effect <- function(bg) {
-  if(class(bg) != "baggr")
-    stop("treatment_effect requires a baggr object")
+  check_if_baggr(bg)
+
   if(bg$pooling == "none"){
     message("There is no treatment effect estimated when pooling = 'none'.")
     return(NULL)

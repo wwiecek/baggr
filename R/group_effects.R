@@ -22,8 +22,7 @@
 #' @export
 
 group_effects <- function(bg, summary = FALSE, interval = .95) {
-  if(class(bg) != "baggr")
-    stop("group_effects only works with 'baggr' class objects")
+  check_if_baggr(bg)
 
   # m <- as.matrix(bg$fit)
 
