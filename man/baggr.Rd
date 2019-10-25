@@ -5,10 +5,11 @@
 \title{Bayesian aggregate treatment effects model}
 \usage{
 baggr(data, model = NULL, pooling = "partial",
-  prior_hypermean = NULL, prior_hypervar = NULL,
-  prior_hypercor = NULL, prior = NULL, test_data = NULL,
-  quantiles = seq(0.05, 0.95, 0.1), outcome = "outcome",
-  group = "group", treatment = "treatment", warn = TRUE, ...)
+  prior_hypermean = NULL, prior_hypersd = NULL,
+  prior_hypervar = NULL, prior_hypercor = NULL, prior = NULL,
+  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome", group = "group", treatment = "treatment",
+  warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -25,10 +26,12 @@ See Details:Priors below for more possible specifications.
 If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
-\item{prior_hypervar}{prior for hypervariance, same rules apply as for \code{_hypermean};}
+\item{prior_hypersd}{prior for hyper-standard deviation, used by Rubin model;
+same rules apply as for \code{_hypermean};}
 
-\item{prior_hypercor}{prior for hypercorrelation matrix; only used for models with
-multivariate effects;}
+\item{prior_hypervar}{prior for hypervariance, used by the \code{"mutau"} model}
+
+\item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypervar}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
@@ -95,7 +98,9 @@ If no model is specified, the function tries to infer the appropriate model auto
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate
 prior for the input data if you do not pass a \code{prior} argument.
-To set the priors yourself, please refer to the list in the \code{vignette("baggr")}
+To set the priors yourself, use \code{prior_} arguments. For specifying many priors at once
+(or re-using between models), a single \code{prior = list(...)} argument can be used instead.
+Appropriate examples are given in \code{vignette("baggr")}.
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
