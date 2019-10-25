@@ -6,20 +6,18 @@
 #' the model will use the unconditional, pooled estimate.
 #' @param nsamples Number of samples to draw from the posterior.
 #' Cannot exceed the number of samples in the fitted model.
-#' @param ... other arguments to pass to predict
+#' @param ... other arguments to pass to predict function
 #' @export
-#' @details This is currently only implemented for the baggr model
-#' but could also be extended to the others. Currently a WIP, please
-#' report bugs.
-predict.baggr <- function(x, newdata = NULL,
-                          allow_new_levels = T, nsamples = 100, ...) {
+predict.baggr <- function(x, nsamples = 100,
+                          newdata = NULL,
+                          allow_new_levels = T) {
   switch(x$model,
-         rubin = predict_rubin(x, newdata = newdata,
-                               allow_new_levels = allow_new_levels,
-                               nsamples = nsamples, ...),
+         rubin = predict_rubin(x, nsamples = nsamples,
+                               newdata = newdata,
+                               allow_new_levels = allow_new_levels),
          quantiles = predict_quantiles(x, newdata = newdata,
                                        allow_new_levels = allow_new_levels,
-                                       nsamples = nsamples,  ...))
+                                       nsamples = nsamples))
 }
 
 #' Make model matrix for the rubin data
@@ -27,60 +25,49 @@ predict.baggr <- function(x, newdata = NULL,
 #' @param newdata new data to use with model
 #' @param allow_new_levels whether to allow for unobserved groups
 rubin_data <- function(x, newdata = NULL, allow_new_levels = T) {
-  if(x$model != "rubin") {
+  check_if_baggr(x)
+  if(x$model != "rubin")
     stop("Model must be type Rubin.")
-  }
 
   group_label <- attr(x$inputs, "group_label")
-  group_num <- 1:attr(x$inputs, "n_groups")
-  group_col <- names(which(sapply(x$data,
-                            function(x, labels) any(labels %in% x),
-                            labels = group_label)))
-
+  group_num   <- 1:attr(x$inputs, "n_groups")
+  group_col   <- names(which(sapply(x$data,
+                                    function(x, labels) any(labels %in% x),
+                                    labels = group_label)))
   dat <- x$data
-
   other_cols <- setdiff(colnames(dat), group_col)
-
   if(is.null(newdata)) {
     dat <- x$data
   } else {
     dat <- newdata
   }
+  dat[,group_col] <- factor(dat[,group_col],
+                            levels = as.character(group_label))
 
-  dat[,group_col] <-
-        factor(dat[,group_col],
-               levels = as.character(group_label))
-
-
-  if(allow_new_levels != T) {
-    if(any(is.na(dat[,group_col]))) stop("Data contains new levels. If this behavior is desired, set allow_new_levels to TRUE.")
-  }
+  if(allow_new_levels != T)
+    if(any(is.na(dat[,group_col])))
+      stop("Data contains new levels. If this behavior is desired,",
+           "set allow_new_levels to TRUE.")
 
   predmat <- matrix(nrow = nrow(dat), ncol = x$n_groups)
-
   for(i in 1:ncol(predmat)) {
     lvl <- as.integer(dat[i,group_col])
-
     predmat[lvl,i] <- 1
   }
-
   predmat[which(is.na(predmat))] <- 0
   cbind(1, predmat)
-
 }
 
 #' Predict function for the rubin model
 #' @importFrom rstan extract
 #' @param x model to predict from
+#' @param nsamples number of samples to predict
 #' @param newdata new data to predict, defaults to NULL
 #' @param allow_new_levels allow the predictive of new, unobserved groups
-#' @param nsamples number of samples to predict
-#' @param ... additional arguments, unused for now
 predict_rubin <- function(x,
-                          newdata = NULL,
-                          allow_new_levels = T,
                           nsamples,
-                          ...) {
+                          newdata = NULL,
+                          allow_new_levels = T) {
   pred_data <- rubin_data(x, newdata)
 
   sigmas <- sapply(x$data$se, rep, times = nsamples)
@@ -104,25 +91,25 @@ predict_rubin <- function(x,
 #' Predict function for the quantiles model
 #' @importFrom rstan extract
 #' @param x model to predict from
+#' @param nsamples number of samples to predict
 #' @param newdata new data to predict, defaults to NULL
 #' @param allow_new_levels allow the predictive of new, unobserved groups
-#' @param nsamples number of samples to predict
 #' @param ... additional arguments, unused for now
 predict_quantiles <- function(x,
-                              newdata = NULL,
-                              allow_new_levels = T,
                               nsamples,
-                              ...){
+                              newdata = NULL,
+                              allow_new_levels = T){
   stop_not_implemented()
 }
 
 #' Posterior predictive checks for baggr model
 #'
 #' Performs posterior predictive checks with the
-#' \pkg{bayesplot} package
+#' \pkg{bayesplot} package.
 #'
 #' @param x Model to check
-#' @param type type of pp_check. For a list see \pkg{\link[bayesplot:available_ppc]{here}}.
+#' @param type type of pp_check. For a list see
+#'             \pkg{\link[bayesplot:available_ppc]{here}}.
 #' @param nsamples number of samples to compare
 #' @aliases pp_check
 #'
@@ -138,10 +125,10 @@ predict_quantiles <- function(x,
 pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
   pp_fun <- utils::getFromNamespace(paste0("ppc_",type),ns = "bayesplot")
   col <- switch(x$model,
-         rubin = "tau",
-         mutau = "tau",
-         quantiles = stop_not_implemented(),
-         full = stop_not_implemented()
+                rubin = "tau",
+                mutau = "tau",
+                quantiles = stop_not_implemented(),
+                full = stop_not_implemented()
   )
   y <- x$data[,col]
   yrep <- predict(x, nsamples = nsamples)
