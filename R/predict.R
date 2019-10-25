@@ -89,21 +89,16 @@ predict_rubin <- function(x,
 
   tau_k <- params$tau_k[1:nsamples,]
   eta <- params$eta[1:nsamples,]
-
   tau <- params$tau[1:nsamples]
   sigma_tau <- params$sigma_tau[1:nsamples]
 
-  means <- cbind(tau, eta)
-
-  pred_means <- pred_data %*% t(means)
-
+  pred_means <- pred_data %*% t(cbind(tau, eta))
   epsilon <- rnorm(length(sigmas),
                    mean = 0, sigmas)
 
   pp_dist <- pred_means + epsilon
 
   t(pp_dist)
-
 }
 
 #' Predict function for the quantiles model
@@ -121,46 +116,39 @@ predict_quantiles <- function(x,
   stop_not_implemented()
 }
 
-#' Stop with informative error
-stop_not_implemented <- function() {
-  stop("Method not implemented.")
-}
-
-#' Get Y from various models
-#' @param x model to get y
-#' @details grabs the relevant Y variable
-#' for use with posterior or prior predictive checks.
-get_y <- function(x) {
-  switch(x$model,
-         rubin = "tau",
-         mutau = "tau",
-         quantiles = stop_not_implemented(),
-         full = stop_not_implemented()
-         )
-}
-
-
 #' Posterior predictive checks for baggr model
 #'
 #' Performs posterior predictive checks with the
 #' \pkg{bayesplot} package
 #'
-#' @import bayesplot
 #' @param x Model to check
 #' @param type type of pp_check. For a list see \pkg{\link[bayesplot:available_ppc]{here}}.
 #' @param nsamples number of samples to compare
 #' @aliases pp_check
 #'
-#' @importFrom utils getFromNamespace
 #' @details For a detailed explanation of each of the ppc functions,
 #' see the \code{\link[bayesplot:PPC-overview]{PPC}}
 #' documentation of the \pkg{\link[bayesplot:bayesplot]{bayesplot}}
 #' package.
+#'
+#' @import bayesplot
+#' @importFrom utils getFromNamespace
 #' @export
+#'
 pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
   pp_fun <- utils::getFromNamespace(paste0("ppc_",type),ns = "bayesplot")
-  model_type <- x$model
-  y <- x$data[,get_y(x)]
+  col <- switch(x$model,
+         rubin = "tau",
+         mutau = "tau",
+         quantiles = stop_not_implemented(),
+         full = stop_not_implemented()
+  )
+  y <- x$data[,col]
   yrep <- predict(x, nsamples = nsamples)
   pp_fun(y, yrep)
+}
+
+#' Stop with informative error
+stop_not_implemented <- function() {
+  stop("Method not implemented.")
 }
