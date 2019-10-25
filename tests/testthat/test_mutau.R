@@ -1,6 +1,4 @@
 context("baggr() calls with mu and tau model")
-
-
 library(baggr)
 library(testthat)
 

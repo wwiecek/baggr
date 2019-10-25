@@ -1,5 +1,8 @@
 context("Specifying priors for baggr models")
+library(baggr)
+library(testthat)
 set.seed(11241)
+
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                         "se" = rep(1, 8),
                         "state" = datasets::state.name[1:8])

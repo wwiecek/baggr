@@ -1,5 +1,6 @@
 context("baggr() calls with Rubin model")
 library(baggr)
+library(testthat)
 
 
 # prepare inputs ----------------------------------------------------------
