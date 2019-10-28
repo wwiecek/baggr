@@ -10,13 +10,14 @@
 \arguments{
 \item{x}{Model to check}
 
-\item{type}{type of pp_check. For a list see \pkg{\link[bayesplot:available_ppc]{here}}.}
+\item{type}{type of pp_check. For a list see
+\pkg{\link[bayesplot:available_ppc]{here}}.}
 
 \item{nsamples}{number of samples to compare}
 }
 \description{
 Performs posterior predictive checks with the
-\pkg{bayesplot} package
+\pkg{bayesplot} package.
 }
 \details{
 For a detailed explanation of each of the ppc functions,

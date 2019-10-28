@@ -4,17 +4,16 @@
 \alias{predict_quantiles}
 \title{Predict function for the quantiles model}
 \usage{
-predict_quantiles(x, newdata = NULL, allow_new_levels = T, nsamples,
-  ...)
+predict_quantiles(x, nsamples, newdata = NULL, allow_new_levels = T)
 }
 \arguments{
 \item{x}{model to predict from}
 
+\item{nsamples}{number of samples to predict}
+
 \item{newdata}{new data to predict, defaults to NULL}
 
 \item{allow_new_levels}{allow the predictive of new, unobserved groups}
-
-\item{nsamples}{number of samples to predict}
 
 \item{...}{additional arguments, unused for now}
 }
