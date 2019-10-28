@@ -3,13 +3,21 @@
 #' Bayesian inference on parameters of an average treatment effects model
 #' that's appropriate to the supplied
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-#' (For overall package help file see [baggr_package])
+#' (For overall package help file see [baggr-package])
+#'
+#'
+#' @importFrom rstan summary
+#' @importFrom rstan sampling
 #'
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
 #'              \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
-#' @param pooling choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}
+#'              (see Details).
+#' @param pooling Type of pooling;
+#'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
+#'                If you are not familiar with the terms, consult the vignette;
+#'                "partial" can be understood as random effects and "full" as fixed effects
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
 #'              See Details:Priors below for more possible specifications.
@@ -21,6 +29,10 @@
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypersd`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
+#' @param ppd       logical; use prior predictive distribution? (_p.p.d._) Default is no.
+#'                  If `ppd=TRUE`, Stan model will sample from the prior distributions
+#'                  and ignore `data` in inference. However, `data` argument might still
+#'                  be used to infer the correct model and to set the default priors.
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
@@ -37,6 +49,7 @@
 #' @return `baggr` class structure: a list including Stan model fit
 #'          alongside input data, pooling metrics, various model properties.
 #'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
+#'
 #'
 #' @details
 #'
@@ -59,12 +72,15 @@
 #'
 #' __Models.__ Available models are:
 #'
-#' * for the means: `"rubin"` model for average treatment effect, `"mutau"` version which takes
-#'   into account means of control groups, `"full"`` model which reduces to "mu and tau"
-#'   (if no covariates are used)
+#' * for the means: `"rubin"` model for average treatment effect, `"mutau"`
+#'   version which takes into account means of control groups, `"full"`,
+#'   which works with individual-level data
 #' * "quantiles" model is also available (see Meager, 2019 in references)
 #'
-#'  If no model is specified, the function tries to infer the appropriate model automatically.
+#'  If no model is specified, the function tries to infer the appropriate
+#'  model automatically.
+#'  Additionally, the user must specify type of pooling.
+#'  The default is always partial pooling.
 #'
 #' __Priors.__ It is optional to specify priors yourself,
 #' as the package will try propose an appropriate
@@ -85,13 +101,15 @@
 #' #change the priors:
 #' baggr(df_pooled, prior_hypermean = normal(5,5))
 #'
+#' @importFrom rstan summary
+#' @importFrom rstan sampling
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
-                  prior = NULL,
+                  prior = NULL, ppd = FALSE,
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   warn = TRUE, ...) {
@@ -129,8 +147,6 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {
-    # if(model %in% c("rubin", "mutau")) {
-    # switch? separate scripts for each pooling type? third way?
     stan_data[["pooling_type"]] <- switch(pooling,
                                           "none" = 0,
                                           "partial" = 1,
@@ -165,6 +181,12 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stan_data[[nm]] <- formatted_prior[[nm]]
 
   stan_args$object <- stanmodels[[model]]
+
+  if(ppd){
+    if(pooling == "none")
+      stop("Can't use prior predictive distribution with no pooling.")
+    stan_data <- remove_data_for_prior_pred(stan_data)
+  }
   stan_args$data <- stan_data
 
   fit <- do.call(rstan::sampling, stan_args)
@@ -184,13 +206,18 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   class(result) <- c("baggr")
 
-  result[["pooling_metric"]] <- pooling(result)
+  attr(result, "ppd") <- ppd
+
   if(model == "quantiles")
-    result[["quantiles"]] <- quantiles
-  if(!is.null(test_data)){
-    result[["test_data"]] <- test_data
-    result[["mean_lpd"]] <- -2*mean(rstan::extract(fit, "logpd")[[1]])
+    result[["quantiles"]]    <- quantiles
+  if(!ppd){
+    result[["pooling_metric"]] <- pooling(result)
+    if(!is.null(test_data)){
+      result[["test_data"]]    <- test_data
+      result[["mean_lpd"]]     <- -2*mean(rstan::extract(fit, "logpd[1]")[[1]])
+    }
   }
+
   # Check convergence
   rhat <- rstan::summary(fit)$summary[,"Rhat"]
   rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters
@@ -206,6 +233,20 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
 check_if_baggr <- function(bg) {
   if(!inherits(bg, "baggr"))
-     stop("Object of class 'baggr' required.")
+    stop("Object of class 'baggr' required.")
 }
 
+remove_data_for_prior_pred <- function(data) {
+  scalars_to0 <- c("K", "N")
+  vectors_to_remove <- c("tau_hat_k", "se_tau_k",
+                         "y", "ITT", "site")
+  for(nm in scalars_to0)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- 0
+
+  for(nm in vectors_to_remove)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0))
+
+  data
+}

@@ -1,5 +1,6 @@
 context("baggr() calls with Rubin model")
 library(baggr)
+library(testthat)
 
 
 # prepare inputs ----------------------------------------------------------
@@ -54,6 +55,9 @@ bg5_p <- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "
 bg5_f <- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
+bg5_ppd <- expect_warning(baggr(df_pooled, "rubin", ppd = T,
+                                iter = 200, chains = 2, refresh = 0,
+                                show_messages = F))
 
 test_that("Different pooling methods work for Rubin model", {
   expect_is(bg5_n, "baggr")
@@ -119,6 +123,7 @@ test_that("Calculation of effects works", {
 
 
 test_that("Plotting works", {
+  expect_is(plot(bg5_ppd), "gg")
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
@@ -139,7 +144,7 @@ test_that("Test data can be used in the Rubin model", {
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
   # make sure it's not 0
-  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -3.6, tolerance = 1)
+  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -3.6, tolerance = 1)
 
   # wrong test_data
   df_na <- df_pooled[7:8,]; df_na$tau <- NULL
@@ -155,6 +160,18 @@ test_that("Extracting treatment/study effects works", {
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
+
+  # Drawing values of tau:
+  expect_error(effect_draw(cars))
+  expect_is(effect_draw(bg5_p), "numeric")
+  expect_length(effect_draw(bg5_p), 200)
+  expect_length(effect_draw(bg5_p,7), 7)
+  expect_identical(effect_draw(bg5_n), NA)
+
+  # Plotting tau:
+  expect_is(effect_plot(bg5_p), "gg")
+  expect_is(effect_plot("Model A" = bg5_p, "Model B" = bg5_f), "gg")
+
 })
 
 
@@ -184,7 +201,7 @@ test_that("Extracting treatment/study effects works", {
 
 # tests for helper functions -----
 
-test_that("baggr_compare", {
+test_that("baggr_compare basic cases work with Rubin", {
   # If I pass nothing
   expect_error(baggr_compare(), "Must provide baggr models")
   # pooling
@@ -194,7 +211,12 @@ test_that("baggr_compare", {
   # if I pass list of rubbish
   expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # Run models from baggr_compare:
-  bgcomp <- baggr_compare(schools, refresh = 0)
+  bgcomp <- expect_warning(baggr_compare(schools,
+                                         iter = 200, refresh = 0))
+  expect_is(bgcomp, "list")
+  # Compare prior vs posterior:
+  bgcomp <- expect_warning(baggr_compare(schools, iter = 200,
+                                         what = "prior", refresh = 0))
   expect_is(bgcomp, "list")
   # Compare existing models:
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "single")

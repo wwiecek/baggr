@@ -99,6 +99,7 @@ prepare_prior <- function(prior, data, stan_data, model,
     message(paste0("SD of treatment effect is Uniform(0, ",
                    format(10*sqrt(vhat), digits=2),
                    "); 10*(observed outcome SD)"))
+    prior_list[["joint"]] <- 1
     prior_list[["P"]] <- 2
     prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
     prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)

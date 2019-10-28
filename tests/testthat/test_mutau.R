@@ -1,6 +1,6 @@
 context("baggr() calls with mu and tau model")
 library(baggr)
-
+library(testthat)
 
 # prepare inputs ----------------------------------------------------------
 set.seed(1990)
@@ -11,7 +11,7 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                        "mu" = rnorm(8),
                        "se.mu" = rep(1, 8),
                        "state" = datasets::state.name[1:8])
-
+#
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
   # model, data or pooling mismatch
@@ -128,7 +128,7 @@ test_that("Test data can be used in the mu tau model", {
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(2000, 6, 1))
   # make sure it's not 0 but something sensible
-  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -13, tolerance = 1)
+  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -13, tolerance = 1)
 
   # wrong test_data
   df_na <- df_mutau[7:8,]; df_na$tau <- NULL
@@ -145,3 +145,4 @@ test_that("Extracting treatment/study effects works", {
   expect_is(treatment_effect(bg5_p)$tau, "numeric")
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 })
+

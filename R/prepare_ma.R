@@ -1,10 +1,7 @@
 #' @title Convert from individual to summary data in meta-analyses
 #'
-#' @description Allows one-way conversion from full individual-level data to
-#' summary data. Here the summary is focused on average treatment effects and
-#' their standard errors, as well as the average outcome in the control groups
-#' and the associated standard errors. Input must be pre-formatted appropriately
-#' for this function to work; see below.
+#' @description Allows one-way conversion from full to summary data.
+#'              Input must be pre-formatted appropriately.
 #'
 #' @param data data.frame of individual-level observations
 #'             with columns for outcome (numeric), treatment (values 0 and 1) and
@@ -20,10 +17,8 @@
 #' @param treatment name of column with treatment variable
 #' @param baseline name of column with baseline variable
 #'
-#' @return data.frame with columns corresponding to each group's control
-#'         group mean value `mu`, the standard error of this estimate `se.mu`,
-#'         each group's average treatment effect `tau`, and the standard error
-#'         of this estimate `se.tau`.
+#' @return data.frame with columns \code{mu}, \code{se.mu},
+#'         \code{tau} and \code{se.tau}
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
@@ -32,15 +27,12 @@
 #' It can be useful for examining your data.
 #'
 #' If multiple operations are performed, they are taken in this order:
-#'
 #' 1) conversion to log scale,
 #' 2) calculating change from baseline,
 #' 3) summarising data.
 #'
-#' @examples
-#' data(microcredit_simplified)
-#' prepare_ma(microcredit_simplified, outcome = "consumerdurables")
-#' @seealso [convert_inputs()] for how data is converted into Stan inputs
+#' @author Witold Wiecek
+#' @seealso [convert_inputs] for how data is converted into Stan inputs;
 #' @export
 #' @import stats
 #'
@@ -86,7 +78,7 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   # 3. Standardise
-  standardise <- NULL #until v0.2 we will not use standardise argument
+  standardise <- NULL #until standardisation is fixed, we cauterise this
   if(!is.null(standardise)) {
     # Whole sample
     if(standardise == "all")

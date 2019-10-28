@@ -16,9 +16,16 @@
 #'
 
 print.baggr <- function(x, ...) {
-  # cat(crayon::red("---this Baggr printing module is under construction---\n\n"))
-  cat("Model type:", crayon::bold(model_names[x$model]), "\n")
-  cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
+  ppd <- attr(x, "ppd")
+
+  # Announce model type
+  if(ppd) {
+    cat("Model type: Prior predictive draws for", crayon::bold(model_names[x$model]), "\n")
+  } else {
+    cat("Model type:", crayon::bold(model_names[x$model]), "\n")
+    cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
+  }
+
   cat("\n")
 
   cat(crayon::bold("Aggregate treatment effect:\n"))
@@ -33,7 +40,8 @@ print.baggr <- function(x, ...) {
       sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
       cat("Hypermean (tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
       if(x$pooling == "partial")
-        cat("Hyper-SD (sigma_tau) =", sigma_tau[2], "with 95% interval", sigma_tau[1], "to", sigma_tau[3], "\n")
+        cat("Hyper-SD (sigma_tau) =", sigma_tau[2], "with 95% interval",
+            sigma_tau[1], "to", sigma_tau[3], "\n")
     } else { #quantiles
       tau <- mint(te[[1]])
       sigma_tau <- mint(te[[2]])
@@ -49,9 +57,14 @@ print.baggr <- function(x, ...) {
     cat("(SD(tau) undefined.)\n")
   cat("\n")
 
+  # If this is just drawing from prior, stop here
+  if(ppd)
+    return(invisible(x))
+
+  # Group effects
   if(x$pooling != "full") {
     # study_eff_tab <- apply(group_effects(x), c(2,3),
-                             # function(x) c("mean" = mean(x), "sd" = sd(x)))
+    # function(x) c("mean" = mean(x), "sd" = sd(x)))
     study_eff_tab <- group_effects(x, summary = TRUE)
     # attach pooling metric:
     pooling_tab <- pooling(x, summary = TRUE)

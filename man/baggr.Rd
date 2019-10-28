@@ -6,18 +6,23 @@
 \usage{
 baggr(data, model = NULL, pooling = "partial",
   prior_hypermean = NULL, prior_hypersd = NULL,
-  prior_hypercor = NULL, prior = NULL, test_data = NULL,
-  quantiles = seq(0.05, 0.95, 0.1), outcome = "outcome",
-  group = "group", treatment = "treatment", warn = TRUE, ...)
+  prior_hypercor = NULL, prior = NULL, ppd = FALSE,
+  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome", group = "group", treatment = "treatment",
+  warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from
-\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
+\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+(see Details).}
 
-\item{pooling}{choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}}
+\item{pooling}{Type of pooling;
+choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
+If you are not familiar with the terms, consult the vignette;
+"partial" can be understood as random effects and "full" as fixed effects}
 
 \item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
 \code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
@@ -32,6 +37,11 @@ by Rubin and \code{"mutau"`` models; same rules apply as for }_hypermean`;}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
+
+\item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.}) Default is no.
+If \code{ppd=TRUE}, Stan model will sample from the prior distributions
+and ignore \code{data} in inference. However, \code{data} argument might still
+be used to infer the correct model and to set the default priors.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument}
@@ -62,7 +72,7 @@ If test data is used, mean value of -2*lpd is reported as \code{mean_lpd}
 Bayesian inference on parameters of an average treatment effects model
 that's appropriate to the supplied
 individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
-(For overall package help file see \link{baggr_package})
+(For overall package help file see \link{baggr-package})
 }
 \details{
 Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
@@ -84,13 +94,16 @@ work with \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"} version which takes
-into account means of control groups, `"full"`` model which reduces to "mu and tau"
-(if no covariates are used)
+\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"}
+version which takes into account means of control groups, \code{"full"},
+which works with individual-level data
 \item "quantiles" model is also available (see Meager, 2019 in references)
 }
 
-If no model is specified, the function tries to infer the appropriate model automatically.
+If no model is specified, the function tries to infer the appropriate
+model automatically.
+Additionally, the user must specify type of pooling.
+The default is always partial pooling.
 
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate

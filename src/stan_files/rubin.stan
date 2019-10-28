@@ -60,7 +60,7 @@ model {
       eta ~ cauchy(prior_hypermean_val[1], prior_hypermean_val[2]);
   }
 
-  //hypersdiance priors:
+  //hyper-SD priors:
   if(pooling_type == 1){
     if(prior_hypersd_fam == 0)
       target += uniform_lpdf(sigma_tau |
@@ -74,26 +74,29 @@ model {
   }
 
   //likelihood
-  if(pooling_type == 0){
-    tau_hat_k ~ normal(tau_k, se_tau_k);
-  }
-  if(pooling_type == 1){
-    eta ~ normal(0,1);
-    tau_hat_k ~ normal(tau_k, se_tau_k);
-  }
-  if(pooling_type == 2){
-    tau_hat_k ~ normal(tau[1], se_tau_k);
+  if(K > 0) {
+    if(pooling_type == 0){
+      tau_hat_k ~ normal(tau_k, se_tau_k);
+    }
+    if(pooling_type == 1){
+      eta ~ normal(0,1);
+      tau_hat_k ~ normal(tau_k, se_tau_k);
+    }
+    if(pooling_type == 2){
+      tau_hat_k ~ normal(tau[1], se_tau_k);
+    }
   }
 }
 
 generated quantities {
-  real logpd = 0;
+  real logpd[K_test > 0? 1: 0];
   if(K_test > 0){
+    logpd[1] = 0;
     for(k in 1:K_test){
       if(pooling_type == 1)
-        logpd += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(sigma_tau[1]^2 + test_se_k[k]^2));
+        logpd[1] += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(sigma_tau[1]^2 + test_se_k[k]^2));
       if(pooling_type == 2)
-        logpd += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(test_se_k[k]^2));
+        logpd[1] += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(test_se_k[k]^2));
     }
   }
 }

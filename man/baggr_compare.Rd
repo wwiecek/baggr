@@ -2,29 +2,37 @@
 % Please edit documentation in R/baggr_compare.R
 \name{baggr_compare}
 \alias{baggr_compare}
-\title{Compare a(ny) number of baggr models side by side}
+\title{(Run and) compare multiple baggr models}
 \usage{
-baggr_compare(..., style = "areas", arrange = "single")
+baggr_compare(..., what = "pooling", compare = "groups",
+  style = "areas", arrange = "single")
 }
 \arguments{
-\item{...}{Either any number of objects of class \code{baggr}
-(you can name your objects, see the example below)
-or the same arguments you'd pass to baggr()
-function, but with \code{pooling = ...} omitted.
-In the latter case 3 models will be run, with
-pooling set to \code{none}, \code{partial} and \code{full}.}
+\item{...}{Either a number (at least 1) of objects of class \code{baggr}
+(you should name your objects, see the example below)
+or the same arguments you'd pass to baggr(),
+in which you must case specify \code{what} to compare.}
+
+\item{what}{One of \code{"pooling"} (comparison between no, partial and
+full pooling) or \code{"prior"} (comparison between prior and
+posterior predictive). If pre-existing baggr models are
+passed to \code{...}, this argument is ignored.}
+
+\item{compare}{When plotting, choose between comparison of \code{"groups"}
+(default) or (hyper-) \code{"effects"}. The former is not avaialble
+when \code{what = "prior"}.}
 
 \item{style}{What kind of plot to display (if \code{arrange = "grid"}),
-passed to \code{style} argument in \link{baggr_plot}}
+passed to the \code{style} argument in \link{baggr_plot}.}
 
-\item{arrange}{If \code{single}, generate a comparison single plot;
-if \code{grid}, display multiple plots side-by-side.}
+\item{arrange}{If \code{"single"} (default), generate a single comparison plot;
+if \code{"grid"}, display multiple plots side-by-side.}
 }
 \value{
-\code{ggplot} graphic is rendered
+a \code{ggplot} is rendered and/or returned
 }
 \description{
-Compare a(ny) number of baggr models side by side
+(Run and) compare multiple baggr models
 }
 \examples{
 \donttest{
@@ -32,12 +40,29 @@ Compare a(ny) number of baggr models side by side
 # (This will run the models)
 baggr_compare(schools)
 
+# Compare prior vs posterior
+baggr_compare(schools, what = "prior")
+
+
 # Compare existing models:
 bg1 <- baggr(schools, pooling = "partial")
 bg2 <- baggr(schools, pooling = "full")
 baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2,
               arrange = "grid")
 
+#' ...or simply draw prior predictive dist (note ppd=T)
+bg1 <- baggr(schools, ppd=T)
+bg2 <- baggr(schools, prior_hypermean = normal(0, 5), ppd=T)
+baggr_compare("Prior A, p.p.d."=bg1,
+              "Prior B p.p.d."=bg2,
+              compare = "effects")
+
+# Compare posterior effects as a function of priors (note ppd=F)
+bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
+bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
+baggr_compare("Uniform prior on SD"=bg1,
+              "Normal prior on SD"=bg2,
+              compare = "effects")
 # You can also compare different subsets of input data
 bg1_small <- baggr(schools[1:6,], pooling = "partial")
 baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)

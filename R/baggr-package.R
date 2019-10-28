@@ -12,13 +12,12 @@
 #' try the built-in vignette (`vignette("baggr")`).
 #'
 #' @docType package
-#' @name baggr_package
+#' @name baggr-package
 #' @useDynLib baggr, .registration = TRUE
 #' @import methods
 #' @import Rcpp
 #' @import rstantools
 #' @importFrom rstan sampling
 #'
-#' @author Witold Wiecek, Rachael Meager
 
 NULL
