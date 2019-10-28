@@ -27,7 +27,7 @@ baggr_groupef <- group_effects(baggr_fit, summary = T)[]
 baggr_fixef   <- mean(baggr::treatment_effect(baggr_fit)$tau)
 
 # tolerance for differences
-tol <- 0.2
+tol <- 0.25
 
 test_that(desc = "baggr and brms are at least for schools estimates", {
   # estimates within tolerance of each other
