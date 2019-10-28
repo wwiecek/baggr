@@ -12,7 +12,7 @@ treatment_effect <- function(bg) {
 
   if(bg$pooling == "none"){
     message("There is no treatment effect estimated when pooling = 'none'.")
-    return(NULL)
+    return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
   if(bg$model %in% c("rubin", "mutau")) {
     tau <- rstan::extract(bg$fit, pars="tau")[[1]]

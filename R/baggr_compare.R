@@ -119,12 +119,10 @@ baggr_compare <- function(...,
   # Print treatment effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      if(x$pooling != "none")
         mint(treatment_effect(x)$tau)
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      if(x$pooling != "none")
         mint(treatment_effect(x)$sigma_tau)
     })))
 
