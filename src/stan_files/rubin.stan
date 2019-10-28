@@ -49,11 +49,15 @@ model {
       tau ~ uniform(prior_hypermean_val[1], prior_hypermean_val[2]);
     if(prior_hypermean_fam == 1)
       tau ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
+    if(prior_hypermean_fam == 2)
+      tau ~ cauchy(prior_hypermean_val[1], prior_hypermean_val[2]);
   } else {
     if(prior_hypermean_fam == 0)
       eta ~ uniform(prior_hypermean_val[1], prior_hypermean_val[2]);
     if(prior_hypermean_fam == 1)
       eta ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
+    if(prior_hypermean_fam == 2)
+      eta ~ cauchy(prior_hypermean_val[1], prior_hypermean_val[2]);
   }
 
   //hypersdiance priors:
@@ -63,6 +67,9 @@ model {
                              prior_hypersd_val[1], prior_hypersd_val[2]);
     if(prior_hypersd_fam == 1)
       target += normal_lpdf(sigma_tau |
+                            prior_hypersd_val[1], prior_hypersd_val[2]);
+    if(prior_hypersd_fam == 2)
+      target += cauchy_lpdf(sigma_tau |
                             prior_hypersd_val[1], prior_hypersd_val[2]);
   }
 

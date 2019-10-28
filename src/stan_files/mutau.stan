@@ -49,7 +49,7 @@ model {
     for (k in 1:K)
       tau_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   if(pooling_type != 0) {
-    if(prior_hypermean_fam == 3)
+    if(prior_hypermean_fam == 3) //only LKJ allowed at the moment
       tau[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   }
 

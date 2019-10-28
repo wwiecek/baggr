@@ -10,25 +10,29 @@ prepare_prior <- function(prior, data, stan_data, model,
 
   # message("Automatically setting prior values:")
   if(model %in% c("rubin")) {
+    # Hypermean
+    if(is.null(prior$hypermean)){
+      prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, 10*max(data$tau)))
+      message("Set hypermean prior according to max effect:")
+      message(paste0("* tau ~ Normal(0, (10*",
+                     format(max(data$tau), digits = 2), ")^2)"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
+    }
+
     # Hyper-SD
     if(is.null(prior$hypersd)){
       prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
       if(nrow(data) < 5)
         message(paste("/Dataset has only", nrow(data),
-                       "rows -- consider setting variance prior manually./"))
+                      "rows -- consider setting variance prior manually./"))
 
-      message(paste0("* Set hypersd: sigma_tau ~ Uniform(0, ",
+      message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
+                     format(10*sd(data$tau), digits = 2), ")"))
+      message(paste0("* sigma_tau ~ Uniform(0, ",
                      format(10*sd(data$tau), digits = 2), ")"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
-    }
-
-    # Hypermean
-    if(is.null(prior$hypermean)){
-      prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, 100))
-      message(paste0("* tau ~ Normal(0, 100^2)"))
-    } else {
-      prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
     }
 
     check_eligible_priors(prior_list,
@@ -41,9 +45,14 @@ prepare_prior <- function(prior, data, stan_data, model,
 
     # Hypermean
     if(is.null(prior$hypermean)){
+      val1 <- 100*max(data$mu)
+      val2 <- 100*max(data$tau)
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
-                                  multinormal(c(0,0), 10000*diag(2)))
-      message(paste0("* hypermean (mu, tau) ~ Normal([0,0], (1000^2)*Id_2)"))
+                                  multinormal(c(0,0), c(val1, val2)*diag(2)))
+      message("Set hypermean prior according to max effect:")
+      message(paste0("* hypermean (mu, tau) ~ Normal([0,0], [",
+                     format(val1, digits = 2), ", ",
+                     format(val2, digits = 2), "]*Id_2)"))
       if(nrow(data) < 5)
         message(paste("/Dataset has only", nrow(data),
                       "rows -- consider setting variance prior manually./"))
@@ -58,8 +67,12 @@ prepare_prior <- function(prior, data, stan_data, model,
 
     # Hypervariance
     if(is.null(prior$hypervar)){
-      prior_list <- set_prior_val(prior_list, "prior_hypervar", cauchy(0,10))
-      message(paste0("* hypervariance (mu, tau) ~ Cauchy(0,10)"))
+      val <- max(10*sd(data$mu), 10*sd(data$tau))
+      prior_list <- set_prior_val(prior_list, "prior_hypervar", cauchy(0,val))
+      message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
+              format(val, digits = 2), ")"))
+      message(paste0("* hypervariance (mu, tau) ~ Cauchy(0,",
+                     format(val, digits = 2), ") (i.i.d.)"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypervar", prior$hypervar)
     }

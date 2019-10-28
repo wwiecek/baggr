@@ -139,7 +139,7 @@ test_that("Test data can be used in the mu tau model", {
 # test helpers -----
 
 test_that("Extracting treatment/study effects works", {
-  expect_error(treatment_effect(df_mutau), "treatment_effect requires a baggr object")
+  expect_error(treatment_effect(df_mutau))
   expect_is(treatment_effect(bg5_p), "list")
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "numeric")
