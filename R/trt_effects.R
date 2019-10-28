@@ -112,6 +112,7 @@ effect_plot <- function(...) {
     df <- rbind(df, data.frame("model"=names(l)[i],
                                "value" = l[[i]]))
   single_model_flag <- (length(l) == 1)
+  model <- value <- NULL
   ggplot(df, aes(value, group = model, fill = model)) +
     geom_density(alpha = .25) +
     ggtitle("Possible treatment effect") +

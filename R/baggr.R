@@ -29,6 +29,10 @@
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypervar`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
+#' @param ppd       logical; use prior predictive distribution? (_p.p.d._) Default is no.
+#'                  If `ppd=TRUE`, Stan model will sample from the prior distributions
+#'                  and ignore `data` in inference. However, `data` argument might still
+#'                  be used to infer the correct model and to set the default priors.
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;

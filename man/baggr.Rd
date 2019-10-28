@@ -40,6 +40,11 @@ same rules apply as for \code{_hypermean};}
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypervar}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
 
+\item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.}) Default is no.
+If \code{ppd=TRUE}, Stan model will sample from the prior distributions
+and ignore \code{data} in inference. However, \code{data} argument might still
+be used to infer the correct model and to set the default priors.}
+
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument}
 

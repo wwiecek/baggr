@@ -59,6 +59,7 @@ test_that("All possible prior dist's work", {
   expect_error(normal(c(0,0), diag(2)))
   expect_error(cauchy(0, 5, 8))
 
+  expect_error(normal("0", -1))
   expect_error(normal(0, -1))
   expect_error(uniform(0, -1))
   expect_error(cauchy(0, -1))
