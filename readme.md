@@ -25,7 +25,7 @@ under the hood to carry out Bayesian inference. Modelling of variances
 or quantiles, standardisation and transformation of data is also
 possible.
 
-The current version (v0.1, July 2019) is a stable prototype of a tool
+The current version (v0.2, October 2019) is a stable prototype of a tool
 that’s in active development so we are counting on your feedback.
 
 ## Installation
@@ -79,19 +79,22 @@ example of meta-analysis workflow with `baggr`.
 
 ## Current and future releases
 
-Included in baggr v0.1:
+Included in baggr v0.2:
 
   - Hierarchical models for continuous outcomes
-  - Meta-analysis specific summaries and plots
+  - Meta-analysis-specific summaries and plots
   - Compatibility with `rstan` and `bayesplot` features
   - Both full and aggregate data sets can be used
-  - Automatic choice of priors
+  - Automatic choice of priors or “plain-text” choice of priors
   - Automatic calculation of pooling metrics
   - Cross-validation (including leave-one-out)
+  - Prior and posterior predictive distributions
 
-v0.2 will follow soon, enabling more models and more features such as:
+In the coming months we will be including more models and more features
+such as:
 
+  - Binary data
   - Modelling of quantiles and of SE’s
   - Modelling of log-normal data
   - Automatic standardisation of variables
-  - New way to specify priors
+  - New plotting styles and more model diagnostics
