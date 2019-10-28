@@ -150,6 +150,45 @@ pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
   pp_fun(y, yrep)
 }
 
+#' Make posterior draws for treatment effect
+#'
+#' @param x A `baggr` class object.
+#'
+#' @import bayesplot
+#' @export
+#'
+effect_draw <- function(x) {
+  check_if_baggr(x)
+  # Draw sigma and tau
+  te <- do.call(cbind, treatment_effect(x))
+  new_tau <- apply(te, 1, function(x) rnorm(1, x[1], x[2]))
+  new_tau
+}
+
+effect_plot <- function(...) {
+  l <- list(...)
+  if(!all(unlist(lapply(l, inherits, "baggr"))))
+    stop("Effects plots can only be drawn for baggr class objects")
+  if(is.null(names(l))){
+    message("Automatically naming models; please use named arguments to override.")
+    names(l) <- paste("Model", 1:length(l))
+  }
+  l <- lapply(l, effect_draw)
+  df <- data.frame()
+  for(i in seq_along(l))
+    df <- rbind(df, data.frame("model"=names(l)[i],
+                               "value" = l[[i]]))
+  single_model_flag <- (length(l) == 1)
+  ggplot(df, aes(value, group = model, fill = model)) +
+    geom_density(alpha = .25) +
+    ggtitle("Possible treatment effect") +
+    bayesplot_theme_get() +
+    {if(single_model_flag) theme(legend.position = "none")}
+}
+
+
+
+# Helper functions -----
 #' Stop with informative error
 stop_not_implemented <- function() {
   stop("Method not implemented.")

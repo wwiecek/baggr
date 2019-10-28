@@ -30,11 +30,11 @@ baggr_plot <- function(bg, mean = FALSE,
                        style = "intervals",
                        prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {
+  if(attr(bg, "ppd")){
+    message("Baggr model is prior predictive; returning effect_plot().")
+    return(effect_plot(bg))
+  }
   m <- group_effects(bg)
-  # if(mean)
-  #   m <- cbind(m,
-  #              "Mean treatment effect" = treatment_effect(bg)$tau)
-
   if(!(style %in% c("areas", "intervals")))
     stop('plot "style" argument must be one of: "areas", "intervals"')
 

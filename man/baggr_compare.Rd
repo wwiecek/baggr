@@ -4,7 +4,8 @@
 \alias{baggr_compare}
 \title{Compare a(ny) number of baggr models side by side}
 \usage{
-baggr_compare(..., style = "areas", arrange = "single")
+baggr_compare(..., compare = "groups", style = "areas",
+  arrange = "single")
 }
 \arguments{
 \item{...}{Either any number of objects of class \code{baggr}

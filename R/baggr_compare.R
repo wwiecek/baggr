@@ -33,6 +33,7 @@
 #' }
 
 baggr_compare <- function(...,
+                          compare = "groups",
                           style   = "areas",
                           arrange = "single") {
   l <- list(...)
@@ -70,42 +71,46 @@ baggr_compare <- function(...,
     gridExtra::grid.arrange(grobs = plots, ncol = grid_width)
   }
   if(arrange == "single") {
-    plots <- lapply(as.list(1:(length(effect_names))), function(i) {
-      # Note: pipe operators are dplyr not used here for compatibility
-      ll <- lapply(models, function(x) {
-        # will need to be modified for quantiles models case:
-        m <- as.data.frame(group_effects(x, summary = TRUE)[,,i])
-        m$group <- rownames(m)
-        m
+    if(compare == "groups")
+      plots <- lapply(as.list(1:(length(effect_names))), function(i) {
+        # Note: pipe operators are dplyr not used here for compatibility
+        ll <- lapply(models, function(x) {
+          # will need to be modified for quantiles models case:
+          m <- as.data.frame(group_effects(x, summary = TRUE)[,,i])
+          m$group <- rownames(m)
+          m
+        })
+        df_groups <- data.frame()
+        for(j in 1:length(ll))
+          df_groups <- rbind(df_groups,
+                             data.frame(model = names(ll)[j], ll[[j]]))
+        df_groups$group <- factor(df_groups$group,
+                                  levels = unique(df_groups$group[order(df_groups$median)]))
+
+        # df <- rbind(df_groups, df_trt)
+        df <- df_groups
+
+        # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
+        # https://stackoverflow.com/questions/9439256/
+        #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+        lci <- uci <- model <- group <- NULL
+
+        comparison_plot <- ggplot2::ggplot(df, aes(x = group, y = median, ymin = lci, ymax = uci,
+                                                   group = interaction(model),
+                                                   color = model)) +
+          # geom_jitter(size = 2) +
+          geom_errorbar(size = 1.2, width = 0, position=position_dodge(width=0.5)) +
+          geom_point(size = 2, stroke = 1.5, fill = "white", position=position_dodge(width=0.5), pch = 21) +
+          coord_flip() +
+          labs(x = "", y = "Treatment effect (95% interval)",
+               title = effect_names[i]) +
+          theme(legend.position="top")
+        # plot(comparison_plot)
+        return(comparison_plot)
       })
-      df_groups <- data.frame()
-      for(j in 1:length(ll))
-        df_groups <- rbind(df_groups,
-                           data.frame(model = names(ll)[j], ll[[j]]))
-      df_groups$group <- factor(df_groups$group,
-                                    levels = unique(df_groups$group[order(df_groups$median)]))
-
-      # df <- rbind(df_groups, df_trt)
-      df <- df_groups
-
-      # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
-      # https://stackoverflow.com/questions/9439256/
-      #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
-      lci <- uci <- model <- group <- NULL
-
-      comparison_plot <- ggplot2::ggplot(df, aes(x = group, y = median, ymin = lci, ymax = uci,
-                                                 group = interaction(model),
-                                                 color = model)) +
-        # geom_jitter(size = 2) +
-        geom_errorbar(size = 1.2, width = 0, position=position_dodge(width=0.5)) +
-        geom_point(size = 2, stroke = 1.5, fill = "white", position=position_dodge(width=0.5), pch = 21) +
-        coord_flip() +
-        labs(x = "", y = "Treatment effect (95% interval)",
-             title = effect_names[i]) +
-        theme(legend.position="top")
-      # plot(comparison_plot)
-      return(comparison_plot)
-    })
+    if(compare == "effects"){
+      plots <- do.call(effect_plot, models)
+    }
   }
 
   if(length(plots) == 1)
