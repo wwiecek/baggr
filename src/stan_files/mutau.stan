@@ -1,5 +1,5 @@
 data {
-  int<lower=2> K; // number of sites
+  int<lower=0> K; // number of sites
   int<lower=2> P; // number of parameters (1 or 2)
   real tau_hat_k[P,K]; // estimated treatment effects
   real<lower=0> se_tau_k[P,K]; // s.e. of effect estimates
@@ -45,7 +45,7 @@ transformed parameters {
 model {
 
   // priors: hypermean
-  if(pooling_type == 0)
+  if(pooling_type == 0 && K > 0)
     for (k in 1:K)
       tau_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   if(pooling_type != 0) {
@@ -66,15 +66,14 @@ model {
     Omega[1] ~ lkj_corr(prior_hypercor_val[1]);
   }
 
-  if(pooling_type == 1) {
+  if(pooling_type == 1 && K > 0) {
     for (k in 1:K) {
       tau_k[k] ~ multi_normal(tau[1], sigma_tau[1]);
       for(p in 1:P)
         tau_hat_k[p,k] ~ normal(tau_k[k,p], se_tau_k[p,k]);
     }
   }
-
-  if(pooling_type == 2)
+  if(pooling_type == 2 && K > 0)
     for (k in 1:K)
       for(p in 1:P)
         tau_hat_k[p,k] ~ normal(tau[1][p], se_tau_k[p,k]);

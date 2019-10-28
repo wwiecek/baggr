@@ -56,7 +56,7 @@ model {
       eta ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
   }
 
-  //hypersdiance priors:
+  //hyper-SD priors:
   if(pooling_type == 1){
     if(prior_hypersd_fam == 0)
       target += uniform_lpdf(sigma_tau |
@@ -67,15 +67,17 @@ model {
   }
 
   //likelihood
-  if(pooling_type == 0){
-    tau_hat_k ~ normal(tau_k, se_tau_k);
-  }
-  if(pooling_type == 1){
-    eta ~ normal(0,1);
-    tau_hat_k ~ normal(tau_k, se_tau_k);
-  }
-  if(pooling_type == 2){
-    tau_hat_k ~ normal(tau[1], se_tau_k);
+  if(K > 0) {
+    if(pooling_type == 0){
+      tau_hat_k ~ normal(tau_k, se_tau_k);
+    }
+    if(pooling_type == 1){
+      eta ~ normal(0,1);
+      tau_hat_k ~ normal(tau_k, se_tau_k);
+    }
+    if(pooling_type == 2){
+      tau_hat_k ~ normal(tau[1], se_tau_k);
+    }
   }
 }
 
