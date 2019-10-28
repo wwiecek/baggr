@@ -16,7 +16,7 @@
 #'
 
 print.baggr <- function(x, ...) {
-  ppd <- attr(bg, "ppd")
+  ppd <- attr(x, "ppd")
 
   # Announce model type
   if(ppd) {

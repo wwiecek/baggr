@@ -7,7 +7,7 @@
 baggr(data, model = NULL, pooling = "partial",
   prior_hypermean = NULL, prior_hypersd = NULL,
   prior_hypervar = NULL, prior_hypercor = NULL, prior = NULL,
-  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
+  ppd = FALSE, test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome", group = "group", treatment = "treatment",
   warn = TRUE, ...)
 }
@@ -16,9 +16,13 @@ baggr(data, model = NULL, pooling = "partial",
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from
-\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}}
+\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+(see Details).}
 
-\item{pooling}{choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}}
+\item{pooling}{Type of pooling;
+choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
+If you are not familiar with the terms, consult the vignette;
+"partial" can be understood as random effects and "full" as fixed effects}
 
 \item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
 \code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
@@ -87,13 +91,16 @@ work with \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"} version which takes
-into account means of control groups, `"full"`` model which reduces to "mu and tau"
-(if no covariates are used)
+\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"}
+version which takes into account means of control groups, \code{"full"},
+which works with individual-level data
 \item "quantiles" model is also available (see Meager, 2019 in references)
 }
 
-If no model is specified, the function tries to infer the appropriate model automatically.
+If no model is specified, the function tries to infer the appropriate
+model automatically.
+Additionally, the user must specify type of pooling.
+The default is always partial pooling.
 
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate
