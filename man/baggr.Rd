@@ -6,10 +6,9 @@
 \usage{
 baggr(data, model = NULL, pooling = "partial",
   prior_hypermean = NULL, prior_hypersd = NULL,
-  prior_hypervar = NULL, prior_hypercor = NULL, prior = NULL,
-  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", group = "group", treatment = "treatment",
-  warn = TRUE, ...)
+  prior_hypercor = NULL, prior = NULL, test_data = NULL,
+  quantiles = seq(0.05, 0.95, 0.1), outcome = "outcome",
+  group = "group", treatment = "treatment", warn = TRUE, ...)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -26,15 +25,13 @@ See Details:Priors below for more possible specifications.
 If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
-\item{prior_hypersd}{prior for hyper-standard deviation, used by Rubin model;
-same rules apply as for \code{_hypermean};}
-
-\item{prior_hypervar}{prior for hypervariance, used by the \code{"mutau"} model}
+\item{prior_hypersd}{prior for hyper-standard deviation, used
+by Rubin and \code{"mutau"`` models; same rules apply as for }_hypermean`;}
 
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
-\code{hypervar}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
+\code{hypersd}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument}

@@ -9,8 +9,8 @@ data {
   int prior_hypermean_fam;
   vector[P] prior_hypermean_mean;
   matrix<lower=0>[P, P] prior_hypermean_scale;
-  int prior_hypervar_fam;
-  real prior_hypervar_val[2];
+  int prior_hypersd_fam;
+  real prior_hypersd_val[2];
   int prior_hypercor_fam; //only LKJ allowed for now...
   real prior_hypercor_val[1];
 
@@ -55,12 +55,12 @@ model {
 
   //priors variance/correlation
   if(pooling_type == 1) {
-    if(prior_hypervar_fam == 0)
-      theta[1] ~ uniform(prior_hypervar_val[1], prior_hypervar_val[2]);
-    if(prior_hypervar_fam == 1)
-      theta[1] ~ normal(prior_hypervar_val[1], prior_hypervar_val[2]);
-    if(prior_hypervar_fam == 2)
-      theta[1] ~ cauchy(prior_hypervar_val[1], prior_hypervar_val[2]);
+    if(prior_hypersd_fam == 0)
+      theta[1] ~ uniform(prior_hypersd_val[1], prior_hypersd_val[2]);
+    if(prior_hypersd_fam == 1)
+      theta[1] ~ normal(prior_hypersd_val[1], prior_hypersd_val[2]);
+    if(prior_hypersd_fam == 2)
+      theta[1] ~ cauchy(prior_hypersd_val[1], prior_hypersd_val[2]);
 
     //for Omega only LKJ allowed for now
     Omega[1] ~ lkj_corr(prior_hypercor_val[1]);

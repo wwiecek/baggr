@@ -97,8 +97,8 @@ In _baggr_ this model is referred to as `"mutau"`.
 
 If you have only few groups, the priors on $V$ will need to be relatively strong to avoid overfitting. See @meager_aggregating_2019-1 for more discussion of this issue in particular, or see the [Stan Manual on hierarchical priors](https://mc-stan.org/docs/2_18/stan-users-guide/multivariate-hierarchical-priors-section.html). The default priors are as follows:
 
-* $V$ is decomposed into a correlation matrix $\Omega$, which receives an LKJCorr(3) prior regularizing it towards independence, and a scale parameter $\theta$ which receives a Cauchy(0,10) prior.
-* The default prior for $(\mu, \tau)$ is bivariate Gaussian, with zero means and a diagonal covariance matrix with variances set to 100 times the empirical variances of $\mu$ and $\tau$. 
+* $V$ is decomposed into a correlation matrix $\Omega$, which receives an LKJCorr(3) prior regularizing it towards independence, and a scale parameter $\theta$ which receives a $\textrm{Cauchy}(0,s)$ prior, with $s$ set to either 10 times the empirical SD of $\mu$ of of $\tau$, whichever is higher.
+* The default prior for $(\mu, \tau)$ is bivariate Gaussian, with zero means and a diagonal covariance matrix with the diagonal (variances) set to 100 times the empirical maximum of $\mu$ and $\tau$. 
 
 
 
@@ -144,7 +144,7 @@ print(baggr_schools)
 
 ### Choosing priors 
 
-If no priors are chosen, user is notified about the automatic prior choice. Priors can also be modified by using `prior_` arguments to `baggr()`. These are broken between priors for hypermean ($\tau$), hyper-SD ($\sigma_{\tau}$, for unidimensional $\tau$) and hypervariance/hypercorrelations (when working with multi-dimensional $\Sigma_{\tau}$ instead).
+If no priors are chosen, user is notified about the automatic prior choice. Priors can also be modified by using `prior_` arguments to `baggr()`. These are broken between priors for hypermean ($\tau$), hyper-SD ($\sigma_{\tau}$) and hypercorrelations (when working with multi-dimensional $\Sigma_{\tau}$).
 Notation for priors is "plain-text", in that you can write the distributions as `normal()`, `uniform()` etc. (see `?priors` for details).
 
 You can specify only some priors (leaving the rest "automatic"), but here I have changed all three as an example: 
@@ -152,7 +152,7 @@ You can specify only some priors (leaving the rest "automatic"), but here I have
 ```{r eval=FALSE}
 baggr(schools, "rubin", 
       prior_hypermean = normal(-5, 10),
-      prior_hypervar = uniform(0, 5))
+      prior_hypersd   = uniform(0, 5))
 ```
 
 <!-- #[WORKING SECTION Suppose you have the full individual-level dataset for all groups (case 3 above) but still wish to run the Rubin model: _baggr_ can do this automatically, you do not need to manually estimate the group-specific effects and standard errors yourself. To see how it works, check out the microcredit dataset analysed in Meager (2019) which is stored in _baggr_ as the data frame "microcredit". Have a look at the tail of the data frame, which tells you that these households are from the "Tarozzi" et al study group (the Ethiopia trial), for which we have expenditures, revenue and profit data, as well as the treatment indicator. -->

@@ -237,7 +237,7 @@ test_that("The default 8 schools result is close to the result in BDA", {
 # write.table(dt_bd, file = "inst/tests/bangertdrowns2004.csv")
 dt_bd <- read.table(system.file("tests", "bangertdrowns2004.csv", package = "baggr"))
 bg_bd <- baggr(dt_bd, group = "study", model = "rubin", iter = 4000,
-               prior_hypervar = uniform(0, 10), refresh = 0)
+               prior_hypersd = uniform(0, 10), refresh = 0)
 # RE results from metafor:
 # metafor::rma(yi, vi, data=dt2)
 test_that("Bangert-Drowns meta-analysis result is close to metafor output", {

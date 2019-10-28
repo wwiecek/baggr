@@ -36,7 +36,7 @@ prepare_prior <- function(prior, data, stan_data, model,
     }
 
     check_eligible_priors(prior_list,
-                          list("hypersd" = c("normal", "uniform"),
+                          list("hypersd"   = c("normal", "uniform"),
                                "hypermean" = c("normal", "uniform", "cauchy")))
   }
 
@@ -65,16 +65,16 @@ prepare_prior <- function(prior, data, stan_data, model,
       prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
     }
 
-    # Hypervariance
-    if(is.null(prior$hypervar)){
+    # Hyper-SD
+    if(is.null(prior$hypersd)){
       val <- max(10*sd(data$mu), 10*sd(data$tau))
-      prior_list <- set_prior_val(prior_list, "prior_hypervar", cauchy(0,val))
+      prior_list <- set_prior_val(prior_list, "prior_hypersd", cauchy(0,val))
       message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
               format(val, digits = 2), ")"))
-      message(paste0("* hypervariance (mu, tau) ~ Cauchy(0,",
+      message(paste0("* hyper-SD (mu, tau) ~ Cauchy(0,",
                      format(val, digits = 2), ") (i.i.d.)"))
     } else {
-      prior_list <- set_prior_val(prior_list, "prior_hypervar", prior$hypervar)
+      prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
     }
 
     # Hypercorrelation (Only LKJ enabled for now)
@@ -89,8 +89,8 @@ prepare_prior <- function(prior, data, stan_data, model,
     prior_list$prior_hypercor_val <- array(prior_list$prior_hypercor_val, dim=c(1))
 
     check_eligible_priors(prior_list,
-                          list("hypervar" = c("cauchy", "normal", "uniform"),
-                               "hypercor" = c("lkj"),
+                          list("hypersd"   = c("cauchy", "normal", "uniform"),
+                               "hypercor"  = c("lkj"),
                                "hypermean" = c("multinormal")))
   }
   if(model == "full") {

@@ -10,15 +10,15 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                        "state" = datasets::state.name[1:8])
 
 test_that("Wrong prior specifications crash baggr()", {
-  expect_error(baggr(df_mutau, prior_hypervar = 2))
-  expect_error(baggr(df_mutau, prior_hypervar = normal(2, -100)))
-  expect_error(baggr(df_mutau, prior_hypervar = list(dist = "not_a_dist", 0, 10)))
-  expect_error(baggr(df_mutau, prior_hypervar = list(dist = "not_a_dist")))
-  expect_error(baggr(df_mutau, prior_hypervar = list(dist = "normal", a = 5, b = 6)))
+  expect_error(baggr(df_mutau, prior_hypermean = 2))
+  expect_error(baggr(df_mutau, prior_hypermean = normal(2, -100)))
+  expect_error(baggr(df_mutau, prior_hypermean = list(dist = "not_a_dist", 0, 10)))
+  expect_error(baggr(df_mutau, prior_hypermean = list(dist = "not_a_dist")))
+  expect_error(baggr(df_mutau, prior_hypermean = list(dist = "normal", a = 5, b = 6)))
 })
 
 test_that("Prior specification via different arguments", {
-  custom_prior <- list(hypermean = normal(0, 10), hypervar = uniform(0, 20))
+  custom_prior <- list(hypermean = normal(0, 10), hypersd = uniform(0, 20))
   bg_prior1 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
                                     prior_hypermean = normal(0, 2),
@@ -26,7 +26,7 @@ test_that("Prior specification via different arguments", {
   bg_prior2 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
                                     prior_hypermean = normal(0,10),
-                                    prior_hypervar = uniform(0,20)))
+                                    prior_hypersd = uniform(0,20)))
   bg_prior3 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
                                     formatted_prior = bg_prior2$formatted_prior))

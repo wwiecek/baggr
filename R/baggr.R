@@ -15,12 +15,12 @@
 #'              See Details:Priors below for more possible specifications.
 #'              If unspecified, the priors will be derived automatically based on data
 #'              (and printed out in the console).
-#' @param prior_hypersd  prior for hyper-standard deviation, used by Rubin model;
+#' @param prior_hypersd  prior for hyper-standard deviation, used
+#'                       by Rubin and `"mutau"`` models;
 #'                       same rules apply as for `_hypermean`;
-#' @param prior_hypervar prior for hypervariance, used by the `"mutau"` model
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
-#'              `hypervar`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
+#'              `hypersd`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
@@ -88,8 +88,7 @@
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
-                  prior_hypermean = NULL, prior_hypersd = NULL,
-                  prior_hypervar = NULL, prior_hypercor=NULL,
+                  prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL,
@@ -143,17 +142,16 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # Prior settings:
   if(is.null(prior))
     prior <- list(hypermean = prior_hypermean,
-                  hypervar  = prior_hypervar,
                   hypercor  = prior_hypercor,
                   hypersd   = prior_hypersd)
   else {
-    if(!is.null(prior_hypermean) || !is.null(prior_hypervar) ||
+    if(!is.null(prior_hypermean) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypervar', 'hypercor', 'hypersd')))
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd')))
       stop(paste("Prior argument must be a list with names",
-                 "'hypermean', 'hypervar', 'hypercor', 'hypersd'"))
+                 "'hypermean', 'hypercor', 'hypersd'"))
   }
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
