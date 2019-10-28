@@ -43,6 +43,78 @@ treatment_effect <- function(bg) {
     # in model with correlation, we have Var(), not SD()
     sigma_tau <- sqrt(sigma_tau)
   }
-
   return(list(tau = tau, sigma_tau = sigma_tau))
+}
+
+
+
+#' Make posterior draws for treatment effect
+#'
+#' This function takes the samples of hyperparameters of a `baggr` model
+#' (commonly hypermean tau and hyper-SD sigma_tau) and simulates values of
+#' new realisations of tau (a mean effect in some unobserved group).
+#'
+#' @param x A `baggr` class object.
+#' @param n How many values to draw? The default is the same
+#'          as number of samples in the model (default is 2,000).
+#' @return A vector of possible values of the treatment effect.
+#' @export
+#'
+effect_draw <- function(x, n) {
+  check_if_baggr(x)
+  # Draw sigma and tau
+  te <- do.call(cbind, treatment_effect(x))
+  if(!missing(n))
+    te <- te[sample(nrow(te), n, replace = T),]
+  new_tau <- apply(te, 1, function(x) {
+    if(any(is.na(x)))
+      return(NA)
+    else
+      return(rnorm(1, x[1], x[2]))
+  })
+  new_tau
+}
+
+#' Plot posterior distribution for treatment effect
+#'
+#' This function plots the [effect_draw] for one or more baggr objects.
+#'
+#' @param ... Object(s) of class `baggr`. If there is more than one,
+#'            the names of objects will be used as a plot legend (see example).
+#' @return A ggplot.
+#' @import bayesplot
+#' @export
+#' @seealso [baggr_compare] can be used as a shortcut for `effect_plot` with argument
+#'          `compare = "effects"`
+#' @examples
+#'
+#' # A single effects plot
+#' bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
+#' effect_plot(bg1)
+#'
+#' # Compare posterior effects as a function of priors (note ppd=F)
+#' bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
+#' effect_plot("Uniform prior on SD"=bg1,
+#'               "Normal prior on SD"=bg2)
+#'
+#'
+effect_plot <- function(...) {
+  l <- list(...)
+  if(!all(unlist(lapply(l, inherits, "baggr"))))
+    stop("Effects plots can only be drawn for baggr class objects")
+  if(is.null(names(l))){
+    message("Automatically naming models; please use named arguments to override.")
+    names(l) <- paste("Model", 1:length(l))
+  }
+  l <- lapply(l, effect_draw)
+  df <- data.frame()
+  for(i in seq_along(l))
+    df <- rbind(df, data.frame("model"=names(l)[i],
+                               "value" = l[[i]]))
+  single_model_flag <- (length(l) == 1)
+  ggplot(df, aes(value, group = model, fill = model)) +
+    geom_density(alpha = .25) +
+    ggtitle("Possible treatment effect") +
+    bayesplot_theme_get() +
+    {if(single_model_flag) theme(legend.position = "none")}
 }
