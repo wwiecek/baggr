@@ -19,7 +19,7 @@ posterior predictive). If pre-existing baggr models are
 passed to \code{...}, this argument is ignored.}
 
 \item{compare}{When plotting, choose between comparison of \code{"groups"}
-(default) or (hyper-) \code{"effects"}. The former is not avaialble
+(default) or (hyper-) \code{"effects"}. The former is not available
 when \code{what = "prior"}.}
 
 \item{style}{What kind of plot to display (if \code{arrange = "grid"}),

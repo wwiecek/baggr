@@ -9,7 +9,7 @@
 #'              posterior predictive). If pre-existing baggr models are
 #'              passed to `...`, this argument is ignored.
 #' @param compare When plotting, choose between comparison of `"groups"`
-#'                (default) or (hyper-) `"effects"`. The former is not avaialble
+#'                (default) or (hyper-) `"effects"`. The former is not available
 #'                when `what = "prior"`.
 #' @param arrange If `"single"` (default), generate a single comparison plot;
 #'                if `"grid"`, display multiple plots side-by-side.
