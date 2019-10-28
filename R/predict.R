@@ -8,7 +8,7 @@
 #' Cannot exceed the number of samples in the fitted model.
 #' @param ... other arguments to pass to predict function
 #' @export
-predict.baggr <- function(x, nsamples = 100,
+predict.baggr <- function(x, nsamples,
                           newdata = NULL,
                           allow_new_levels = T) {
   switch(x$model,
@@ -26,8 +26,8 @@ predict.baggr <- function(x, nsamples = 100,
 #' @param allow_new_levels whether to allow for unobserved groups
 rubin_data <- function(x, newdata = NULL, allow_new_levels = T) {
   check_if_baggr(x)
-  if(x$model != "rubin")
-    stop("Model must be type Rubin.")
+  # if(x$model != "rubin")
+    # stop("Model must be type Rubin.")
 
   group_label <- attr(x$inputs, "group_label")
   group_num   <- 1:attr(x$inputs, "n_groups")
@@ -68,24 +68,36 @@ predict_rubin <- function(x,
                           nsamples,
                           newdata = NULL,
                           allow_new_levels = T) {
+  if(missing(nsamples))
+    nsamples <- get_n_samples(x)
+
   pred_data <- rubin_data(x, newdata)
+  se <- sapply(x$data$se, rep, times = nsamples)
 
-  sigmas <- sapply(x$data$se, rep, times = nsamples)
-
-  params <- rstan::extract(x$fit, c("tau","sigma_tau","tau_k","eta"))
-
-  tau_k <- params$tau_k[1:nsamples,]
-  eta <- params$eta[1:nsamples,]
-  tau <- params$tau[1:nsamples]
-  sigma_tau <- params$sigma_tau[1:nsamples]
+  eta <- rstan::extract(x$fit, c("eta"))[[1]][1:nsamples,]
+  tau <- treatment_effect(x)$tau[1:nsamples]
 
   pred_means <- pred_data %*% t(cbind(tau, eta))
-  epsilon <- rnorm(length(sigmas),
-                   mean = 0, sigmas)
-
+  epsilon <- rnorm(length(se),
+                   mean = 0, se)
   pp_dist <- pred_means + epsilon
-
   t(pp_dist)
+}
+
+#' Predict function for the mu & tau model
+#' @importFrom rstan extract
+#' @param x model to predict from
+#' @param nsamples number of samples to predict
+#' @param newdata new data to predict, defaults to NULL
+#' @param allow_new_levels allow the predictive of new, unobserved groups
+predict_mutau <- function(x,
+                          nsamples,
+                          newdata = NULL,
+                          allow_new_levels = T) {
+  if(missing(nsamples))
+    nsamples <- get_n_samples(x)
+
+  stop_not_implemented()
 }
 
 #' Predict function for the quantiles model
@@ -99,6 +111,9 @@ predict_quantiles <- function(x,
                               nsamples,
                               newdata = NULL,
                               allow_new_levels = T){
+  if(missing(nsamples))
+    nsamples <- get_n_samples(x)
+
   stop_not_implemented()
 }
 
@@ -138,4 +153,11 @@ pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
 #' Stop with informative error
 stop_not_implemented <- function() {
   stop("Method not implemented.")
+}
+
+#' Extract number of samples from a baggr object
+get_n_samples <- function(x) {
+  check_if_baggr(x)
+  nsamples <- attr(x$fit, "stan_args")[[1]]$iter -
+    attr(x$fit, "stan_args")[[1]]$warmup
 }
