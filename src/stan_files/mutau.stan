@@ -81,14 +81,16 @@ model {
 }
 
 generated quantities {
-  real logpd = 0;
-  if(K_test > 0)
-  for(k in 1:K_test){
-    for(p in 1:P) {
-      //sigma_tau[p,p] is questionable!
-      if(pooling_type == 1)
-      logpd += normal_lpdf(test_tau_hat_k[p,k] | tau[1], sqrt(sigma_tau[1][p,p]^2 + test_se_k[p,k]^2));
-      if(pooling_type == 2)
-      logpd += normal_lpdf(test_tau_hat_k[p,k] | tau[1], sqrt(test_se_k[p,k]^2));
-    }}
+  real logpd[K_test > 0? 1: 0];
+  if(K_test > 0) {
+    logpd[1] = 0;
+    for(k in 1:K_test){
+      for(p in 1:P) {
+        if(pooling_type == 1)
+        logpd[1] += normal_lpdf(test_tau_hat_k[p,k] | tau[1],
+                                sqrt(sigma_tau[1][p,p]^2 + test_se_k[p,k]^2));
+        if(pooling_type == 2)
+        logpd[1] += normal_lpdf(test_tau_hat_k[p,k] | tau[1],
+                                sqrt(test_se_k[p,k]^2));
+      }}}
 }

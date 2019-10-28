@@ -80,13 +80,14 @@ model {
 }
 
 generated quantities {
-  real logpd = 0;
+  real logpd[K_test > 0? 1: 0];
   if(K_test > 0){
+    logpd[1] = 0;
     for(k in 1:K_test){
       if(pooling_type == 1)
-        logpd += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(sigma_tau[1]^2 + test_se_k[k]^2));
+        logpd[1] += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(sigma_tau[1]^2 + test_se_k[k]^2));
       if(pooling_type == 2)
-        logpd += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(test_se_k[k]^2));
+        logpd[1] += normal_lpdf(test_tau_hat_k[k] | tau[1], sqrt(test_se_k[k]^2));
     }
   }
 }

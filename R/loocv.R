@@ -129,7 +129,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   sd_estimate <-
     lapply(kfits, function(x) mean(treatment_effect(x)[[2]]))
   loglik <-
-    lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd"), 2, mean))
+    lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd[1]"), 2, mean))
 
   elpds <- unlist(loglik)
 

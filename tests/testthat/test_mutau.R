@@ -128,7 +128,7 @@ test_that("Test data can be used in the mu tau model", {
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(2000, 6, 1))
   # make sure it's not 0 but something sensible
-  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -13, tolerance = 1)
+  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -13, tolerance = 1)
 
   # wrong test_data
   df_na <- df_mutau[7:8,]; df_na$tau <- NULL
@@ -139,7 +139,7 @@ test_that("Test data can be used in the mu tau model", {
 # test helpers -----
 
 test_that("Extracting treatment/study effects works", {
-  expect_error(treatment_effect(df_mutau), "treatment_effect requires a baggr object")
+  expect_error(treatment_effect(df_mutau))
   expect_is(treatment_effect(bg5_p), "list")
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "numeric")
