@@ -20,8 +20,8 @@ cauchy(location, scale)
 uniform(lower, upper)
 }
 \arguments{
-\item{location}{Mean for normal, multivariate normal (in which case \code{location} is a vector)
-and for Cauchy distributions}
+\item{location}{Mean for normal and multivariate normal (in which case \code{location} is a vector),
+and median for Cauchy distributions}
 
 \item{Sigma}{Variance-covariance matrix for multivariate normal.}
 
@@ -39,7 +39,51 @@ as it is inferred directly in the model)}
 \description{
 This page provides a list of all available distributions
 that can be used to specify priors in \code{\link[=baggr]{baggr()}}. These convenience functions
-are designed only to let user write the priors in the most "natural" way. Apart from
-passing on the arguments, their only other role is rudimentary check if the distribution
-is specified correctly.
+are designed to allow the user to write the priors in the most "natural" way when
+implementing them in baggr. Apart from
+passing on the arguments, their only other role is to perform a rudimentary check
+if the distribution is specified correctly.
+}
+\details{
+The prior choice in \link{baggr} is always done via 3 distinct arguments: \code{prior_hypermean},
+\code{prior_hypersd}, and \code{prior_hypercor}.
+
+These respectively refer to the priors on the average of the effects across
+the groups (hypermean), the standard deviation of the effects across the groups
+(hypersd), and the correlation in the distribution of parameters across groups
+when the model allows multivariate shrinkage (say on control group means and effects).
+
+Notation for priors is "plain-text", in that you can write the distributions as
+\code{normal(5,10)}, \code{uniform(0,100)} etc.
+As with any other argument one has the option to simply input the prior directly,
+e.g. \code{prior_hypermean = normal(0,1)} , or by creating a named list of custom priors
+and then inputting the list to the argument \code{priors}.
+See the examples below for more.
+
+Different parameters admit different priors:
+\itemize{
+\item \code{prior_hypermean} will take \code{"normal"}, \code{"uniform"} and \code{"cauchy"} input for a scalar mean.
+For a vector mean, it will take any of these arguments and apply them independently to
+each component of the vector, or it can also take a \code{"multinormal"} argument
+(see the example below).
+\item \code{prior_hypersd} will take \code{"normal"} and \code{"uniform"}
+\item \code{prior_hypercor} allows \code{"lkj"} input
+}
+}
+\examples{
+# change the priors for 8 schools:
+baggr(schools, model = "rubin", pooling = "partial",
+      prior_hypermean = normal(5,5),
+      prior_hypersd = normal(0,20))
+
+\donttest{
+# passing priors as a list
+custom_priors <- list(hypercor = lkj(1), hypersd = normal(0,10),
+                      hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
+baggr(microcredit_summary_data, model = "mutau",
+      pooling = "partial", prior = custom_priors)
+}
+}
+\author{
+Witold Wiecek, Rachael Meager
 }

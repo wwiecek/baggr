@@ -113,7 +113,26 @@ If you have only few groups, the priors on $V$ will need to be relatively strong
 | Full data          | `outcome`, `treatment`, `group`  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" |
 | Quantiles          | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  |
 
+## Prior choice in baggr
 
+In the "Rubin" and "$\mu$ and $\tau$" models, the user can specify custom priors beyond the defaults using the prior arguments. These prior arguments are subdivided into 3 categories:
+
+* Priors for the hypermean, the average effect across groups, such as  $\tau$ or the vector $(\mu, \tau)$. This is denoted using the `prior_hypermean` argument in baggr. 
+
+* Priors for the hyper-standard-deviations $\sigma_{\tau}$, the standard deviation of effects across groups. This also refers to the prior on $\theta$, the scale parameter of the hyper-variance-covariance matrix $V$ in the"$\mu$ and $\tau$" model. This type of parameter is denoted `prior_hypersd` in baggr.
+
+* Priors on hypercorrelations between parameters that may co-vary across the groups. When working with multi-dimensional parameters at the upper level of the model (aka performing multivariate shrinkage), this is the correlation in the distribution of the different parameters across the groups. For example, in the "$\mu$ and $\tau$" model this parameter is the correlation matrix $\Omega$ that governs the hyper-variance-covariance matrix $V$. This type of parameter is denoted `prior_hypercor` in baggr. 
+
+The possible prior distributions we allow for in the current version are: 
+
+* For prior_hypermean we allow normal, uniform and cauchy with any parameter values which are logically possible given support constraints (e.g. user cannot specify a negative variance on a normal distribution or a negative scale on a cauchy) When the model has a vector hypermean, "$\mu$ and $\tau$" model, baggr applies the given prior to all the elements of the vector independently. If the user wishes to specify a prior dependence between the components, one can supply prior_hypermean with a multinormal argument (see `?priors` for details).
+
+* For prior_hypersd we allow normal and uniform with any parameter values which are logically possible given support constraints (as above). 
+
+* For prior_hypercor, which is only necessary when there is a multivariate shrinkage operation (as in the "$\mu$ and $\tau$" model) we allow an LKJ correlation prior with any parameter values which are logically possible given support constraints. For further details of this strategy see Meager (2019).
+
+
+Notation for priors is "plain-text", in that you can write the distributions as `normal()`, `uniform()` etc. See `?priors` for details, or continue to the example below with the Rubin model. 
 
 ## Running the Rubin Model in _baggr_
 
@@ -144,10 +163,9 @@ print(baggr_schools)
 
 ### Choosing priors 
 
-If no priors are chosen, user is notified about the automatic prior choice. Priors can also be modified by using `prior_` arguments to `baggr()`. These are broken between priors for hypermean ($\tau$), hyper-SD ($\sigma_{\tau}$) and hypercorrelations (when working with multi-dimensional $\Sigma_{\tau}$).
-Notation for priors is "plain-text", in that you can write the distributions as `normal()`, `uniform()` etc. (see `?priors` for details).
+It is possible to fit the Rubin model without specifying any priors, in which case the user is notified about the automatic prior choice that _baggr_ performs. But the priors can also be easily customised by using `prior_` arguments to `baggr()`. The Rubin model perfoms univariate shrinkage so we will not need to specify a hypercorrelation prior, but we can specify some custom priors on the hypermean and hypersd. If desired, the user can specify only some priors as custom distributions - the rest will be chosen automatically and the user will be notified of this in the output. 
 
-You can specify only some priors (leaving the rest "automatic"), but here I have changed all three as an example: 
+Consider changing both as an example, say placing a Normal prior with mean -5 and standard deviation 10 on our hypermean $\tau$, as well as placing a uniform prior with lower bound 0 and upper bound 5 on our hyper-standard-deviation $\sigma_{\tau}$. Thus, what is expressed mathematically as $\tau \sim N(-5,10)$ and $\sigma_{\tau} \sim U[0,5]$ is expressed in baggr as follows: 
 
 ```{r eval=FALSE}
 baggr(schools, "rubin", 
@@ -161,7 +179,14 @@ baggr(schools, "rubin",
 <!-- # ``` -->
 <!-- # _baggr_ will only understand the 3 types of formatting described above, and while we have already stacked this dataset, we now need to choose a single outcome to focus on.  ] -->
 
-Note that the default prior assumes Gaussian distribution of effects across groups. This is generally appropriate as a first pass at the problem (see @mcculloch_misspecifying_2011) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyper-distribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependencies between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself.
+It is also possible to pass your custom priors as a list to baggr, as follows:
+```{r eval=FALSE}
+custom_priors <- list( hypermean = cauchy(0,25), hypersd = normal(0,30))
+baggr(schools, "rubin", pooling = "partial", prior = custom_priors)
+```
+
+
+Note that the Rubin model assumes Gaussian distribution of effects across groups. This is generally appropriate as a first pass at the problem (see @mcculloch_misspecifying_2011) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyper-distribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependencies between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself.
 
 
 
@@ -230,8 +255,6 @@ my_baggr_plot$plot + ggtitle("8 schools: model comparison")
 
 
 ## Cross-validation in _baggr_
-
-__[Automated cross-validation will be included in the next package release. For this version only the "manual" method is available, as presented at the end of this section.]__
 
 _Baggr_ has built-in, automated leave-one-out cross validation for its models, where the "one" always refers to one group. This naturally corresponds to the question of how much any one group has contributed to the overall inference. Therefore, if you have $K$ groups, using the `loocv()` will run your model of choice $K$ times. Be aware that this may take a while even for simple models. (You should see a progress bar in your terminal window.) The `loocv()` function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics. For the 8 schools example we can do
 

@@ -122,6 +122,18 @@ baggr(df_pooled, group = "state", pooling = "full", iter = 500)
 #change the priors:
 baggr(df_pooled, prior_hypermean = normal(5,5))
 
+# "mu & tau" model, using a built-in dataset
+# prepare_ma() can summarise individual-level data
+\donttest{
+microcredit_summary_data <- prepare_ma(microcredit_simplified,
+                                       outcome = "consumerdurables")
+baggr(microcredit_summary_data, model = "mutau",
+      pooling = "partial", prior_hypercor = lkj(1),
+      prior_hypersd = normal(0,10),
+      prior_hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
+}
+
+
 }
 \author{
 Witold Wiecek, Rachael Meager
