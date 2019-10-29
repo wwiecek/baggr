@@ -103,7 +103,8 @@ effect_plot <- function(...) {
   if(!all(unlist(lapply(l, inherits, "baggr"))))
     stop("Effects plots can only be drawn for baggr class objects")
   if(is.null(names(l))){
-    message("Automatically naming models; please use named arguments to override.")
+    if(length(names(l)) > 1)
+      message("Automatically naming models; please use named arguments to override.")
     names(l) <- paste("Model", 1:length(l))
   }
   l <- lapply(l, effect_draw)

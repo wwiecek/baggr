@@ -236,7 +236,7 @@ baggr_compare(schools)
 
 (We will show the output of this function below.) Different comparisons, e.g. of models using different priors, are also possible. 
 
-The `baggr_compare` command also produces an automatic comparison plot made by calling `ggplot2` package. Because the output object of baggr_compare is a `ggplot` object you can edit it further yourself and built on it as you would any `ggplot` object. For example, the default title for the plot is just "mean", so here I've changed it to be more descriptive:
+The `baggr_compare` command also produces an automatic comparison plot made by calling `ggplot2` package. Because the output object of baggr_compare is a `ggplot` object you can edit it further yourself and build on it as you would any `ggplot` object by, for example, changing theme or labels:
 
 ```{r, echo=FALSE, eval = TRUE, include = FALSE}
 my_baggr_plot <- baggr_compare(schools)
@@ -246,8 +246,10 @@ my_baggr_plot <- baggr_compare(schools)
 my_baggr_plot <- baggr_compare(schools)
 ```
 
-```{r fig.width=7, fig.height=4, echo = TRUE}
-my_baggr_plot$plot + ggtitle("8 schools: model comparison")
+```{r fig.width=5, fig.height=4, echo = TRUE}
+my_baggr_plot$plot + 
+  theme_minimal() + 
+  ggtitle("8 schools: model comparison")
 ```
 
 
@@ -281,13 +283,17 @@ attr(loocv_res, "df")
 This data frame can then be used to examine or compute the variation in the inference on $\tau$ in the absence of each group. If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. For example, suppose that we want to run the Rubin model on school groups 1-7 and predict the effect in the 8th school. The code below shows how you can specify a subset of the dataframe as your "data" argument, and then designate another subset as the "testing" holdout set by assigning it to the argument "test_data" in the baggr command. Here we have done it for both partial and full pooling:
 
 ```{r, echo = FALSE, include = FALSE}
-fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
-fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "full")
+fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], 
+              model = "rubin", pooling = "partial")
+fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], 
+              model = "rubin", pooling = "full")
 ```
 
 ```{r, echo = TRUE, eval = FALSE}
-fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "partial")
-fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], model = "rubin", pooling = "full")
+fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], 
+              model = "rubin", pooling = "partial")
+fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], 
+              model = "rubin", pooling = "full")
 ```
 
 We can compare the performance of the two models using the mean log predictive density. This itself is a density as the name suggests so we will compute the log expected value of this density: here, as before, a number closer to zero is better. In this case the full pooling model actually does slightly better:
