@@ -1,9 +1,9 @@
-## cran-comments for baggr v0.1.0
+## cran-comments for baggr v0.2.0
 
 Test environments:
-* Ubuntu 14.04, R 3.6.0 via Travis
-* win-builder 3.6.1 and 3.5.3 (release, oldrelease)
-* Windows 10 locally in R 3.5.1, R 3.6.1
+* Ubuntu 14.04, R 3.6.1 via Travis
+* win-builder: devel
+* Two Windows 10 PCs locally: R 3.5.1, R 3.6.1
 * builder.r-hub.io/ (all platforms)
 
 Check results:
