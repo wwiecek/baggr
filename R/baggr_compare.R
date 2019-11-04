@@ -82,12 +82,19 @@ baggr_compare <- function(...,
       if("ppd" %in% names(l))
         stop("Can't run the model comparison with ppd setting",
              "already set to a particular value.")
-      models <- lapply(list(FALSE, TRUE), function(ppdv){
+      models <- lapply(list(TRUE, FALSE), function(ppdv){
         try(do.call(baggr, c(l, "ppd" = ppdv)))
       })
       names(models) <- c("Prior", "Posterior")
       compare <- "effects"
     }
+  }
+
+  # For PPD models always switch comparison to "effects"
+  if(any(unlist(lapply(models, attr, "ppd")))) {
+    if(compare != "effects")
+      message("Models to compare are PPD -- switching to compare='effects'")
+    compare <- "effects"
   }
 
   effect_names <- lapply(models, function(x) x$effects)
@@ -105,7 +112,7 @@ baggr_compare <- function(...,
     gridExtra::grid.arrange(grobs = plots, ncol = grid_width)
   }
   if(arrange == "single") {
-    if(compare == "groups")
+    if(compare == "groups") {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         # Note: pipe operators are dplyr not used here for compatibility
         ll <- lapply(models, function(x) {
@@ -142,8 +149,10 @@ baggr_compare <- function(...,
         # plot(comparison_plot)
         return(comparison_plot)
       })
-    if(compare == "effects"){
+    } else if(compare == "effects"){
       plots <- do.call(effect_plot, models)
+    } else {
+      stop("Argument compare= must be 'effects' or 'groups'.")
     }
   }
 
