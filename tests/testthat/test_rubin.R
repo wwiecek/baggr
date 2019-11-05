@@ -170,8 +170,11 @@ test_that("Extracting treatment/study effects works", {
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")
+  expect_is(effect_plot(bg5_p, bg5_f), "gg")
   expect_is(effect_plot("Model A" = bg5_p, "Model B" = bg5_f), "gg")
-
+  # Crashes when passing nonsense
+  expect_error(effect_plot(cars), "baggr class")
+  expect_error(effect_plot(cars, cars, bg5_f), "baggr class")
 })
 
 

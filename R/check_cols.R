@@ -9,7 +9,7 @@ check_columns_numeric <- function(data) {
 check_columns <- function(data, outcome, group, treatment)  {
 
   if(!(is.character(outcome) && is.character(group) && is.character(treatment)))
-    stop('Arguments "outcome", "group", "treatment" must be of character type')
+    stop('Arguments "outcome", "group", "treatment" must be of type "character"')
 
   # Do columns exist?
   if(is.null(data[[outcome]]))

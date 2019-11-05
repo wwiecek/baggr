@@ -24,3 +24,14 @@ test_that("Basic operations on full data model", {
   expect_error(loocv(ms))
 })
 
+test_that("Full model crashes with nonsense inputs", {
+  expect_error(baggr(ms, outcome = 2), "Arguments")
+  expect_error(baggr(ms, group = 2), "Arguments")
+  expect_error(baggr(ms, treatment = 2), "Arguments")
+  expect_error(baggr(ms, treatment = "wrong"), "no column")
+  ms2 <- ms; ms2$treatment <- as.character(ms$treatment)
+  expect_error(baggr(ms2), "has to be numeric")
+  ms2 <- ms; ms2$outcome <- as.character(ms$outcome)
+  expect_error(baggr(ms2), "has to be numeric")
+
+})
