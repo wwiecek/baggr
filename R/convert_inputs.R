@@ -68,11 +68,6 @@ convert_inputs <- function(data,
       stop("Unrecognised model, can't format data.")
   }
 
-  # Prompt and stop conversion for the CRAN release version of the package:
-  # if(model != "rubin")
-    # stop("In baggr v0.1 only Rubin model is enabled.
-  # More models will be available in the next release.")
-
   # Convert mutau data to Rubin model data if requested
   # (For now disabled as it won't work with functions that then
   #  re-use the input data)

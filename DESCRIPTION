@@ -4,7 +4,7 @@ Title: Bayesian Aggregate Treatment Effects
 Version: 0.2.0
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
              person("Rachael", "Meager", role="aut"),
-             person("Green", "Brice", role="ctb", comment = "patches for LOO CV"),
+             person("Brice", "Green", role="ctb", comment = "patches for LOO CV"),
              person("Trustees of", "Columbia University", role = "cph", comment = "tools/make_cc.R"))
 Maintainer: Witold Wiecek <witold.wiecek@gmail.com>
 Description: Running and comparing meta-analyses of data with hierarchical 

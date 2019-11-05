@@ -98,8 +98,8 @@ effect_draw <- function(x, n) {
 #'             "Normal prior on SD"=bg2)
 #'
 #' # Compare the priors themselves (ppd=T)
-#' bg1_ppd <- baggr(schools, prior_hypersd = uniform(0, 20), ppd=T)
-#' bg2_ppd <- baggr(schools, prior_hypersd = normal(0, 5), ppd=T)
+#' bg1_ppd <- baggr(schools, prior_hypersd = uniform(0, 20), ppd=TRUE)
+#' bg2_ppd <- baggr(schools, prior_hypersd = normal(0, 5), ppd=TRUE)
 #' effect_plot("Uniform prior on SD"=bg1_ppd,
 #'             "Normal prior on SD"=bg2_ppd)
 #'
