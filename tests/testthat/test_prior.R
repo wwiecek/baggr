@@ -76,3 +76,24 @@ test_that("Different priors for mutau model", {
   expect_is(bg1, "baggr")
   expect_is(bg2, "baggr")
 })
+
+
+test_that("Prior vs posterior and PPD comparisons work", {
+  bg_ppd1 <- expect_warning(baggr(schools, ppd = T, refresh = 0, iter = 200))
+  bg_ppd2 <- expect_warning(baggr(schools, ppd = T, prior_hypermean = normal(0,10), refresh = 0, iter = 200))
+  expect_is(bg_ppd1, "baggr")
+  expect_is(bg_ppd2, "baggr")
+  # Regular comparison (don't have to say compare = "groups")
+  bgc <- baggr_compare(bg_ppd1, bg_ppd2)
+  expect_is(bgc, "gg")
+
+  # Prior vs posterior
+  bgc2 <- expect_warning(baggr_compare(schools, what = "prior", refresh = 0, iter = 200))
+  expect_is(bgc2, "list")
+
+  # Effect plot of PPD:
+  gg <- effect_plot(bg_ppd1)
+  expect_identical(gg$labels$title, "Possible treatment effect (prior predictive)")
+
+
+})

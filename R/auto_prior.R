@@ -12,10 +12,11 @@ prepare_prior <- function(prior, data, stan_data, model,
   if(model %in% c("rubin")) {
     # Hypermean
     if(is.null(prior$hypermean)){
-      prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, 10*max(data$tau)))
+      val <- 10*max(abs(data$tau))
+      prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, val))
       message("Set hypermean prior according to max effect:")
       message(paste0("* tau ~ Normal(0, (10*",
-                     format(max(data$tau), digits = 2), ")^2)"))
+                     format(val/10, digits = 2), ")^2)"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
     }
@@ -45,8 +46,8 @@ prepare_prior <- function(prior, data, stan_data, model,
 
     # Hypermean
     if(is.null(prior$hypermean)){
-      val1 <- 100*max(data$mu)
-      val2 <- 100*max(data$tau)
+      val1 <- 100*max(abs(data$mu))
+      val2 <- 100*max(abs(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
                                   multinormal(c(0,0), c(val1, val2)*diag(2)))
       message("Set hypermean prior according to max effect:")

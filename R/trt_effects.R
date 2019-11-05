@@ -92,21 +92,30 @@ effect_draw <- function(x, n) {
 #' bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
 #' effect_plot(bg1)
 #'
-#' # Compare posterior effects as a function of priors (note ppd=F)
+#' # Compare how posterior depends on the prior choice
 #' bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
 #' effect_plot("Uniform prior on SD"=bg1,
-#'               "Normal prior on SD"=bg2)
+#'             "Normal prior on SD"=bg2)
 #'
+#' # Compare the priors themselves (ppd=T)
+#' bg1_ppd <- baggr(schools, prior_hypersd = uniform(0, 20), ppd=T)
+#' bg2_ppd <- baggr(schools, prior_hypersd = normal(0, 5), ppd=T)
+#' effect_plot("Uniform prior on SD"=bg1_ppd,
+#'             "Normal prior on SD"=bg2_ppd)
 #'
 effect_plot <- function(...) {
   l <- list(...)
+  caption <- "Possible treatment effect"
   if(!all(unlist(lapply(l, inherits, "baggr"))))
     stop("Effects plots can only be drawn for baggr class objects")
+  if(all(unlist(lapply(l, attr, "ppd"))))
+    caption <- "Possible treatment effect (prior predictive)"
   if(is.null(names(l))){
-    if(length(names(l)) > 1)
+    if(length(l) > 1)
       message("Automatically naming models; please use named arguments to override.")
     names(l) <- paste("Model", 1:length(l))
   }
+
   l <- lapply(l, effect_draw)
   df <- data.frame()
   for(i in seq_along(l))
@@ -115,8 +124,8 @@ effect_plot <- function(...) {
   single_model_flag <- (length(l) == 1)
   model <- value <- NULL
   ggplot(df, aes(value, group = model, fill = model)) +
+    bayesplot::bayesplot_theme_get() +
     geom_density(alpha = .25) +
-    ggtitle("Possible treatment effect") +
-    bayesplot_theme_get() +
+    ggtitle(caption) +
     {if(single_model_flag) theme(legend.position = "none")}
 }
