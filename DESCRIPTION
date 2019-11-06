@@ -31,7 +31,8 @@ NeedsCompilation: yes
 RoxygenNote: 6.1.1
 Roxygen: list(markdown = TRUE)
 Suggests: 
-    knitr
+    knitr,
+    covr
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
