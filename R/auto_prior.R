@@ -37,7 +37,7 @@ prepare_prior <- function(prior, data, stan_data, model,
     }
 
     check_eligible_priors(prior_list,
-                          list("hypersd"   = c("normal", "uniform"),
+                          list("hypersd"   = c("normal", "uniform", "cauchy"),
                                "hypermean" = c("normal", "uniform", "cauchy")))
   }
 
