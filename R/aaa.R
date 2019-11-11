@@ -5,6 +5,7 @@
 }
 
 .onLoad <- function(libname, pkgname) {
+  invisible(baggr_theme_set())
   modules <- paste0("stan_fit4", names(stanmodels), "_mod")
   for (m in modules) loadModule(m, what = TRUE)
 }

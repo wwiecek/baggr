@@ -145,6 +145,7 @@ baggr_compare <- function(...,
           coord_flip() +
           labs(x = "", y = "Treatment effect (95% interval)",
                title = effect_names[i]) +
+          baggr_theme_get() +
           theme(legend.position="top")
         # plot(comparison_plot)
         return(comparison_plot)
