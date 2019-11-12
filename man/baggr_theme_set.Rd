@@ -17,6 +17,8 @@ baggr_theme_replace(...)
 }
 \arguments{
 \item{new}{New theme to use for all baggr plots}
+
+\item{...}{A named list of theme settings}
 }
 \value{
 The get method returns the current theme, but all of the
@@ -24,7 +26,45 @@ others invisibly return the old theme.
 }
 \description{
 These functions get, set, and modify the ggplot2 themes
-of the baggr plots. By default, these match the bayesplot's package
+of the baggr plots. \code{baggr_theme_get()} returns a ggplot2 theme function for
+adding themes to a plot. \code{baggr_theme_set()} assigns a new theme
+for all plots of baggr objects. \code{baggr_theme_update()} edits a specific
+theme element for the current theme while holding the theme's
+other aspects constant. \code{baggr_theme_replace()} is used for
+wholesale replacing aspects of a plot's theme (see \code{\link[ggplot2:theme_replace]{ggplot2::theme_replace()}}).
+}
+\details{
+Under the hood, many of the visualizations rely on the
+bayesplot package, and thus these leverage the \code{\link[bayesplot:bayesplot_theme_get]{bayesplot::bayesplot_theme_get()}}
+functions. By default, these match the bayesplot's package
 theme to make it easier to form cohesive graphs across this package
-and others.
+and others. The trickiest of these to use is \code{baggr_theme_replace};
+9 times out of 10 you want baggr_theme_update.
+}
+\examples{
+
+# make plot look like default ggplots
+fit <- baggr(schools)
+baggr_theme_set(ggplot2::theme_grey())
+baggr_plot(fit)
+
+# use baggr_theme_get to return theme elements for current theme
+qplot(mtcars$mpg) + baggr_theme_get()
+
+# update specific aspect of theme you are interested in
+library(extrafont)
+baggr_theme_update(text = element_text(family = "Wingdings"))
+baggr_theme_update(text = element_text(family = "Calibri"))
+
+# update and replace are similar, but replace overwrites the
+# whole element, update just edits the aspect of the element
+# that you give it
+# this will error:
+# baggr_theme_replace(text = element_text(family = "Times"))
+# baggr_plot(fit)
+# because it deleted everything else to do with text elements
+
+}
+\seealso{
+\link[bayesplot:bayesplot_theme_get]{bayesplot::bayesplot_theme_get}
 }
