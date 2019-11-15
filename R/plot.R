@@ -52,11 +52,10 @@ plot.baggr <- function(x, ...) {
 #' qplot(mtcars$mpg) + baggr_theme_get()
 #'
 #' # update specific aspect of theme you are interested in
-#' library(extrafont)
-#' baggr_theme_update(text = element_text(family = "Wingdings"))
+#' baggr_theme_update(text = element_text(family = "mono"))
 #'
 #' # undo that silliness
-#' baggr_theme_update(text = element_text(family = "Calibri"))
+#' baggr_theme_update(text = element_text(family = "serif"))
 #'
 #' # update and replace are similar, but replace overwrites the
 #' # whole element, update just edits the aspect of the element
