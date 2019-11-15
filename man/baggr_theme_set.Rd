@@ -44,8 +44,11 @@ and others. The trickiest of these to use is \code{baggr_theme_replace};
 \examples{
 
 # make plot look like default ggplots
+
+library(ggplot2)
+
 fit <- baggr(schools)
-baggr_theme_set(ggplot2::theme_grey())
+baggr_theme_set(theme_grey())
 baggr_plot(fit)
 
 # use baggr_theme_get to return theme elements for current theme
@@ -54,6 +57,8 @@ qplot(mtcars$mpg) + baggr_theme_get()
 # update specific aspect of theme you are interested in
 library(extrafont)
 baggr_theme_update(text = element_text(family = "Wingdings"))
+
+# undo that silliness
 baggr_theme_update(text = element_text(family = "Calibri"))
 
 # update and replace are similar, but replace overwrites the

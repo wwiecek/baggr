@@ -41,8 +41,11 @@ plot.baggr <- function(x, ...) {
 #' @examples
 #'
 #' # make plot look like default ggplots
+#'
+#' library(ggplot2)
+#'
 #' fit <- baggr(schools)
-#' baggr_theme_set(ggplot2::theme_grey())
+#' baggr_theme_set(theme_grey())
 #' baggr_plot(fit)
 #'
 #' # use baggr_theme_get to return theme elements for current theme
@@ -73,6 +76,7 @@ baggr_theme_set <- function(new = bayesplot::theme_default()) {
 
 #' @rdname baggr_theme_set
 #' @importFrom bayesplot bayesplot_theme_get
+#' @export
 baggr_theme_get <- function() {
   bayesplot::bayesplot_theme_get()
 }
