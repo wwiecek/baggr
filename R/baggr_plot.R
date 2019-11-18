@@ -46,7 +46,9 @@ baggr_plot <- function(bg, mean = FALSE,
     p <- switch(style,
                 "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob, prob_outer = prob_outer, ...),
                 "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob, prob_outer = prob_outer, ...))
-    p + ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
+    p +
+      ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
+      baggr_theme_get() +
     {if(vline) geom_vline(xintercept = 0, lty = "dashed")}
   })
 

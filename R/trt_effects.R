@@ -124,7 +124,7 @@ effect_plot <- function(...) {
   single_model_flag <- (length(l) == 1)
   model <- value <- NULL
   ggplot(df, aes(value, group = model, fill = model)) +
-    bayesplot::bayesplot_theme_get() +
+    baggr_theme_get() +
     geom_density(alpha = .25) +
     ggtitle(caption) +
     {if(single_model_flag) theme(legend.position = "none")}
