@@ -127,6 +127,10 @@ test_that("Plotting works", {
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
+  expect_is(forest_plot(bg5_n), "vpPath")
+  expect_is(forest_plot(bg5_p), "vpPath")
+  expect_is(forest_plot(bg5_f), "vpPath")
+  expect_is(forest_plot(bg5_f, graph.pos = 1), "vpPath")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
@@ -226,10 +230,10 @@ test_that("baggr_compare basic cases work with Rubin", {
   expect_is(bgcomp, "list")
   # Compare existing models:
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "single")
-  bgcomp3 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "grid")
+  # bgcomp3 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "grid")
   expect_is(bgcomp2, "gg")
-  expect_is(bgcomp3, "list")
-  expect_is(bgcomp3[[1]], "gg")
+  # expect_is(bgcomp3, "list")
+  # expect_is(bgcomp3[[1]], "gg")
 
 })
 

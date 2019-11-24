@@ -117,6 +117,9 @@ test_that("Plotting works", {
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
+  expect_is(forest_plot(bg5_n), "vpPath")
+  expect_is(forest_plot(bg5_p), "vpPath")
+  expect_is(forest_plot(bg5_f), "vpPath")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
