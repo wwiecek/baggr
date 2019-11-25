@@ -21,7 +21,10 @@
 #' @examples
 #' bg <- baggr(schools, iter = 500)
 #' forest_plot(bg)
+#' forest_plot(bg, show = "posterior", print = "inputs", digits = 2)
 #'
+#' @export
+#' @import forestplot
 
 forest_plot <- function(bg, show = c("inputs", "posterior", "both"),
                         print = show,
