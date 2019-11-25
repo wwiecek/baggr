@@ -82,9 +82,9 @@ test_that("Various attr of baggr object are correct", {
 })
 
 test_that("Data are available in baggr object", {
-  expect_identical(bg5_n$data, df_pooled)
-  expect_identical(bg5_p$data, df_pooled)
-  expect_identical(bg5_f$data, df_pooled)
+  expect_is(bg5_n$data, "data.frame")
+  expect_is(bg5_p$data, "data.frame")
+  expect_is(bg5_f$data, "data.frame")
 })
 
 test_that("Pooling metrics", {

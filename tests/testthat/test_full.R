@@ -19,7 +19,7 @@ test_that("Basic operations on full data model", {
   expect_error(baggr(ms, rubbish = 41))
   expect_is(pooling(bg_p)[,,1], "matrix")
   expect_is(plot(bg_p), "gg")
-  expect_is(effect_plot(bg_p), "vpPath")
+  expect_is(effect_plot(bg_p), "gg")
   expect_is(forest_plot(bg_p), "vpPath")
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
   expect_is(bgc, "gg")
