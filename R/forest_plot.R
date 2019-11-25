@@ -1,7 +1,7 @@
 #' Draw a forest plot for a baggr model
 #'
 #' The forest plot functionality in _baggr_ is a simple interface for
-#' calling the [forestplot::forestplot] function. By default the forest plot
+#' calling the [forestplot] function. By default the forest plot
 #' displays raw (unpooled) estimates for groups and the treatment effect
 #' estimate underneath. This behaviour can be modified to display pooled
 #' group estimates.
@@ -13,9 +13,9 @@
 #' @param prob width of the intervals (lines) for the plot
 #' @param digits number of digits to display when printing out mean and SD
 #'        in the plot
-#' @param ... other arguments passed to [forestplot::forestplot]
+#' @param ... other arguments passed to [forestplot]
 #'
-#' @seealso [forestplot::forestplot] function and its associated vignette for examples;
+#' @seealso [forestplot] function and its associated vignette for examples;
 #'          [effect_plot] and [baggr_plot] for non-forest plots of baggr results
 #'
 #' @examples
@@ -88,10 +88,10 @@ forest_plot <- function(bg, show = c("inputs", "posterior", "both"),
   l[["lower"]] <- rbind(NA, as.matrix(ge$lci), NA, mint(te)[1])
   l[["upper"]] <- rbind(NA, as.matrix(ge$uci), NA, mint(te)[3])
   if(show == "both"){
-    l[["fn.ci_norm"]]  <- c(forestplot::fpDrawCircleCI, forestplot::fpDrawNormalCI)
+    l[["fn.ci_norm"]]  <- c(fpDrawCircleCI, fpDrawNormalCI)
     l[["legend"]]      <- c("Input", "Estimate")
     l[["boxsize"]]     <- .2
   }
 
-  do.call(forestplot::forestplot, l)
+  do.call(forestplot, l)
 }
