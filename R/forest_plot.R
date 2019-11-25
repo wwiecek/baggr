@@ -39,6 +39,12 @@ forest_plot <- function(bg, show = c("inputs", "posterior", "both"),
   ge_raw <- bg$data
   if(bg$model == "mutau")
     ge_raw$se <- ge_raw$se.tau
+  if(bg$model == "full"){
+    ge_raw <- prepare_ma(bg$data, group = attr(bg$data, "group"),
+                         treatment = attr(bg$data, "treatment"),
+                         outcome = attr(bg$data, "outcome"))
+    ge_raw$se <- ge_raw$se.tau
+  }
   ge_raw$mean <- ge_raw$tau
   ge_raw$sd   <- ge_raw$se
   ge_raw$lci  <- ge_raw$tau - 1.96*ge_raw$se

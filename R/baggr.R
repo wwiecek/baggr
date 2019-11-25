@@ -136,6 +136,9 @@ baggr <- function(data, model = NULL, pooling = "partial",
   #                    summarise = FALSE, cfb = cfb,
   #                    treatment=treatment, group=group,
   #                    outcome=outcome, baseline=baseline)
+  attr(data, "outcome") <- outcome
+  attr(data, "group") <- group
+  attr(data, "treatment") <- treatment
 
   stan_data <- convert_inputs(data,
                               model,
