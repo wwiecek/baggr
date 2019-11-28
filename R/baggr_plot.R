@@ -10,6 +10,7 @@
 #' @param prob_outer Probability mass for the outer interval in visualisation
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param order logical; sort groups by magnitude of treatment effect?
+#' @param hyper logical; show hypereffect as the last row of the plot?
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -24,9 +25,11 @@
 #' @import bayesplot
 #'
 #' @author Witold Wiecek, Rachael Meager
-#' @seealso [bayesplot::MCMC-intervals]
+#' @seealso [bayesplot::MCMC-intervals] for more information about _bayesplot_ functionality;
+#'          [forest_plot] for a typical meta-analysis alternative; [effect_plot] for plotting
+#'          treatment effects for a new group
 
-baggr_plot <- function(bg, mean = FALSE,
+baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
                        style = "intervals",
                        prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {
@@ -35,6 +38,10 @@ baggr_plot <- function(bg, mean = FALSE,
     return(effect_plot(bg))
   }
   m <- group_effects(bg)
+  if(hyper)
+    te <- treatment_effect(bg)$tau
+  effect_labels <- bg$effects
+
   if(!(style %in% c("areas", "intervals")))
     stop('plot "style" argument must be one of: "areas", "intervals"')
 
@@ -43,13 +50,18 @@ baggr_plot <- function(bg, mean = FALSE,
       mat_to_plot <- m[,order(apply(m[,,i], 2, mean)),i] #assigning to m[,,i] wouldn't reorder dimnames
     else
       mat_to_plot <- m[,,i]
+    if(hyper){
+      mat_to_plot <- cbind(mat_to_plot, te)
+      colnames(mat_to_plot)[ncol(mat_to_plot)] <- effect_labels[i]
+    }
     p <- switch(style,
                 "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob, prob_outer = prob_outer, ...),
                 "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob, prob_outer = prob_outer, ...))
     p +
       ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
       baggr_theme_get() +
-    {if(vline) geom_vline(xintercept = 0, lty = "dashed")}
+      {if(vline) geom_vline(xintercept = 0, lty = "dashed")} +
+      {if(hyper) geom_hline(yintercept = 1.5)}
   })
 
   if(length(ret_list) == 1)

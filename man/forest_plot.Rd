@@ -20,11 +20,11 @@ if \code{posterior} -- to posterior distribution; you can also plot \code{both}}
 \item{digits}{number of digits to display when printing out mean and SD
 in the plot}
 
-\item{...}{other arguments passed to \link[forestplot:forestplot]{forestplot::forestplot}}
+\item{...}{other arguments passed to \link{forestplot}}
 }
 \description{
 The forest plot functionality in \emph{baggr} is a simple interface for
-calling the \link[forestplot:forestplot]{forestplot::forestplot} function. By default the forest plot
+calling the \link{forestplot} function. By default the forest plot
 displays raw (unpooled) estimates for groups and the treatment effect
 estimate underneath. This behaviour can be modified to display pooled
 group estimates.
@@ -36,6 +36,6 @@ forest_plot(bg, show = "posterior", print = "inputs", digits = 2)
 
 }
 \seealso{
-\link[forestplot:forestplot]{forestplot::forestplot} function and its associated vignette for examples;
+\link{forestplot} function and its associated vignette for examples;
 \link{effect_plot} and \link{baggr_plot} for non-forest plots of baggr results
 }
