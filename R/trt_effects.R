@@ -7,6 +7,7 @@
 #' @export
 #' @importFrom rstan extract
 
+
 treatment_effect <- function(bg) {
   check_if_baggr(bg)
 

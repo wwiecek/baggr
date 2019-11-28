@@ -61,7 +61,7 @@ baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
       ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
       baggr_theme_get() +
       {if(vline) geom_vline(xintercept = 0, lty = "dashed")} +
-      {if(hyper) geom_hline(yintercept = 1.5)}
+      {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)}
   })
 
   if(length(ret_list) == 1)
