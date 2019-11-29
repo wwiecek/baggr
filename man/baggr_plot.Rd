@@ -5,7 +5,8 @@
 \title{Plotting method in baggr package}
 \usage{
 baggr_plot(bg, mean = FALSE, hyper = FALSE, style = "intervals",
-  prob = 0.5, prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
+  transform = NULL, prob = 0.5, prob_outer = 0.95, vline = TRUE,
+  order = TRUE, ...)
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}
@@ -15,6 +16,10 @@ baggr_plot(bg, mean = FALSE, hyper = FALSE, style = "intervals",
 \item{hyper}{logical; show hypereffect as the last row of the plot?}
 
 \item{style}{one of \code{areas}, \code{intervals}}
+
+\item{transform}{a function (e.g. \code{exp()}, \code{log()}) to apply to the
+values of group (and hyper, if \code{hyper=TRUE}) effects
+before plotting}
 
 \item{prob}{Probability mass for the inner interval in visualisation}
 

@@ -11,6 +11,9 @@
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param order logical; sort groups by magnitude of treatment effect?
 #' @param hyper logical; show hypereffect as the last row of the plot?
+#' @param transform a function (e.g. `exp()`, `log()`) to apply to the
+#'                  values of group (and hyper, if `hyper=TRUE`) effects
+#'                  before plotting
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -31,6 +34,7 @@
 
 baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
                        style = "intervals",
+                       transform = NULL,
                        prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {
   if(attr(bg, "ppd")){
@@ -38,8 +42,13 @@ baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
     return(effect_plot(bg))
   }
   m <- group_effects(bg)
-  if(hyper)
+  if(!is.null(transform))
+    m <- do.call(transform, list(m))
+  if(hyper){
     te <- treatment_effect(bg)$tau
+    if(!is.null(transform))
+      te <- do.call(transform, list(te))
+  }
   effect_labels <- bg$effects
 
   if(!(style %in% c("areas", "intervals")))
