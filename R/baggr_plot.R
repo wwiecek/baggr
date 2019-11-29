@@ -54,6 +54,8 @@ baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
   if(!(style %in% c("areas", "intervals")))
     stop('plot "style" argument must be one of: "areas", "intervals"')
 
+  vline_value <- do.call(transform, list(0))
+
   ret_list <- lapply(as.list(1:dim(m)[3]), function(i) {
     if(order)
       mat_to_plot <- m[,order(apply(m[,,i], 2, mean)),i] #assigning to m[,,i] wouldn't reorder dimnames
@@ -69,8 +71,8 @@ baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
     p +
       ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
       baggr_theme_get() +
-      {if(vline) geom_vline(xintercept = 0, lty = "dashed")} +
-      {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)}
+      {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
+      {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}
   })
 
   if(length(ret_list) == 1)
