@@ -8,7 +8,7 @@
 #' @importFrom rstan extract
 
 
-treatment_effect <- function(bg) {
+treatment_effect <- function(bg, transform = NULL) {
   check_if_baggr(bg)
 
   if(bg$pooling == "none"){
@@ -43,6 +43,12 @@ treatment_effect <- function(bg) {
     sigma_tau <- t(apply(rstan::extract(bg$fit, "Sigma_1")[[1]], 1, diag))
     # in model with correlation, we have Var(), not SD()
     sigma_tau <- sqrt(sigma_tau)
+  }
+
+  if(!is.null(transform)){
+    tau <- do.call(transform, list(tau))
+    sigma_tau <- NA # by convention we set it to NA so that people don't convert
+                    # and then do operations on it by accident
   }
   return(list(tau = tau, sigma_tau = sigma_tau))
 }
@@ -106,6 +112,7 @@ effect_draw <- function(x, n) {
 #'
 effect_plot <- function(...) {
   l <- list(...)
+
   caption <- "Possible treatment effect"
   if(!all(unlist(lapply(l, inherits, "baggr"))))
     stop("Effects plots can only be drawn for baggr class objects")
@@ -116,6 +123,13 @@ effect_plot <- function(...) {
       message("Automatically naming models; please use named arguments to override.")
     names(l) <- paste("Model", 1:length(l))
   }
+
+  # Check effects and prepare X label
+  if(any(unlist(lapply(l, function(x) length(x$effects))) > 1))
+    stop("Effect_plot is only possible for models with 1-dimensional treatment effects")
+  effects <- paste("Effect on", unique(unlist(lapply(l, function(x) x$effects))))
+  if(length(effects) > 1)
+    stop("All models must have same effects")
 
   l <- lapply(l, effect_draw)
   df <- data.frame()
@@ -128,5 +142,6 @@ effect_plot <- function(...) {
     baggr_theme_get() +
     geom_density(alpha = .25) +
     ggtitle(caption) +
+    xlab(effects) +
     {if(single_model_flag) theme(legend.position = "none")}
 }

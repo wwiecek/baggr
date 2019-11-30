@@ -118,6 +118,7 @@
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
+                  effect = c("mean", "logOR", "logRR"),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
@@ -155,10 +156,12 @@ baggr <- function(data, model = NULL, pooling = "partial",
   n_groups <- attr(stan_data, "n_groups")
 
   # labels for what the effect parameters represent:
-  if(model == "quantiles")
-    effects <- paste0(100*quantiles, "% quantile mean")
-  else
-    effects <- "mean"
+  effect <- match.arg(effect, c("mean", "logOR", "logRR"))
+  if(model == "quantiles"){
+    if(effect != "mean")
+      warning("For quantile models, effect is always treated as effect='mean'.")
+    effect <- paste0(100*quantiles, "% quantile mean")
+  }
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {
@@ -213,7 +216,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
     "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
-    "effects" = effects,
+    "effects" = effect,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model

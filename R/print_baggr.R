@@ -15,7 +15,7 @@
 #' @method print baggr
 #'
 
-print.baggr <- function(x, ...) {
+print.baggr <- function(x, exponent=FALSE, ...) {
   ppd <- attr(x, "ppd")
 
   # Announce model type
@@ -28,18 +28,30 @@ print.baggr <- function(x, ...) {
 
   cat("\n")
 
-  cat(crayon::bold("Aggregate treatment effect:\n"))
+  if(length(x$effects) == 1)
+    cat(crayon::bold(paste0("Aggregate treatment effect (on ", x$effects, "):\n")))
+  else
+    cat(crayon::bold(paste0("Aggregate treatment effect:\n")))
+
+
   if(x$pooling == "none") {
     cat("No treatment effect estimated as pooling = 'none'.\n\n")
   } else {
     # Means:
-    te <- treatment_effect(x)
+    if(exponent)
+      te <- treatment_effect(x, transform = exp)
+    else
+      te <- treatment_effect(x)
     #trim=T avoids whitespace in place of minus sign
     if(x$model != "quantiles"){
       tau       <- format(mint(te[[1]]), digits = 2, trim = T)
       sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
-      cat("Hypermean (tau) =", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
-      if(x$pooling == "partial")
+      if(exponent)
+        cat("Exponent of hypermean (exp(tau))")
+      else
+        cat("Hypermean (tau)")
+      cat(" = ", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
+      if(x$pooling == "partial" && !exponent)
         cat("Hyper-SD (sigma_tau) =", sigma_tau[2], "with 95% interval",
             sigma_tau[1], "to", sigma_tau[3], "\n")
     } else { #quantiles
@@ -65,12 +77,21 @@ print.baggr <- function(x, ...) {
   if(x$pooling != "full") {
     # study_eff_tab <- apply(group_effects(x), c(2,3),
     # function(x) c("mean" = mean(x), "sd" = sd(x)))
-    study_eff_tab <- group_effects(x, summary = TRUE)
-    # attach pooling metric:
     pooling_tab <- pooling(x, summary = TRUE)
+    if(exponent)
+      study_eff_tab <- group_effects(x, summary = TRUE, transform=exp)
+    else
+      study_eff_tab <- group_effects(x, summary = TRUE)
+
     for(i in 1:dim(study_eff_tab)[3]){
-      cat(paste0("Treatment effects on ", x$effects[i] , ":\n"))
-      tab <- cbind(study_eff_tab[,c("mean", "sd"),i], pooling = pooling_tab[2,,i])
+      cat(paste0("Treatment effects on ", x$effects[i]))
+      if(exponent){
+        cat(" (converted to exp scale):\n")
+        tab <- cbind(study_eff_tab[,c("mean", "lci", "uci"),i], pooling = pooling_tab[2,,i])
+      } else{
+        cat(":\n")
+        tab <- cbind(study_eff_tab[,c("mean", "sd"),i], pooling = pooling_tab[2,,i])
+      }
       print(tab, digits = 2)
     }
     cat("\n")

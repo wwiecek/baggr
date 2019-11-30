@@ -13,7 +13,9 @@
 #' @param hyper logical; show hypereffect as the last row of the plot?
 #' @param transform a function (e.g. `exp()`, `log()`) to apply to the
 #'                  values of group (and hyper, if `hyper=TRUE`) effects
-#'                  before plotting
+#'                  before plotting; when working with effects that are on
+#'                  log scale, exponent transform is used automatically, you can
+#'                  plot on log scale by setting `transform = identity`
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -41,9 +43,7 @@ baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))
   }
-  m <- group_effects(bg)
-  if(!is.null(transform))
-    m <- do.call(transform, list(m))
+  m <- group_effects(bg, transform = transform)
   if(hyper){
     te <- treatment_effect(bg)$tau
     if(!is.null(transform))
@@ -54,7 +54,10 @@ baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
   if(!(style %in% c("areas", "intervals")))
     stop('plot "style" argument must be one of: "areas", "intervals"')
 
-  vline_value <- do.call(transform, list(0))
+  if(!is.null(transform))
+    vline_value <- do.call(transform, list(0))
+  else
+    vline_value <- 0
 
   ret_list <- lapply(as.list(1:dim(m)[3]), function(i) {
     if(order)

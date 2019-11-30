@@ -21,7 +21,7 @@
 #'
 #' @export
 
-group_effects <- function(bg, summary = FALSE, interval = .95) {
+group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95) {
   check_if_baggr(bg)
 
   # m <- as.matrix(bg$fit)
@@ -69,6 +69,9 @@ group_effects <- function(bg, summary = FALSE, interval = .95) {
     dimnames(m)[[1]] <- c("lci", "median", "uci", "mean", "sd")
     m <- aperm(m, c(2,1,3))
   }
+
+  if(!is.null(transform))
+    m <- do.call(transform, list(m))
 
   return(m)
 }
