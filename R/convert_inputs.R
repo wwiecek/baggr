@@ -40,12 +40,15 @@ convert_inputs <- function(data,
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
                         "mutau" = "pool_wide",
+                        "logit" = "individual_binary",
                         "full" = "individual",
                         "quantiles" = "individual") #for now no quantiles model from summary level data
   data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
                        "pool_wide" = "Aggregate (control and effects)",
-                       "individual" = "Individual-level")
-  available_data <- detect_input_type(data, group)
+                       "individual" = "Individual-level with continuous outcome",
+                       "individual_binary" = "Individual-level with binary outcome")
+
+  available_data <- detect_input_type(data, group, treatment, outcome)
 
   # if(available_data == "unknown")
   # stop("Cannot automatically determine type of input data.")
@@ -55,7 +58,7 @@ convert_inputs <- function(data,
   if(available_data == "unknown")
     available_data <- "individual" #in future can call it 'inferred ind.'
 
-  if(available_data == "individual")
+  if(grepl("individual", available_data))
     check_columns(data, outcome, group, treatment)
 
   if(is.null(model)) {
@@ -87,7 +90,7 @@ convert_inputs <- function(data,
   #for now this means no automatic conversion of individual->pooled
 
   # individual level data -----
-  if(required_data == "individual"){
+  if(grepl("individual", required_data)) {
     # # check correctness of inputs:
     # (This check moved up now.)
     # if(is.null(data[[group]]))
@@ -101,15 +104,19 @@ convert_inputs <- function(data,
     group_numeric <- as.numeric(groups)
     group_label <- levels(groups)
 
-    if(model == "full")
+    if(model %in% c("full", "logit")){
       out <- list(
         K = max(group_numeric),
         N = nrow(data),
         P = 2, #will be dynamic
         y = data[[outcome]],
-        ITT = data[[treatment]],
         site = group_numeric
       )
+      if(model == "full")
+        out$ITT = data[[treatment]]
+      if(model == "logit")
+        out$treatment = data[[treatment]]
+    }
     if(model == "quantiles"){
       if((any(quantiles < 0)) ||
          (any(quantiles > 1)))
@@ -219,6 +226,7 @@ convert_inputs <- function(data,
 
   return(structure(
     out,
+    data_type = available_data,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))

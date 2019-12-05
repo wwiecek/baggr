@@ -226,6 +226,13 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   attr(result, "ppd") <- ppd
 
+  if(grepl("individual", attr(stan_data, "data_type")))
+    result$summary_data <- prepare_ma(data,
+                                      effect = ifelse(model == "logit", "logOR", "mean"),
+                                      group = attr(data, "group"),
+                                      treatment = attr(data, "treatment"),
+                                      outcome = attr(data, "outcome"))
+
   if(model == "quantiles")
     result[["quantiles"]]    <- quantiles
   if(!ppd){

@@ -51,7 +51,7 @@ prepare_ma <- function(data, #standardise = NULL,
                        baseline = NULL,
                        group="group",
                        outcome="outcome") {
-  if(grepl("pool", detect_input_type(data, group, treatment)))
+  if(grepl("pool", detect_input_type(data, group, treatment, outcome)))
     stop("Data must be individual-level to use prepare_ma.")
   check_columns(data, outcome, group, treatment)
 

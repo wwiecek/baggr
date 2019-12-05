@@ -36,19 +36,18 @@ forest_plot <- function(bg, show = c("inputs", "posterior", "both"),
   if(length(bg$effects) > 1)
     stop("forest_plot only works with 1-dimensional effects")
 
-  ge_raw <- bg$data
-  if(bg$model == "mutau")
+  # Get the summary-level data with tau and se columns
+  if(bg$model %in% c("full", "logit"))
+    ge_raw <- bg$summary_data
+  else
+    ge_raw <- bg$data
+  if(bg$model %in% c("full", "mutau"))
     ge_raw$se <- ge_raw$se.tau
-  if(bg$model == "full"){
-    ge_raw <- prepare_ma(bg$data, group = attr(bg$data, "group"),
-                         treatment = attr(bg$data, "treatment"),
-                         outcome = attr(bg$data, "outcome"))
-    ge_raw$se <- ge_raw$se.tau
-  }
-  ge_raw$mean <- ge_raw$tau
-  ge_raw$sd   <- ge_raw$se
-  ge_raw$lci  <- ge_raw$tau - 1.96*ge_raw$se
-  ge_raw$uci  <- ge_raw$tau + 1.96*ge_raw$se
+
+  ge_raw$mean  <- ge_raw$tau
+  ge_raw$sd    <- ge_raw$se
+  ge_raw$lci   <- ge_raw$tau - 1.96*ge_raw$se
+  ge_raw$uci   <- ge_raw$tau + 1.96*ge_raw$se
   ge_posterior <- as.data.frame(
     group_effects(bg, summary = TRUE, interval = prob)[,,1])
 

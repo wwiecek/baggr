@@ -27,15 +27,15 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95)
   # m <- as.matrix(bg$fit)
 
   if(bg$pooling == "full"){
-    tau <- treatment_effect(bg)[["tau"]] #for consistency we have a separate function for this
+    tau <- treatment_effect(bg)[["tau"]]
     k <- attr(bg$inputs, "n_groups")
     m <- replicate(k, tau)
     if(length(dim(m)) == 3)
       m <- aperm(m, c(1, 3, 2))
 
-  } else{
+  } else {
     # choose correct columns for the given models:
-    if(bg$model %in% c("rubin", "mutau")) {
+    if(bg$model %in% c("rubin", "mutau", "logit")) {
       #replace by extract:
       # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "tau_k")[[1]]
