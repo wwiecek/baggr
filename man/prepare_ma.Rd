@@ -4,9 +4,9 @@
 \alias{prepare_ma}
 \title{Convert from individual to summary data in meta-analyses}
 \usage{
-prepare_ma(data, log = FALSE, cfb = FALSE, summarise = TRUE,
-  treatment = "treatment", baseline = NULL, group = "group",
-  outcome = "outcome")
+prepare_ma(data, effect = c("mean", "logOR", "logRR"), log = FALSE,
+  cfb = FALSE, summarise = TRUE, treatment = "treatment",
+  baseline = NULL, group = "group", outcome = "outcome")
 }
 \arguments{
 \item{data}{data.frame of individual-level observations

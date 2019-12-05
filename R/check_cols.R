@@ -6,6 +6,13 @@ check_columns_numeric <- function(data) {
     stop(paste("Column(s)", paste(names(numcols)[numcols], collapse = ","), "are not numeric"))
 }
 
+is_binary <- function(v) {
+  if(identical(as.numeric(sort(unique(v))), c(0,1)))
+    return(TRUE)
+  else
+    return(FALSE)
+}
+
 check_columns <- function(data, outcome, group, treatment)  {
 
   if(!(is.character(outcome) && is.character(group) && is.character(treatment)))

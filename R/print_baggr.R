@@ -20,7 +20,8 @@ print.baggr <- function(x, exponent=FALSE, ...) {
 
   # Announce model type
   if(ppd) {
-    cat("Model type: Prior predictive draws for", crayon::bold(model_names[x$model]), "\n")
+    cat("Model type: Prior predictive draws for",
+        crayon::bold(model_names[x$model]), "\n")
   } else {
     cat("Model type:", crayon::bold(model_names[x$model]), "\n")
     cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
@@ -39,7 +40,7 @@ print.baggr <- function(x, exponent=FALSE, ...) {
   } else {
     # Means:
     if(exponent)
-      te <- treatment_effect(x, transform = exp)
+      te <- treatment_effect(x, transform = base::exp)
     else
       te <- treatment_effect(x)
     #trim=T avoids whitespace in place of minus sign
@@ -87,10 +88,12 @@ print.baggr <- function(x, exponent=FALSE, ...) {
       cat(paste0("Treatment effects on ", x$effects[i]))
       if(exponent){
         cat(" (converted to exp scale):\n")
-        tab <- cbind(study_eff_tab[,c("mean", "lci", "uci"),i], pooling = pooling_tab[2,,i])
+        tab <- cbind(study_eff_tab[,c("mean", "lci", "uci"),i],
+                     pooling = pooling_tab[2,,i])
       } else{
         cat(":\n")
-        tab <- cbind(study_eff_tab[,c("mean", "sd"),i], pooling = pooling_tab[2,,i])
+        tab <- cbind(study_eff_tab[,c("mean", "sd"),i],
+                     pooling = pooling_tab[2,,i])
       }
       print(tab, digits = 2)
     }
@@ -98,7 +101,8 @@ print.baggr <- function(x, exponent=FALSE, ...) {
   }
 
   if(!is.null(x[["mean_lpd"]]))
-    cat("Cross-validation result: mean lpd =", crayon::bold(format(x$mean_lpd)), "\n")
+    cat("Cross-validation result: mean lpd =",
+        crayon::bold(format(x$mean_lpd)), "\n")
 
   invisible(x)
 }

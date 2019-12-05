@@ -19,7 +19,9 @@ baggr_plot(bg, mean = FALSE, hyper = FALSE, style = "intervals",
 
 \item{transform}{a function (e.g. \code{exp()}, \code{log()}) to apply to the
 values of group (and hyper, if \code{hyper=TRUE}) effects
-before plotting}
+before plotting; when working with effects that are on
+log scale, exponent transform is used automatically, you can
+plot on log scale by setting \code{transform = identity}}
 
 \item{prob}{Probability mass for the inner interval in visualisation}
 

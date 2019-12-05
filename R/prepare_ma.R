@@ -38,11 +38,12 @@
 #'
 
 prepare_ma <- function(data, #standardise = NULL,
-                         log = FALSE, cfb = FALSE, summarise = TRUE,
-                         treatment="treatment",
-                         baseline = NULL,
-                         group="group",
-                         outcome="outcome") {
+                       effect = c("mean", "logOR", "logRR"),
+                       log = FALSE, cfb = FALSE, summarise = TRUE,
+                       treatment="treatment",
+                       baseline = NULL,
+                       group="group",
+                       outcome="outcome") {
   if(grepl("pool", detect_input_type(data, group)))
     stop("Data must be individual-level to use prepare_ma.")
   check_columns(data, outcome, group, treatment)
@@ -60,6 +61,12 @@ prepare_ma <- function(data, #standardise = NULL,
       warning("NA values present in data - they were dropped when summarising")
     else
       warning("NA values present in data")
+  }
+
+  effect <- match.arg(effect, c("mean", "logOR", "logRR"))
+  if(effect %in% c("logOR", "logRR")) {
+    if(!is_binary(data$outcome))
+      stop("Outcome column is not binary (only 0 and 1 values allowed).")
   }
 
   # 1. transform data (for now only log)
@@ -131,19 +138,40 @@ prepare_ma <- function(data, #standardise = NULL,
 
   # 4. Summarising
   if(summarise){
-    magg  <- stats::aggregate(outcome ~ treatment + group,
-                              mean, data = data)
-    seagg <- stats::aggregate(outcome ~ treatment + group,
-                              function(x) sd(x)/sqrt(length(x)), data = data)
-    mwide <- stats::reshape(data = magg, timevar = "treatment",
-                            idvar = "group", direction = "wide")
-    sewide <- stats::reshape(data = seagg, timevar = "treatment",
-                             idvar = "group", direction = "wide")
-    out <- data.frame(group = mwide$group,
-                      mu = mwide$outcome.0,
-                      tau = mwide$outcome.1 - mwide$outcome.0,
-                      se.mu = sewide$outcome.0,
-                      se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2))
+    if(effect == "mean") {
+      magg  <- stats::aggregate(outcome ~ treatment + group,
+                                mean, data = data)
+      seagg <- stats::aggregate(outcome ~ treatment + group,
+                                function(x) sd(x)/sqrt(length(x)), data = data)
+      mwide <- stats::reshape(data = magg, timevar = "treatment",
+                              idvar = "group", direction = "wide")
+      sewide <- stats::reshape(data = seagg, timevar = "treatment",
+                               idvar = "group", direction = "wide")
+      out <- data.frame(group = mwide$group,
+                        mu = mwide$outcome.0,
+                        tau = mwide$outcome.1 - mwide$outcome.0,
+                        se.mu = sewide$outcome.0,
+                        se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2))
+    }
+
+    binary_data_table <- dplyr::group_by(data, group) %>%
+      dplyr::summarise(a = sum(outcome[treatment == 1]),
+                       n1 = sum(treatment == 1),
+                       c = sum(outcome[treatment == 0]),
+                       n2 = sum(treatment == 0)) %>%
+      dplyr::mutate(b = n1 - a,
+                    d = n2 - c)
+
+    if(effect == "logRR") {
+      out <- dplyr::mutate(binary_data_table,
+                           tau = log((a/(a+b))/(c/(c+d))),
+                           se  = sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
+    }
+    if(effect == "logOR") {
+      out <- dplyr::mutate(binary_data_table,
+                           tau = log((a*d)/(b*c)),
+                           se  = sqrt(1/a + 1/b + 1/c + 1/d))
+    }
   } else {
     out <- data
   }

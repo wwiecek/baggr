@@ -4,7 +4,7 @@
 \alias{print.baggr}
 \title{S3 print method for objects of class \code{baggr} (model fits)}
 \usage{
-\method{print}{baggr}(x, ...)
+\method{print}{baggr}(x, exponent = FALSE, ...)
 }
 \arguments{
 \item{x}{object of class \code{baggr}}

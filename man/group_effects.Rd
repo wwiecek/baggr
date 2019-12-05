@@ -4,7 +4,7 @@
 \alias{group_effects}
 \title{Extract baggr study effects}
 \usage{
-group_effects(bg, summary = FALSE, interval = 0.95)
+group_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
 }
 \arguments{
 \item{bg}{baggr object}

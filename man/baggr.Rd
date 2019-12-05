@@ -4,8 +4,8 @@
 \alias{baggr}
 \title{Bayesian aggregate treatment effects model}
 \usage{
-baggr(data, model = NULL, pooling = "partial",
-  prior_hypermean = NULL, prior_hypersd = NULL,
+baggr(data, model = NULL, pooling = "partial", effect = c("mean",
+  "logOR", "logRR"), prior_hypermean = NULL, prior_hypersd = NULL,
   prior_hypercor = NULL, prior = NULL, ppd = FALSE,
   test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome", group = "group", treatment = "treatment",

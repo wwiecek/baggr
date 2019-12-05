@@ -4,7 +4,7 @@
 \alias{treatment_effect}
 \title{Average treatment effect in a baggr model}
 \usage{
-treatment_effect(bg)
+treatment_effect(bg, transform = NULL)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
