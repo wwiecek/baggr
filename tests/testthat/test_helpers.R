@@ -5,9 +5,13 @@ set.seed(1990)
 test_that("prepare_ma()", {
   expect_error(prepare_ma(schools), "individual-level")
   expect_error(prepare_ma(microcredit_simplified), "no column")
-  expect_error(prepare_ma(microcredit, outcome = "consumption"), "treatment values are NA")
-  expect_error(prepare_ma(microcredit[!is.na(microcredit$treatment),], outcome = "consumption"),
-               "outcome values are NA")
+  expect_warning(prepare_ma(microcredit, outcome = "consumption"))
+  expect_warning(prepare_ma(microcredit[!is.na(microcredit$treatment),],
+                          outcome = "consumption"))
+  expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
+                          effect = "logRR"), "not binary")
+  expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
+                          effect = "logOR"), "not binary")
 
   pm <- prepare_ma(microcredit_simplified, outcome = "consumerdurables")
   expect_is(pm, "data.frame")
@@ -21,6 +25,13 @@ test_that("prepare_ma()", {
   names(mc2)[1] <- "study"
   expect_error(prepare_ma(mc2, outcome = "consumerdurables"), "no column")
   expect_is(prepare_ma(mc2, group = "study", outcome = "consumerdurables"), "data.frame")
+
+  # prepare_ma for binary data
+  df_pat2 <- data.frame(treatment = rbinom(900, 1, .5),
+                        group = rep(paste("Trial", LETTERS[1:10]), each = 90)) %>%
+    mutate(outcome = ifelse(treatment, rbinom(900, 1, .3), rbinom(900, 1, .15)))
+  expect_is(prepare_ma(df_pat2, effect = "logOR"), "data.frame")
+  expect_is(prepare_ma(df_pat2, effect = "logRR"), "data.frame")
 
 })
 
