@@ -53,7 +53,7 @@ prepare_ma <- function(data, #standardise = NULL,
                        outcome="outcome") {
   if(grepl("pool", detect_input_type(data, group, treatment, outcome)))
     stop("Data must be individual-level to use prepare_ma.")
-  check_columns(data, outcome, group, treatment)
+  check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
 
 
   # Input checks and prep
@@ -65,9 +65,9 @@ prepare_ma <- function(data, #standardise = NULL,
 
   if(any(!stats::complete.cases(data))){
     if(summarise)
-      warning("NA values present in data - they were dropped when summarising")
+      warning("NA values present in data - they may be dropped when summarising")
     else
-      warning("NA values present in data")
+      check_columns(data, outcome, group, treatment, stop.for.na = TRUE)
   }
 
   effect <- match.arg(effect, c("mean", "logOR", "logRR"))

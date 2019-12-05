@@ -16,7 +16,7 @@ data {
   int<lower=0> P;  // dimensionality of parameter vector which  is
                    // jointly distributed - here, it is 2 dimensional
   real y[N];       // outcome variable of interest
-  int ITT[N];      // intention to treat indicator
+  int treatment[N];      // intention to treat indicator
   int site[N];     // factor variable to split them out into K sites
   int pooling_type;//0 if none, 1 if partial, 2 if full
   int<lower=0, upper=1> joint; //is the distribution on parameters (mu and tau) joint?
@@ -39,7 +39,7 @@ transformed data {
   x[1] = 1.0;
   for (n in 1:N) {
     s = site[n];
-    x[2] = ITT[n];
+    x[2] = treatment[n];
     N_k[s] = N_k[s] + 1;
     y_sq_sum[s] = y_sq_sum[s] + y[n]^2;
     xy_sum[s] = xy_sum[s] + y[n]*x;

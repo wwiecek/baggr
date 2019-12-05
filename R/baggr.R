@@ -264,7 +264,7 @@ check_if_baggr <- function(bg) {
 remove_data_for_prior_pred <- function(data) {
   scalars_to0 <- c("K", "N")
   vectors_to_remove <- c("tau_hat_k", "se_tau_k",
-                         "y", "ITT", "site")
+                         "y", "treatment", "site")
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0

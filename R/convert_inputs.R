@@ -110,12 +110,9 @@ convert_inputs <- function(data,
         N = nrow(data),
         P = 2, #will be dynamic
         y = data[[outcome]],
+        treatment = data[[treatment]],
         site = group_numeric
       )
-      if(model == "full")
-        out$ITT = data[[treatment]]
-      if(model == "logit")
-        out$treatment = data[[treatment]]
     }
     if(model == "quantiles"){
       if((any(quantiles < 0)) ||

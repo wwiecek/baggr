@@ -13,7 +13,7 @@ is_binary <- function(v) {
     return(FALSE)
 }
 
-check_columns <- function(data, outcome, group, treatment)  {
+check_columns <- function(data, outcome, group, treatment, stop.for.na = TRUE)  {
 
   if(!(is.character(outcome) && is.character(group) && is.character(treatment)))
     stop('Arguments "outcome", "group", "treatment" must be of type "character"')
@@ -33,12 +33,14 @@ check_columns <- function(data, outcome, group, treatment)  {
     stop(paste0("Treatment variable in baggr has to be numeric"))
 
   # NA not allowed
-  if(any(is.na(data[[treatment]])))
-    stop("Some of treatment values are NA")
-  if(any(is.na(data[[outcome]])))
-    stop("Some of outcome values are NA")
-  if(any(is.na(data[[group]])))
-    stop("Some of group values are NA")
+  if(stop.for.na){
+    if(any(is.na(data[[treatment]])))
+      stop("Some of treatment values are NA")
+    if(any(is.na(data[[outcome]])))
+      stop("Some of outcome values are NA")
+    if(any(is.na(data[[group]])))
+      stop("Some of group values are NA")
+  }
 
   # Treatment has to be dichotomous
   if(!any((data[[treatment]] = 0) | (data[[treatment]] = 1)))
