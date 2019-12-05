@@ -8,6 +8,11 @@
 #'             group (numeric, character or factor);
 #'             column names can be user-defined (see below)
 #' @param log logical; log-transform the outcome variable?
+#' @param rare_event_correction This correction is used when working with
+#'             binary data only. The value of correction is added to all arms
+#'             in trials where some arms had 0 events.
+#'             Using corrections may bias results but is the only alternative to
+#'             avoid infinite values.
 #' @param cfb logical; calculate change from baseline? If yes, the outcome
 #'            variable is taken as a difference between values in `outcome` and
 #'            `baseline` columns
@@ -35,16 +40,18 @@
 #' @seealso [convert_inputs] for how data is converted into Stan inputs;
 #' @export
 #' @import stats
+#' @import dplyr
 #'
 
 prepare_ma <- function(data, #standardise = NULL,
                        effect = c("mean", "logOR", "logRR"),
+                       rare_event_correction = 0.25,
                        log = FALSE, cfb = FALSE, summarise = TRUE,
                        treatment="treatment",
                        baseline = NULL,
                        group="group",
                        outcome="outcome") {
-  if(grepl("pool", detect_input_type(data, group)))
+  if(grepl("pool", detect_input_type(data, group, treatment)))
     stop("Data must be individual-level to use prepare_ma.")
   check_columns(data, outcome, group, treatment)
 
@@ -154,13 +161,24 @@ prepare_ma <- function(data, #standardise = NULL,
                         se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2))
     }
 
+    # Prepare event counts for binary data models
+    # (including rare event corrections)
+    v <- rare_event_correction
     binary_data_table <- dplyr::group_by(data, group) %>%
       dplyr::summarise(a = sum(outcome[treatment == 1]),
                        n1 = sum(treatment == 1),
                        c = sum(outcome[treatment == 0]),
                        n2 = sum(treatment == 0)) %>%
       dplyr::mutate(b = n1 - a,
-                    d = n2 - c)
+                    d = n2 - c) %>%
+    # Rare-event correction
+      dplyr::mutate(rare = (a == 0 | b == 0 | c == 0 | d == 0)) %>%
+      dplyr::mutate(a = v*rare + a,
+                    b = v*rare + b,
+                    c = v*rare + c,
+                    d = v*rare + d) %>%
+      dplyr::select(-rare)
+
 
     if(effect == "logRR") {
       out <- dplyr::mutate(binary_data_table,

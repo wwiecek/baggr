@@ -4,15 +4,22 @@
 \alias{prepare_ma}
 \title{Convert from individual to summary data in meta-analyses}
 \usage{
-prepare_ma(data, effect = c("mean", "logOR", "logRR"), log = FALSE,
-  cfb = FALSE, summarise = TRUE, treatment = "treatment",
-  baseline = NULL, group = "group", outcome = "outcome")
+prepare_ma(data, effect = c("mean", "logOR", "logRR"),
+  rare_event_correction = 0.25, log = FALSE, cfb = FALSE,
+  summarise = TRUE, treatment = "treatment", baseline = NULL,
+  group = "group", outcome = "outcome")
 }
 \arguments{
 \item{data}{data.frame of individual-level observations
 with columns for outcome (numeric), treatment (values 0 and 1) and
 group (numeric, character or factor);
 column names can be user-defined (see below)}
+
+\item{rare_event_correction}{This correction is used when working with
+binary data only. The value of correction is added to all arms
+in trials where some arms had 0 events.
+Using corrections may bias results but is the only alternative to
+avoid infinite values.}
 
 \item{log}{logical; log-transform the outcome variable?}
 
