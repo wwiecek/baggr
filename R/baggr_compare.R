@@ -97,7 +97,7 @@ baggr_compare <- function(...,
     compare <- "effects"
   }
 
-  effect_names <- lapply(models, function(x) x$effects)
+  effect_names <- lapply(models, function(x) effect_names[x$effects])
   # quite a mouthful:
   if(!all(unlist(lapply(effect_names, function(x) all.equal(effect_names[[1]], x))) == 1))
     stop("Models must have the same effects to be comparable")

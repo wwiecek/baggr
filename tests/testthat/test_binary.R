@@ -6,33 +6,33 @@ library(testthat)
 # prepare inputs ----------------------------------------------------------
 set.seed(1990)
 
-df_pat2 <- data.frame(treatment = rbinom(400, 1, .5),
-                      group = rep(paste("Trial", LETTERS[1:5]), each = 80)) %>%
-  mutate(outcome = ifelse(treatment, rbinom(400, 1, .3), rbinom(400, 1, .15)))
+df_binary <- data.frame(treatment = rbinom(400, 1, .5),
+                      group = rep(paste("Trial", LETTERS[1:5]), each = 80))
+df_binary$outcome <- ifelse(df_binary$treatment, rbinom(400, 1, .3), rbinom(400, 1, .15))
 
 
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
-  expect_error(baggr(df_pat2, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_pat2, pooling = "nune"), "Wrong pooling")
+  expect_error(baggr(df_binary, "made_up_model"), "Unrecognised model")
+  expect_error(baggr(df_binary, pooling = "nune"), "Wrong pooling")
 
   # test_that("Converting inputs works correctly") more explicitly
-  expect_identical(names(convert_inputs(df_pat2, "logit")),
+  expect_identical(names(convert_inputs(df_binary, "logit")),
                    c("K", "N", "P", "y", "treatment", "site", "K_test",
                      "test_tau_hat_k", "test_se_k", "test_y_0", "test_y_1",
                      "test_Sigma_y_k_0", "test_Sigma_y_k_1"))
 })
 
-bg5_n <- expect_warning(baggr(df_pat2, "logit", pooling = "none",
+bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
-bg5_p <- expect_warning(baggr(df_pat2, "logit", pooling = "partial",
+bg5_p <- expect_warning(baggr(df_binary, "logit", pooling = "partial",
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
-bg5_f <- expect_warning(baggr(df_pat2, "logit", pooling = "full",
+bg5_f <- expect_warning(baggr(df_binary, "logit", pooling = "full",
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
-bg5_ppd <- expect_warning(baggr(df_pat2, "logit", ppd = T,
+bg5_ppd <- expect_warning(baggr(df_binary, "logit", ppd = T,
                                 iter = 200, chains = 2, refresh = 0,
                                 show_messages = F))
 
@@ -44,7 +44,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
-  expect_error(baggr(df_pat2, rubbish = 41))
+  expect_error(baggr(df_binary, rubbish = 41))
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -53,7 +53,7 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_f$pooling, "full")
   expect_equal(bg5_p$n_parameters, 1)
   expect_equal(bg5_p$n_groups, 5)
-  expect_equal(bg5_p$effects, "mean")
+  expect_equal(bg5_p$effects, "logOR")
   expect_equal(bg5_p$model, "logit")
   expect_is(bg5_p$fit, "stanfit")
 })
@@ -119,7 +119,7 @@ test_that("printing works", {
 })
 
 # test_that("Test data can be used in the Rubin model", {
-#   bg_lpd <- expect_warning(baggr(df_pat2[1:6,], test_data = df_pat2[7:8,],
+#   bg_lpd <- expect_warning(baggr(df_binary[1:6,], test_data = df_binary[7:8,],
 #                                  iter = 500, refresh = 0))
 #   expect_is(bg_lpd, "baggr")
 #   # make sure that we have 6 sites, not 8:
@@ -128,15 +128,15 @@ test_that("printing works", {
 #   expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -3.6, tolerance = 1)
 #
 #   # wrong test_data
-#   df_na <- df_pat2[7:8,]; df_na$tau <- NULL
-#   expect_error(baggr(df_pat2[1:6,], test_data = df_na), "must be of the same format as input")
+#   df_na <- df_binary[7:8,]; df_na$tau <- NULL
+#   expect_error(baggr(df_binary[1:6,], test_data = df_na), "must be of the same format as input")
 # })
 
 
 # test helpers -----
 
 test_that("Extracting treatment/study effects works", {
-  expect_error(treatment_effect(df_pat2))
+  expect_error(treatment_effect(df_binary))
   expect_is(treatment_effect(bg5_p), "list")
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's

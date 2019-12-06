@@ -162,6 +162,9 @@ baggr <- function(data, model = NULL, pooling = "partial",
       warning("For quantile models, effect is always treated as effect='mean'.")
     effect <- paste0(100*quantiles, "% quantile mean")
   }
+  if(model == "logit"){
+    effect <- "logOR"
+  }
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {

@@ -92,7 +92,7 @@ forest_plot <- function(bg, show = c("inputs", "posterior", "both"),
     l[["boxsize"]]     <- .2
   }
   if(!("xlab" %in% names(l)) && bg$effects != "mean")
-    l[["xlab"]] <- bg$effects
+    l[["xlab"]] <- effect_names[bg$effects]
 
 
   do.call(forestplot, l)
