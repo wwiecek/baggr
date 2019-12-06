@@ -40,7 +40,6 @@
 #' @seealso [convert_inputs] for how data is converted into Stan inputs;
 #' @export
 #' @import stats
-#' @import dplyr
 #'
 
 prepare_ma <- function(data, #standardise = NULL,
@@ -163,32 +162,37 @@ prepare_ma <- function(data, #standardise = NULL,
 
     # Prepare event counts for binary data models
     # (including rare event corrections)
-    v <- rare_event_correction
-    binary_data_table <- dplyr::group_by(data, group) %>%
-      dplyr::summarise(a = sum(outcome[treatment == 1]),
-                       n1 = sum(treatment == 1),
-                       c = sum(outcome[treatment == 0]),
-                       n2 = sum(treatment == 0)) %>%
-      dplyr::mutate(b = n1 - a,
-                    d = n2 - c) %>%
-    # Rare-event correction
-      dplyr::mutate(rare = (a == 0 | b == 0 | c == 0 | d == 0)) %>%
-      dplyr::mutate(a = v*rare + a,
-                    b = v*rare + b,
-                    c = v*rare + c,
-                    d = v*rare + d) %>%
-      dplyr::select(-rare)
+    if(effect %in% c("logOR", "logRR")) {
+      v <- rare_event_correction
+      binary_data_table <-
+        do.call(rbind, by(data, list(data$group), function(x) {
+          with(x,
+               data.frame(
+                 group = unique(as.character(group)),
+                 a = sum(outcome[treatment == 1]),
+                 n1 = sum(treatment == 1),
+                 c = sum(outcome[treatment == 0]),
+                 n2 = sum(treatment == 0),
+                 b = sum(treatment == 1) - sum(outcome[treatment == 1]),
+                 d = sum(treatment == 0) - sum(outcome[treatment == 0])))
+        }))
+      rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
+      binary_data_table$a = v*rare + binary_data_table$a
+      binary_data_table$b = v*rare + binary_data_table$b
+      binary_data_table$c = v*rare + binary_data_table$c
+      binary_data_table$d = v*rare + binary_data_table$d
 
 
-    if(effect == "logRR") {
-      out <- dplyr::mutate(binary_data_table,
-                           tau = log((a/(a+b))/(c/(c+d))),
-                           se  = sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
-    }
-    if(effect == "logOR") {
-      out <- dplyr::mutate(binary_data_table,
-                           tau = log((a*d)/(b*c)),
-                           se  = sqrt(1/a + 1/b + 1/c + 1/d))
+      out <- binary_data_table
+
+      if(effect == "logRR") {
+        out$tau <- with(out, log((a/(a+b))/(c/(c+d))))
+        out$se <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
+      }
+      if(effect == "logOR") {
+        out$tau <- with(out, log((a*d)/(b*c)))
+        out$se <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
+      }
     }
   } else {
     out <- data

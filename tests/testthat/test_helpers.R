@@ -7,7 +7,7 @@ test_that("prepare_ma()", {
   expect_error(prepare_ma(microcredit_simplified), "no column")
   expect_warning(prepare_ma(microcredit, outcome = "consumption"))
   expect_warning(prepare_ma(microcredit[!is.na(microcredit$treatment),],
-                          outcome = "consumption"))
+                            outcome = "consumption"))
   expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
                           effect = "logRR"), "not binary")
   expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
@@ -28,8 +28,8 @@ test_that("prepare_ma()", {
 
   # prepare_ma for binary data
   df_pat2 <- data.frame(treatment = rbinom(900, 1, .5),
-                        group = rep(paste("Trial", LETTERS[1:10]), each = 90)) %>%
-    mutate(outcome = ifelse(treatment, rbinom(900, 1, .3), rbinom(900, 1, .15)))
+                        group = rep(paste("Trial", LETTERS[1:10]), each = 90))
+  df_pat2$outcome <- ifelse(df_pat2$treatment, rbinom(900, 1, .3), rbinom(900, 1, .15))
   expect_is(prepare_ma(df_pat2, effect = "logOR"), "data.frame")
   expect_is(prepare_ma(df_pat2, effect = "logRR"), "data.frame")
 
