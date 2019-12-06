@@ -18,6 +18,10 @@
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
 #'                "partial" can be understood as random effects and "full" as fixed effects
+#' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
+#'               quantiles in `quantiles` model etc.
+#'               These labels are used in various print and plot outputs.
+#'               Comparable models (e.g. in [baggr_compare]) should have same `effect`.
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
 #'              See Details:Priors below for more possible specifications.
@@ -118,7 +122,7 @@
 #' @export
 
 baggr <- function(data, model = NULL, pooling = "partial",
-                  effect = c("mean", "logOR", "logRR"),
+                  effect = NULL,
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
@@ -156,15 +160,23 @@ baggr <- function(data, model = NULL, pooling = "partial",
   n_groups <- attr(stan_data, "n_groups")
 
   # labels for what the effect parameters represent:
-  effect <- match.arg(effect, c("mean", "logOR", "logRR"))
+
+
   if(model == "quantiles"){
-    if(effect != "mean")
-      warning("For quantile models, effect is always treated as effect='mean'.")
-    effect <- paste0(100*quantiles, "% quantile mean")
+    if(is.null(effect))
+      effect <- paste0(100*quantiles, "% quantile mean")
+    else if(length(effect) == 1)
+      effect <- paste0(100*quantiles, "% quantile on ", effect)
+    else if(length(length(effect) != length(quantiles)))
+      stop("'effect' must be of length 1 or same as number of quantiles")
   }
   if(model == "logit"){
-    effect <- "logOR"
+    if(is.null(effect))
+      effect <- "logOR"
   }
+  # In all other cases we set it to mean
+  if(is.null(effect))
+    effect <- "mean"
 
   # pooling type
   if(pooling %in% c("none", "partial", "full")) {

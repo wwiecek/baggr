@@ -5,6 +5,3 @@ model_names <- c("mutau" = "Aggregate data (with control group)",
                  "quantiles" = "Effects on quantiles",
                  "logit" = "Logistic model (individual-level data)")
 
-effect_names <- c("mean" = "mean",
-                  "logOR" = "log odds ratio",
-                  "logRR" = "log risk ratio")

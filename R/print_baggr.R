@@ -30,7 +30,7 @@ print.baggr <- function(x, exponent=FALSE, ...) {
   cat("\n")
 
   if(length(x$effects) == 1)
-    cat(crayon::bold(paste0("Aggregate treatment effect (on ", effect_names[x$effects], "):\n")))
+    cat(crayon::bold(paste0("Aggregate treatment effect (on ", x$effects, "):\n")))
   else
     cat(crayon::bold(paste0("Aggregate treatment effect:\n")))
 
@@ -85,7 +85,7 @@ print.baggr <- function(x, exponent=FALSE, ...) {
       study_eff_tab <- group_effects(x, summary = TRUE)
 
     for(i in 1:dim(study_eff_tab)[3]){
-      cat(paste0("Treatment effects on ", effect_names[x$effects[i]]))
+      cat(paste0("Treatment effects on ", x$effects[i]))
       if(exponent){
         cat(" (converted to exp scale):\n")
         tab <- cbind(study_eff_tab[,c("mean", "lci", "uci"),i],

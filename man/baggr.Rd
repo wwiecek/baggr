@@ -4,8 +4,8 @@
 \alias{baggr}
 \title{Bayesian aggregate treatment effects model}
 \usage{
-baggr(data, model = NULL, pooling = "partial", effect = c("mean",
-  "logOR", "logRR"), prior_hypermean = NULL, prior_hypersd = NULL,
+baggr(data, model = NULL, pooling = "partial", effect = NULL,
+  prior_hypermean = NULL, prior_hypersd = NULL,
   prior_hypercor = NULL, prior = NULL, ppd = FALSE,
   test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome", group = "group", treatment = "treatment",
@@ -23,6 +23,11 @@ otherwise choose from
 choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
+
+\item{effect}{Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
+quantiles in \code{quantiles} model etc.
+These labels are used in various print and plot outputs.
+Comparable models (e.g. in \link{baggr_compare}) should have same \code{effect}.}
 
 \item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
 \code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
