@@ -135,7 +135,7 @@ test_that("Test data can be used in the mu tau model", {
 
   # wrong test_data
   df_na <- df_mutau[7:8,]; df_na$tau <- NULL
-  expect_error(baggr(df_mutau[1:6,], test_data = df_na), "must be of the same format as input")
+  expect_error(baggr(df_mutau[1:6,], test_data = df_na))
 })
 
 

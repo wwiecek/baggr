@@ -12,6 +12,13 @@ data {
   int prior_hypersd_fam;
   real prior_hypermean_val[2];
   real prior_hypersd_val[2];
+
+  //cross-validation variables:
+  int<lower=0> N_test;
+  int<lower=0> K_test;
+  real test_y[N_test];
+  int<lower=0, upper=K> test_site[N_test];
+  int<lower=0, upper=1> test_treatment[N_test];
 }
 transformed data {
   int K_pooled; // number of modelled sites if we take pooling into account

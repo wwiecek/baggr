@@ -25,6 +25,8 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95)
   check_if_baggr(bg)
 
   # m <- as.matrix(bg$fit)
+  if(attr(bg , "ppd"))
+    stop("There are no group effects in prior predictive distribution baggr objects.")
 
   if(bg$pooling == "full"){
     tau <- treatment_effect(bg)[["tau"]]

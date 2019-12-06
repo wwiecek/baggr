@@ -142,6 +142,16 @@ test_that("printing works", {
 })
 
 test_that("Test data can be used in the Rubin model", {
+  # Wrong data type:
+  expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
+
+  # NA values or wrong cols:
+  df2 <- df_pooled; df2$tau[1] <- NA
+  expect_error(baggr(data = df_pooled, test_data = df2), "NA")
+  df_na <- df_pooled[7:8,]; df_na$tau <- NULL
+  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "is of type")
+
+  # This should work:
   bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],
                                  iter = 500, refresh = 0))
   expect_is(bg_lpd, "baggr")
@@ -150,9 +160,6 @@ test_that("Test data can be used in the Rubin model", {
   # make sure it's not 0
   expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -3.6, tolerance = 1)
 
-  # wrong test_data
-  df_na <- df_pooled[7:8,]; df_na$tau <- NULL
-  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "must be of the same format as input")
 })
 
 
