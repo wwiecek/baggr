@@ -76,7 +76,10 @@ pooling <- function(bg, metric = "gelman-hill", summary = TRUE) {
     # now we can just do the operation on arrays and preserve dimensions:
     ret <- sigma_k / (sigma_k + sigma_tau)
   } else if(bg$model == "logit") {
-    return(array(0, c(3, bg$n_groups, bg$n_parameters)))
+    sigma_k <- prepare_ma(bg$data, effect = "logOR")$se
+    sigma_tau <- treatment_effect(bg)$sigma_tau
+    ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
+    ret <- replicate(1, ret) #third dim is always N parameters, by convention
   }
 
   if(summary)

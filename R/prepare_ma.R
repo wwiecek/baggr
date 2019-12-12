@@ -192,6 +192,7 @@ prepare_ma <- function(data, #standardise = NULL,
 
 
       out <- binary_data_table
+      rownames(out) <- NULL
 
       if(effect == "logRR") {
         out$tau <- with(out, log((a/(a+b))/(c/(c+d))))
@@ -201,6 +202,7 @@ prepare_ma <- function(data, #standardise = NULL,
         out$tau <- with(out, log((a*d)/(b*c)))
         out$se <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
       }
+
     }
   } else {
     out <- data
