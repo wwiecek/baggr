@@ -47,6 +47,12 @@
 #'
 #' @author Witold Wiecek, Rachael Meager
 #'
+#' @references
+#' Lewandowski, Daniel, Dorota Kurowicka, and Harry Joe.
+#' "Generating Random Correlation Matrices Based on Vines and Extended Onion Method."
+#' _Journal of Multivariate Analysis_ 100, no. 9 (October 1, 2009): 1989-2001.
+#' https://doi.org/10.1016/j.jmva.2009.04.008.
+#'
 #' @examples
 #' # change the priors for 8 schools:
 #' baggr(schools, model = "rubin", pooling = "partial",

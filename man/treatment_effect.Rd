@@ -8,6 +8,10 @@ treatment_effect(bg, transform = NULL)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
+
+\item{transform}{a transformation to apply to the result, should be an R function;
+(this is commonly used when calling \code{group_effects} from other
+plotting or printing functions)}
 }
 \value{
 A list with 2 vectors (corresponding to MCMC samples)

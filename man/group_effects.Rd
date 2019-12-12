@@ -11,6 +11,10 @@ group_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
 
 \item{summary}{logical; if TRUE returns summary statistics as explained below.}
 
+\item{transform}{a transformation to apply to the result, should be an R function;
+(this is commonly used when calling \code{group_effects} from other
+plotting or printing functions)}
+
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
 }
 \value{

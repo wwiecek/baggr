@@ -15,7 +15,11 @@ with columns for outcome (numeric), treatment (values 0 and 1) and
 group (numeric, character or factor);
 column names can be user-defined (see below)}
 
-\item{rare_event_correction}{This correction is used when working with
+\item{effect}{what effect to calculate? a \code{mean} (and SE) of outcome in groups or
+(for binary data) \code{logOR} (odds ratio), \code{logRR} (risk ratio);}
+
+\item{rare_event_correction}{If effect is \code{logOR} or \code{logRR}, this correction
+is used when working with
 binary data only. The value of correction is added to all arms
 in trials where some arms had 0 events.
 Using corrections may bias results but is the only alternative to
@@ -27,7 +31,8 @@ avoid infinite values.}
 variable is taken as a difference between values in \code{outcome} and
 \code{baseline} columns}
 
-\item{summarise}{logical; convert to aggregate level data?}
+\item{summarise}{logical; \code{TRUE} by default, but you can disable it to obtain
+converted (e.g. logged) data with columns renamed}
 
 \item{treatment}{name of column with treatment variable}
 
@@ -38,8 +43,13 @@ variable is taken as a difference between values in \code{outcome} and
 \item{outcome}{name of column with outcome variable}
 }
 \value{
-data.frame with columns \code{mu}, \code{se.mu},
-\code{tau} and \code{se.tau}
+\itemize{
+\item If you \code{summarise} data.frame with columns for \code{group} \code{tau} and \code{se.tau}
+(for \code{effect = "mean"}, also baseline means, for \code{"logRR"} or \code{"logOR"} also
+\code{a}, \code{b}, \code{c}, \code{d}, which correspond to typical contingency table notation).
+\item If you do not summarise data, individual level data will be returned, but
+some columns may be renamed or transformed (see above).
+}
 }
 \description{
 Allows one-way conversion from full to summary data.
@@ -55,11 +65,11 @@ If multiple operations are performed, they are taken in this order:
 \enumerate{
 \item conversion to log scale,
 \item calculating change from baseline,
-\item summarising data.
+\item summarising data (using appropriate \code{effect})
 }
 }
 \seealso{
-\link{convert_inputs} for how data is converted into Stan inputs;
+\link{convert_inputs} for how any type of data is (internally) converted into Stan inputs;
 }
 \author{
 Witold Wiecek

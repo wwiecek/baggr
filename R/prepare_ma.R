@@ -7,8 +7,11 @@
 #'             with columns for outcome (numeric), treatment (values 0 and 1) and
 #'             group (numeric, character or factor);
 #'             column names can be user-defined (see below)
+#' @param effect what effect to calculate? a `mean` (and SE) of outcome in groups or
+#'               (for binary data) `logOR` (odds ratio), `logRR` (risk ratio);
 #' @param log logical; log-transform the outcome variable?
-#' @param rare_event_correction This correction is used when working with
+#' @param rare_event_correction If effect is `logOR` or `logRR`, this correction
+#'             is used when working with
 #'             binary data only. The value of correction is added to all arms
 #'             in trials where some arms had 0 events.
 #'             Using corrections may bias results but is the only alternative to
@@ -16,14 +19,19 @@
 #' @param cfb logical; calculate change from baseline? If yes, the outcome
 #'            variable is taken as a difference between values in `outcome` and
 #'            `baseline` columns
-#' @param summarise logical; convert to aggregate level data?
+#' @param summarise logical; `TRUE` by default, but you can disable it to obtain
+#'                  converted (e.g. logged) data with columns renamed
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param baseline name of column with baseline variable
 #'
-#' @return data.frame with columns \code{mu}, \code{se.mu},
-#'         \code{tau} and \code{se.tau}
+#' @return
+#' * If you `summarise` data.frame with columns for `group` \code{tau} and \code{se.tau}
+#'         (for `effect = "mean"`, also baseline means, for `"logRR"` or `"logOR"` also
+#'         `a`, `b`, `c`, `d`, which correspond to typical contingency table notation).
+#' * If you do not summarise data, individual level data will be returned, but
+#'   some columns may be renamed or transformed (see above).
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
@@ -34,10 +42,10 @@
 #' If multiple operations are performed, they are taken in this order:
 #' 1) conversion to log scale,
 #' 2) calculating change from baseline,
-#' 3) summarising data.
+#' 3) summarising data (using appropriate `effect`)
 #'
 #' @author Witold Wiecek
-#' @seealso [convert_inputs] for how data is converted into Stan inputs;
+#' @seealso [convert_inputs] for how any type of data is (internally) converted into Stan inputs;
 #' @export
 #' @import stats
 #'

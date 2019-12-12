@@ -2,6 +2,9 @@
 #' Average treatment effect in a baggr model
 #'
 #' @param bg a [baggr] model
+#' @param transform a transformation to apply to the result, should be an R function;
+#'                  (this is commonly used when calling `group_effects` from other
+#'                  plotting or printing functions)
 #' @return A list with 2 vectors (corresponding to MCMC samples)
 #'         `tau` (mean effect) and `sigma_tau` (SD)
 #' @export

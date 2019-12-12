@@ -7,7 +7,9 @@
 #' @param bg baggr object
 #' @param summary logical; if TRUE returns summary statistics as explained below.
 #' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
-#'
+#' @param transform a transformation to apply to the result, should be an R function;
+#'                  (this is commonly used when calling `group_effects` from other
+#'                  plotting or printing functions)
 #' @return Either a matrix with MCMC samples (if summary = FALSE)
 #'         or a summary of these samples (if summary = TRUE).
 #' @examples

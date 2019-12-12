@@ -46,5 +46,5 @@ or to run models which you modified yourself.
 convert_inputs(schools, "rubin")
 }
 \author{
-Witold Wiecek, Rachael Meager
+Witold Wiecek
 }

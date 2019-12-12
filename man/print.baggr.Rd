@@ -9,6 +9,8 @@
 \arguments{
 \item{x}{object of class \code{baggr}}
 
+\item{exponent}{if \code{TRUE}, results (for means) are converted to exp scale}
+
 \item{...}{currently unused by this package: further arguments passed
 to or from other methods (\code{print}  requirement)}
 }
