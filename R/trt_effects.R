@@ -65,12 +65,15 @@ treatment_effect <- function(bg, transform = NULL) {
 #' new realisations of tau (a mean effect in some unobserved group).
 #'
 #' @param x A `baggr` class object.
+#' @param transform a transformation to apply to the result, should be an R function;
+#'                  (this is commonly used when calling `group_effects` from other
+#'                  plotting or printing functions)
 #' @param n How many values to draw? The default is the same
 #'          as number of samples in the model (default is 2,000).
 #' @return A vector of possible values of the treatment effect.
 #' @export
 #'
-effect_draw <- function(x, n) {
+effect_draw <- function(x, n, transform=NULL) {
   check_if_baggr(x)
   # Draw sigma and tau
   te <- do.call(cbind, treatment_effect(x))
@@ -82,6 +85,10 @@ effect_draw <- function(x, n) {
     else
       return(rnorm(1, x[1], x[2]))
   })
+
+  if(!is.null(transform))
+    new_tau <- do.call(transform, list(new_tau))
+
   new_tau
 }
 
@@ -91,6 +98,9 @@ effect_draw <- function(x, n) {
 #'
 #' @param ... Object(s) of class `baggr`. If there is more than one,
 #'            the names of objects will be used as a plot legend (see example).
+#' @param transform a transformation to apply to the result, should be an R function;
+#'                  (this is commonly used when calling `group_effects` from other
+#'                  plotting or printing functions)
 #' @return A ggplot.
 #' @import bayesplot
 #' @export
@@ -113,7 +123,7 @@ effect_draw <- function(x, n) {
 #' effect_plot("Uniform prior on SD"=bg1_ppd,
 #'             "Normal prior on SD"=bg2_ppd)
 #'
-effect_plot <- function(...) {
+effect_plot <- function(..., transform=NULL) {
   l <- list(...)
 
   caption <- "Possible treatment effect"
@@ -134,7 +144,7 @@ effect_plot <- function(...) {
   if(length(effects) > 1)
     stop("All models must have same effects")
 
-  l <- lapply(l, effect_draw)
+  l <- lapply(l, effect_draw, transform=transform)
   df <- data.frame()
   for(i in seq_along(l))
     df <- rbind(df, data.frame("model"=names(l)[i],

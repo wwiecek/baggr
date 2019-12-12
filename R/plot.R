@@ -27,7 +27,7 @@ plot.baggr <- function(x, ...) {
 #' for all plots of baggr objects. \code{baggr_theme_update()} edits a specific
 #' theme element for the current theme while holding the theme's
 #' other aspects constant. \code{baggr_theme_replace()} is used for
-#' wholesale replacing aspects of a plot's theme (see [ggplot2::theme_replace()]).
+#' wholesale replacing aspects of a plot's theme (see [ggplot2::theme_get()]).
 #'
 #' @details
 #'

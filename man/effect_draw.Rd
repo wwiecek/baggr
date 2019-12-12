@@ -4,13 +4,17 @@
 \alias{effect_draw}
 \title{Make posterior draws for treatment effect}
 \usage{
-effect_draw(x, n)
+effect_draw(x, n, transform = NULL)
 }
 \arguments{
 \item{x}{A \code{baggr} class object.}
 
 \item{n}{How many values to draw? The default is the same
 as number of samples in the model (default is 2,000).}
+
+\item{transform}{a transformation to apply to the result, should be an R function;
+(this is commonly used when calling \code{group_effects} from other
+plotting or printing functions)}
 }
 \value{
 A vector of possible values of the treatment effect.
