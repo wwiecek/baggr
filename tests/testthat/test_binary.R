@@ -63,10 +63,6 @@ test_that("Data are available in baggr object", {
 })
 
 test_that("Pooling metrics", {
-  # all pooling metric are the same as SE's are the same
-  expect_equal(length(unique(bg5_p$pooling_metric[1,,1])), 1) #expect_length()
-  expect_equal(length(unique(bg5_p$pooling_metric[2,,1])), 1)
-  expect_equal(length(unique(bg5_p$pooling_metric[3,,1])), 1)
   # all pooling stats are 0 if no pooling
   expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
   # full pooling means 1's everywhere

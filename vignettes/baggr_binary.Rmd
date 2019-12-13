@@ -1,0 +1,353 @@
+---
+title: "Meta-analysis of binary data with baggr: a case study"
+author: "Witold Wiecek"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{baggr_binary}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: baggr.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, fig.width=7, 
+  fig.height = 5, comment = "#>")
+library(baggr)
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+```
+
+This vignette is written for _baggr_ users who want to analyse binary data. For more general introduction to meta-analysis concepts and _baggr_ workflow, please read `vignette("baggr")`.
+
+Here, we will show how to:
+
+* Run meta-analysis of summary odd ratio (OR) or risk ratio (RR) data.
+* Prepare standard outputs for the above.
+* Convert individual-level data to summary-level and correct for rare events.
+* Run meta-analysis directly on individual-level data.
+
+
+
+## Other questions you should consider
+
+There are certain aspects of modelling binary data that are not yet covered by _baggr_, but may be important for your data:
+
+* Directly modelling parameters relating to proportions (see "Model 3" in this [comprehensive tutorial with Stan](https://mc-stan.org/users/documentation/case-studies/pool-binary-trials.html))
+* Modelling covariates, either study-level or individual-level
+* [Understanding biases in reporting](https://handbook-5-1.cochrane.org/chapter_10/10_addressing_reporting_biases.htm)
+* Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided [here](http://nicedsu.org.uk/wp-content/uploads/2017/05/TSD2-General-meta-analysis-corrected-2Sep2016v2.pdf).
+
+
+# Basic binary data meta-analysis of odd ratios
+
+Typically, a meta-analysis of binary data is done on summary statistics such as $\log(OR)$ or $\log(RR)$. The reason for this is two-fold: 1) they are most commonly reported statistics and 2) they are approximately normally distributed. The second assumption needs to be treated carefully, as we will show later.
+
+
+We start from a simple summary data based on Table 6 in @yusuf_beta_1985
+
+```{r}
+df_yusuf <- read.table(text="
+       trial  a n1i  c n2i
+      Balcon 14  56 15  58
+     Clausen 18  66 19  64
+ Multicentre 15 100 12  95
+      Barber 10  52 12  47
+      Norris 21 226 24 228
+      Kahler  3  38  6  31
+     Ledwich  2  20  3  20
+", header=TRUE)
+```
+
+In a typical notation, `a` (`c`) are numbers of events in treatment (control) groups, while `n1` (`n2`) are total patients in treatment (control) group:
+
+
+
+$\log(OR)$ and its SE can easily be calculated from the values (if you're not faimilar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
+
+```{r}
+df <- df_yusuf %>%
+  mutate(b=n1i-a, d = n2i-c) %>% #we use dplyr for data manipulation
+  mutate(tau = log((a*d)/(b*c)),
+         se  = sqrt(1/a + 1/b + 1/c + 1/d))
+df
+```
+
+We use `tau` and `se` notation, same as we would for continuous data with `baggr()`. In fact, the model we use for logOR is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling, same as for any continuous quantities in _baggr_. 
+
+
+```{r, include = F}
+bg_model_agg <- baggr(df, 
+                    effect = "logarithm of odds ratio",
+                    group = "trial")
+```
+
+```{r, eval = F, echo = T}
+bg_model_agg <- baggr(df, 
+                    effect = "logarithm of odds ratio",
+                    group = "trial")
+```
+
+As with continuous quantities, the prior is chosen automatically. However, it is advisable to review the automatic prior choice when analysing logged quantities, because the priors may be needlessly diffuse.
+
+The two arguments we customised, `effect` and `group` do not impact results, but make outputs nicer, as we will see in the next section
+
+
+## Using risk ratios instead of odds ratios
+
+We summarised our data as log(OR). Alternative would be to work with log(RR), which is also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). All of the analysis would be analogous in that case -- with exception of interpretation of treatment effect, which will then be on risk ratios. 
+
+Quick reminder on how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
+
+```{r}
+a <- 9; b <- 1; c <- 99; d <- 1
+cat("Risk ratio is", (a/(a+b))/(c/(c+d)), "\n" )
+cat("Odds ratio is", a*d/(b*c), "\n")
+```
+
+```{r}
+a <- 10; b <- 20; c <- 100; d <- 100
+cat("Risk ratio is", (a/(a+b))/(c/(c+d)), "\n" )
+cat("Odds ratio is", a*d/(b*c), "\n")
+```
+
+
+
+
+# Visualising and criticising model results
+
+All of the outputs are explained in more detail in the main package vignette, `vignette("baggr")`. This is simply to illustrate their behaviour:
+
+```{r}
+bg_model_agg
+```
+
+Default plot shows (`plot(bg_model_agg)`) pooled group results. If you prefer a typical forest plot style, you can use `forest_plot`, which can also plot comparison with source data (via `print` argument):
+
+```{r}
+  forest_plot(bg_model_agg, show = "both", print = "inputs")
+```
+
+Hypothetical treatment effect in a new trial is obtained through `effect_plot`.
+
+```{r}
+effect_plot(bg_model_agg)
+```
+
+We can transform printed and plotted outputs to show exponents (or other transforms); for example:
+
+```{r, warning = FALSE}
+gridExtra::grid.arrange(
+  plot(bg_model_agg, transform = exp),
+  effect_plot(bg_model_agg, transform = exp) + xlim(0, 3),
+  ncol = 2)
+```
+
+## Model comparison
+
+We can compare with no pooling and full pooling models using `baggr_compare`
+
+```{r, echo=T, eval = F}
+# Instead of writing...
+# bg1 <- baggr(df, pooling = "none")
+# bg2 <- baggr(df, pooling = "partial")
+# bg3 <- baggr(df, pooling = "full")
+
+# ...we use this one-liner
+bg_c <- baggr_compare(df, effect = "logarithm of odds ratio")
+```
+
+```{r, include = FALSE}
+bg_c <- baggr_compare(df, what = "pooling", effect = "logarithm of odds ratio")
+```
+
+```{r}
+bg_c$plot
+```
+
+We can also examine the models directly, by accessing them via `$models`. This is useful e.g. for `effect_plot`:
+
+```{r}
+effect_plot(
+  "Partial pooling, default prior" = bg_c$models$partial,
+  "Full pooling, default prior" = bg_c$models$full) +
+  theme(legend.position = "bottom")
+```
+
+
+We can use leave-one-out cross-validation to better compare the models:
+
+```{r, include = F, warning = F}
+loocv(df, pooling = "partial")
+loocv(df, pooling = "full")
+```
+
+```{r, echo = T, eval = F}
+loocv(df, pooling = "partial")
+loocv(df, pooling = "full")
+```
+
+
+# Model for individual-level binary data
+
+Let's assume that you have access to underlying individual-level data. In our example above, we do not, but we can generate the numbers as we know the contingency table:
+
+```{r}
+df_ind <- data.frame()
+for(i in 1:nrow(df_yusuf)) {
+  df_ind <- rbind(df_ind, data.frame(group = df_yusuf$trial[i],
+             treatment = c(rep(1, df_yusuf$n1i[i]), rep(0, df_yusuf$n2i[i])),
+             outcome = c(rep(1, df_yusuf$a[i]), rep(0, df_yusuf$n1i[i] - df_yusuf$a[i]),
+                         rep(1, df_yusuf$c[i]), rep(0, df_yusuf$n2i[i] - df_yusuf$c[i]))))
+}
+head(df_ind)
+```
+
+We can now use a logistic regression model
+
+```{r, include = F}
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
+```
+
+```{r, echo = T, eval = F}
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
+```
+
+Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify user, so in everyday use setting `model = "logit"` is not necessary.
+
+Logistic regression assumes that
+
+$$
+
+$$
+
+This means, the modelling assumption is the same as when working with summarised data. Because baggr's default prior is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`), the result we get is the same (with some numerical variation due to short run time):
+
+```{r}
+baggr_compare(bg_model_agg, bg_model_ind)
+```
+
+The only difference is in speed -- logistic model has to work with `r nrow(df_ind)` rows of data, while the summary level model only has 7 datapoints. Therefore you are better off summarising your data and using the default model, which I will show next.
+
+## When to use summary and when to use indvidual-level data
+
+* If you have no covariates or a particular type of priors (e.g. on baseline risk), you are better off using a summary-level model. I will show how you can summarise your data in the next section.
+* If your data includes covariates or events are rare, you should use the logistic model. I will show why below.
+
+As shown above, you can create data for logistic model from `a`, `b`/`n1`, `c`, `d`/`n2` columns. You cannot do it from OR only, as the denominator is missing.
+
+
+# Summarising data
+
+The generic function for going from individual-level to summary data in _baggr_ is `prepare_ma`. It can be used with both continuous and binary data. In our case we can summarise `df_ind` to obtain either odds ratios or risk ratios:
+
+```{r}
+prepare_ma(df_ind, effect = "logOR")
+prepare_ma(df_ind, effect = "logRR")
+```
+
+In both cases the effect (OR or RR) and its SE were renamed to `tau` and `se`, so that the resulting data.frame could be used directly as input to `baggr()`.
+
+
+# Rare events vs summarised data
+
+```{r}
+df_rare <- data.frame(group = paste("Study", LETTERS[1:4]),
+                      a = c(0, 2, 1, 3), c = c(2, 2, 3, 3),
+                      n1i = c(120, 300, 110, 250),
+                      n2i = c(120, 300, 110, 250))
+
+df_rare_ind <- data.frame()
+                      
+for(i in 1:nrow(df_rare)) {
+  df_rare_ind <- rbind(df_rare_ind, data.frame(group = df_rare$group[i],
+             treatment = c(rep(1, df_rare$n1i[i]), rep(0, df_rare$n2i[i])),
+             outcome = c(rep(1, df_rare$a[i]), rep(0, df_rare$n1i[i] - df_rare$a[i]),
+                         rep(1, df_rare$c[i]), rep(0, df_rare$n2i[i] - df_rare$c[i]))))
+}
+df_rare_logor <- prepare_ma(df_rare_ind, effect = "logOR")
+
+pma01 <- prepare_ma(df_rare_ind, effect = "logOR", 
+                            rare_event_correction = 0.1)
+pma1 <- prepare_ma(df_rare_ind, effect = "logOR", 
+                            rare_event_correction = 1)
+
+```
+
+Note that the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. It is typical to [correct for rare events](https://handbook-5-1.cochrane.org/chapter_16/16_9_rare_events_including_zero_frequencies.htm) when analysing summary level data. If you analyse individual-level data, there is no such problem. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting `rare_event_correction` argument. 
+
+It is also good to understand the impact of correction by comparing models with different `rare_event_correction` values:
+
+```{r, include=F}
+bg_correction01 <- baggr(pma01, effect = "logOR")
+bg_correction025 <- baggr(df_rare_logor, effect = "logOR")
+bg_correction1 <- baggr(pma1, effect = "logOR")
+bg_rare_ind <- baggr(df_rare_ind, effect = "logOR")
+```
+
+```{r, echo=T, eval=F}
+bg_correction01 <- baggr(pma01, effect = "logOR")
+bg_correction025 <- baggr(df_rare_logor, effect = "logOR")
+bg_correction1 <- baggr(pma1, effect = "logOR")
+bg_rare_ind <- baggr(df_rare_ind, effect = "logOR")
+```
+
+```{r}
+baggr_compare(
+  "Correction of 0.10" = bg_correction01,
+  "Correction of 0.25" = bg_correction025,
+  "Correction of 1.00" = bg_correction1,
+  "Individual-level (logistic model)" = bg_rare_ind
+)
+```
+
+
+However, the issue with summary-level data is not limited to zero-events. As I mentioned, log(OR) is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if events are rare. With the low counts in our example it definitely is the case. 
+
+Let us generate new data without 0's, so that you can see how 0's are not the issue:
+
+```{r}
+df_rare <- data.frame(group = paste("Study", LETTERS[1:4]),
+                      a = c(1, 2, 1, 3), c = c(2, 2, 3, 3),
+                      n1i = c(120, 300, 110, 250),
+                      n2i = c(120, 300, 110, 250))
+
+df_rare_ind <- data.frame()
+                      
+for(i in 1:nrow(df_rare)) {
+  df_rare_ind <- rbind(df_rare_ind, data.frame(group = df_rare$group[i],
+             treatment = c(rep(1, df_rare$n1i[i]), rep(0, df_rare$n2i[i])),
+             outcome = c(rep(1, df_rare$a[i]), rep(0, df_rare$n1i[i] - df_rare$a[i]),
+                         rep(1, df_rare$c[i]), rep(0, df_rare$n2i[i] - df_rare$c[i]))))
+}
+df_rare_logor <- prepare_ma(df_rare_ind, effect = "logOR")
+```
+
+
+The results are quite different:
+ 
+```{r, include=F}
+bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
+bg_rare_ind <- baggr(df_rare_ind, effect = "logOR")
+```
+
+```{r, eval=F, echo=T}
+bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
+bg_rare_ind <- baggr(df_rare_ind, effect = "logOR")
+```
+
+Let's compare again, both on group level but also in terms of hypothetical treatment effect:
+
+```{r}
+baggr_compare(
+  "Summary-level (Rubin model on logOR)" = bg_rare_agg,
+  "Individual-level (logistic model)" = bg_rare_ind
+)
+```
+
+
+# References

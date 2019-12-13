@@ -189,6 +189,8 @@ prepare_ma <- function(data, #standardise = NULL,
       binary_data_table$b = v*rare + binary_data_table$b
       binary_data_table$c = v*rare + binary_data_table$c
       binary_data_table$d = v*rare + binary_data_table$d
+      binary_data_table$n1 = v*rare + binary_data_table$n1
+      binary_data_table$n2 = v*rare + binary_data_table$n2
 
 
       out <- binary_data_table
