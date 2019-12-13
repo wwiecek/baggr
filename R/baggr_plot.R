@@ -4,13 +4,12 @@
 #' one of \code{bayesplot} package plotting functions.
 #'
 #' @param bg object of class \code{baggr}
-#' @param mean logical; plot mean treatment effect alongside individual study effects?
+#' @param hyper logical; show hypereffect as the last row of the plot?
 #' @param style one of \code{areas}, \code{intervals}
 #' @param prob Probability mass for the inner interval in visualisation
 #' @param prob_outer Probability mass for the outer interval in visualisation
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param order logical; sort groups by magnitude of treatment effect?
-#' @param hyper logical; show hypereffect as the last row of the plot?
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -29,7 +28,7 @@
 #'          [forest_plot] for a typical meta-analysis alternative; [effect_plot] for plotting
 #'          treatment effects for a new group
 
-baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
+baggr_plot <- function(bg, hyper=FALSE,
                        style = "intervals",
                        prob = 0.5, prob_outer = 0.95,
                        vline = TRUE, order = TRUE, ...) {

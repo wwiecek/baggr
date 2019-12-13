@@ -4,13 +4,11 @@
 \alias{baggr_plot}
 \title{Plotting method in baggr package}
 \usage{
-baggr_plot(bg, mean = FALSE, hyper = FALSE, style = "intervals",
-  prob = 0.5, prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
+baggr_plot(bg, hyper = FALSE, style = "intervals", prob = 0.5,
+  prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}
-
-\item{mean}{logical; plot mean treatment effect alongside individual study effects?}
 
 \item{hyper}{logical; show hypereffect as the last row of the plot?}
 
