@@ -15,10 +15,11 @@
 #' @examples
 #' fit1 <- baggr(schools)
 #' group_effects(fit1, summary = TRUE, interval = 0.5)
-#' @details If summary = TRUE, the returned object contains for each study
-#' or group: the posterior medians, the lower and upper bounds of the
+#' @details If summary = TRUE, the returned object contains, for each study
+#' or group, the following 5 values:
+#' the posterior medians, the lower and upper bounds of the
 #' uncertainty intervals using the central posterior credible interval
-#' of width specified in the argument "interval", the posterior mean, and
+#' of width specified in the argument `interval`, the posterior mean, and
 #' the posterior standard deviation.
 #'
 #' @export

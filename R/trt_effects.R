@@ -2,16 +2,21 @@
 #' Average treatment effect in a baggr model
 #'
 #' @param bg a [baggr] model
+#' @param summary logical; if TRUE returns summary statistics as explained below.
+#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
 #' @param transform a transformation to apply to the result, should be an R function;
-#'                  (this is commonly used when calling `group_effects` from other
+#'                  (this is commonly used when calling `treatment_effect` from other
 #'                  plotting or printing functions)
 #' @return A list with 2 vectors (corresponding to MCMC samples)
-#'         `tau` (mean effect) and `sigma_tau` (SD)
+#'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
+#'         both vectors are summarised as mean and lower/upper bounds according to
+#'         `interval`
 #' @export
 #' @importFrom rstan extract
 
 
-treatment_effect <- function(bg, transform = NULL) {
+treatment_effect <- function(bg, summary = FALSE,
+                             transform = NULL, interval = .95) {
   check_if_baggr(bg)
 
   if(bg$pooling == "none"){
@@ -52,6 +57,11 @@ treatment_effect <- function(bg, transform = NULL) {
     tau <- do.call(transform, list(tau))
     sigma_tau <- NA # by convention we set it to NA so that people don't convert
                     # and then do operations on it by accident
+  }
+
+  if(summary) {
+    tau <- mint(tau, int=interval)
+    sigma_tau <- mint(sigma_tau, int=interval)
   }
   return(list(tau = tau, sigma_tau = sigma_tau))
 }
