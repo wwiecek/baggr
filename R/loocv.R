@@ -158,9 +158,10 @@ loocv <- function(data, return_models = FALSE, ...) {
 }
 
 #' @export
+#' @param x baggr_cv object to print
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
-print.baggr_cv <- function(x, digits = 2, ...) {
+print.baggr_cv <- function(x, digits = 3, ...) {
 
   mat <- matrix(nrow = 2, ncol = 2)
 
@@ -173,10 +174,7 @@ print.baggr_cv <- function(x, digits = 2, ...) {
   cat(
     crayon::bold(paste0("Based on ", x$K, "-fold cross-validation\n")),
     "\n",
-    testthat::capture_output(print(mat, digits = digits))
+    testthat::capture_output(print(signif(mat, digits = digits)))
   )
 
 }
-
-
-
