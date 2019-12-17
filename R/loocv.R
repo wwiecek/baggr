@@ -234,6 +234,7 @@ loo_compare.baggr_cv <- function(x, ...) {
 #' @param digits number of digits to print
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
+#' @export
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
 
   mat <- as.matrix(x)
@@ -252,6 +253,7 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
 #' @param x baggr_cv object to print
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
+#' @export
 print.baggr_cv <- function(x, digits = 3, ...) {
 
   mat <- matrix(nrow = 2, ncol = 2)
