@@ -14,3 +14,9 @@ loo_compare(x, ...)
 \description{
 Compare fitted models on loo
 }
+\examples{
+# 2 models with more/less informative priors
+cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
+cv_2 <- loocv(schools, model = "rubin", pooling = "partial", prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
+loo_compare(cv_1, cv_2)
+}

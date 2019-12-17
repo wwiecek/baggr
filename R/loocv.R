@@ -42,7 +42,7 @@
 #' @author Witold Wiecek
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#'
+#' @references Gelman, Andrew, et al. Bayesian data analysis. Chapman and Hall/CRC, 2013.
 #' @export
 #'
 
@@ -171,7 +171,6 @@ is.baggr_cv <- function(x) {
 #' @importFrom loo loo_compare
 #' @export loo_compare
 #' @examples
-#' \dontrun{
 #' # 2 models with more/less informative priors
 #' cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
 #' cv_2 <- loocv(schools, model = "rubin", pooling = "partial", prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
@@ -234,7 +233,7 @@ loo_compare.baggr_cv <- function(x, ...) {
 #' @param x baggr_cv comparison to print
 #' @param digits number of digits to print
 #' @importFrom testthat capture_output
-#' @impoartFrom crayon bold
+#' @importFrom crayon bold
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
 
   mat <- as.matrix(x)
