@@ -338,7 +338,7 @@ If we run the full `loocv` for both models, we can estimate the difference betwe
 cv_1 <- loocv(data = schools, 
               model = "rubin", 
               pooling = "partial")
-cv_2 <- baggr(data = schools, 
+cv_2 <- loocv(data = schools, 
               model = "rubin", 
               pooling = "full")
 ```
