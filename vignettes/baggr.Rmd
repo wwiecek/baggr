@@ -294,14 +294,14 @@ forest_plot(baggr_schools, show = "both")
 
 ## Cross-validation in _baggr_
 
-_Baggr_ has built-in, automated leave-one-out cross validation for its models, where the "one" always refers to one group. This naturally corresponds to the question of how much any one group has contributed to the overall inference. Therefore, if you have $K$ groups, using the `loocv()` will run your model of choice $K$ times. Be aware that this may take a while even for simple models. (You should see a progress bar in your terminal window.) The `loocv()` function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics. For the 8 schools example we can do
+_Baggr_ has built-in, automated leave-one-out cross validation for its models. The values returned by `loocv()` can be used to understand how any
+one group affects the overall result, as well as how well the model predicts the omitted group.
 
-```{r loocv, eval = FALSE}
-loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
-```
+This function automatically runs $K$ baggr models, leaving out one group at a time, and then calculates expected log predictive density (ELPD) for that group (see Gelman et al 2013). The main output is the cross-validation information criterion, or -2 times the ELPD averaged over $K$ models. This is related to, and often approximated by, the Watanabe-Akaike Information Criterion. A value closer to zero (i.e. a smaller number in magnitude) means a better fit. For more information on cross-validation see this [overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf).
 
-```{r echo = FALSE, include = FALSE, eval = TRUE}
-#this is ugly but effective way to stop output from loocv getting printed
+Therefore, if you have $K$ groups, using the `loocv()` will run your model of choice $K$ times. Be aware that this may take a while even for simple models. (You should see a progress bar in your terminal window.) The `loocv()` function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics. For the 8 schools example we can do
+
+```{r loocv, echo = T, results = 'hide', warning = F, message = F}
 loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 ```
 
@@ -309,9 +309,7 @@ loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 loocv_res
 ```
 
-The main output is $-2$ times the log predictive density (_lpd_) summed over 8 models, which corresponds to the Watanabe-Akaike Information Criterion. A WAIC value closer to zero (i.e. a smaller number in magnitude) means a better fit. 
-
-More data are stored in `loocv()` output, and can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _lpd_ for each model that are stored in the attribute `df`:
+The main output is $-2$ times the log predictive density (_ELPD_) summed over 8 models, which corresponds to the Watanabe-Akaike Information Criterion. The `loocv()` output contains more than just the matrix it prints, and this additional information can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _elpd_ for each model that are stored in the attribute `df`:
 
 ```{r}
 names(attributes(loocv_res))
@@ -320,14 +318,7 @@ attr(loocv_res, "df")
 
 This data frame can then be used to examine or compute the variation in the inference on $\tau$ in the absence of each group. If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. For example, suppose that we want to run the Rubin model on school groups 1-7 and predict the effect in the 8th school. The code below shows how you can specify a subset of the dataframe as your "data" argument, and then designate another subset as the "testing" holdout set by assigning it to the argument "test_data" in the baggr command. Here we have done it for both partial and full pooling:
 
-```{r, echo = FALSE, include = FALSE}
-fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], 
-              model = "rubin", pooling = "partial")
-fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], 
-              model = "rubin", pooling = "full")
-```
-
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = FALSE, include = FALSE, results = 'hide'}
 fit1 <- baggr(data = schools[1:7,], test_data = schools[8,], 
               model = "rubin", pooling = "partial")
 fit2 <- baggr(data = schools[1:7,], test_data = schools[8,], 
@@ -339,6 +330,25 @@ We can compare the performance of the two models using the mean log predictive d
 ```{r}
 fit1$mean_lpd
 fit2$mean_lpd
+```
+
+If we run the full `loocv` for both models, we can estimate the difference between the ELPD of those models as well as the standard error of that difference. As an example, let's consider the two models above.
+
+```{r result = 'hide'}
+cv_1 <- loocv(data = schools, 
+              model = "rubin", 
+              pooling = "partial")
+cv_2 <- baggr(data = schools, 
+              model = "rubin", 
+              pooling = "full")
+```
+
+We can compare those fits with `loo_compare`, which gives use the differences in ELPD for the various models we pass it. Generally it is important to pay attention to _both_ the difference in the predictive density and also the standard error of that difference.
+
+```{r}
+
+loo_compare(cv_1, cv_2)
+
 ```
 
 ## References

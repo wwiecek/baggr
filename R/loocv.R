@@ -42,6 +42,7 @@
 #' @author Witold Wiecek
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
+#'
 #' @export
 #'
 
@@ -145,7 +146,8 @@ loocv <- function(data, return_models = FALSE, ...) {
       "lpd" = unlist(loglik)),
     full_model = full_fit,
     prior = args[["prior"]],
-    K = K
+    K = K,
+    pointwise = elpds
   )
   if(return_models)
     out$models <- kfits
@@ -157,7 +159,97 @@ loocv <- function(data, return_models = FALSE, ...) {
   return(out)
 }
 
+#' Check if something is a baggr_cv object
+#' @param x object to check
+is.baggr_cv <- function(x) {
+  inherits(x, "baggr_cv")
+}
+
+#' Compare fitted models on loo
+#' @param x An object of class "baggr_cv" or a list of such objects.
+#' @param ... Additional objects of class "baggr_cv"
+#' @importFrom loo loo_compare
+#' @export loo_compare
+#' @examples
+#' \dontrun{
+#' # 2 models with more/less informative priors
+#' cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
+#' cv_2 <- loocv(schools, model = "rubin", pooling = "partial", prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
+#' loo_compare(cv_1, cv_2)
 #' @export
+loo_compare <- function(x, ...) {
+  UseMethod("loo_compare")
+}
+
+#' @aliases loo_compare
+#' @export
+loo_compare.baggr_cv <- function(x, ...) {
+  if (is.baggr_cv(x)) {
+    dots <- list(...)
+    loos <- c(list(x), dots)
+  } else {
+    if (!is.list(x) || !length(x)) {
+      stop("'x' must be a list if not a 'loo' object.")
+    }
+    loos <- x
+  }
+  if (!all(sapply(loos, is.baggr_cv))) {
+    stop("All inputs should have class 'baggr_cv'.")
+  }
+  if (length(loos) <= 1L) {
+    stop("'loo_compare' requires at least two models.")
+  }
+  Ns <- sapply(loos, function(x) nrow(x$df))
+  if (!all(Ns == Ns[1L])) {
+    stop("Not all models have the same number of data points.")
+  }
+
+  elpds <- lapply(loos, function(x) x$pointwise)
+  comp <- Reduce(cbind, elpds)
+
+  diffs <- list()
+
+  for(i in 2:ncol(comp)) {
+    diffname <- paste0("Model_1",
+                       " - ",
+                       "Model", i)
+
+    rawdiffs <- comp[,1] - comp[,i]
+
+    diffs[[i-1]] <-
+      matrix(nrow = 1, ncol = 2,
+             c(sum(rawdiffs),
+                     sqrt(length(rawdiffs))*sd(rawdiffs)),
+               dimnames = list(diffname, c("ELPD", "ELPD SE")))
+  }
+
+  diffs <- Reduce(rbind, diffs)
+
+
+  class(diffs) <- c("compare_baggr_cv", class(comp))
+  diffs
+}
+
+#' Print baggr_cv comparisons
+#' @param x baggr_cv comparison to print
+#' @param digits number of digits to print
+#' @importFrom testthat capture_output
+#' @impoartFrom crayon bold
+print.compare_baggr_cv <- function(x, digits = 3, ...) {
+
+  mat <- as.matrix(x)
+
+  class(mat) <- "matrix"
+
+  cat(
+    crayon::bold(paste0("Comparison of cross-validation\n")),
+    "\n",
+    testthat::capture_output(print(signif(mat, digits = digits)))
+  )
+
+}
+
+#' Print baggr cv objects nicely
 #' @param x baggr_cv object to print
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
