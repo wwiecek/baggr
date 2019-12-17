@@ -15,6 +15,8 @@ bibliography: baggr.bib
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
   comment = "#>")
 library(baggr)
 library(ggplot2)
@@ -221,7 +223,7 @@ One can interpret the metric as follows: if this pooling metric is large and app
 
 A fundamental step to understanding the model is to plot the posterior distributions. _baggr_ has several automatic plot functions which you can access by calling `baggr_plot()` or, equivalently, using the default plot function; these visuals are based on _bayesplot_ package. 
 Plotting functions always take `baggr` class object as their first argument. By default, means and 95\% posterior intervals of the effects _in each group_ are shown. Extra options are available, such as whether to order the results by effect size. For the 8 schools Rubin model we have
-
+  
 ```{r fig.width=4}
 plot(baggr_schools, order = FALSE)
 ```
@@ -334,7 +336,7 @@ fit2$mean_lpd
 
 If we run the full `loocv` for both models, we can estimate the difference between the ELPD of those models as well as the standard error of that difference. As an example, let's consider the two models above.
 
-```{r result = 'hide'}
+```{r results = 'hide'}
 cv_1 <- loocv(data = schools, 
               model = "rubin", 
               pooling = "partial")

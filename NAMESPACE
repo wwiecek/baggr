@@ -3,6 +3,8 @@
 S3method(loo_compare,baggr_cv)
 S3method(plot,baggr)
 S3method(print,baggr)
+S3method(print,baggr_cv)
+S3method(print,compare_baggr_cv)
 export(baggr)
 export(baggr_compare)
 export(baggr_plot)
