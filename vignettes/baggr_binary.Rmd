@@ -43,12 +43,12 @@ There are certain aspects of modelling binary data that are not yet covered by _
 * Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided [here](http://nicedsu.org.uk/wp-content/uploads/2017/05/TSD2-General-meta-analysis-corrected-2Sep2016v2.pdf).
 
 
-# Basic binary data meta-analysis of odd ratios
+# Basic meta-analysis of binary data
 
-Typically, a meta-analysis of binary data is done on summary statistics such as $\log(OR)$ or $\log(RR)$. The reason for this is two-fold: 1) they are most commonly reported statistics and 2) they are approximately normally distributed. The second assumption needs to be treated carefully, as we will show later.
+Typically, a meta-analysis of binary data is done on summary statistics such as $\log(OR)$ or $\log(RR)$. The reason for this is two-fold: 1) they are the statistics most commonly reported by studies and 2) they are approximately normally distributed. The second assumption needs to be treated carefully, as we will show later.
 
 
-We start from a simple summary data based on Table 6 in @yusuf_beta_1985
+For the first example we will use a simple summary data based on (part of) Table 6 in @yusuf_beta_1985, a famous study of impact of beta blockers on mortality/stroke.
 
 ```{r}
 df_yusuf <- read.table(text="
@@ -63,11 +63,9 @@ df_yusuf <- read.table(text="
 ", header=TRUE)
 ```
 
-In a typical notation, `a` (`c`) are numbers of events in treatment (control) groups, while `n1` (`n2`) are total patients in treatment (control) group:
+In a typical notation, `a` (`c`) are numbers of events in treatment (control) groups, while `n1` (`n2`) are total patients in treatment (control) group. We can also calculate $b = n_1 - a$ and $d = n_2 - c$, i.e. numbers of "non-events" in treatment and control groups respectively.
 
-
-
-$\log(OR)$ and its SE can easily be calculated from the values (if you're not faimilar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
+In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calculated from the values (if you're not faimilar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
 
 ```{r}
 df <- df_yusuf %>%
@@ -77,7 +75,7 @@ df <- df_yusuf %>%
 df
 ```
 
-We use `tau` and `se` notation, same as we would for continuous data with `baggr()`. In fact, the model we use for logOR is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling, same as for any continuous quantities in _baggr_. 
+We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for logOR is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_. 
 
 
 ```{r, include = F}
@@ -92,9 +90,10 @@ bg_model_agg <- baggr(df,
                     group = "trial")
 ```
 
-As with continuous quantities, the prior is chosen automatically. However, it is advisable to review the automatic prior choice when analysing logged quantities, because the priors may be needlessly diffuse.
+The two arguments we customised, `effect` and `group` do not impact results, but make outputs nicer, as we will see in the next section.
 
-The two arguments we customised, `effect` and `group` do not impact results, but make outputs nicer, as we will see in the next section
+As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing logged quantities, because the priors may be needlessly diffuse (in other words, with the command above _baggr_ does not "know" that data are logged). 
+
 
 
 ## Using risk ratios instead of odds ratios
@@ -194,7 +193,7 @@ loocv(df, pooling = "full")
 
 # Model for individual-level binary data
 
-Let's assume that you have access to underlying individual-level data. In our example above, we do not, but we can generate the numbers as we know the contingency table:
+Let's assume that you have access to underlying individual-level data. In our example above, we do not, but we can create a data.frame with individual level data as we know the contingency table:
 
 ```{r}
 df_ind <- data.frame()
@@ -219,26 +218,34 @@ bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio
 
 Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify user, so in everyday use setting `model = "logit"` is not necessary.
 
-Logistic regression assumes that
+If we denote binary outcome as $y$, treatment as $z$ (both indexed by $i$), under partial pooling the logistic regression model assumes that
 
 $$
-
+y_i \sim \text{Bernoulli}(\text{logit}^{-1}[\mu_{\text{group}(i)} + \tau_{\text{group}(i)}z_i])
 $$
 
-This means, the modelling assumption is the same as when working with summarised data. Because baggr's default prior is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`), the result we get is the same (with some numerical variation due to short run time):
+where $\mu_k$ and $\tau_k$ are parameters to estimate. The former is a nuisance parameter, a group-specific mean probability, the latter are group-specific effects. 
+
+Under this formulation, odds ratio of event between treatment and non-treatment are given by $\tau_k$.  This means, the modelling assumption is the same as when working with summarised data. Moreover, _baggr_'s default prior for $\tau_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One minor difference is that parameter $\mu$ is estimated, but unless dealing with extremely rare or common events, this should not impact the modelled result.
+
+Therefore, the result we get from the two models will be practically the same (with some numerical variation due to short run time):
 
 ```{r}
 baggr_compare(bg_model_agg, bg_model_ind)
 ```
 
-The only difference is in speed -- logistic model has to work with `r nrow(df_ind)` rows of data, while the summary level model only has 7 datapoints. Therefore you are better off summarising your data and using the default model, which I will show next.
+The only difference is in speed -- in our example logistic model has to work with `r nrow(df_ind)` rows of data, while the summary level model only has 7 datapoints. Therefore you are better off summarising your data and using the default model, which I will show next.
+
+
 
 ## When to use summary and when to use indvidual-level data
+
+To sum up: 
 
 * If you have no covariates or a particular type of priors (e.g. on baseline risk), you are better off using a summary-level model. I will show how you can summarise your data in the next section.
 * If your data includes covariates or events are rare, you should use the logistic model. I will show why below.
 
-As shown above, you can create data for logistic model from `a`, `b`/`n1`, `c`, `d`/`n2` columns. You cannot do it from OR only, as the denominator is missing.
+Note: as shown above, you can create data for logistic model from `a`, `b`/`n1`, `c`, `d`/`n2` columns. You cannot do it from OR only, as the denominator is missing.
 
 
 # Summarising data
@@ -278,7 +285,7 @@ pma1 <- prepare_ma(df_rare_ind, effect = "logOR",
 
 ```
 
-Note that the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. It is typical to [correct for rare events](https://handbook-5-1.cochrane.org/chapter_16/16_9_rare_events_including_zero_frequencies.htm) when analysing summary level data. If you analyse individual-level data, there is no such problem. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting `rare_event_correction` argument. 
+Note that the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. It is typical to [correct for rare events](https://handbook-5-1.cochrane.org/chapter_16/16_9_rare_events_including_zero_frequencies.htm) when analysing summary level data. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting `rare_event_correction` argument. 
 
 It is also good to understand the impact of correction by comparing models with different `rare_event_correction` values:
 
@@ -298,15 +305,15 @@ bg_rare_ind <- baggr(df_rare_ind, effect = "logOR")
 
 ```{r}
 baggr_compare(
-  "Correction of 0.10" = bg_correction01,
-  "Correction of 0.25" = bg_correction025,
-  "Correction of 1.00" = bg_correction1,
+  "Correct by .10" = bg_correction01,
+  "Correct by .25" = bg_correction025,
+  "Correct by 1.0" = bg_correction1,
   "Individual-level (logistic model)" = bg_rare_ind
 )
 ```
 
 
-However, the issue with summary-level data is not limited to zero-events. As I mentioned, log(OR) is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if events are rare. With the low counts in our example it definitely is the case. 
+However, the issue with modelling rare events is not limited to zero-events. As I mentioned, log(OR) is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore, treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if events are rare. With the low counts in our example it will definitely be the case. 
 
 Let us generate new data without 0's, so that you can see how 0's are not the issue:
 
@@ -343,7 +350,7 @@ bg_rare_ind <- baggr(df_rare_ind, effect = "logOR")
 Let's compare again, both on group level but also in terms of hypothetical treatment effect:
 
 ```{r}
-baggr_compare(
+bgc <- baggr_compare(
   "Summary-level (Rubin model on logOR)" = bg_rare_agg,
   "Individual-level (logistic model)" = bg_rare_ind
 )
