@@ -44,7 +44,6 @@
 #' @importFrom utils setTxtProgressBar
 #' @references Gelman, Andrew, et al. Bayesian data analysis. Chapman and Hall/CRC, 2013.
 #' @export
-#'
 
 loocv <- function(data, return_models = FALSE, ...) {
   # Set prior, if not specified by the user
@@ -168,7 +167,6 @@ is.baggr_cv <- function(x) {
 #' Compare fitted models on loo
 #' @param x An object of class "baggr_cv" or a list of such objects.
 #' @param ... Additional objects of class "baggr_cv"
-#' @importFrom loo loo_compare
 #' @export loo_compare
 #' @examples
 #' # 2 models with more/less informative priors
