@@ -27,10 +27,11 @@ each group's effect, or a summary of these draws. This is an internal
 function currently used as a helper for plotting and printing of results.
 }
 \details{
-If summary = TRUE, the returned object contains for each study
-or group: the posterior medians, the lower and upper bounds of the
+If summary = TRUE, the returned object contains, for each study
+or group, the following 5 values:
+the posterior medians, the lower and upper bounds of the
 uncertainty intervals using the central posterior credible interval
-of width specified in the argument "interval", the posterior mean, and
+of width specified in the argument \code{interval}, the posterior mean, and
 the posterior standard deviation.
 }
 \examples{
