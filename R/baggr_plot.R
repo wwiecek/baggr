@@ -4,18 +4,17 @@
 #' one of \code{bayesplot} package plotting functions.
 #'
 #' @param bg object of class \code{baggr}
-#' @param mean logical; plot mean treatment effect alongside individual study effects?
-#' @param style one of \code{areas}, \code{intervals}
-#' @param prob Probability mass for the inner interval in visualisation
-#' @param prob_outer Probability mass for the outer interval in visualisation
-#' @param vline logical; show vertical line through 0 in the plot?
-#' @param order logical; sort groups by magnitude of treatment effect?
 #' @param hyper logical; show hypereffect as the last row of the plot?
+#' @param style one of \code{areas}, \code{intervals}
 #' @param transform a function (e.g. `exp()`, `log()`) to apply to the
 #'                  values of group (and hyper, if `hyper=TRUE`) effects
 #'                  before plotting; when working with effects that are on
 #'                  log scale, exponent transform is used automatically, you can
 #'                  plot on log scale by setting `transform = identity`
+#' @param prob Probability mass for the inner interval in visualisation
+#' @param prob_outer Probability mass for the outer interval in visualisation
+#' @param vline logical; show vertical line through 0 in the plot?
+#' @param order logical; sort groups by magnitude of treatment effect?
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -34,7 +33,7 @@
 #'          [forest_plot] for a typical meta-analysis alternative; [effect_plot] for plotting
 #'          treatment effects for a new group
 
-baggr_plot <- function(bg, mean = FALSE, hyper=FALSE,
+baggr_plot <- function(bg, hyper=FALSE,
                        style = "intervals",
                        transform = NULL,
                        prob = 0.5, prob_outer = 0.95,
