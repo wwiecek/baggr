@@ -204,16 +204,54 @@ Other warnings you may see involve "divergent transitions". While not as serious
 
 ## Measuring "pooling"
 
-It is often useful to measure the extent to which the hierarchical model is "pooling" or sharing information across the $K$ groups in the process of aggregation. Baggr automatically computes such a metric, and as one can see above, printing a baggr object displays a column called "pooling". This column contains the classical pooling metric that describes the extent to which each of the group effects is "shrunk" towards their common mean in the process of aggregating information across groups. While there are many different measures of pooling, and the appropriate metric depends on the specific research question, baggr computes by default the @gelman_bayesian_2006 metric, which delivers the percentage of total variation in $\hat{\tau_k}$ around $\tau$ which is attributed to sampling variation within group $k$:
-\begin{equation}
-\omega_{\tau_k} = \frac{\hat{se}^2_{k}}{\hat{se}^2_{k} + \sigma^2_{\tau}}.
-\end{equation}
-Baggr uses the posterior mean of $\sigma^2_{\tau}$ to compute this metric (capacity to print bounds is coming soon). 
+It is often useful to measure the extent to which the hierarchical model is "pooling" or sharing information across the groups in the process of aggregation. _Baggr_ automatically computes and prints such a metric, as seen above. YOu can access more details by writing `pooling(baggr_schools)` or `heterogeneity(baggr_schools)`.
 
-One can interpret the metric as follows: if this pooling metric is large and approaching 1, the analyst gains a lot by pooling information across groups; if this is small and approaching 0, one gains little from the aggregated analysis relative to inference on each group separately ("no pooling"). For further discussion see @gelman_bayesian_2006, Gelman and Pardoe (2006) or Meager (2019). 
+### Estimate of pooling in each group
+
+In the output above we can see a "pooling" column next to each group. This is a statistic due to @gelman_bayesian_2006.
+
+In a partial pooling model (see [baggr]), group $k$ (e.g. study) has a treatment effect
+estimate, with some SE around the real $\tau_k$, i.e.
+$\hat{\tau_k} \sim \mathcal{N}(\tau_k, \hat{se_k})$
+(\hat{se_k} itself is an estimate of the true $se_k$).
+Each $\tau_k$ itself is distributed with mean $\tau$ and variance $\sigma_{\tau}^2$.
+
+The quantity of interest is ratio of variability in $\tau$ to total variability.
+By convention, we subtract it from 1, to obtain a _pooling metric_ $p$.
+
+$$p = 1 - \frac{\sigma_{\tau}^2}{\sigma_{\tau}^2 + se_k^2}$$
+
+* If $p < 0.5$, that means the variation across studies is higher than variation within studies.
+* Values close to 1 indicate nearly full pooling. Variation across studies dominates.
+* Values close to 0 -- no pooling. Variation within studies dominates.
+
+Note that, since $\sigma_{\tau}^2$ is a Bayesian parameter (rather than a single fixed value)
+$p$ is also a parameter. It is typical for $p$ to have very high dispersion, as in many cases we
+cannot precisely estimate $\sigma_{\tau}$. That is certainly the case in our example:
+
+```{r}
+pooling(baggr_schools)
+```
 
 
 
+### Overall pooling (in the model)
+
+Typically, it is a single measure of heterogeneity that is of main interest to researchers.
+Such "big" estimate of pooling $P$ is analogous to averaging $p$ across groups:
+
+$$P = 1 - \frac{\sigma_{\tau}^2}{\sigma_{\tau}^2 + \text{E}(se_k^2)}$$
+
+where \text{E} is average over $K$ groups. Note that the denominator in the formula above is
+an application of the law of total variance to $\hat{\tau_k}$, i.e.
+$\text{Var}(\hat{\tau_k})$ is a sum of between-study variance ($\text{Var}({\tau_k})$) and
+average within-study variance ($\text{E}(se_k^2)$). @von_hippel_heterogeneity_2015 
+provides more details.
+
+In many contexts, i.e. medical statistics, it is typical to report $1-P$, called $I^2$
+(see @higgins_measuring_2003-2 for an overview). Higher values of _I-squared_ indicate higher heterogeneity.
+
+Same as for group-specific estimates, $P$ is a Bayesian parameter and its dispersion can be high.
 
 
 

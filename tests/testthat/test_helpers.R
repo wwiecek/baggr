@@ -42,3 +42,13 @@ test_that("convert_inputs()", {
   expect_is(convert_inputs(schools, "rubin", test_data = schools[7:8,]), "list")
 })
 
+test_that("mint()", {
+  # Rubin model
+  expect_length(mint(rnorm(100)), 3)
+  expect_length(mint(rnorm(100), sd = TRUE), 4)
+  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE), 5)
+  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5), 5)
+  expect_identical(names(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5)),
+                   c("25%", "mean", "75%", "median", "sd"))
+})
+

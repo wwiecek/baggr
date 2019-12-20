@@ -105,6 +105,8 @@ test_that("Pooling metrics", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
+  expect_length(treatment_effect(bg5_p, summary = T)$tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = T)$sigma_tau, 5)
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
