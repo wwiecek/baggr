@@ -59,10 +59,6 @@
 #' statistic relates to the pooling metric.
 #'
 #'
-#' @seealso
-#' [metafor::rma.uni] for frequentist I^2 calculations of heterogeneity statistics
-#'
-#'
 #' @references
 #' Gelman, Andrew, and Iain Pardoe.
 #' "Bayesian Measures of Explained Variance and Pooling in Multilevel (Hierarchical) Models."

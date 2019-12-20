@@ -5,7 +5,7 @@
 \alias{heterogeneity}
 \title{Pooling metrics for baggr}
 \usage{
-pooling(bg, type = c("groups", "hyper"), summary = TRUE)
+pooling(bg, type = c("groups", "total"), summary = TRUE)
 
 heterogeneity(bg, summary = TRUE)
 }
@@ -13,7 +13,7 @@ heterogeneity(bg, summary = TRUE)
 \item{bg}{output of a baggr() function}
 
 \item{type}{Calculation is done for each of the \code{"groups"}
-(default) or for \code{"total"} hypereffect(s) or for \code{"both"}.
+(default) or for \code{"total"} hypereffect(s).
 See details for how calculation is done.}
 
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
@@ -34,9 +34,12 @@ Pooling statistic describes the extent to which group-level estimates of treatme
 effect are "pooled" (or pulled!) toward average treatment effect in the meta-analysis model.
 If \code{pooling = "none"} or "full" in \link{baggr}, then the returned values are always 0 or 1, respectively.
 If \code{pooling = "partial"}, the value is somewhere between 0 and 1.
-\strong{Formulae of the calculations are provided in main package vignette.} See \code{vignette("baggr").}
 
-#' \strong{Estimate of pooling in a group}: this is the calculation done if \code{type = "groups"}.
+\strong{Formulae for the calculations below are provided in main package vignette.} See \code{vignette("baggr").}
+
+#' \strong{Estimate of pooling in a group}: this is the calculation done by \code{pooling()}
+if \code{type = "groups"} (default).
+
 In a partial pooling model (see \link{baggr}), group \emph{k} (e.g. study) has a treatment effect
 estimate, with some SE around the real treatment effect (TE).
 Each TE itself is distributed with mean and variance.
@@ -59,7 +62,7 @@ cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution 
 \strong{Overall pooling (in the model)}
 
 Typically it is a single measure of heterogeneity that is of interest to researchers.
-This is calculated by setting \code{type = "total"}.
+This is calculated by setting \code{type = "total"} or simply writing \code{heterogeneity(mymodel)}
 
 In many contexts, i.e. medical statistics, it is typical to report \emph{1-P}, called \eqn{I^2}
 (see Higgins \emph{et al}, 2003). Higher values of \emph{I-squared} indicate higher heterogeneity.
@@ -83,10 +86,4 @@ Higgins, Julian P T, Simon G Thompson, Jonathan J Deeks, and Douglas G Altman.
 
 Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
 \emph{BMC Medical Research Methodology 15 (April 14, 2015).} \url{https://doi.org/10.1186/s12874-015-0024-z}.
-}
-\seealso{
-\link[metafor:rma.uni]{metafor::rma.uni} for frequentist I^2 calculations of heterogeneity statistics
-}
-\author{
-Witold Wiecek, Rachael Meager
 }
