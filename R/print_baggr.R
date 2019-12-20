@@ -6,6 +6,8 @@
 #'
 #' @param x object of class `baggr`
 #' @param exponent if `TRUE`, results (for means) are converted to exp scale
+#' @param group logical; print group effects? By default, they are printed if only
+#'              less than 20 groups are present
 #' @param ... currently unused by this package: further arguments passed
 #'            to or from other methods (\code{print}  requirement)
 #' @importFrom stats sd var median quantile
@@ -16,7 +18,7 @@
 #' @method print baggr
 #'
 
-print.baggr <- function(x, exponent=FALSE, ...) {
+print.baggr <- function(x, exponent=FALSE, group, ...) {
   ppd <- attr(x, "ppd")
 
   # Announce model type
@@ -76,29 +78,41 @@ print.baggr <- function(x, exponent=FALSE, ...) {
     return(invisible(x))
 
   # Group effects
-  if(x$pooling != "full") {
-    # study_eff_tab <- apply(group_effects(x), c(2,3),
-    # function(x) c("mean" = mean(x), "sd" = sd(x)))
-    pooling_tab <- pooling(x, summary = TRUE)
-    if(exponent)
-      study_eff_tab <- group_effects(x, summary = TRUE, transform=exp)
-    else
-      study_eff_tab <- group_effects(x, summary = TRUE)
+  # Check if we should print them:
+  group_warning_flag <- FALSE
+  if(missing(group)){
+    group_warning_flag <- TRUE
+    group <- ifelse(x$n_groups > 20, FALSE, TRUE)
+  }
 
-    for(i in 1:dim(study_eff_tab)[3]){
-      cat(paste0("Treatment effects on ", x$effects[i]))
-      if(exponent){
-        cat(" (converted to exp scale):\n")
-        tab <- cbind(study_eff_tab[,c("mean", "lci", "uci"),i],
-                     pooling = pooling_tab[2,,i])
-      } else{
-        cat(":\n")
-        tab <- cbind(study_eff_tab[,c("mean", "sd"),i],
-                     pooling = pooling_tab[2,,i])
+  if(group){ #Print groups
+    if(x$pooling != "full") {
+      # study_eff_tab <- apply(group_effects(x), c(2,3),
+      # function(x) c("mean" = mean(x), "sd" = sd(x)))
+      pooling_tab <- pooling(x, summary = TRUE)
+      if(exponent)
+        study_eff_tab <- group_effects(x, summary = TRUE, transform=exp)
+      else
+        study_eff_tab <- group_effects(x, summary = TRUE)
+
+      for(i in 1:dim(study_eff_tab)[3]){
+        cat(paste0("Treatment effects on ", x$effects[i]))
+        if(exponent){
+          cat(" (converted to exp scale):\n")
+          tab <- cbind(study_eff_tab[,c("mean", "lci", "uci"),i],
+                       pooling = pooling_tab[2,,i])
+        } else{
+          cat(":\n")
+          tab <- cbind(study_eff_tab[,c("mean", "sd"),i],
+                       pooling = pooling_tab[2,,i])
+        }
+        print(tab, digits = 2)
       }
-      print(tab, digits = 2)
+      cat("\n")
     }
-    cat("\n")
+  } else if(group_warning_flag) { #No printing of groups
+    cat("Group effects omitted, as number of groups is > 20.\n",
+        "Use print.baggr() with group = TRUE to print them.\n")
   }
 
   if(!is.null(x[["mean_lpd"]]))

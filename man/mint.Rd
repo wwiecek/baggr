@@ -11,14 +11,14 @@ mint(y, int = 0.95, digits = NULL, median = FALSE, sd = FALSE)
 
 \item{int}{probability interval (default is 95 percent) to calculate}
 
-\item{digits}{number of significant digits to \link[=round]{base} values by.}
+\item{digits}{number of significant digits to \link{round} values by.}
 
-\item{median}{calculate median value?}
+\item{median}{return median value?}
 
-\item{sd}{calculate SD}
+\item{sd}{return SD?}
 }
 \description{
-This function is just a convenient shorthand for getting typical statistics.
+This function is just a convenient shorthand for getting typical summary statistics.
 }
 \examples{
 mint(rnorm(100, 12, 5))

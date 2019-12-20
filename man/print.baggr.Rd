@@ -4,12 +4,15 @@
 \alias{print.baggr}
 \title{S3 print method for objects of class \code{baggr} (model fits)}
 \usage{
-\method{print}{baggr}(x, exponent = FALSE, ...)
+\method{print}{baggr}(x, exponent = FALSE, group, ...)
 }
 \arguments{
 \item{x}{object of class \code{baggr}}
 
 \item{exponent}{if \code{TRUE}, results (for means) are converted to exp scale}
+
+\item{group}{logical; print group effects? By default, they are printed if only
+less than 20 groups are present}
 
 \item{...}{currently unused by this package: further arguments passed
 to or from other methods (\code{print}  requirement)}
