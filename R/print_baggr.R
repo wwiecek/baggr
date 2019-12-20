@@ -6,6 +6,7 @@
 #'
 #' @param x object of class `baggr`
 #' @param exponent if `TRUE`, results (for means) are converted to exp scale
+#' @param digits Number of significant digits to print.
 #' @param group logical; print group effects? By default, they are printed if only
 #'              less than 20 groups are present
 #' @param ... currently unused by this package: further arguments passed
@@ -18,7 +19,7 @@
 #' @method print baggr
 #'
 
-print.baggr <- function(x, exponent=FALSE, group, ...) {
+print.baggr <- function(x, exponent=FALSE, digits = 2, group, ...) {
   ppd <- attr(x, "ppd")
 
   # Announce model type
@@ -48,24 +49,28 @@ print.baggr <- function(x, exponent=FALSE, group, ...) {
       te <- treatment_effect(x)
     #trim=T avoids whitespace in place of minus sign
     if(x$model != "quantiles"){
-      tau       <- format(mint(te[[1]]), digits = 2, trim = T)
-      sigma_tau <- format(mint(te[[2]]), digits = 2, trim = T)
+      tau       <- format(mint(te[[1]]), digits = digits, trim = T)
+      sigma_tau <- format(mint(te[[2]]), digits = digits, trim = T)
       if(exponent)
         cat("Exponent of hypermean (exp(tau))")
       else
         cat("Hypermean (tau)")
       cat(" = ", tau[2], "with 95% interval", tau[1], "to", tau[3], "\n")
-      if(x$pooling == "partial" && !exponent)
+      if(x$pooling == "partial" && !exponent){
         cat("Hyper-SD (sigma_tau) =", sigma_tau[2], "with 95% interval",
             sigma_tau[1], "to", sigma_tau[3], "\n")
+        tot_pool <- format(heterogeneity(x)[,,1], digits = digits, trim = T)
+        cat("Total pooling (1 - I^2) =", tot_pool[2], "with 95% interval",
+            tot_pool[1], "to", tot_pool[3], "\n")
+      }
     } else { #quantiles
       tau <- mint(te[[1]])
       sigma_tau <- mint(te[[2]])
       rownames(tau) <- rownames(sigma_tau) <- paste0(100*x$quantiles, "% quantile")
-      print(tau, digits = 2)
+      print(tau, digits = digits)
       if(x$pooling == "partial"){
         cat(crayon::bold("\nSD of treatement effects:"))
-        print(sigma_tau, digits = 2)
+        print(sigma_tau, digits = digits)
       }
     }
   }
@@ -106,7 +111,7 @@ print.baggr <- function(x, exponent=FALSE, group, ...) {
           tab <- cbind(study_eff_tab[,c("mean", "sd"),i],
                        pooling = pooling_tab[2,,i])
         }
-        print(tab, digits = 2)
+        print(tab, digits = digits)
       }
       cat("\n")
     }

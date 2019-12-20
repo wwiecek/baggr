@@ -110,7 +110,7 @@ pooling <- function(bg,
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
     if(type == "total")
-      ret <- replicate(1, mean(se^2) / (mean(se^2) + sigma_tau^2))
+      ret <- replicate(1, mean(sigma_k^2) / (mean(sigma_k^2) + sigma_tau^2))
     ret <- replicate(1, ret) #third dim is always N parameters, by convention
 
   } else if(bg$model == "quantiles") {
