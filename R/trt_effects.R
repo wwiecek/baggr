@@ -52,17 +52,16 @@ treatment_effect <- function(bg, summary = FALSE,
     # in model with correlation, we have Var(), not SD()
     sigma_tau <- sqrt(sigma_tau)
   }
-
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))
     sigma_tau <- NA # by convention we set it to NA so that people don't convert
                     # and then do operations on it by accident
   }
-
   if(summary) {
-    tau <- mint(tau, int=interval)
-    sigma_tau <- mint(sigma_tau, int=interval)
+    tau <- mint(tau, int=interval, median=TRUE, sd = TRUE)
+    sigma_tau <- mint(sigma_tau, int=interval, median=TRUE, sd = TRUE)
   }
+
   return(list(tau = tau, sigma_tau = sigma_tau))
 }
 
