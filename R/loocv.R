@@ -42,7 +42,7 @@
 #' @author Witold Wiecek
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @references Gelman, Andrew, et al. Bayesian data analysis. Chapman and Hall/CRC, 2013.
+#' @references Gelman, Andrew, Jessica Hwang, and Aki Vehtari. “Understanding Predictive Information Criteria for Bayesian Models.” Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
 #' @export
 
 loocv <- function(data, return_models = FALSE, ...) {
@@ -230,6 +230,7 @@ loo_compare.baggr_cv <- function(x, ...) {
 #' Print baggr_cv comparisons
 #' @param x baggr_cv comparison to print
 #' @param digits number of digits to print
+#' @param ... additional arguments for s3 consistency
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
@@ -249,6 +250,8 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
 
 #' Print baggr cv objects nicely
 #' @param x baggr_cv object to print
+#' @param digits number of digits to print
+#' @param ... additional arguments for s3 consistency
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export

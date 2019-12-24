@@ -10,6 +10,8 @@
 \item{x}{baggr_cv comparison to print}
 
 \item{digits}{number of digits to print}
+
+\item{...}{additional arguments for s3 consistency}
 }
 \description{
 Print baggr_cv comparisons

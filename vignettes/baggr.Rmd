@@ -296,10 +296,9 @@ forest_plot(baggr_schools, show = "both")
 
 ## Cross-validation in _baggr_
 
-_Baggr_ has built-in, automated leave-one-out cross validation for its models. The values returned by `loocv()` can be used to understand how any
-one group affects the overall result, as well as how well the model predicts the omitted group.
+_Baggr_ has built-in, automated leave-one-out cross validation for its models. The values returned by `loocv()` can be used to understand how any one group affects the overall result, as well as how well the model predicts the omitted group.
 
-This function automatically runs $K$ baggr models, leaving out one group at a time, and then calculates expected log predictive density (ELPD) for that group (see Gelman et al 2013). The main output is the cross-validation information criterion, or -2 times the ELPD averaged over $K$ models. This is related to, and often approximated by, the Watanabe-Akaike Information Criterion. A value closer to zero (i.e. a smaller number in magnitude) means a better fit. For more information on cross-validation see this [overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf).
+This function automatically runs $K$ baggr models, leaving out one group at a time, and then calculates expected log predictive density (ELPD) for that group (see @gelman_understanding_2014). The main output is the cross-validation information criterion, or -2 times the ELPD averaged over $K$ models. This is related to, and often approximated by, the Watanabe-Akaike Information Criterion. A value closer to zero (i.e. a smaller number in magnitude) means a better fit. For more information on cross-validation see this [overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf).
 
 Therefore, if you have $K$ groups, using the `loocv()` will run your model of choice $K$ times. Be aware that this may take a while even for simple models. (You should see a progress bar in your terminal window.) The `loocv()` function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics. For the 8 schools example we can do
 
@@ -311,7 +310,7 @@ loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
 loocv_res
 ```
 
-The main output is $-2$ times the log predictive density (_ELPD_) summed over 8 models, which corresponds to the Watanabe-Akaike Information Criterion. The `loocv()` output contains more than just the matrix it prints, and this additional information can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _elpd_ for each model that are stored in the attribute `df`:
+The `loocv()` output contains more than just the matrix it prints, and this additional information can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _elpd_ for each model that are stored in the attribute `df`:
 
 ```{r}
 names(attributes(loocv_res))

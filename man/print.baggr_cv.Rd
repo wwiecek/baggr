@@ -8,6 +8,10 @@
 }
 \arguments{
 \item{x}{baggr_cv object to print}
+
+\item{digits}{number of digits to print}
+
+\item{...}{additional arguments for s3 consistency}
 }
 \description{
 Print baggr cv objects nicely

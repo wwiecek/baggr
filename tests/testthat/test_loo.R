@@ -44,3 +44,18 @@ test_that(desc = "baggr and brms are at least close", {
   # cross-validation scores
   expect_lt(brms_kfold$estimates[1,1] - baggr_kfold$elpd, 1)
 })
+
+# should be 0
+comp <- loo_compare(baggr_kfold, baggr_kfold)
+
+# test various things about the loo comparison method
+test_that(desc = "loo_compare method works", {
+  expect_error(loo_compare(baggr_kfold, brms_kfold))
+  expect_error(loo_compare(list(baggr_kfold, brms_kfold)))
+  expect_equal(comp[,1], 0)
+  expect_equal(comp[,2], 0)
+  expect_equal(class(comp), c("compare_baggr_cv","matrix"))
+})
+
+
+
