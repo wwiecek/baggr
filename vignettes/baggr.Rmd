@@ -25,8 +25,8 @@ baggr_schools <- baggr(schools, model = "rubin", pooling = "partial")
 ```
 
 
-
-_This vignette is - like the package itself - still under construction. We encourage your feedback._
+This vignette is written for _baggr_ users who want to learn about (Bayesian) meta-analysis concepts and analyse continuous data. If you are looking for information specific to binary data, please read `vignette("baggr_binary")`.
+This article - like the package itself - is still under construction. We encourage your feedback.
 
 _baggr_ (pronounced "bagger" or "badger" and short for Bayesian Aggregator) is a package for aggregating evidence on causal effects measured in several separate and different instances. These instances may be different studies, groups, locations or "sites" however conceptualised. We refer to these separate pieces of evidence as "groups" for the remainder of this vignette When each group is a study, the model is that of _meta-analysis_, but aggregation of evidence is not limited to this case.
 

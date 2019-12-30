@@ -1,4 +1,4 @@
-## cran-comments for baggr v0.2.0
+## cran-comments for baggr v0.3.0
 
 Test environments:
 * Ubuntu 14.04, R 3.6.1 via Travis
