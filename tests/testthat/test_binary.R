@@ -98,6 +98,8 @@ test_that("Calculation of effects works", {
 test_that("Plotting works", {
   expect_is(plot(bg5_ppd), "gg")
   expect_is(plot(bg5_n), "gg")
+  expect_is(plot(bg5_p, transform = exp), "gg")
+  expect_is(plot(bg5_p, hyper = TRUE), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
   expect_is(forest_plot(bg5_n), "vpPath")
@@ -112,6 +114,7 @@ test_that("printing works", {
   capture_output(print(bg5_n))
   capture_output(print(bg5_p))
   capture_output(print(bg5_f))
+  capture_output(print(bg5_p, exponent = TRUE))
 })
 
 # test_that("Test data can be used in the Rubin model", {
@@ -154,28 +157,6 @@ test_that("Extracting treatment/study effects works", {
   expect_error(effect_plot(cars, cars, bg5_f), "baggr class")
 })
 
-
-
-# to-do list for tests -----
-
-# show_model()
-# For this we need a pre-commit hook to copy models from src/ to inst/models
-# check_columns()
-# convert_inputs(): if(required_data != available_data)
-# detect_input_type()
-# mint()
-# prepare_ma()
-# print_baggr()
-# group_effects() (above)
-
-# v0.2
-# baggr_compare()
-# loocv()
-# plot_quantiles()
-# summarise_quantiles_data()
-# mutau, full, qunatiles in
-#   baggr, study effects, trt effects, convert_inputs, pooling_metrics
-# baggr_plot() with multiple effects
 
 
 

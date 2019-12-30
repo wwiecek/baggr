@@ -7,7 +7,8 @@
 #' @param x object of class `baggr`
 #' @param exponent if `TRUE`, results (for means) are converted to exp scale
 #' @param digits Number of significant digits to print.
-#' @param group logical; print group effects? By default, they are printed if only
+#' @param group logical; print group effects? If unspecified,
+#'              they are printed if only
 #'              less than 20 groups are present
 #' @param ... currently unused by this package: further arguments passed
 #'            to or from other methods (\code{print}  requirement)

@@ -13,6 +13,12 @@ test_that("prepare_ma()", {
   expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
                           effect = "logOR"), "not binary")
 
+  # Prepare MA without summarising:
+  df <- prepare_ma(microcredit_simplified, outcome = "consumerdurables", summarise = F)
+  expect_is(df, "data.frame")
+  expect_identical(dim(df), dim(microcredit_simplified))
+  expect_identical(names(df), c("treatment", "group", "outcome"))
+
   pm <- prepare_ma(microcredit_simplified, outcome = "consumerdurables")
   expect_is(pm, "data.frame")
   expect_equal(dim(pm), c(4,5))
@@ -52,3 +58,9 @@ test_that("mint()", {
                    c("25%", "mean", "75%", "median", "sd"))
 })
 
+test_that("We can set and get baggr theme", {
+  expect_is(baggr_theme_get(), "theme")
+  expect_is(baggr_theme_update(), "theme")
+  expect_is(baggr_theme_replace(), "theme")
+  capture_output(baggr_theme_set(ggplot2::theme_bw()))
+})

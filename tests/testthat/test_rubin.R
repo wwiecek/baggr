@@ -127,20 +127,30 @@ test_that("Plotting works", {
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
-  expect_is(forest_plot(bg5_n), "vpPath")
-  expect_is(forest_plot(bg5_p), "vpPath")
-  expect_is(forest_plot(bg5_f), "vpPath")
-  expect_is(forest_plot(bg5_f, graph.pos = 1), "vpPath")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
 
+
 test_that("printing works", {
   capture_output(print(bg5_n))
   capture_output(print(bg5_p))
+  capture_output(print(bg5_p, group = FALSE))
+  expect_error(print(bg5_p, group = "abc"), "logical")
   capture_output(print(bg5_f))
+  capture_output(print(bg5_ppd))
 })
 
+test_that("Forest plots for Rubin model", {
+  expect_is(forest_plot(bg5_n), "vpPath")
+  expect_is(forest_plot(bg5_p), "vpPath")
+  expect_is(forest_plot(bg5_p, show = "posterior"), "vpPath")
+  expect_is(forest_plot(bg5_p, show = "both"), "vpPath")
+  expect_is(forest_plot(bg5_f), "vpPath")
+  expect_is(forest_plot(bg5_f, graph.pos = 1), "vpPath")
+  expect_error(forest_plot(cars), "baggr objects")
+  expect_error(forest_plot(bg5_p, show = "abc"), "should be one of")
+})
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
   expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
@@ -189,32 +199,6 @@ test_that("Extracting treatment/study effects works", {
   expect_error(effect_plot(cars, cars, bg5_f), "baggr class")
 })
 
-
-
-# to-do list for tests -----
-
-# show_model()
-# For this we need a pre-commit hook to copy models from src/ to inst/models
-# check_columns()
-# convert_inputs(): if(required_data != available_data)
-# detect_input_type()
-# mint()
-# prepare_ma()
-# print_baggr()
-# group_effects() (above)
-
-# v0.2
-# baggr_compare()
-# loocv()
-# plot_quantiles()
-# summarise_quantiles_data()
-# mutau, full, qunatiles in
-#   baggr, study effects, trt effects, convert_inputs, pooling_metrics
-# baggr_plot() with multiple effects
-
-
-
-# tests for helper functions -----
 
 test_that("baggr_compare basic cases work with Rubin", {
   # If I pass nothing
