@@ -51,6 +51,9 @@ attributes(cv) # more information is included in the object
 }
 
 }
+\references{
+Gelman, Andrew, Jessica Hwang, and Aki Vehtari. “Understanding Predictive Information Criteria for Bayesian Models.” Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
+}
 \author{
 Witold Wiecek
 }
