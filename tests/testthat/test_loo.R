@@ -54,7 +54,7 @@ test_that(desc = "loo_compare method works", {
   expect_error(loo_compare(list(baggr_kfold, brms_kfold)))
   expect_equal(comp[,1], 0)
   expect_equal(comp[,2], 0)
-  expect_equal(class(comp), c("compare_baggr_cv","matrix"))
+  expect_is(comp, "compare_baggr_cv")
   capture_output(print(comp))
 })
 
