@@ -48,7 +48,7 @@
 #'
 #' In many contexts, i.e. medical statistics, it is typical to report _1-P_, called \eqn{I^2}
 #' (see Higgins _et al_, 2003). Higher values of _I-squared_ indicate higher heterogeneity.
-#' Von Hippel (2015) provides useful details for _I-squared_ calulations.
+#' Von Hippel (2015) provides useful details for _I-squared_ calculations.
 #'
 #' Same as for group-specific estimates, _P_ is a Bayesian parameter and its dispersion can be high.
 #'

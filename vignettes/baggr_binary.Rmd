@@ -64,7 +64,7 @@ df_yusuf <- read.table(text="
 
 In a typical notation, `a` (`c`) are numbers of events in treatment (control) groups, while `n1` (`n2`) are total patients in treatment (control) group. We can also calculate $b = n_1 - a$ and $d = n_2 - c$, i.e. numbers of "non-events" in treatment and control groups respectively.
 
-In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calculated from the values (if you're not faimilar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
+In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calculated from the values (if you're not familiar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
 
 ```{r}
 df <- df_yusuf

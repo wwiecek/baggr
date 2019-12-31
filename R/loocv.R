@@ -65,7 +65,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   # } else {
   #   temp_cores <- FALSE
   # }
-  temp_cores <- FALSE
+  # temp_cores <- FALSE
 
   # Model with all of data:
   full_fit <- try(baggr(data, refresh = 0, ...))
@@ -156,8 +156,8 @@ loocv <- function(data, return_models = FALSE, ...) {
     out$models <- kfits
   class(out) <- "baggr_cv"
 
-  if(temp_cores)
-    options(mc.cores = NULL)
+  # if(temp_cores)
+    # options(mc.cores = NULL)
 
   return(out)
 }
