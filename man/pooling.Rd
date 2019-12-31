@@ -66,7 +66,7 @@ This is calculated by setting \code{type = "total"} or simply writing \code{hete
 
 In many contexts, i.e. medical statistics, it is typical to report \emph{1-P}, called \eqn{I^2}
 (see Higgins \emph{et al}, 2003). Higher values of \emph{I-squared} indicate higher heterogeneity.
-Von Hippel (2015) provides useful details for \emph{I-squared} calulations.
+Von Hippel (2015) provides useful details for \emph{I-squared} calculations.
 
 Same as for group-specific estimates, \emph{P} is a Bayesian parameter and its dispersion can be high.
 

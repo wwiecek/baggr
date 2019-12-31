@@ -206,7 +206,7 @@ Other warnings you may see involve "divergent transitions". While not as serious
 
 ## Measuring "pooling"
 
-It is often useful to measure the extent to which the hierarchical model is "pooling" or sharing information across the groups in the process of aggregation. _Baggr_ automatically computes and prints such a metric, as seen above. YOu can access more details by writing `pooling(baggr_schools)` or `heterogeneity(baggr_schools)`.
+It is often useful to measure the extent to which the hierarchical model is "pooling" or sharing information across the groups in the process of aggregation. _Baggr_ automatically computes and prints such a metric, as seen above. You can access more details by writing `pooling(baggr_schools)` or `heterogeneity(baggr_schools)`.
 
 ### Estimate of pooling in each group
 
@@ -266,7 +266,7 @@ Plotting functions always take `baggr` class object as their first argument. By 
 plot(baggr_schools, order = FALSE)
 ```
 
-Similarly important is the plot of potential treatment effects, obtained by repeatadely drawing hypermean and hypervariance values, then drawing from normal distribution conditional on these values.
+Similarly important is the plot of potential treatment effects, obtained by repeatedly drawing hypermean and hypervariance values, then drawing from normal distribution conditional on these values.
 
 ```{r fig.width = 4}
 effect_plot(baggr_schools)
