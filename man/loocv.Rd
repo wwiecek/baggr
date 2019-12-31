@@ -37,10 +37,11 @@ Information Criterion. A value closer to zero (i.e. a smaller number in magnitud
 means a better fit. For more information on cross-validation see
 \href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
 
-For running more computation-intensive models, consider setting the mc.cores option before running loocv, e.g. options(mc.cores = 4)
+For running more computation-intensive models, consider setting the
+\code{mc.cores} option before running loocv, e.g. \code{options(mc.cores = 4)}
 (by default baggr runs 4 MCMC chains in parallel).
-As a default, rstan runs "silently" (refresh=0).
-To see sampling progress, please set e.g. loocv(data, refresh = 500).
+As a default, rstan runs "silently" (\code{refresh=0}).
+To see sampling progress, please set e.g. \code{loocv(data, refresh = 500)}.
 }
 \examples{
 \donttest{
@@ -52,7 +53,9 @@ attributes(cv) # more information is included in the object
 
 }
 \references{
-Gelman, Andrew, Jessica Hwang, and Aki Vehtari. “Understanding Predictive Information Criteria for Bayesian Models.” Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
+Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
+“Understanding Predictive Information Criteria for Bayesian Models.”
+Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
 }
 \author{
 Witold Wiecek

@@ -10,6 +10,7 @@
 * Reworked vignette sections for pooling and cross-validation.
 * Pooling statistics are now calculated for the whole model and better documented.
 * More consistent theming, similar to bayesplot (thanks to Brice Green)
+* Comparison of leave-one-out cross-validations with `loo_compare` (thanks to Brice Green)
   
 ### Bug fixes
 

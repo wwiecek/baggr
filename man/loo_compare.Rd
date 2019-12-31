@@ -7,7 +7,7 @@
 loo_compare(x, ...)
 }
 \arguments{
-\item{x}{An object of class "baggr_cv" or a list of such objects.}
+\item{x}{An object of class \code{baggr_cv} or a list of such objects.}
 
 \item{...}{Additional objects of class "baggr_cv"}
 }
@@ -15,8 +15,11 @@ loo_compare(x, ...)
 Compare fitted models on loo
 }
 \examples{
+\donttest{
 # 2 models with more/less informative priors
 cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
-cv_2 <- loocv(schools, model = "rubin", pooling = "partial", prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
+cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
+              prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
 loo_compare(cv_1, cv_2)
+}
 }

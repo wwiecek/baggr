@@ -13,7 +13,8 @@
 
 \item{digits}{Number of significant digits to print.}
 
-\item{group}{logical; print group effects? By default, they are printed if only
+\item{group}{logical; print group effects? If unspecified,
+they are printed if only
 less than 20 groups are present}
 
 \item{...}{currently unused by this package: further arguments passed

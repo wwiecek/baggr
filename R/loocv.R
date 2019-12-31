@@ -26,10 +26,11 @@
 #' means a better fit. For more information on cross-validation see
 #' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
 #'
-#' For running more computation-intensive models, consider setting the mc.cores option before running loocv, e.g. options(mc.cores = 4)
+#' For running more computation-intensive models, consider setting the
+#' `mc.cores` option before running loocv, e.g. `options(mc.cores = 4)`
 #' (by default baggr runs 4 MCMC chains in parallel).
-#' As a default, rstan runs "silently" (refresh=0).
-#' To see sampling progress, please set e.g. loocv(data, refresh = 500).
+#' As a default, rstan runs "silently" (`refresh=0`).
+#' To see sampling progress, please set e.g. `loocv(data, refresh = 500)`.
 #'
 #' @examples
 #' \donttest{
@@ -42,7 +43,10 @@
 #' @author Witold Wiecek
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
-#' @references Gelman, Andrew, Jessica Hwang, and Aki Vehtari. “Understanding Predictive Information Criteria for Bayesian Models.” Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
+#' @references
+#' Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
+#' “Understanding Predictive Information Criteria for Bayesian Models.”
+#' Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
 #' @export
 
 loocv <- function(data, return_models = FALSE, ...) {
@@ -165,14 +169,17 @@ is.baggr_cv <- function(x) {
 }
 
 #' Compare fitted models on loo
-#' @param x An object of class "baggr_cv" or a list of such objects.
+#' @param x An object of class `baggr_cv` or a list of such objects.
 #' @param ... Additional objects of class "baggr_cv"
 #' @export loo_compare
 #' @examples
+#' \donttest{
 #' # 2 models with more/less informative priors
 #' cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
-#' cv_2 <- loocv(schools, model = "rubin", pooling = "partial", prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
+#' cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
+#'               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
 #' loo_compare(cv_1, cv_2)
+#' }
 #' @export
 loo_compare <- function(x, ...) {
   UseMethod("loo_compare")
@@ -207,12 +214,8 @@ loo_compare.baggr_cv <- function(x, ...) {
   diffs <- list()
 
   for(i in 2:ncol(comp)) {
-    diffname <- paste0("Model_1",
-                       " - ",
-                       "Model", i)
-
+    diffname <- paste0("Model 1", " - ", "Model ", i)
     rawdiffs <- comp[,1] - comp[,i]
-
     diffs[[i-1]] <-
       matrix(nrow = 1, ncol = 2,
              c(sum(rawdiffs),
@@ -221,8 +224,6 @@ loo_compare.baggr_cv <- function(x, ...) {
   }
 
   diffs <- Reduce(rbind, diffs)
-
-
   class(diffs) <- c("compare_baggr_cv", class(comp))
   diffs
 }
@@ -235,17 +236,13 @@ loo_compare.baggr_cv <- function(x, ...) {
 #' @importFrom crayon bold
 #' @export
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
-
   mat <- as.matrix(x)
-
   class(mat) <- "matrix"
-
   cat(
     crayon::bold(paste0("Comparison of cross-validation\n")),
     "\n",
     testthat::capture_output(print(signif(mat, digits = digits)))
   )
-
 }
 
 #' Print baggr cv objects nicely
