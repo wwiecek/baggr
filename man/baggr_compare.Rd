@@ -4,13 +4,7 @@
 \alias{baggr_compare}
 \title{(Run and) compare multiple baggr models}
 \usage{
-baggr_compare(
-  ...,
-  what = "pooling",
-  compare = "groups",
-  style = "areas",
-  arrange = "single"
-)
+baggr_compare(..., what = "pooling", compare = "groups")
 }
 \arguments{
 \item{...}{Either a number (at least 1) of objects of class \code{baggr}
@@ -27,27 +21,60 @@ passed to \code{...}, this argument is ignored.}
 (default) or (hyper-) \code{"effects"}. The former is not available
 when \code{what = "prior"}.}
 
-\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
-passed to the \code{style} argument in \link{baggr_plot}.}
-
 \item{arrange}{If \code{"single"} (default), generate a single comparison plot;
 if \code{"grid"}, display multiple plots side-by-side.}
+
+\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
+passed to the \code{style} argument in \link{baggr_plot}.}
 }
 \value{
 a \code{ggplot} is rendered and/or returned
 }
 \description{
-(Run and) compare multiple baggr models
+Compare multiple baggr models by either
+specifying multiple baggr models you have run or
+passing parameters to run a baggr model. If you pass
+existing models, you will get a layered effect plot
+of the treatment effects for the different models.
+If you pass parameters to the function you must specify
+what kind of comparison you want, either "pooling" which
+will run fully/partially/un-pooled models and compare them
+or "prior" which will generate estimates without the data
+and compare them to the model with the full data. For more
+details see \link{baggr}, specifically the PPD argument.
 }
 \examples{
 \donttest{
 # Most basic comparison between no, partial and full pooling
 # (This will run the models)
-baggr_compare(schools)
 
-# Compare prior vs posterior
-baggr_compare(schools, what = "prior")
+# run model with just prior and then full data for comparison
+# with the same arguments that are passed to baggr
+prior_comparison <-
+    baggr_compare(schools,
+                  model = 'rubin',
+                  prior_hypermean = normal(0, 3),
+                  prior_hypersd = normal(0,2),
+                  prior_hypercor = lkj(2),
+                  what = "prior")
 
+# print the aggregated treatment effects
+prior_comparison
+
+# plot the comparison of the two distributions
+plot(prior_comparison)
+
+# Now compare different types of pooling for the same model
+pooling_comparison <-
+   baggr_compare(schools,
+                 model = 'rubin',
+                 prior_hypermean = normal(0, 3),
+                 prior_hypersd = normal(0,2),
+                 prior_hypercor = lkj(2),
+                 what = "pooling")
+
+# plot this comparison
+plot(pooling_comparison)
 
 # Compare existing models:
 bg1 <- baggr(schools, pooling = "partial")
