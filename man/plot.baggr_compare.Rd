@@ -5,12 +5,14 @@
 \title{Plot method for baggr_compare models}
 \usage{
 \method{plot}{baggr_compare}(x, style = "areas", arrange = "single",
-  ...)
+  interval = 0.95, ...)
 }
 \arguments{
 \item{x}{baggr_compare model to plot}
 
 \item{style}{Style of plot for the baggr_compare model}
+
+\item{interval}{probability level used for display of posterior interval}
 
 \item{...}{ignored for now, may be used in the future}
 

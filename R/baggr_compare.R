@@ -191,11 +191,13 @@ print.baggr_compare <- function(x, digits, ...){
 #' @param x baggr_compare model to plot
 #' @param style Style of plot for the baggr_compare model
 #' @param single how to arrange plot display
+#' @param interval probability level used for display of posterior interval
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
                                style   = "areas",
                                arrange = "single",
+                               interval = 0.95,
                                ...) {
 
   models <- x$models
@@ -216,9 +218,29 @@ plot.baggr_compare <- function(x,
         # Note: pipe operators are dplyr not used here for compatibility
         ll <- lapply(models, function(x) {
           # will need to be modified for quantiles models case:
-          m <- as.data.frame(group_effects(x, summary = TRUE)[,,i])
-          m$group <- rownames(m)
-          m
+          if(x$pooling != "none"){
+
+            hyper_treat <- treatment_effect(x)[[i]]
+            hyper_effects <- data.frame(
+              lci = quantile(hyper_treat, (1 - interval)/2),
+              median = quantile(hyper_treat, 0.5),
+              uci = quantile(hyper_treat, 1 - (1 - interval)/2),
+              mean = mean(hyper_treat),
+              sd = sd(hyper_treat),
+              group = "Pooled Estimate"
+            )
+            m <- as.data.frame(group_effects(x, interval = interval,
+                                             summary = TRUE)[,,i])
+            m$group <- rownames(m)
+            m <- rbind(hyper_effects, m)
+            m
+          } else {
+            m <- as.data.frame(group_effects(x, interval = interval,
+                                             summary = TRUE)[,,i])
+            m$group <- rownames(m)
+            m
+          }
+
         })
         df_groups <- data.frame()
         for(j in 1:length(ll))
@@ -247,19 +269,24 @@ plot.baggr_compare <- function(x,
                               pch = 21) +
           ggplot2::coord_flip() +
           ggplot2::labs(x = "", y = "Treatment effect (95% interval)",
-                        title = effect_names[i]) +
+                        title = paste0(
+                          "Pooled and group-specific effect ",
+                          "of treatment on ",
+                          effect_names[i],
+                          " outcome."
+                          )
+                        ) +
           baggr_theme_get() +
           ggplot2::theme(legend.position="top")
-        # plot(comparison_plot)
         return(comparison_plot)
       })
     } else if(compare == "effects"){
-      plots <- do.call(effect_plot, models)
+      plots <- do.call(effect_plot, models) +
+        labs(fill = NULL)
     } else {
       stop("Argument compare = must be 'effects' or 'groups'.")
     }
   }
-
 
   if("ggplot" %in% class(plots)){
     return(plots)
@@ -273,10 +300,10 @@ plot.baggr_compare <- function(x,
 #' Make an expression silent
 #' @param ... expression to pass to make silent
 #' @importFrom testthat capture_output
-#' @examples
 #' @details Runs the example while suppressing messages and warnings
 #' while sinking the output to a temp file and then deleting
 #' (this bit is handled by testthat)
+#' @examples
 #' \dontrun {
 #' tmp <- baggr(schools)
 #' make_silent(tmp <- baggr(schools))
