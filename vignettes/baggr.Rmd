@@ -385,9 +385,7 @@ cv_2 <- loocv(data = schools,
 We can compare those fits with `loo_compare`, which gives use the differences in ELPD for the various models we pass it. Generally it is important to pay attention to _both_ the difference in the predictive density and also the standard error of that difference.
 
 ```{r}
-
 loo_compare(cv_1, cv_2)
-
 ```
 
 ## References

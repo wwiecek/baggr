@@ -1,8 +1,8 @@
 ## cran-comments for baggr v0.3.0
 
 Test environments:
-* Ubuntu 14.04, R 3.6.1 via Travis
-* win-builder: devel
+* Ubuntu 16.04, R 3.6.1 x86_64-pc-linux-gnu via Travis
+* win-builder: devel, old release
 * Two Windows 10 PCs locally: R 3.5.1, R 3.6.1
 * builder.r-hub.io/ (all platforms)
 
@@ -14,4 +14,3 @@ N checking installed package size ... NOTE
   
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements. 
-  
