@@ -23,10 +23,6 @@
 #' @param compare When plotting, choose between comparison of `"groups"`
 #'                (default) or (hyper-) `"effects"`. The former is not available
 #'                when `what = "prior"`.
-#' @param arrange If `"single"` (default), generate a single comparison plot;
-#'                if `"grid"`, display multiple plots side-by-side.
-#' @param style What kind of plot to display (if `arrange = "grid"`),
-#'              passed to the `style` argument in [baggr_plot].
 #' @return a `ggplot` is rendered and/or returned
 #' @author Witold Wiecek
 #' @importFrom gridExtra grid.arrange
@@ -189,15 +185,20 @@ print.baggr_compare <- function(x, digits, ...){
 #' that were passed for comparison purposes to baggr compare or
 #' run automatically by baggr_compar
 #' @param x baggr_compare model to plot
-#' @param style Style of plot for the baggr_compare model
-#' @param single how to arrange plot display
+#' @param arrange If `"single"` (default), generate a single comparison plot;
+#'                if `"grid"`, display multiple plots side-by-side.
+#' @param style What kind of plot to display (if `arrange = "grid"`),
+#'              passed to the `style` argument in [baggr_plot].
 #' @param interval probability level used for display of posterior interval
+#' @param hyper Whether to plot pooled treatment effect
+#' in addition to group treatment effects
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
                                style   = "areas",
                                arrange = "single",
                                interval = 0.95,
+                               hyper = T,
                                ...) {
 
   models <- x$models
@@ -291,6 +292,18 @@ plot.baggr_compare <- function(x,
   if("ggplot" %in% class(plots)){
     return(plots)
   } else {
+    structure(plots, class = "plot_list")
+  }
+}
+
+#' Print list of baggr plots
+#' @param x list of plots to print
+#' @param ... ignored for now
+#' @details prints plots in a loop, internal use only
+print.plot_list <- function(x) {
+  if(length(x) == 1) {
+    print(x[[1]])
+  } else {
     for(i in 1:length(plots)) {
       print(plots[[i]])
     }
@@ -304,10 +317,7 @@ plot.baggr_compare <- function(x,
 #' while sinking the output to a temp file and then deleting
 #' (this bit is handled by testthat)
 #' @examples
-#' \dontrun {
-#' tmp <- baggr(schools)
-#' make_silent(tmp <- baggr(schools))
-#' }
+#' make_silent(tmp <- 1:10)
 make_silent <- function(...) {
   suppressWarnings({
     suppressMessages({

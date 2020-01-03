@@ -20,12 +20,6 @@ passed to \code{...}, this argument is ignored.}
 \item{compare}{When plotting, choose between comparison of \code{"groups"}
 (default) or (hyper-) \code{"effects"}. The former is not available
 when \code{what = "prior"}.}
-
-\item{arrange}{If \code{"single"} (default), generate a single comparison plot;
-if \code{"grid"}, display multiple plots side-by-side.}
-
-\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
-passed to the \code{style} argument in \link{baggr_plot}.}
 }
 \value{
 a \code{ggplot} is rendered and/or returned

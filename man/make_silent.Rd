@@ -18,8 +18,5 @@ while sinking the output to a temp file and then deleting
 (this bit is handled by testthat)
 }
 \examples{
-\dontrun {
-tmp <- baggr(schools)
-make_silent(tmp <- baggr(schools))
-}
+make_silent(tmp <- 1:10)
 }

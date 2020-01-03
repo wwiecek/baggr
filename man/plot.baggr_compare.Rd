@@ -5,18 +5,23 @@
 \title{Plot method for baggr_compare models}
 \usage{
 \method{plot}{baggr_compare}(x, style = "areas", arrange = "single",
-  interval = 0.95, ...)
+  interval = 0.95, hyper = T, ...)
 }
 \arguments{
 \item{x}{baggr_compare model to plot}
 
-\item{style}{Style of plot for the baggr_compare model}
+\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
+passed to the \code{style} argument in \link{baggr_plot}.}
+
+\item{arrange}{If \code{"single"} (default), generate a single comparison plot;
+if \code{"grid"}, display multiple plots side-by-side.}
 
 \item{interval}{probability level used for display of posterior interval}
 
-\item{...}{ignored for now, may be used in the future}
+\item{hyper}{Whether to plot pooled treatment effect
+in addition to group treatment effects}
 
-\item{single}{how to arrange plot display}
+\item{...}{ignored for now, may be used in the future}
 }
 \description{
 Allows plots that compare multiple baggr models
