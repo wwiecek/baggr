@@ -17,26 +17,34 @@ meta-analysis using [Stan](https://mc-stan.org/). *Baggr* is intended to
 be user-friendly and transparent so that it’s easier to understand the
 models you are building and criticise them.
 
-*Baggr* provides a suite of Bayesian aggregation models that work with
-both summary data and full data sets, to synthesise evidence collected
-from different groups, contexts or time periods. The `baggr()` command
-automatically detects the data type and, by default, fits Rubin’s (1981)
-partial pooling model with weakly informative priors by calling Stan
-under the hood to carry out Bayesian inference. Modelling of variances
-or quantiles, standardisation and transformation of data is also
-possible.
+*Baggr* provides a suite of models that work with both summary data and
+full data sets, to synthesise evidence collected from different groups,
+contexts or time periods. The `baggr()` command automatically detects
+the data type and, by default, fits a partial pooling model (which you
+may know as [random effects
+models](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode))
+with weakly informative priors by calling [Stan](https://mc-stan.org/)
+to carry out Bayesian inference. Modelling of variances or quantiles,
+standardisation and transformation of data is also possible.
 
 The current version (v0.3, December 2019) is a stable prototype of a
 tool that’s in active development so we are counting on your feedback.
 
 ## Installation
 
-Before starting, `baggr` will not work if you don’t have RStan. In that
-case, please follow [the installation instructions for
+Before starting, *baggr* will not work if you don’t have RStan, which is
+responsible for Bayesian inference in *baggr*. In that case, please
+follow [the installation instructions for
 RStan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
 
-You can install the most up-to-date version of `baggr` directly from
-GitHub; for this, you will need the `devtools` package.
+The package itself is available on CRAN:
+
+``` r
+install.packages("baggr")
+```
+
+You can also install the most up-to-date version of `baggr` directly
+from GitHub; for this, you will need the `devtools` package.
 
 ``` r
 # compilation of models should take 5-10 minutes
@@ -48,10 +56,11 @@ devtools::install_github("wwiecek/baggr",
 ## Basic use case
 
 `baggr` is designed to work well with both individual-level (“full”) and
-aggregate/summary (“group”) data on treatment effect. In basic cases
+aggregate/summary (“group”) data on treatment effect. In basic cases,
 only the summary information on treatment effects (such as means and
 their standard errors) is needed. Data are always specified in a single
-data frame and the same `baggr()` function is used for different models.
+input data frame and the same `baggr()` function is used for different
+models.
 
 For the “standard” cases of modelling means, the appropriate model is
 detected from the shape of data.
@@ -71,12 +80,14 @@ can access the underlying `stanfit` object through `bg$fit`.
 Flexible plotting methods are included, together with an automatic
 comparison of multiple models (e.g. comparing no, partial and full
 pooling) through `baggr_compare()` command. Various statistics can be
-calculated: in particular, the `loocv()` command automatically performs
-leave-one-group-out cross-validation, allowing us to compare and select
-models.
+calculated: in particular, `pooling()` for pooling metrics and `loocv()`
+for leave-one-group-out cross-validation, allowing us to then compare
+and select models via `loo_compare()`. Forest plots and plots of
+treatment effects are available.
 
 Try `vignette('baggr')` for an overview of these functions and an
-example of meta-analysis workflow with `baggr`.
+example of meta-analysis workflow with `baggr`. If working with binary
+data, try `vignette("baggr_binary")`.
 
 ## Current and future releases
 
