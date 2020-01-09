@@ -1,3 +1,7 @@
+functions {
+#include /functions/prior_increment.stan
+}
+
 data {
   int<lower=0> K; // number of sites
   int<lower=2> P; // number of parameters (1 or 2)
@@ -22,7 +26,7 @@ data {
 }
 
 transformed data {
-  int K_pooled; // number of modelled sites if we take into account pooling
+  int K_pooled; // number of modelled sites if we take pooling into account
   if(pooling_type == 2)
   K_pooled = 0;
   if(pooling_type != 2)

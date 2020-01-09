@@ -1,13 +1,9 @@
-// parameterization using normal(0,1)
-// for Rubin's model
-
 functions {
 #include /functions/prior_increment.stan
 }
 
 data {
   int<lower=0> K; // number of sites
-  // int<lower=0> K_pooled; // number of sites if we take into account pooling
   real tau_hat_k[K]; // estimated treatment effects
   real<lower=0> se_tau_k[K]; // s.e. of effect estimates
   int pooling_type; //0 if none, 1 if partial, 2 if full
