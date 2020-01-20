@@ -23,8 +23,8 @@ data {
 
   //test data (cross-validation)
   int<lower=0> K_test;
-  matrix[K,P] test_theta_hat_k;
-  matrix<lower=0>[K,P] test_se_theta_k[K];
+  vector[K_test] test_theta_hat_k[P];
+  vector<lower=0>[K_test] test_se_theta_k[P];
 }
 
 transformed data {
@@ -65,6 +65,9 @@ model {
     if(pooling_type == 1)
       target += prior_increment_vec(prior_hypersd_fam[p], sigma_tau[1,p], prior_hypersd_val[p]);
   }
+
+  if(pooling_type == 1)
+    Omega[1] ~ lkj_corr(prior_hypercor_val[1]);
 
   //likelihood (block evaluated only if there are data, i.e. K>0)
   if(K > 0) {
