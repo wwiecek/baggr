@@ -37,7 +37,7 @@ transformed data {
 
 parameters {
   vector[P] mu[pooling_type != 0? 1: 0];
-  vector<lower=0>[P] tau[pooling_type == 1? 1: 0];
+  vector<lower=0>[P] sigma_tau[pooling_type == 1? 1: 0];
   matrix[P,K_pooled] eta;
   corr_matrix[P] Omega[pooling_type == 1? 1: 0];
 }
@@ -48,7 +48,7 @@ transformed parameters {
       if(pooling_type == 0)
         theta_k[p,k] = eta[p,k];
       if(pooling_type == 1)
-        theta_k[p,k] = mu[1,p] + eta[p,k]*tau[1,p];
+        theta_k[p,k] = mu[1,p] + eta[p,k]*sigma_tau[1,p];
     }
   }
 }
@@ -63,7 +63,7 @@ model {
     }
     //hyper-SD priors:
     if(pooling_type == 1)
-      target += prior_increment_vec(prior_hypersd_fam[p], tau[1,p], prior_hypersd_val[p]);
+      target += prior_increment_vec(prior_hypersd_fam[p], sigma_tau[1,p], prior_hypersd_val[p]);
   }
 
   if(pooling_type == 1)
