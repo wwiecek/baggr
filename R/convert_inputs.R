@@ -160,8 +160,8 @@ convert_inputs <- function(data,
       # Cross-validation:
       if(is.null(test_data)){
         out$K_test <- 0
-        out$test_tau_hat_k <- array(0, dim = 0)
-        out$test_se_k <- array(0, dim = 0)
+        out$test_theta_hat_k <- array(0, dim = 0)
+        out$test_se_theta_k <- array(0, dim = 0)
         out$test_y_0 <- array(0, dim = c(0, ncol(out$y_0)))
         out$test_y_1 <- array(0, dim = c(0, ncol(out$y_0)))
         out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
@@ -190,21 +190,21 @@ convert_inputs <- function(data,
     check_columns_numeric(data[,c("tau", "se")])
     out <- list(
       K = nrow(data),
-      tau_hat_k = data[["tau"]],
-      se_tau_k = data[["se"]]
+      theta_hat_k = data[["tau"]],
+      se_theta_k = data[["se"]]
     )
     if(is.null(test_data)){
       out$K_test <- 0
-      out$test_tau_hat_k <- array(0, dim = 0)
-      out$test_se_k <- array(0, dim = 0)
+      out$test_theta_hat_k <- array(0, dim = 0)
+      out$test_se_theta_k <- array(0, dim = 0)
     } else {
       if(is.null(test_data[["tau"]]) ||
          is.null(test_data[["se"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       # remember that for 1-dim cases we need to pass array()
-      out$test_tau_hat_k <- array(test_data[["tau"]], dim = c(nrow(test_data)))
-      out$test_se_k <- array(test_data[["se"]], dim = c(nrow(test_data)))
+      out$test_theta_hat_k <- array(test_data[["tau"]], dim = c(nrow(test_data)))
+      out$test_se_theta_k <- array(test_data[["se"]], dim = c(nrow(test_data)))
     }
   }
 
@@ -223,13 +223,13 @@ convert_inputs <- function(data,
       P = 2, #fixed for this case
       # Remember, first row is always mu (baseline), second row is tau (effect)
       # (Has to be consistent against ordering of prior values.)
-      tau_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
-      se_tau_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
+      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
+      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
     )
     if(is.null(test_data)){
       out$K_test <- 0
-      out$test_tau_hat_k <- array(0, dim = c(2,0))
-      out$test_se_k <- array(0, dim = c(2,0))
+      out$test_theta_hat_k <- array(0, dim = c(2,0))
+      out$test_se_theta_k <- array(0, dim = c(2,0))
     } else {
       if(is.null(test_data[["mu"]]) ||
          is.null(test_data[["tau"]]) ||
@@ -237,9 +237,9 @@ convert_inputs <- function(data,
          is.null(test_data[["se.tau"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
-      out$test_tau_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
+      out$test_theta_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
                                    2, nrow(test_data), byrow = T)
-      out$test_se_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
+      out$test_se_theta_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
                               2, nrow(test_data), byrow = T)
     }
   }

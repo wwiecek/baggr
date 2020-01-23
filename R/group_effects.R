@@ -43,7 +43,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95)
     if(bg$model %in% c("rubin", "mutau", "logit")) {
       #replace by extract:
       # m <- m[, grepl("^tau_k", colnames(m))]
-      m <- rstan::extract(bg$fit, pars = "tau_k")[[1]]
+      m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
       # drop mu if model has mu (baseline/control value)
       if(bg$model == "mutau")
         m <- m[,,2]

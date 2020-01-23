@@ -16,9 +16,6 @@ data {
   int prior_hypersd_fam;
   vector[3] prior_hypermean_val;
   vector[3] prior_hypersd_val;
-  // these are used only if P > 1
-  int prior_hypercor_fam;
-  real prior_hypercor_val[1];
 
   //test data (cross-validation)
   int<lower=0> K_test;

@@ -96,8 +96,13 @@ set_prior_val <- function(target, name, prior) {
                                            "multinormal" = 3,
                                            "lkj" = 4)
   # For univariates:
-  if(!is.null(prior$values))
+  if(!is.null(prior$values)){
+    if(length(prior$values) == 2)
+      prior$values <- c(prior$values, 0)
+    else
+      stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
     target[[paste0(name, "_val")]] <- prior$values
+  }
   # For multivariates:
   if(!is.null(prior$mean))
     target[[paste0(name, "_mean")]] <- prior$mean

@@ -24,14 +24,14 @@ treatment_effect <- function(bg, summary = FALSE,
     return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
   if(bg$model %in% c("rubin", "mutau", "logit")) {
-    tau <- rstan::extract(bg$fit, pars="tau")[[1]]
+    tau <- rstan::extract(bg$fit, pars="mu")[[1]]
     if(bg$model %in% c("rubin", "logit"))
       tau <- c(tau)
     if(bg$model == "mutau")
       tau <- tau[,1,2]
 
     if(bg$pooling == "partial"){
-      sigma_tau <- rstan::extract(bg$fit, pars="sigma_tau")[[1]]
+      sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
       if(bg$model %in% c("rubin", "logit"))
         sigma_tau <- c(sigma_tau)
       if(bg$model == "mutau")

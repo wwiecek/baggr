@@ -10,8 +10,8 @@ data {
   //0 = uniform, 1 = normal
   int prior_hypermean_fam;
   int prior_hypersd_fam;
-  real prior_hypermean_val[2];
-  real prior_hypersd_val[2];
+  real prior_hypermean_val[3];
+  real prior_hypersd_val[3];
 
   //cross-validation variables:
   int<lower=0> N_test;
