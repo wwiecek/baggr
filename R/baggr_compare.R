@@ -107,7 +107,7 @@ baggr_compare <- function(...,
         message(paste0("Sampling for model with pooling set to ", pool))
 
         # suppress baggr/rstan output
-        make_silent(model <- do.call(baggr, c(l, "pooling" = pool)))
+        model <- do.call(baggr, c(l, "pooling" = pool, "silence_messages" = T))
 
         # return model
         model
@@ -120,7 +120,7 @@ baggr_compare <- function(...,
       models <- lapply(list(TRUE, FALSE), function(ppdv){
         check_which <- ifelse(ppdv, "just the prior", "prior and full data")
         message(paste0("Sampling for model with ", check_which, "."))
-        make_silent(model <- do.call(baggr, c(l, "ppd" = ppdv)))
+        model <- do.call(baggr, c(l, "ppd" = ppdv,"silence_messages" = T))
         model
       })
       names(models) <- c("Prior", "Posterior")
@@ -308,22 +308,6 @@ print.plot_list <- function(x) {
       print(plots[[i]])
     }
   }
-}
-
-#' Make an expression silent
-#' @param ... expression to pass to make silent
-#' @importFrom testthat capture_output
-#' @details Runs the example while suppressing messages and warnings
-#' while sinking the output to a temp file and then deleting
-#' (this bit is handled by testthat)
-#' @examples
-#' make_silent(tmp <- 1:10)
-make_silent <- function(...) {
-  suppressWarnings({
-    suppressMessages({
-      invisible(testthat::capture_output(...))
-    })
-  })
 }
 
 
