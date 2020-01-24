@@ -9,7 +9,7 @@ baggr_compare(..., what = "pooling", compare = "groups")
 \arguments{
 \item{...}{Either a number (at least 1) of objects of class \code{baggr}
 (you should name your objects, see the example below)
-or the same arguments you'd pass to baggr(),
+or the same arguments you'd pass to \link{baggr},
 in which you must case specify \code{what} to compare.}
 
 \item{what}{One of \code{"pooling"} (comparison between no, partial and
@@ -25,17 +25,19 @@ when \code{what = "prior"}.}
 a \code{ggplot} is rendered and/or returned
 }
 \description{
-Compare multiple baggr models by either
-specifying multiple baggr models you have run or
-passing parameters to run a baggr model. If you pass
+Compare multiple \url{baggr} models by either
+specifying multiple \url{baggr} models you have run or
+passing parameters to run a \url{baggr} model. If you pass
 existing models, you will get a layered effect plot
 of the treatment effects for the different models.
+}
+\details{
 If you pass parameters to the function you must specify
 what kind of comparison you want, either "pooling" which
 will run fully/partially/un-pooled models and compare them
 or "prior" which will generate estimates without the data
 and compare them to the model with the full data. For more
-details see \link{baggr}, specifically the PPD argument.
+details see \url{baggr}, specifically the PPD argument.
 }
 \examples{
 \donttest{
@@ -95,5 +97,5 @@ baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)
 }
 }
 \author{
-Witold Wiecek
+Witold Wiecek, Brice Green
 }

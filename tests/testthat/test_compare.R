@@ -32,8 +32,6 @@ mutau_comparison <-
       prior_hypersd = normal(0,10),
       prior_hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
 
-
-
 test_that("baggr_compare works", {
   expect_invisible(baggr:::make_silent(tmp <- 1:10))
   expect_is(preset_comparison, "baggr_compare")

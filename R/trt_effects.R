@@ -131,14 +131,14 @@ effect_plot <- function(..., transform=NULL) {
   l <- list(...)
 
   caption <- list(
-    title = "Estimate of pooled treatment effect",
+    title = "Posterior distribution for pooled treatment effect",
     subtitle = ""
   )
   if(!all(unlist(lapply(l, inherits, "baggr"))))
     stop("Effects plots can only be drawn for baggr class objects")
   if(all(unlist(lapply(l, attr, "ppd"))))
     caption <- list(
-      title = "Estimate of pooled treatment effect",
+      title = "Prior distribution for pooled treatment effect",
       subtitle = "No data, only sampling from prior"
     )
   if(is.null(names(l))){

@@ -1,20 +1,14 @@
 #' (Run and) compare multiple baggr models
 #'
-#' @description Compare multiple baggr models by either
-#' specifying multiple baggr models you have run or
-#' passing parameters to run a baggr model. If you pass
+#' @description Compare multiple [baggr](baggr) models by either
+#' specifying multiple [baggr](baggr) models you have run or
+#' passing parameters to run a [baggr](baggr) model. If you pass
 #' existing models, you will get a layered effect plot
 #' of the treatment effects for the different models.
-#' If you pass parameters to the function you must specify
-#' what kind of comparison you want, either "pooling" which
-#' will run fully/partially/un-pooled models and compare them
-#' or "prior" which will generate estimates without the data
-#' and compare them to the model with the full data. For more
-#' details see \link{baggr}, specifically the PPD argument.
 #'
 #' @param ... Either a number (at least 1) of objects of class `baggr`
 #'            (you should name your objects, see the example below)
-#'            or the same arguments you'd pass to baggr(),
+#'            or the same arguments you'd pass to [baggr],
 #'            in which you must case specify `what` to compare.
 #' @param what  One of `"pooling"` (comparison between no, partial and
 #'              full pooling) or `"prior"` (comparison between prior and
@@ -24,10 +18,16 @@
 #'                (default) or (hyper-) `"effects"`. The former is not available
 #'                when `what = "prior"`.
 #' @return a `ggplot` is rendered and/or returned
-#' @author Witold Wiecek
+#' @author Witold Wiecek, Brice Green
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
 #' @export
+#' @details If you pass parameters to the function you must specify
+#' what kind of comparison you want, either "pooling" which
+#' will run fully/partially/un-pooled models and compare them
+#' or "prior" which will generate estimates without the data
+#' and compare them to the model with the full data. For more
+#' details see [baggr](baggr), specifically the PPD argument.
 #' @examples \donttest{
 #' # Most basic comparison between no, partial and full pooling
 #' # (This will run the models)
@@ -107,7 +107,8 @@ baggr_compare <- function(...,
         message(paste0("Sampling for model with pooling set to ", pool))
 
         # suppress baggr/rstan output
-        model <- do.call(baggr, c(l, "pooling" = pool, "silence_messages" = T))
+        model <- do.call(baggr, c(l, "pooling" = pool, "silence_messages" = T,
+                                  "refresh" = 0))
 
         # return model
         model
@@ -120,7 +121,8 @@ baggr_compare <- function(...,
       models <- lapply(list(TRUE, FALSE), function(ppdv){
         check_which <- ifelse(ppdv, "just the prior", "prior and full data")
         message(paste0("Sampling for model with ", check_which, "."))
-        model <- do.call(baggr, c(l, "ppd" = ppdv,"silence_messages" = T))
+        model <- do.call(baggr, c(l, "ppd" = ppdv,"silence_messages" = T,
+                                  "refresh" = 0))
         model
       })
       names(models) <- c("Prior", "Posterior")

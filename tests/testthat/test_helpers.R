@@ -65,9 +65,10 @@ test_that("We can set and get baggr theme", {
   capture_output(baggr_theme_set(ggplot2::theme_bw()))
 })
 
-test_that("silent_messages option") {
+test_that("silent_messages option", {
   expect_message(baggr(schools,
-                       control = list(adapt_delta = 0.99999)
+                       control = list(adapt_delta = 0.99999),
+                       refresh = 0
                        )
   )
   expect_silent(baggr(schools,
@@ -76,3 +77,4 @@ test_that("silent_messages option") {
                       silence_messages = T)
   )
 }
+)
