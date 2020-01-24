@@ -11,7 +11,8 @@ prepare_prior(
   model,
   pooling,
   covariates,
-  quantiles = c()
+  quantiles = c(),
+  silence_messages = FALSE
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ this is already pre-obtained through \link{convert_inputs}}
 \item{covariates}{same as in \link{baggr}}
 
 \item{quantiles}{same as in \link{baggr}}
+
+\item{silence_messages}{same as in \link{baggr}}
 }
 \value{
 A named list with prior values that can be appended to \code{stan_data}

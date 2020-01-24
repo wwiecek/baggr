@@ -21,6 +21,7 @@ baggr(
   outcome = "outcome",
   group = "group",
   treatment = "treatment",
+  silence_messages = FALSE,
   warn = TRUE,
   ...
 )
@@ -86,6 +87,8 @@ it's necessary for individual-level data, for summarised data
 it will be used as labels for groups when displaying results}
 
 \item{treatment}{character; column name in (individual-level) \code{data} with treatment factor;}
+
+\item{silence_messages}{Whether to silence messages about priors}
 
 \item{warn}{print an additional warning if Rhat exceeds 1.05}
 
