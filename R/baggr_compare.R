@@ -91,6 +91,9 @@ baggr_compare <- function(...,
   l <- list(...)
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
+  if(!compare %in% c("groups","effects")){
+    stop("'compare' argument must be set to either groups or effects.")
+  }
   if(all(unlist(lapply(l, class)) == "baggr")) {
     # return_models_flag <- 0
     if(is.null(names(l)))

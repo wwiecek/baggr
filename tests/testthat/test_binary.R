@@ -198,8 +198,7 @@ test_that("baggr_compare basic cases work with Rubin", {
   # if I pass list of rubbish
   expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # try to make nonexistant comparison:
-  expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"),
-               "Argument compare")
+  expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"))
   # Run models from baggr_compare:
   bgcomp <- expect_warning(baggr_compare(schools,
                                          iter = 200, refresh = 0))
@@ -209,11 +208,10 @@ test_that("baggr_compare basic cases work with Rubin", {
                                          what = "prior", refresh = 0))
   expect_is(bgcomp, "baggr_compare")
   # Compare existing models:
-  bgcomp2 <- plot(baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "single"))
+  bgcomp2 <- plot(baggr_compare(bg5_p, bg5_n, bg5_f), arrange = "single")
   # bgcomp3 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "grid")
-  expect_is(bgcomp2, "gg")
-  # expect_is(bgcomp3, "list")
-  # expect_is(bgcomp3[[1]], "gg")
+  expect_is(bgcomp2, "plot_list")
+  expect_is(bgcomp2[[1]], "gg")
 
 })
 
