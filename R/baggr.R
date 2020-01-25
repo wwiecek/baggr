@@ -57,7 +57,7 @@
 #'                  with the same columns as `data` argument
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
-#'            number of iterations etc. For more details see [rstan::sampling()]
+#'            number of iterations etc. For more details see [rstan::sampling()] and [rstan::stan()].
 #' @return `baggr` class structure: a list including Stan model fit
 #'          alongside input data, pooling metrics, various model properties.
 #'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
