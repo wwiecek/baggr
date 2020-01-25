@@ -38,7 +38,7 @@ $$P(\theta | X) = \dfrac{P(X | \theta) P(\theta)}{P(X)}$$
 
 In order to calculate $P(X)$, we need some computationally expensive machinery that can calculate
 
-$$P(X) = \int P(X | \theta) d\theta $$
+$$P(X) = \int P(X | \theta) P(\theta) d\theta$$
 
 which is (in general) really difficult except for a few specific situations. In order to make these types of models easy to run, we use a method that approximates this integral to a high degree of numerical accuracy.
 
