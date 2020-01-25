@@ -300,6 +300,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     warning(paste0("Rhat statistic for ", sum(rhat > 1.05),
                    " parameters exceeded 1.05, with maximum equal to ",
                    round(max(rhat),2), ". This suggests lack of convergence.",
+                   "\n Consider running the model chains for more iterations.",
                    "\n No further warning will be issued.",
                    "\n Stan model saved as $fit in the returned object. \n"))
 
