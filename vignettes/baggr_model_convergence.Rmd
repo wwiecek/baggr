@@ -1,5 +1,5 @@
 ---
-  title: "Understanding Model Convergence"
+title: "Understanding Model Convergence"
 author: "Brice Green"
 date: "`r Sys.Date()`"
 output:
