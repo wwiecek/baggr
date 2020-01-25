@@ -1,14 +1,14 @@
 ---
-title: "Understanding Model Convergence"
+  title: "Understanding Model Convergence"
 author: "Brice Green"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
   toc: true
 vignette: >
-  %\VignetteIndexEntry{baggr}
-%\VignetteEngine{knitr::rmarkdown}
-%\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{baggr_model_convergence}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 bibliography: baggr.bib
 ---
 
@@ -27,11 +27,11 @@ This vignette will walk through the basic intuition for what those mean, whether
 
 [Divergent Transitions in the Stan Manual](https://mc-stan.org/docs/2_21/reference-manual/divergent-transitions.html)
 
-These go more in depth than this discussion is going to, but if you find yourself needing a deeper discussion then these would be good starting points.
+These go more in depth than this discussion is going to, but if you find yourself needing a stronger treatment of the topics then these would be good starting points.
 
 # Behind the scenes: basics of MCMC
 
-The baggr package uses fully Bayesian methods to estimate meta-analysis models, meaning that it takes a prior (which if not specified is assigned by default), and jointly with the data uses that prior to estimate a posterior according to Bayes' rule
+The baggr package uses fully Bayesian methods to estimate meta-analysis models, meaning that it takes a prior (which if not specified by the user is assigned by default), and jointly with the data uses that prior to estimate a posterior according to Bayes' rule
 
 
 $$P(\theta | X) = \dfrac{P(X | \theta) P(\theta)}{P(X)}$$
@@ -48,7 +48,7 @@ So instead of plain-old Metropolis-Hastings, we use Hamiltonian Monte Carlo with
 
 # Warnings like "divergent transitions"
 
-The gradient is passed into a Hamiltonian equation, which simulates a path for where it thinks the posterior is headed. But this trajectory is based on the local behavior of the posterior, and depending on the geometry, if we move too far away from that point we might get more and more off base. Stan, on the back end, uses the `adapt_delta` parameter to determine how often it needs to check its simulated paths, re-evaluating the trajectory it is using. 
+The gradient is passed into a Hamiltonian equation, which simulates a path for where it thinks the posterior is headed. But this trajectory is based on the local behavior of the posterior, and depending on the geometry, if we move too far away from that point we might get more and more off base. Stan, on the back end, uses the `adapt_delta` parameter to determine how often it needs to check its simulated paths, re-evaluating the trajectory it is using.
 
 If you make `adapt_delta` really big, you end up moving really slowly, but you also are less likely to fly off the true trajectory of the posterior distribution. But if you make it small, you go faster, etc. You get the idea. How high you should set the parameter depends on the extent to which the algorithm is properly modeling the paths. So if you encounter divergent transitions, it is often good to raise `adapt_delta`. This discussion is really oversimplifying things to build the intuition, but you can find an (accessible) deeper discussion [here](https://arxiv.org/abs/1701.02434)
 if it is of interest!
@@ -61,18 +61,37 @@ If you get this warning and want to re-estimate your model with a higher `adapt_
 # the ... parameters in the call to baggr() are
 # passed to rstan::sampling
 # for documentation see ?rstan::sampling
-
-baggr(schools, model = "rubin", 
+fit <- baggr(schools, model = "rubin",
       pooling = "partial",
+      refresh = 0, # silence printing MCMC draws
       prior_hypermean = normal(0, 10),
       prior_hypersd = cauchy(0, 3),
       control = list(
         adapt_delta = 0.9 # 0.8 by default
       ))
+
+fit
 ```
 
 If you still get a lot of divergent transitions after raising the `adapt_delta` really high, it may indicate an issue with your model! This is what is commonly referred to as the [folk theorem of statistical computing](https://statmodeling.stat.columbia.edu/2008/05/13/the_folk_theore/).
 
-# R hat being too low
+# $\widehat{R}$ being too low
 
-The other warning you get, that r_hat statistics are too low, indicates that the 
+The other warning you get, that “r hat” statistics are too high, indicates that the effective sample size (ESS) of your draws are too low and your chains have not converged. Because MCMC is not a deterministic algorithm, we run multiple chains of samples in order to check that each has converged to a good enough answer.
+
+We want to check that each chain is “mixing well,” meaning that we have enough effective draws after accounting for the correlation between samples. We also want to check that markov chains initialized at different values get to similar places. ESS gives us a measure of the first, and $\widehat{R}$ gives a measure of the second.
+
+If you have a low ESS or high $\widehat{R}$, you are best off running each chain for more iterations until you get a higher ESS/lower $\widehat{R}$. To run chains for longer, you change the iter parameter in the `...` arguments to your `baggr()` call.
+
+```{r}
+# runs for 10,000 iterations per chain instead of 2,000
+fit <- baggr(schools, model = "rubin", pooling = "partial",
+      prior_hypermean = normal(0,1), prior_hypersd = cauchy(0,2),
+      refresh = 0, # don't print sampling
+      iter = 10000, 
+      control = list(
+        adapt_delta = 0.95 # like above, to address divergences
+      ))
+
+fit
+```
