@@ -81,7 +81,7 @@ The other warning you get, that “r hat” statistics are too high, indicates t
 
 We want to check that each chain is “mixing well,” meaning that we have enough effective draws after accounting for the correlation between samples. We also want to check that markov chains initialized at different values get to similar places. ESS gives us a measure of the first, and $\widehat{R}$ gives a measure of the second.
 
-If you have a low ESS or high $\widehat{R}$, you are best off running each chain for more iterations until you get a higher ESS/lower $\widehat{R}$. To run chains for longer, you change the iter parameter in the `...` arguments to your `baggr()` call.
+If you have a low ESS or high $\widehat{R}$, you are best off running each chain for more iterations until you get a higher ESS/lower $\widehat{R}$. To run chains for longer, you change the `iter` parameter in the `...` arguments to your `baggr()` call.
 
 ```{r}
 # runs for 10,000 iterations per chain instead of 2,000
