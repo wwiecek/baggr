@@ -23,7 +23,9 @@ A named list with prior values that can be appended to \code{stan_data}
 and passed to a Stan model.
 }
 \description{
-This function first extracts and prepares priors passed by the user.
+This is an internal function called by \link{baggr}. You can use it for debugging
+or to run modified models.
+It extracts and prepares priors passed by the user.
 Then, if any necessary priors are missing, it sets them automatically
 and notifies user about these automatic choices.
 }

@@ -1,8 +1,9 @@
 #' Convert inputs for baggr models
 #'
 #' Converts data to Stan inputs, checks integrity of data
-#' and suggests default model if needed. Typically used
-#' automatically by [baggr] but useful for debugging.
+#' and suggests default model if needed. Typically all of this is
+#' done automatically by [baggr], __this function is only for debugging__
+#' or running models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
@@ -25,7 +26,8 @@
 #'
 #' @author Witold Wiecek
 #' @examples
-#' # simple meta-analysis example:
+#' # simple meta-analysis example,
+#' # this is the formatted input for Stan models in baggr():
 #' convert_inputs(schools, "rubin")
 #' @export
 
@@ -35,6 +37,7 @@ convert_inputs <- function(data,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
+                           covariates = c(),
                            test_data = NULL) {
 
   # check what kind of data is required for the model & what's available
@@ -243,6 +246,22 @@ convert_inputs <- function(data,
                               2, nrow(test_data), byrow = T)
     }
   }
+
+  if(required_data != "individual") {
+    if(length(covariates) > 0) {
+      if(!all(covariates %in% names(data)))
+        stop(paste0("Covariates ",
+                    paste(covariates[!(covariates %in% names(data))], collapse=","),
+                    " are not columns in input data"))
+      out$X <- model.matrix(as.formula(paste("tau ~", paste(covariates, collapse="+"), "-1")), data=data)
+      out$Nc <- length(covariates)
+
+    } else {
+      out$Nc <- length(covariates)
+      out$X <- array(0, dim=c(nrow(data), 0))
+    }
+  }
+
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))

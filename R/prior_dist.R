@@ -97,9 +97,10 @@ set_prior_val <- function(target, name, prior) {
                                            "lkj" = 4)
   # For univariates:
   if(!is.null(prior$values)){
+    # For now we only allow dimension of 1 (for LKJ) or 3 (for uni, normal, cauchy, t)
     if(length(prior$values) == 2)
       prior$values <- c(prior$values, 0)
-    else
+    else if(length(prior$values) > 1)
       stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
     target[[paste0(name, "_val")]] <- prior$values
   }

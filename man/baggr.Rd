@@ -4,12 +4,25 @@
 \alias{baggr}
 \title{Bayesian aggregate treatment effects model}
 \usage{
-baggr(data, model = NULL, pooling = "partial", effect = NULL,
-  prior_hypermean = NULL, prior_hypersd = NULL,
-  prior_hypercor = NULL, prior = NULL, ppd = FALSE,
-  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", group = "group", treatment = "treatment",
-  warn = TRUE, ...)
+baggr(
+  data,
+  model = NULL,
+  pooling = "partial",
+  effect = NULL,
+  prior_hypermean = NULL,
+  prior_hypersd = NULL,
+  prior_hypercor = NULL,
+  covariates = c(),
+  prior = NULL,
+  ppd = FALSE,
+  test_data = NULL,
+  quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome",
+  group = "group",
+  treatment = "treatment",
+  warn = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -36,7 +49,7 @@ If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
 \item{prior_hypersd}{prior for hyper-standard deviation, used
-by Rubin and \code{"mutau"`` models; same rules apply as for }_hypermean`;}
+by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
 
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 

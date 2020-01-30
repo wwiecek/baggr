@@ -34,16 +34,16 @@ transformed data {
 }
 
 parameters {
-  vector[P] tau[pooling_type != 0? 1: 0];
-  vector[P] tau_k[K_pooled];
+  vector[P] mu[pooling_type != 0? 1: 0];
+  vector[P] theta_k[K_pooled];
   corr_matrix[P] Omega[pooling_type == 1? 1: 0];        //  correlation
-  vector<lower=0>[P] theta[pooling_type == 1? 1: 0];    //  scale
+  vector<lower=0>[P] hypersd[pooling_type == 1? 1: 0];    //  scale
 }
 
 transformed parameters {
-  matrix[P,P] sigma_tau[pooling_type == 1? 1: 0];
+  matrix[P,P] tau[pooling_type == 1? 1: 0];
   if(pooling_type == 1)
-  sigma_tau[1] = quad_form_diag(Omega[1],theta[1]);
+  tau[1] = quad_form_diag(Omega[1],hypersd[1]);
 }
 
 model {
@@ -51,20 +51,20 @@ model {
   // priors: hypermean
   if(pooling_type == 0 && K > 0)
     for (k in 1:K)
-      tau_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+      theta_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   if(pooling_type != 0) {
     if(prior_hypermean_fam == 3) //only LKJ allowed at the moment
-      tau[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+      mu[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   }
 
   //priors variance/correlation
   if(pooling_type == 1) {
     if(prior_hypersd_fam == 0)
-      theta[1] ~ uniform(prior_hypersd_val[1], prior_hypersd_val[2]);
+      hypersd[1] ~ uniform(prior_hypersd_val[1], prior_hypersd_val[2]);
     if(prior_hypersd_fam == 1)
-      theta[1] ~ normal(prior_hypersd_val[1], prior_hypersd_val[2]);
+      hypersd[1] ~ normal(prior_hypersd_val[1], prior_hypersd_val[2]);
     if(prior_hypersd_fam == 2)
-      theta[1] ~ cauchy(prior_hypersd_val[1], prior_hypersd_val[2]);
+      hypersd[1] ~ cauchy(prior_hypersd_val[1], prior_hypersd_val[2]);
 
     //for Omega only LKJ allowed for now
     Omega[1] ~ lkj_corr(prior_hypercor_val[1]);
@@ -72,15 +72,15 @@ model {
 
   if(pooling_type == 1 && K > 0) {
     for (k in 1:K) {
-      tau_k[k] ~ multi_normal(tau[1], sigma_tau[1]);
+      theta_k[k] ~ multi_normal(mu[1], tau[1]);
       for(p in 1:P)
-        tau_hat_k[p,k] ~ normal(tau_k[k,p], se_tau_k[p,k]);
+        theta_hat_k[p,k] ~ normal(theta_k[k,p], se_theta_k[p,k]);
     }
   }
   if(pooling_type == 2 && K > 0)
     for (k in 1:K)
       for(p in 1:P)
-        tau_hat_k[p,k] ~ normal(tau[1][p], se_tau_k[p,k]);
+        theta_hat_k[p,k] ~ normal(mu[1][p], se_theta_k[p,k]);
 }
 
 generated quantities {
@@ -90,10 +90,12 @@ generated quantities {
     for(k in 1:K_test){
       for(p in 1:P) {
         if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_tau_hat_k[p,k] | tau[1],
-                                sqrt(sigma_tau[1][p,p]^2 + test_se_theta_k[p,k]^2));
+        logpd[1] += normal_lpdf(test_theta_hat_k[p,k] | mu[1],
+                                sqrt(tau[1][p,p]^2 + test_se_theta_k[p,k]^2));
         if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_tau_hat_k[p,k] | tau[1],
+        logpd[1] += normal_lpdf(test_theta_hat_k[p,k] | mu[1],
                                 sqrt(test_se_theta_k[p,k]^2));
-      }}}
+      }
+    }
+  }
 }

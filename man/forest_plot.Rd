@@ -4,16 +4,26 @@
 \alias{forest_plot}
 \title{Draw a forest plot for a baggr model}
 \usage{
-forest_plot(bg, show = c("inputs", "posterior", "both"), print = show,
-  prob = 0.95, digits = 3, ...)
+forest_plot(
+  bg,
+  show = c("inputs", "posterior", "both", "covariates"),
+  print = show,
+  prob = 0.95,
+  digits = 3,
+  ...
+)
 }
 \arguments{
 \item{bg}{a \link{baggr} class object}
 
-\item{show}{if \code{inputs}, then plotted points and lines correspond to raw inputs;
-if \code{posterior} -- to posterior distribution; you can also plot \code{both}}
+\item{show}{if \code{"inputs"}, then plotted points and lines correspond to raw inputs for each group;
+if \code{"posterior"} -- to posterior distribution;
+you can also plot \code{"both"} inputs and posteriors;
+if \code{"covariates"}, then fixed effect coefficients are plotted}
 
-\item{print}{which values to print next to the plot: \code{inputs} or \code{posterior}?}
+\item{print}{which values to print next to the plot: values of \code{"inputs"}
+or \code{"posterior"} means?
+(if \code{show="covariates"}, it must be \code{"posterior"})}
 
 \item{prob}{width of the intervals (lines) for the plot}
 

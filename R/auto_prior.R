@@ -1,6 +1,8 @@
 #' Prepare prior values for Stan models in baggr
 #'
-#' This function first extracts and prepares priors passed by the user.
+#' This is an internal function called by [baggr]. You can use it for debugging
+#' or to run modified models.
+#' It extracts and prepares priors passed by the user.
 #' Then, if any necessary priors are missing, it sets them automatically
 #' and notifies user about these automatic choices.
 #'

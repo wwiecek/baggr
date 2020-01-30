@@ -4,8 +4,13 @@
 \alias{baggr_compare}
 \title{(Run and) compare multiple baggr models}
 \usage{
-baggr_compare(..., what = "pooling", compare = "groups",
-  style = "areas", arrange = "single")
+baggr_compare(
+  ...,
+  what = "pooling",
+  compare = "groups",
+  style = "areas",
+  arrange = "single"
+)
 }
 \arguments{
 \item{...}{Either a number (at least 1) of objects of class \code{baggr}

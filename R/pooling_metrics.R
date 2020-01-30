@@ -1,14 +1,14 @@
 #' Pooling metrics for baggr
 #'
-#' Compute heterogeneity/pooling statistics (for groups or whole model)
-#' given a [baggr] meta-analysis model.
+#' Compute statistics relating to `heterogeneity` (whole model) and
+#' `pooling` (for each group) given a [baggr] meta-analysis model.
 #' The statistics are the pooling metric by Gelman & Pardoe (2006) or its
 #' complement, the _I-squared_ statistic.
 #'
 #' @param bg output of a baggr() function
-#' @param type Calculation is done for each of the `"groups"`
+#' @param type In `pooling` calculation is done for each of the `"groups"`
 #'            (default) or for `"total"` hypereffect(s).
-#'             See details for how calculation is done.
+#'             See Details section for how calculation is done.
 #' @param summary logical; if `FALSE` a whole vector of pooling values is returned,
 #'                otherwise only the means and intervals
 #'

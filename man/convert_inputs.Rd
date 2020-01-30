@@ -4,8 +4,16 @@
 \alias{convert_inputs}
 \title{Convert inputs for baggr models}
 \usage{
-convert_inputs(data, model, quantiles, group = "group",
-  outcome = "outcome", treatment = "treatment", test_data = NULL)
+convert_inputs(
+  data,
+  model,
+  quantiles,
+  group = "group",
+  outcome = "outcome",
+  treatment = "treatment",
+  covariates = c(),
+  test_data = NULL
+)
 }
 \arguments{
 \item{data}{`data.frame`` with desired modelling input}
@@ -33,8 +41,9 @@ and are necessary for \link{baggr} to work correctly
 }
 \description{
 Converts data to Stan inputs, checks integrity of data
-and suggests default model if needed. Typically used
-automatically by \link{baggr} but useful for debugging.
+and suggests default model if needed. Typically all of this is
+done automatically by \link{baggr}, \strong{this function is only for debugging}
+or running models "by hand".
 }
 \details{
 Typically this function is only called within \link{baggr} and you do
@@ -42,7 +51,8 @@ not need to use it yourself. It can be useful to understand inputs
 or to run models which you modified yourself.
 }
 \examples{
-# simple meta-analysis example:
+# simple meta-analysis example,
+# this is the formatted input for Stan models in baggr():
 convert_inputs(schools, "rubin")
 }
 \author{

@@ -4,8 +4,17 @@
 \alias{baggr_plot}
 \title{Plotting method in baggr package}
 \usage{
-baggr_plot(bg, hyper = FALSE, style = "intervals", transform = NULL,
-  prob = 0.5, prob_outer = 0.95, vline = TRUE, order = TRUE, ...)
+baggr_plot(
+  bg,
+  hyper = FALSE,
+  style = "intervals",
+  transform = NULL,
+  prob = 0.5,
+  prob_outer = 0.95,
+  vline = TRUE,
+  order = TRUE,
+  ...
+)
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}

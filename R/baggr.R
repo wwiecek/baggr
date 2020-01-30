@@ -124,6 +124,7 @@
 baggr <- function(data, model = NULL, pooling = "partial",
                   effect = NULL,
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
+                  covariates = c(),
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
@@ -147,6 +148,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   stan_data <- convert_inputs(data,
                               model,
+                              covariates = covariates,
                               quantiles = quantiles,
                               outcome = outcome,
                               group = group,
@@ -232,6 +234,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     "n_groups" = n_groups,
     "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
     "effects" = effect,
+    "covariates" = covariates,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model
@@ -277,9 +280,10 @@ check_if_baggr <- function(bg) {
 }
 
 remove_data_for_prior_pred <- function(data) {
-  scalars_to0 <- c("K", "N")
+  scalars_to0 <- c("K", "N", "Nc")
   vectors_to_remove <- c("theta_hat_k", "se_theta_k",
                          "y", "treatment", "site")
+  matrices_to_remove <- c("X")
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
@@ -287,6 +291,10 @@ remove_data_for_prior_pred <- function(data) {
   for(nm in vectors_to_remove)
     if(!is.null(data[[nm]]))
       data[[nm]] <- array(0, dim = c(0))
+
+  for(nm in matrices_to_remove)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0,0))
 
   data
 }
