@@ -59,7 +59,8 @@ convert_inputs <- function(data,
   if(!is.null(test_data)){
     available_data_test <- detect_input_type(test_data, group, treatment, outcome)
     if(available_data != available_data_test)
-      stop("'test_data' is of type ", available_data_test, " and 'data' is of type ", available_data)
+      stop("'test_data' is of type ", available_data_test,
+           " and 'data' is of type ", available_data)
   }
   # if(available_data == "unknown")
   # stop("Cannot automatically determine type of input data.")
@@ -75,10 +76,10 @@ convert_inputs <- function(data,
       check_columns(data, outcome, group, treatment)
   }
   if(is.null(model)) {
-    message("Attempting to infer the correct model for data.")
+    # message("Attempting to infer the correct model for data.")
     # we take FIRST MODEL THAT SUITS OUR DATA!
     model <- names(model_data_types)[which(model_data_types == available_data)[1]]
-    message(paste0("Chosen model ", model))
+    message(paste0("Automatically set model to ", crayon::bold(model), " from data."))
   } else {
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
@@ -255,7 +256,8 @@ convert_inputs <- function(data,
         stop(paste0("Covariates ",
                     paste(covariates[!(covariates %in% names(data))], collapse=","),
                     " are not columns in input data"))
-      out$X <- model.matrix(as.formula(paste("tau ~", paste(covariates, collapse="+"), "-1")), data=data)
+      out$X <- model.matrix(as.formula(
+        paste("tau ~", paste(covariates, collapse="+"), "-1")), data=data)
       out$Nc <- length(covariates)
 
     } else {

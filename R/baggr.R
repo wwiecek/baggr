@@ -222,7 +222,8 @@ baggr <- function(data, model = NULL, pooling = "partial",
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
   } else { # extract priors from inputs & fill in missing priors
-    formatted_prior <- prepare_prior(prior, data, stan_data, model, quantiles = quantiles)
+    formatted_prior <- prepare_prior(prior, data, stan_data, model,
+                                     pooling, quantiles = quantiles)
   }
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]
