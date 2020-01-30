@@ -28,6 +28,6 @@ Effects of covariates on outcome in baggr models
 }
 \seealso{
 \link{treatment_effect} for overall treatment effect across groups,
-\link{group_effect} for effects within each group,
+\link{group_effects} for effects within each group,
 \link{effect_draw} and \link{effect_plot} for predicted treatment effect in new group
 }

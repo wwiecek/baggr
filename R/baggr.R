@@ -22,6 +22,8 @@
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
 #'               Comparable models (e.g. in [baggr_compare]) should have same `effect`.
+#' @param covariates Character vector with column names in `data`. The corresponding columns are used as
+#'                   covariates (fixed effects) in the meta-regression model.
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
 #'              See Details:Priors below for more possible specifications.
@@ -92,6 +94,16 @@
 #' To set the priors yourself, use `prior_` arguments. For specifying many priors at once
 #' (or re-using between models), a single `prior = list(...)` argument can be used instead.
 #' Appropriate examples are given in `vignette("baggr")`.
+#'
+#' __Outputs.__ Standard functions for analysing the `baggr` object are
+#'
+#' * [treatment_effect] for distribution of hyperparameters
+#' * [group_effects] for distributions of group-specific parameters
+#' * [fixed_effects] for coefficients in meta-regression
+#' * [effect_draw] and [effect_plot] for posterior predictive distributions
+#' * [baggr_compare] for comparing multiple `baggr` models
+#' * [loocv] for cross-validation
+#'
 #'
 #' @author Witold Wiecek, Rachael Meager
 #'

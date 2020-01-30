@@ -53,6 +53,9 @@ by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
 
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 
+\item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
+covariates (fixed effects) in the meta-regression model.}
+
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
 
@@ -129,6 +132,16 @@ prior for the input data if you do not pass a \code{prior} argument.
 To set the priors yourself, use \code{prior_} arguments. For specifying many priors at once
 (or re-using between models), a single \code{prior = list(...)} argument can be used instead.
 Appropriate examples are given in \code{vignette("baggr")}.
+
+\strong{Outputs.} Standard functions for analysing the \code{baggr} object are
+\itemize{
+\item \link{treatment_effect} for distribution of hyperparameters
+\item \link{group_effects} for distributions of group-specific parameters
+\item \link{fixed_effects} for coefficients in meta-regression
+\item \link{effect_draw} and \link{effect_plot} for posterior predictive distributions
+\item \link{baggr_compare} for comparing multiple \code{baggr} models
+\item \link{loocv} for cross-validation
+}
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),

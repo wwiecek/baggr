@@ -10,6 +10,8 @@
 #'              see [baggr] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
+#' @param covariates Character vector with column names in `data`. The corresponding columns are used as
+#'                   covariates (fixed effects) in the meta-regression model.
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable (designated as string)

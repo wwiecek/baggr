@@ -12,7 +12,7 @@
 #'         both vectors are summarised as mean and lower/upper bounds according to
 #'         `interval`
 #' @seealso [treatment_effect] for overall treatment effect across groups,
-#'          [group_effect] for effects within each group,
+#'          [group_effects] for effects within each group,
 #'          [effect_draw] and [effect_plot] for predicted treatment effect in new group
 #' @export
 #' @importFrom rstan extract
