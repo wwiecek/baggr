@@ -78,10 +78,16 @@
 #'
 #' __Models.__ Available models are:
 #'
-#' * for the means: `"rubin"` model for average treatment effect, `"mutau"`
+#' * for the __continuous variable__ means:
+#'   `"rubin"` model for average treatment effect, `"mutau"`
 #'   version which takes into account means of control groups, `"full"`,
 #'   which works with individual-level data
-#' * "quantiles" model is also available (see Meager, 2019 in references)
+#' * for __continuous variable quantiles__: `"quantiles"`` model
+#'   (see Meager, 2019 in references)
+#' * for __binary data__: `"logit"` model can be used on individual-level data;
+#'   you can also analyse continuous statistics such as
+#'   log odds ratios and logs risk ratios using the models listed above;
+#'   see `vignette("baggr_binary")` for tutorial with examples
 #'
 #'  If no model is specified, the function tries to infer the appropriate
 #'  model automatically.

@@ -115,10 +115,16 @@ work with \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"}
+\item for the \strong{continuous variable} means:
+\code{"rubin"} model for average treatment effect, \code{"mutau"}
 version which takes into account means of control groups, \code{"full"},
 which works with individual-level data
-\item "quantiles" model is also available (see Meager, 2019 in references)
+\item for \strong{continuous variable quantiles}: `"quantiles"`` model
+(see Meager, 2019 in references)
+\item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
+you can also analyse continuous statistics such as
+log odds ratios and logs risk ratios using the models listed above;
+see \code{vignette("baggr_binary")} for tutorial with examples
 }
 
 If no model is specified, the function tries to infer the appropriate

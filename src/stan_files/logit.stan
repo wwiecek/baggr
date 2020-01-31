@@ -1,6 +1,8 @@
 data {
   int<lower=0> K;  // number of sites
   int<lower=0> N;  // total number of observations
+  int<lower=0> Nc; //number of covariates (fixed effects)
+  matrix[N,Nc] X;  //covariate values (design matrix for FE)
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int<lower=0,upper=1> y[N];
   int<lower=0,upper=K> site[N];
@@ -32,6 +34,7 @@ parameters {
   real mu[pooling_type != 0? 1: 0];
   real<lower=0> tau[pooling_type == 1? 1: 0];
   real eta[K_pooled];
+  vector[Nc] beta;
 }
 transformed parameters {
   real theta_k[K_pooled];
@@ -74,6 +77,9 @@ model {
     target += cauchy_lpdf(tau |
     prior_hypersd_val[1], prior_hypersd_val[2]);
   }
+
+  //fixed effect coefficients
+  beta ~ normal(0, 10);
 
   if(pooling_type == 1)
     eta ~ normal(0,1);
