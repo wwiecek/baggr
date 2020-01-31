@@ -4,12 +4,25 @@
 \alias{baggr}
 \title{Bayesian aggregate treatment effects model}
 \usage{
-baggr(data, model = NULL, pooling = "partial", effect = NULL,
-  prior_hypermean = NULL, prior_hypersd = NULL,
-  prior_hypercor = NULL, prior = NULL, ppd = FALSE,
-  test_data = NULL, quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome", group = "group", treatment = "treatment",
-  warn = TRUE, ...)
+baggr(
+  data,
+  model = NULL,
+  pooling = "partial",
+  effect = NULL,
+  prior_hypermean = NULL,
+  prior_hypersd = NULL,
+  prior_hypercor = NULL,
+  covariates = c(),
+  prior = NULL,
+  ppd = FALSE,
+  test_data = NULL,
+  quantiles = seq(0.05, 0.95, 0.1),
+  outcome = "outcome",
+  group = "group",
+  treatment = "treatment",
+  warn = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{data frame with summary or individual level data to meta-analyse}
@@ -36,9 +49,12 @@ If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
 \item{prior_hypersd}{prior for hyper-standard deviation, used
-by Rubin and \code{"mutau"`` models; same rules apply as for }_hypermean`;}
+by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
 
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
+
+\item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
+covariates (fixed effects) in the meta-regression model.}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
@@ -99,10 +115,16 @@ work with \code{baggr()}.
 
 \strong{Models.} Available models are:
 \itemize{
-\item for the means: \code{"rubin"} model for average treatment effect, \code{"mutau"}
+\item for the \strong{continuous variable} means:
+\code{"rubin"} model for average treatment effect, \code{"mutau"}
 version which takes into account means of control groups, \code{"full"},
 which works with individual-level data
-\item "quantiles" model is also available (see Meager, 2019 in references)
+\item for \strong{continuous variable quantiles}: `"quantiles"`` model
+(see Meager, 2019 in references)
+\item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
+you can also analyse continuous statistics such as
+log odds ratios and logs risk ratios using the models listed above;
+see \code{vignette("baggr_binary")} for tutorial with examples
 }
 
 If no model is specified, the function tries to infer the appropriate
@@ -116,6 +138,16 @@ prior for the input data if you do not pass a \code{prior} argument.
 To set the priors yourself, use \code{prior_} arguments. For specifying many priors at once
 (or re-using between models), a single \code{prior = list(...)} argument can be used instead.
 Appropriate examples are given in \code{vignette("baggr")}.
+
+\strong{Outputs.} Standard functions for analysing the \code{baggr} object are
+\itemize{
+\item \link{treatment_effect} for distribution of hyperparameters
+\item \link{group_effects} for distributions of group-specific parameters
+\item \link{fixed_effects} for coefficients in meta-regression
+\item \link{effect_draw} and \link{effect_plot} for posterior predictive distributions
+\item \link{baggr_compare} for comparing multiple \code{baggr} models
+\item \link{loocv} for cross-validation
+}
 }
 \examples{
 df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),

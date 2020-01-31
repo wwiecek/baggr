@@ -17,8 +17,9 @@ test_that("Error messages for wrong inputs are in place", {
   expect_error(baggr(df_binary, pooling = "nune"), "Wrong pooling")
 
   # test_that("Converting inputs works correctly") more explicitly
-  expect_identical(names(convert_inputs(df_binary, "logit"))[1:6],
-                   c("K", "N", "P", "y", "treatment", "site"))
+  expect_identical(names(convert_inputs(df_binary, "logit")),
+                   c("K", "N", "P", "y", "treatment", "site", "N_test", "K_test",
+                     "test_y", "test_site", "test_treatment", "Nc", "X"))
 })
 
 bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",

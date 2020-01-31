@@ -1,14 +1,17 @@
 #' Convert inputs for baggr models
 #'
 #' Converts data to Stan inputs, checks integrity of data
-#' and suggests default model if needed. Typically used
-#' automatically by [baggr] but useful for debugging.
+#' and suggests default model if needed. Typically all of this is
+#' done automatically by [baggr], __this function is only for debugging__
+#' or running models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
 #'              see [baggr] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
+#' @param covariates Character vector with column names in `data`. The corresponding columns are used as
+#'                   covariates (fixed effects) in the meta-regression model.
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable (designated as string)
@@ -25,7 +28,8 @@
 #'
 #' @author Witold Wiecek
 #' @examples
-#' # simple meta-analysis example:
+#' # simple meta-analysis example,
+#' # this is the formatted input for Stan models in baggr():
 #' convert_inputs(schools, "rubin")
 #' @export
 
@@ -35,6 +39,7 @@ convert_inputs <- function(data,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
+                           covariates = c(),
                            test_data = NULL) {
 
   # check what kind of data is required for the model & what's available
@@ -54,7 +59,8 @@ convert_inputs <- function(data,
   if(!is.null(test_data)){
     available_data_test <- detect_input_type(test_data, group, treatment, outcome)
     if(available_data != available_data_test)
-      stop("'test_data' is of type ", available_data_test, " and 'data' is of type ", available_data)
+      stop("'test_data' is of type ", available_data_test,
+           " and 'data' is of type ", available_data)
   }
   # if(available_data == "unknown")
   # stop("Cannot automatically determine type of input data.")
@@ -70,10 +76,10 @@ convert_inputs <- function(data,
       check_columns(data, outcome, group, treatment)
   }
   if(is.null(model)) {
-    message("Attempting to infer the correct model for data.")
+    # message("Attempting to infer the correct model for data.")
     # we take FIRST MODEL THAT SUITS OUR DATA!
     model <- names(model_data_types)[which(model_data_types == available_data)[1]]
-    message(paste0("Chosen model ", model))
+    message(paste0("Automatically set model to ", crayon::bold(model), " from data."))
   } else {
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
@@ -160,8 +166,8 @@ convert_inputs <- function(data,
       # Cross-validation:
       if(is.null(test_data)){
         out$K_test <- 0
-        out$test_tau_hat_k <- array(0, dim = 0)
-        out$test_se_k <- array(0, dim = 0)
+        out$test_theta_hat_k <- array(0, dim = 0)
+        out$test_se_theta_k <- array(0, dim = 0)
         out$test_y_0 <- array(0, dim = c(0, ncol(out$y_0)))
         out$test_y_1 <- array(0, dim = c(0, ncol(out$y_0)))
         out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
@@ -190,21 +196,21 @@ convert_inputs <- function(data,
     check_columns_numeric(data[,c("tau", "se")])
     out <- list(
       K = nrow(data),
-      tau_hat_k = data[["tau"]],
-      se_tau_k = data[["se"]]
+      theta_hat_k = data[["tau"]],
+      se_theta_k = data[["se"]]
     )
     if(is.null(test_data)){
       out$K_test <- 0
-      out$test_tau_hat_k <- array(0, dim = 0)
-      out$test_se_k <- array(0, dim = 0)
+      out$test_theta_hat_k <- array(0, dim = 0)
+      out$test_se_theta_k <- array(0, dim = 0)
     } else {
       if(is.null(test_data[["tau"]]) ||
          is.null(test_data[["se"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       # remember that for 1-dim cases we need to pass array()
-      out$test_tau_hat_k <- array(test_data[["tau"]], dim = c(nrow(test_data)))
-      out$test_se_k <- array(test_data[["se"]], dim = c(nrow(test_data)))
+      out$test_theta_hat_k <- array(test_data[["tau"]], dim = c(nrow(test_data)))
+      out$test_se_theta_k <- array(test_data[["se"]], dim = c(nrow(test_data)))
     }
   }
 
@@ -223,13 +229,13 @@ convert_inputs <- function(data,
       P = 2, #fixed for this case
       # Remember, first row is always mu (baseline), second row is tau (effect)
       # (Has to be consistent against ordering of prior values.)
-      tau_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
-      se_tau_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
+      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
+      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
     )
     if(is.null(test_data)){
       out$K_test <- 0
-      out$test_tau_hat_k <- array(0, dim = c(2,0))
-      out$test_se_k <- array(0, dim = c(2,0))
+      out$test_theta_hat_k <- array(0, dim = c(2,0))
+      out$test_se_theta_k <- array(0, dim = c(2,0))
     } else {
       if(is.null(test_data[["mu"]]) ||
          is.null(test_data[["tau"]]) ||
@@ -237,12 +243,29 @@ convert_inputs <- function(data,
          is.null(test_data[["se.tau"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
-      out$test_tau_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
+      out$test_theta_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
                                    2, nrow(test_data), byrow = T)
-      out$test_se_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
+      out$test_se_theta_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
                               2, nrow(test_data), byrow = T)
     }
   }
+
+  if(required_data != "individual") {
+    if(length(covariates) > 0) {
+      if(!all(covariates %in% names(data)))
+        stop(paste0("Covariates ",
+                    paste(covariates[!(covariates %in% names(data))], collapse=","),
+                    " are not columns in input data"))
+      out$X <- model.matrix(as.formula(
+        paste("tau ~", paste(covariates, collapse="+"), "-1")), data=data)
+      out$Nc <- length(covariates)
+
+    } else {
+      out$Nc <- length(covariates)
+      out$X <- array(0, dim=c(nrow(data), 0))
+    }
+  }
+
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))

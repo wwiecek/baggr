@@ -22,6 +22,8 @@
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
 #'               Comparable models (e.g. in [baggr_compare]) should have same `effect`.
+#' @param covariates Character vector with column names in `data`. The corresponding columns are used as
+#'                   covariates (fixed effects) in the meta-regression model.
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
 #'              See Details:Priors below for more possible specifications.
@@ -76,10 +78,16 @@
 #'
 #' __Models.__ Available models are:
 #'
-#' * for the means: `"rubin"` model for average treatment effect, `"mutau"`
+#' * for the __continuous variable__ means:
+#'   `"rubin"` model for average treatment effect, `"mutau"`
 #'   version which takes into account means of control groups, `"full"`,
 #'   which works with individual-level data
-#' * "quantiles" model is also available (see Meager, 2019 in references)
+#' * for __continuous variable quantiles__: `"quantiles"`` model
+#'   (see Meager, 2019 in references)
+#' * for __binary data__: `"logit"` model can be used on individual-level data;
+#'   you can also analyse continuous statistics such as
+#'   log odds ratios and logs risk ratios using the models listed above;
+#'   see `vignette("baggr_binary")` for tutorial with examples
 #'
 #'  If no model is specified, the function tries to infer the appropriate
 #'  model automatically.
@@ -92,6 +100,16 @@
 #' To set the priors yourself, use `prior_` arguments. For specifying many priors at once
 #' (or re-using between models), a single `prior = list(...)` argument can be used instead.
 #' Appropriate examples are given in `vignette("baggr")`.
+#'
+#' __Outputs.__ Standard functions for analysing the `baggr` object are
+#'
+#' * [treatment_effect] for distribution of hyperparameters
+#' * [group_effects] for distributions of group-specific parameters
+#' * [fixed_effects] for coefficients in meta-regression
+#' * [effect_draw] and [effect_plot] for posterior predictive distributions
+#' * [baggr_compare] for comparing multiple `baggr` models
+#' * [loocv] for cross-validation
+#'
 #'
 #' @author Witold Wiecek, Rachael Meager
 #'
@@ -124,6 +142,7 @@
 baggr <- function(data, model = NULL, pooling = "partial",
                   effect = NULL,
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
+                  covariates = c(),
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
@@ -147,6 +166,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   stan_data <- convert_inputs(data,
                               model,
+                              covariates = covariates,
                               quantiles = quantiles,
                               outcome = outcome,
                               group = group,
@@ -208,7 +228,8 @@ baggr <- function(data, model = NULL, pooling = "partial",
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
   } else { # extract priors from inputs & fill in missing priors
-    formatted_prior <- prepare_prior(prior, data, stan_data, model, quantiles = quantiles)
+    formatted_prior <- prepare_prior(prior, data, stan_data, model,
+                                     pooling, quantiles = quantiles)
   }
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]
@@ -232,6 +253,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     "n_groups" = n_groups,
     "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
     "effects" = effect,
+    "covariates" = covariates,
     "pooling" = pooling,
     "fit" = fit,
     "model" = model
@@ -277,9 +299,10 @@ check_if_baggr <- function(bg) {
 }
 
 remove_data_for_prior_pred <- function(data) {
-  scalars_to0 <- c("K", "N")
-  vectors_to_remove <- c("tau_hat_k", "se_tau_k",
+  scalars_to0 <- c("K", "N", "Nc")
+  vectors_to_remove <- c("theta_hat_k", "se_theta_k",
                          "y", "treatment", "site")
+  matrices_to_remove <- c("X")
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
@@ -287,6 +310,10 @@ remove_data_for_prior_pred <- function(data) {
   for(nm in vectors_to_remove)
     if(!is.null(data[[nm]]))
       data[[nm]] <- array(0, dim = c(0))
+
+  for(nm in matrices_to_remove)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0,0))
 
   data
 }

@@ -36,7 +36,8 @@ test_that("Error messages for wrong inputs are in place", {
 
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
-                   c("K", "tau_hat_k", "se_tau_k", "K_test", "test_tau_hat_k", "test_se_k"))
+                   c("K", "theta_hat_k", "se_theta_k", "K_test",
+                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X"))
 
   expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
@@ -231,7 +232,7 @@ test_that("baggr_compare basic cases work with Rubin", {
 
 test_that("loocv", {
   # Rubbish model
-  expect_error(loocv(schools, model = "mutau"))
+  expect_error(loocv(schools, model = "rubbish"))
   # Can't do pooling none
   expect_error(loocv(schools, pooling = "none"))
 

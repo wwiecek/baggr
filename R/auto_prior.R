@@ -1,6 +1,8 @@
 #' Prepare prior values for Stan models in baggr
 #'
-#' This function first extracts and prepares priors passed by the user.
+#' This is an internal function called by [baggr]. You can use it for debugging
+#' or to run modified models.
+#' It extracts and prepares priors passed by the user.
 #' Then, if any necessary priors are missing, it sets them automatically
 #' and notifies user about these automatic choices.
 #'
@@ -9,6 +11,7 @@
 #' @param stan_data list of inputs that will be used by sampler
 #'                  this is already pre-obtained through [convert_inputs]
 #' @param model same as in [baggr]
+#' @param pooling same as in [baggr]
 #' @param quantiles  same as in [baggr]
 #'
 #' @return A named list with prior values that can be appended to `stan_data`
@@ -16,7 +19,7 @@
 #'
 
 
-prepare_prior <- function(prior, data, stan_data, model,
+prepare_prior <- function(prior, data, stan_data, model,pooling,
                           quantiles = c()) {
   if(missing(prior))
     prior <- list()
@@ -37,7 +40,8 @@ prepare_prior <- function(prior, data, stan_data, model,
     if(is.null(prior$hypermean)){
       val <- 10*max(abs(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, val))
-      message("Set hypermean prior according to max effect:")
+      priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
+      message(paste0("Setting prior for ", priorname, " according to max effect:"))
       message(paste0("* tau ~ Normal(0, (10*",
                      format(val/10, digits = 2), ")^2)"))
     } else {
@@ -46,16 +50,21 @@ prepare_prior <- function(prior, data, stan_data, model,
 
     # Hyper-SD
     if(is.null(prior$hypersd)){
-      prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
-      if(nrow(data) < 5)
-        message(paste("/Dataset has only", nrow(data),
-                      "rows -- consider setting variance prior manually./"))
-
-      message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
-                     format(10*sd(data$tau), digits = 2), ")"))
-      message(paste0("* sigma_tau ~ Uniform(0, ",
-                     format(10*sd(data$tau), digits = 2), ")"))
+      if(pooling == "partial") {
+        prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
+        if(nrow(data) < 5)
+          message(paste("/Dataset has only", nrow(data),
+                        "rows -- consider setting variance prior manually./"))
+        message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites (",
+                       format(10*sd(data$tau), digits = 2), ")"))
+        message(paste0("* sigma_tau ~ Uniform(0, ",
+                       format(10*sd(data$tau), digits = 2), ")"))
+      } else {
+        prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 0))
+      }
     } else {
+      if(pooling == "full")
+        message("Prior for hyper-SD set, but pooling full. Ignoring SD prior.")
       prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
     }
 
@@ -71,6 +80,7 @@ prepare_prior <- function(prior, data, stan_data, model,
     if(is.null(prior$hypermean)){
       val1 <- 100*max(abs(data$mu))
       val2 <- 100*max(abs(data$tau))
+      # Behaviour for joint prior-type behaviour:
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
                                   multinormal(c(0,0), c(val1, val2)*diag(2)))
       message("Set hypermean prior according to max effect:")
@@ -94,7 +104,7 @@ prepare_prior <- function(prior, data, stan_data, model,
       val <- max(10*sd(data$mu), 10*sd(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypersd", cauchy(0,val))
       message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
-              format(val, digits = 2), ")"))
+                     format(val, digits = 2), ")"))
       message(paste0("* hyper-SD (mu, tau) ~ Cauchy(0,",
                      format(val, digits = 2), ") (i.i.d.)"))
     } else {

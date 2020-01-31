@@ -4,7 +4,7 @@
 \alias{print.baggr}
 \title{S3 print method for objects of class \code{baggr} (model fits)}
 \usage{
-\method{print}{baggr}(x, exponent = FALSE, digits = 2, group, ...)
+\method{print}{baggr}(x, exponent = FALSE, digits = 2, group, fixed = TRUE, ...)
 }
 \arguments{
 \item{x}{object of class \code{baggr}}
@@ -14,8 +14,10 @@
 \item{digits}{Number of significant digits to print.}
 
 \item{group}{logical; print group effects? If unspecified,
-they are printed if only
+they are printed only if
 less than 20 groups are present}
+
+\item{fixed}{logical: print fixed effects?}
 
 \item{...}{currently unused by this package: further arguments passed
 to or from other methods (\code{print}  requirement)}

@@ -12,9 +12,9 @@ heterogeneity(bg, summary = TRUE)
 \arguments{
 \item{bg}{output of a baggr() function}
 
-\item{type}{Calculation is done for each of the \code{"groups"}
+\item{type}{In \code{pooling} calculation is done for each of the \code{"groups"}
 (default) or for \code{"total"} hypereffect(s).
-See details for how calculation is done.}
+See Details section for how calculation is done.}
 
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
@@ -24,8 +24,8 @@ Matrix with mean and intervals for chosen pooling metric,
 each row corresponding to one meta-analysis group.
 }
 \description{
-Compute heterogeneity/pooling statistics (for groups or whole model)
-given a \link{baggr} meta-analysis model.
+Compute statistics relating to \code{heterogeneity} (whole model) and
+\code{pooling} (for each group) given a \link{baggr} meta-analysis model.
 The statistics are the pooling metric by Gelman & Pardoe (2006) or its
 complement, the \emph{I-squared} statistic.
 }
@@ -35,7 +35,7 @@ effect are "pooled" (or pulled!) toward average treatment effect in the meta-ana
 If \code{pooling = "none"} or "full" in \link{baggr}, then the returned values are always 0 or 1, respectively.
 If \code{pooling = "partial"}, the value is somewhere between 0 and 1.
 
-\strong{Formulae for the calculations below are provided in main package vignette.} See \code{vignette("baggr").}
+\strong{Formulae for the calculations below are provided in main package vignette.} See \verb{vignette("baggr").}
 
 #' \strong{Estimate of pooling in a group}: this is the calculation done by \code{pooling()}
 if \code{type = "groups"} (default).
