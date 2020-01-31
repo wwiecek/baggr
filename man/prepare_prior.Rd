@@ -4,7 +4,7 @@
 \alias{prepare_prior}
 \title{Prepare prior values for Stan models in baggr}
 \usage{
-prepare_prior(prior, data, stan_data, model, quantiles = c())
+prepare_prior(prior, data, stan_data, model, pooling, quantiles = c())
 }
 \arguments{
 \item{prior}{\code{prior} argument passed from \link{baggr} call}
@@ -15,6 +15,8 @@ prepare_prior(prior, data, stan_data, model, quantiles = c())
 this is already pre-obtained through \link{convert_inputs}}
 
 \item{model}{same as in \link{baggr}}
+
+\item{pooling}{same as in \link{baggr}}
 
 \item{quantiles}{same as in \link{baggr}}
 }
