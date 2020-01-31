@@ -80,6 +80,7 @@ prepare_prior <- function(prior, data, stan_data, model,pooling,
     if(is.null(prior$hypermean)){
       val1 <- 100*max(abs(data$mu))
       val2 <- 100*max(abs(data$tau))
+      # Behaviour for joint prior-type behaviour:
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
                                   multinormal(c(0,0), c(val1, val2)*diag(2)))
       message("Set hypermean prior according to max effect:")

@@ -82,12 +82,24 @@ prior_dist_fam <- c("uniform" = 0,
                     "multinormal" = 3,
                     "lkj" = 4)
 
-set_prior_val <- function(target, name, prior) {
+#' Add prior values to Stan input for baggr
+#'
+#' @param target list object (Stan input) to which prior will be added
+#' @param name prior name, like `hypermean`, `hypersd`, `hypercor`
+#' @param prior one of [prior] distributions
+#' @param p number of repeats of the prior, i.e. when P i.i.d. priors are set for
+#'                  P dimensional parameter as in "mu & tau" type of model
+#' @examples
+#' set_prior_val(list(), "hypermean", normal(0,1), p = 2)
+#'
+set_prior_val <- function(target, name, prior, p = 1) {
   if(is.null(prior$dist))
     stop("Wrong prior specification")
   if(!(prior$dist %in% names(prior_dist_fam)))
     stop(paste("Prior family must be one of: ",
                paste(names(prior_dist_fam), collapse = ", ")))
+  if(prior$dist %in% c("multinormal", "lkj") && p > 1)
+    stop("Multi-dimensional priors can't be 'replicated' in set_prior_val")
 
   target[[paste0(name, "_fam")]] <- switch(prior$dist,
                                            "uniform" = 0,
@@ -95,6 +107,9 @@ set_prior_val <- function(target, name, prior) {
                                            "cauchy" = 2,
                                            "multinormal" = 3,
                                            "lkj" = 4)
+  if(p > 1)
+    target[[paste0(name, "_fam")]] <- rep(target[[paste0(name, "_fam")]], p)
+
   # For univariates:
   if(!is.null(prior$values)){
     # For now we only allow dimension of 1 (for LKJ) or 3 (for uni, normal, cauchy, t)
@@ -103,7 +118,11 @@ set_prior_val <- function(target, name, prior) {
     else if(length(prior$values) > 1)
       stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
     target[[paste0(name, "_val")]] <- prior$values
+
+    if(p > 1)
+      target[[paste0(name, "_val")]] <- t(replicate(p, prior$values))
   }
+
   # For multivariates:
   if(!is.null(prior$mean))
     target[[paste0(name, "_mean")]] <- prior$mean
