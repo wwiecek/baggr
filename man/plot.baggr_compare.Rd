@@ -4,8 +4,15 @@
 \alias{plot.baggr_compare}
 \title{Plot method for baggr_compare models}
 \usage{
-\method{plot}{baggr_compare}(x, style = "areas", arrange = "single",
-  interval = 0.95, hyper = T, ...)
+\method{plot}{baggr_compare}(
+  x,
+  style = "areas",
+  arrange = "single",
+  interval = 0.95,
+  hyper = T,
+  transform = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{baggr_compare model to plot}
@@ -21,10 +28,15 @@ if \code{"grid"}, display multiple plots side-by-side.}
 \item{hyper}{Whether to plot pooled treatment effect
 in addition to group treatment effects}
 
+\item{transform}{a function (e.g. exp(), log())
+to apply to the values of group (and hyper, if hyper=TRUE)
+effects before plotting; when working with effects that are on log scale, exponent transform is used automatically,
+you can plot on log scale by setting transform = identity}
+
 \item{...}{ignored for now, may be used in the future}
 }
 \description{
 Allows plots that compare multiple baggr models
 that were passed for comparison purposes to baggr compare or
-run automatically by baggr_compar
+run automatically by baggr_compare
 }

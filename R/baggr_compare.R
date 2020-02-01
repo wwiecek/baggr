@@ -17,6 +17,13 @@
 #' @param compare When plotting, choose between comparison of `"groups"`
 #'                (default) or (hyper-) `"effects"`. The former is not available
 #'                when `what = "prior"`.
+#' @param transform a function (e.g. exp(), log()) to apply to
+#'                  the values of group (and hyper, if hyper=TRUE)
+#'                  effects before plotting; when working with
+#'                  effects that are on log scale,
+#'                  exponent transform is used automatically,
+#'                  you can plot on log scale by setting
+#'                  transform = identity
 #' @return a `ggplot` is rendered and/or returned
 #' @author Witold Wiecek, Brice Green
 #' @importFrom gridExtra grid.arrange
@@ -87,7 +94,8 @@
 
 baggr_compare <- function(...,
                           what    = "pooling",
-                          compare = "groups") {
+                          compare = "groups",
+                          transform = NULL) {
   l <- list(...)
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
@@ -110,7 +118,8 @@ baggr_compare <- function(...,
         message(paste0("Sampling for model with pooling set to ", pool))
 
         # suppress baggr/rstan output
-        model <- do.call(baggr, c(l, "pooling" = pool, "silence_messages" = T,
+        model <- do.call(baggr, c(l, "pooling" = pool,
+                                  "silence_messages" = T,
                                   "refresh" = 0))
 
         # return model
@@ -124,7 +133,8 @@ baggr_compare <- function(...,
       models <- lapply(list(TRUE, FALSE), function(ppdv){
         check_which <- ifelse(ppdv, "just the prior", "prior and full data")
         message(paste0("Sampling for model with ", check_which, "."))
-        model <- do.call(baggr, c(l, "ppd" = ppdv,"silence_messages" = T,
+        model <- do.call(baggr, c(l, "ppd" = ppdv,
+                                  "silence_messages" = T,
                                   "refresh" = 0))
         model
       })
@@ -155,11 +165,11 @@ baggr_compare <- function(...,
   # Return treatment effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      mint(treatment_effect(x)$tau)
+      mint(treatment_effect(x, transform = transform)$tau)
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      mint(treatment_effect(x)$sigma_tau)
+      mint(treatment_effect(x, transform = transform)$sigma_tau)
     })))
 
 
@@ -168,7 +178,8 @@ baggr_compare <- function(...,
               mean_trt = mean_trt_effects,
               sd_trt = sd_trt_effects,
               compare = compare,
-              effect_names = effect_names),
+              effect_names = effect_names,
+              transform = deparse(substitute(transform))),
             class = "baggr_compare")
 }
 
@@ -183,12 +194,14 @@ print.baggr_compare <- function(x, digits, ...){
   cat("\n")
   cat("SD for treatment effects:\n")
   print(signif(x$sd_trt, digits = digits))
+  cat("\n")
+  cat(paste0("Transform: ", x$transform))
 }
 
 #' Plot method for baggr_compare models
 #' @description Allows plots that compare multiple baggr models
 #' that were passed for comparison purposes to baggr compare or
-#' run automatically by baggr_compar
+#' run automatically by baggr_compare
 #' @param x baggr_compare model to plot
 #' @param arrange If `"single"` (default), generate a single comparison plot;
 #'                if `"grid"`, display multiple plots side-by-side.
@@ -197,6 +210,10 @@ print.baggr_compare <- function(x, digits, ...){
 #' @param interval probability level used for display of posterior interval
 #' @param hyper Whether to plot pooled treatment effect
 #' in addition to group treatment effects
+#' @param transform a function (e.g. exp(), log())
+#' to apply to the values of group (and hyper, if hyper=TRUE)
+#' effects before plotting; when working with effects that are on log scale, exponent transform is used automatically,
+#' you can plot on log scale by setting transform = identity
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
@@ -204,6 +221,7 @@ plot.baggr_compare <- function(x,
                                arrange = "single",
                                interval = 0.95,
                                hyper = T,
+                               transform = NULL,
                                ...) {
 
   models <- x$models
@@ -211,7 +229,10 @@ plot.baggr_compare <- function(x,
   effect_names <- x$effect_names
 
   if(arrange == "grid") {
-    plots <- lapply(models, baggr_plot, style = style, order = FALSE)
+    plots <- lapply(models, baggr_plot,
+                    style = style,
+                    order = FALSE,
+                    transform = transform)
     grid_width <- length(plots)
     # if each plots element contains multiple plots (like with quantiles):
     if(class(plots[[1]])[1] == "list")
@@ -236,13 +257,16 @@ plot.baggr_compare <- function(x,
               group = "Pooled Estimate"
             )
             m <- as.data.frame(group_effects(x, interval = interval,
-                                             summary = TRUE)[,,i])
+                                             summary = TRUE,
+                                             transform = transform)[,,i])
             m$group <- rownames(m)
             m <- rbind(hyper_effects, m)
             m
           } else {
-            m <- as.data.frame(group_effects(x, interval = interval,
-                                             summary = TRUE)[,,i])
+            m <- as.data.frame(group_effects(x,
+                                             interval = interval,
+                                             summary = TRUE,
+                                             transform = transform)[,,i])
             m$group <- rownames(m)
             m
           }

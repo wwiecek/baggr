@@ -4,7 +4,7 @@
 \alias{baggr_compare}
 \title{(Run and) compare multiple baggr models}
 \usage{
-baggr_compare(..., what = "pooling", compare = "groups")
+baggr_compare(..., what = "pooling", compare = "groups", transform = NULL)
 }
 \arguments{
 \item{...}{Either a number (at least 1) of objects of class \code{baggr}
@@ -20,6 +20,14 @@ passed to \code{...}, this argument is ignored.}
 \item{compare}{When plotting, choose between comparison of \code{"groups"}
 (default) or (hyper-) \code{"effects"}. The former is not available
 when \code{what = "prior"}.}
+
+\item{transform}{a function (e.g. exp(), log()) to apply to
+the values of group (and hyper, if hyper=TRUE)
+effects before plotting; when working with
+effects that are on log scale,
+exponent transform is used automatically,
+you can plot on log scale by setting
+transform = identity}
 }
 \value{
 a \code{ggplot} is rendered and/or returned
