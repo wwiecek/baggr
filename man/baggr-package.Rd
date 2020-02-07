@@ -5,10 +5,20 @@
 \alias{baggr-package}
 \title{baggr - a package for Bayesian meta-analysis}
 \description{
-This is \emph{baggr} (pronounced as \emph{bagger} or \emph{badger}), a Bayesian meta-analysis package for R using \href{https://mc-stan.org/}{Stan}. \emph{Baggr} is intended to be user-friendly and transparent so that it's easier to understand the models you are building and criticise them. The current version is a stable prototype of a tool that's in active development so we are counting on your feedback.
+This is \emph{baggr} (pronounced as \emph{bagger} or \emph{badger}), a Bayesian meta-analysis
+package for R using \href{https://mc-stan.org/}{Stan}.
+\emph{Baggr} is intended to be user-friendly and transparent so that
+it's easier to understand the models you are building and criticise them.
 }
 \details{
-\emph{Baggr} provides a suite of Bayesian aggregation models for both summary statistics and full data sets to synthesise evidence collected from different groups, contexts or time periods.
+\emph{Baggr} package provides a suite of models that work with both summary data and full data sets,
+to synthesise evidence collected from different groups, contexts or time periods.
+The \link{baggr} command automatically detects the data type and, by default, fits a partial
+pooling model (which you may know as
+\href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode}{random effects models})
+with weakly informative priors by calling \href{https://mc-stan.org/}{Stan} to carry
+out Bayesian inference. Modelling of variances or quantiles, standardisation and
+transformation of data is also possible.
 }
 \section{Getting help}{
 

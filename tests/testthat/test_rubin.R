@@ -37,7 +37,7 @@ test_that("Error messages for wrong inputs are in place", {
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
                    c("K", "theta_hat_k", "se_theta_k", "K_test",
-                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X"))
+                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
 
   expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
@@ -173,6 +173,37 @@ test_that("Test data can be used in the Rubin model", {
 
 })
 
+
+# covariates ------
+sa <- schools
+sa$a <- rnorm(8)
+sa$b <- rnorm(8)
+sb <- sa
+sb$b <- NULL
+bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
+bg_cov_test <- baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0)
+
+test_that("Model with covariates works fine", {
+  expect_is(bg_cov, "baggr")
+  expect_error(baggr(sa, covariates = c("made_up_covariates")))
+  expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
+  expect_length(bg5_p$covariates, 0)
+  expect_length(bg_cov$covariates, 2)
+  expect_null(bg_cov$mean_lpd)
+
+  # Fixed effects extraction
+  expect_is(fixed_effects(bg_cov), "matrix")
+  expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
+
+  # covariates and test_data
+  expect_error(baggr(sa, covariates = c("a", "b"), test_data = sb), "Cannot bind")
+  expect_error(baggr(sb, model = "rubin", test_data=sa[1:2,], covariates = c("b")), "are not columns")
+  expect_is(bg_cov_test$mean_lpd, "numeric")
+  expect_length(bg_cov_test$covariates, 1)
+
+})
 
 # test helpers -----
 

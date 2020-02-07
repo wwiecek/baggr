@@ -73,10 +73,13 @@ test_that("Different priors for mutau model", {
                               iter = 200, chains = 2, refresh = 0))
   bg2 <- expect_warning(baggr(df_mutau, prior_hypercor = lkj(4),
                               iter = 200, chains = 2, refresh = 0))
+  bg3 <- expect_warning(baggr(df_mutau, prior_hypersd = normal(0, 5),
+                              iter = 200, chains = 2, refresh = 0))
   expect_error(baggr(df_mutau, prior_hypermean = multinormal(c(0,0,0), diag(3))))
   expect_error(baggr(df_mutau, prior_hypercor  = multinormal(c(0,0), diag(2))))
   expect_is(bg1, "baggr")
   expect_is(bg2, "baggr")
+  expect_is(bg3, "baggr")
 })
 
 

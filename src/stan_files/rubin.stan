@@ -23,6 +23,7 @@ data {
   int<lower=0> K_test;
   vector[K_test] test_theta_hat_k;
   vector<lower=0>[K_test] test_se_theta_k;
+  matrix[K_test,Nc] X_test;  //covariate values (design matrix for FE)
 }
 
 transformed data {
@@ -85,13 +86,18 @@ model {
 
 generated quantities {
   real logpd[K_test > 0? 1: 0];
+  vector[K_test] fe_k_test;
   if(K_test > 0){
+    if(Nc == 0)
+      fe_k_test = rep_vector(0.0, K_test);
+    else
+      fe_k_test = X_test*beta;
     logpd[1] = 0;
     for(k in 1:K_test){
       if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1], sqrt(tau[1]^2 + test_se_theta_k[k]^2));
+        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(tau[1]^2 + test_se_theta_k[k]^2));
       if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1], sqrt(test_se_theta_k[k]^2));
+        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(test_se_theta_k[k]^2));
     }
   }
 }

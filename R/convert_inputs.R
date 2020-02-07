@@ -244,25 +244,48 @@ convert_inputs <- function(data,
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       out$test_theta_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
-                                   2, nrow(test_data), byrow = T)
+                                     2, nrow(test_data), byrow = T)
       out$test_se_theta_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
-                              2, nrow(test_data), byrow = T)
+                                    2, nrow(test_data), byrow = T)
     }
   }
 
+  # Include covariates ------
   if(required_data != "individual") {
     if(length(covariates) > 0) {
+
       if(!all(covariates %in% names(data)))
         stop(paste0("Covariates ",
                     paste(covariates[!(covariates %in% names(data))], collapse=","),
                     " are not columns in input data"))
+
+      # Test_data preparation
+      if(!is.null(test_data)){
+        data_bind <- try(rbind(data[,covariates, drop = FALSE],
+                               test_data[,covariates, drop = FALSE]))
+        if(class(data_bind) == "try-error")
+          stop("Cannot bind data and test_data. Ensure that all ",
+               "covariates are present and same levels are used.")
+        data_bind$tau <- 0
+
+        out$X_test <- model.matrix(as.formula(
+          paste("tau ~", paste(covariates, collapse="+"), "-1")),
+          data=data_bind[(nrow(data)+1):nrow(data_bind),])
+      } else {
+        data_bind <- data[,covariates]
+        data_bind$tau <- 0
+        out$X_test <- array(0, dim=c(0, length(covariates)))
+      }
+
       out$X <- model.matrix(as.formula(
-        paste("tau ~", paste(covariates, collapse="+"), "-1")), data=data)
+        paste("tau ~", paste(covariates, collapse="+"), "-1")),
+        data=data_bind[1:nrow(data),])
       out$Nc <- length(covariates)
 
     } else {
       out$Nc <- length(covariates)
       out$X <- array(0, dim=c(nrow(data), 0))
+      out$X_test <- array(0, dim=c(ifelse(is.null(test_data), 0, nrow(test_data)), 0))
     }
   }
 

@@ -19,7 +19,7 @@ test_that("Error messages for wrong inputs are in place", {
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_binary, "logit")),
                    c("K", "N", "P", "y", "treatment", "site", "N_test", "K_test",
-                     "test_y", "test_site", "test_treatment", "Nc", "X"))
+                     "test_y", "test_site", "test_treatment", "Nc", "X", "X_test"))
 })
 
 bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",
@@ -100,6 +100,7 @@ test_that("Plotting works", {
   expect_is(plot(bg5_ppd), "gg")
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, transform = exp), "gg")
+  expect_is(plot(bg5_p, transform = exp, hyper = TRUE), "gg")
   expect_is(plot(bg5_p, hyper = TRUE), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")

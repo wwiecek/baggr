@@ -140,11 +140,12 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
         tab <- cbind(fixed_eff_tab[,c("mean", "sd"),i])
       }
       print(tab, digits = digits)
+      cat("\n")
     }
   }
 
   if(!is.null(x[["mean_lpd"]]))
-    cat("Cross-validation result: mean lpd =",
+    cat("Cross-validation result: -2 * mean log predictive density =",
         crayon::bold(format(x$mean_lpd)), "\n")
 
   invisible(x)

@@ -34,7 +34,7 @@ test_that("Error messages for wrong inputs are in place", {
                  "No labels will be added.")
   expect_identical(names(convert_inputs(df_mutau, "mutau")),
                    c("K", "P", "theta_hat_k", "se_theta_k",
-                     "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X"))
+                     "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
 })
 
 
