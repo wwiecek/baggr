@@ -228,6 +228,8 @@ plot.baggr_compare <- function(x,
   compare <- x$compare
   effect_names <- x$effect_names
 
+  args <- list(...)
+
   if(arrange == "grid") {
     plots <- lapply(models, baggr_plot,
                     style = style,
@@ -276,8 +278,32 @@ plot.baggr_compare <- function(x,
         for(j in 1:length(ll))
           df_groups <- rbind(df_groups,
                              data.frame(model = names(ll)[j], ll[[j]]))
+
+        if(!is.null(args$order)) {
+          if(args$order == T) {
+            ord <- c(
+              "Pooled Estimate",
+              setdiff(unique(df_groups$group[rank(df_groups$median)]),
+                      "Pooled Estimate")
+            )
+          } else {
+            ord <- c(
+              "Pooled Estimate",
+              setdiff(sort(unique(df_groups$group)),
+                      "Pooled Estimate")
+            )
+          }
+        } else {
+          ord <- c(
+            "Pooled Estimate",
+            setdiff(sort(unique(df_groups$group)),
+                    "Pooled Estimate")
+          )
+        }
+
         df_groups$group <- factor(df_groups$group,
-                                  levels = unique(df_groups$group[order(df_groups$median)]))
+                                  levels = rev(ord) # because of flipped coordinates
+                                  )
 
         # df <- rbind(df_groups, df_trt)
         df <- df_groups
