@@ -214,6 +214,8 @@ print.baggr_compare <- function(x, digits, ...){
 #' to apply to the values of group (and hyper, if hyper=TRUE)
 #' effects before plotting; when working with effects that are on log scale, exponent transform is used automatically,
 #' you can plot on log scale by setting transform = identity
+#' @param order Whether to order by median treatment effect by group. If not, this
+#' sorts group alphabetically. The pooled estimate is always listed first, when applicable.
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
@@ -222,13 +224,12 @@ plot.baggr_compare <- function(x,
                                interval = 0.95,
                                hyper = T,
                                transform = NULL,
+                               order = F,
                                ...) {
 
   models <- x$models
   compare <- x$compare
   effect_names <- x$effect_names
-
-  args <- list(...)
 
   if(arrange == "grid") {
     plots <- lapply(models, baggr_plot,
@@ -279,20 +280,23 @@ plot.baggr_compare <- function(x,
           df_groups <- rbind(df_groups,
                              data.frame(model = names(ll)[j], ll[[j]]))
 
-        if(!is.null(args$order)) {
-          if(args$order == T) {
+          if(order == T) {
+
+            model_spread <- sapply(
+              split(df_groups, df_groups$model), function(x) max(x$median) - min(x$median)
+            )
+
+            max_spread_model <- names(model_spread[which.max(model_spread)])
+
+            rank_data <- df_groups[which(df_groups$model == max_spread_model),]
+
+            lvls <- rank_data[order(rank_data$median),]$group
+
             ord <- c(
               "Pooled Estimate",
-              setdiff(unique(df_groups$group[rank(df_groups$median)]),
-                      "Pooled Estimate")
+              rev(lvls)
             )
-          } else {
-            ord <- c(
-              "Pooled Estimate",
-              setdiff(sort(unique(df_groups$group)),
-                      "Pooled Estimate")
-            )
-          }
+
         } else {
           ord <- c(
             "Pooled Estimate",
