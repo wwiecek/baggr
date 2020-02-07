@@ -23,7 +23,10 @@
 #'               These labels are used in various print and plot outputs.
 #'               Comparable models (e.g. in [baggr_compare]) should have same `effect`.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
-#'                   covariates (fixed effects) in the meta-regression model.
+#'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
+#'                   In the case of individual level data the model does not differentiate between group-level
+#'                   variables (same values of the covariate for all rows related to a given group) and
+#'                   individual-level covariates.
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
 #'              See Details:Priors below for more possible specifications.

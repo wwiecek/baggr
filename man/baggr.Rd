@@ -54,7 +54,10 @@ by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
-covariates (fixed effects) in the meta-regression model.}
+covariates (fixed effects) in the meta-regression model (in case of aggregate data).
+In the case of individual level data the model does not differentiate between group-level
+variables (same values of the covariate for all rows related to a given group) and
+individual-level covariates.}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}

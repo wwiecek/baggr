@@ -161,6 +161,30 @@ test_that("Extracting treatment/study effects works", {
 
 
 
+# covariates ------
+sa <- df_binary
+sa$a <- rnorm(nrow(df_binary))
+sa$b <- rnorm(nrow(df_binary))
+sb <- sa
+sb$b <- NULL
+bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
+
+test_that("Model with covariates works fine", {
+  expect_is(bg_cov, "baggr")
+  expect_error(baggr(sa, covariates = c("made_up_covariates")), "are not columns")
+  expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
+  expect_length(bg5_p$covariates, 0)
+  expect_length(bg_cov$covariates, 2)
+  expect_null(bg_cov$mean_lpd)
+
+  # Fixed effects extraction
+  expect_is(fixed_effects(bg_cov), "matrix")
+  expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
+})
+
+
 
 # tests for helper functions -----
 

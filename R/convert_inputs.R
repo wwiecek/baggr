@@ -272,7 +272,7 @@ convert_inputs <- function(data,
           paste("tau ~", paste(covariates, collapse="+"), "-1")),
           data=data_bind[(nrow(data)+1):nrow(data_bind),])
       } else {
-        data_bind <- data[,covariates]
+        data_bind <- data[,covariates, drop = FALSE]
         data_bind$tau <- 0
         out$X_test <- array(0, dim=c(0, length(covariates)))
       }

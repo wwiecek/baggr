@@ -1,3 +1,7 @@
+functions {
+#include /functions/prior_increment.stan
+}
+
 data {
   int<lower=0> K;  // number of sites
   int<lower=0> N;  // total number of observations
@@ -8,12 +12,11 @@ data {
   int<lower=0,upper=K> site[N];
   vector<lower=0,upper=1>[N] treatment;
 
-  //priors (proof of concept)
-  //0 = uniform, 1 = normal
+  //priors
   int prior_hypermean_fam;
   int prior_hypersd_fam;
-  real prior_hypermean_val[3];
-  real prior_hypersd_val[3];
+  vector[3] prior_hypermean_val;
+  vector[3] prior_hypersd_val;
 
   //cross-validation variables:
   int<lower=0> N_test;
@@ -46,37 +49,27 @@ transformed parameters {
   }
 }
 model {
+  vector[N] fe;
+  if(N > 0){
+    if(Nc == 0)
+      fe = rep_vector(0.0, N);
+    else
+      fe = X*beta;
+  }
 
   baseline ~ normal(0, 10);
 
-  if(pooling_type > 0) {
-    if(prior_hypermean_fam == 0)
-    mu ~ uniform(prior_hypermean_val[1], prior_hypermean_val[2]);
-    if(prior_hypermean_fam == 1)
-    mu ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
-    if(prior_hypermean_fam == 2)
-    mu ~ cauchy(prior_hypermean_val[1], prior_hypermean_val[2]);
-  } else {
-    if(prior_hypermean_fam == 0)
-    eta ~ uniform(prior_hypermean_val[1], prior_hypermean_val[2]);
-    if(prior_hypermean_fam == 1)
-    eta ~ normal(prior_hypermean_val[1], prior_hypermean_val[2]);
-    if(prior_hypermean_fam == 2)
-    eta ~ cauchy(prior_hypermean_val[1], prior_hypermean_val[2]);
+  //hypermean priors:
+  if(pooling_type > 0)
+    target += prior_increment_vec(prior_hypermean_fam, mu[1], prior_hypermean_val);
+  else{
+    for(k in 1:K)
+      target += prior_increment_vec(prior_hypermean_fam, eta[k], prior_hypermean_val);
   }
 
   //hyper-SD priors:
-  if(pooling_type == 1){
-    if(prior_hypersd_fam == 0)
-    target += uniform_lpdf(tau |
-    prior_hypersd_val[1], prior_hypersd_val[2]);
-    if(prior_hypersd_fam == 1)
-    target += normal_lpdf(tau |
-    prior_hypersd_val[1], prior_hypersd_val[2]);
-    if(prior_hypersd_fam == 2)
-    target += cauchy_lpdf(tau |
-    prior_hypersd_val[1], prior_hypersd_val[2]);
-  }
+  if(pooling_type == 1)
+    target += prior_increment_vec(prior_hypersd_fam, tau[1], prior_hypersd_val);
 
   //fixed effect coefficients
   beta ~ normal(0, 10);
@@ -86,8 +79,28 @@ model {
 
   for(i in 1:N){
     if(pooling_type < 2)
-      y[i] ~ bernoulli_logit(baseline[site[i]] + theta_k[site[i]] * treatment[i]);
+      y[i] ~ bernoulli_logit(baseline[site[i]] + theta_k[site[i]] * treatment[i] + fe[i]);
     if(pooling_type == 2)
-      y[i] ~ bernoulli_logit(baseline[site[i]] + mu[1] * treatment[i]);
+      y[i] ~ bernoulli_logit(baseline[site[i]] + mu[1] * treatment[i] + fe[i]);
   }
 }
+
+/*
+generated_quantities {
+  real logpd[K_test > 0? 1: 0];
+  // vector[K_test] fe_k_test;
+  if(K_test > 0){
+    // if(Nc == 0)
+      // fe_k_test = rep_vector(0.0, K_test);
+    // else
+      // fe_k_test = X_test*beta;
+    logpd[1] = 0;
+    for(k in 1:K_test){
+      if(pooling_type == 1)
+        logpd[1] += bernoulli_logit_lpmf(test_theta_hat_k[k] | baseline[site[i]] + mu[1] * treatment[i] + fe[i]);
+      // if(pooling_type == 2)
+        // logpd[1] += bernoulli_logit_lpmf(test_theta_hat_k[k] | baseline[site[i]] + mu[1] * treatment[i] + fe[i]);
+    }
+  }
+}
+*/
