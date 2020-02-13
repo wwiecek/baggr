@@ -40,15 +40,13 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95)
 
   } else {
     # choose correct columns for the given models:
-    if(bg$model %in% c("rubin", "mutau", "logit")) {
+    if(bg$model %in% c("rubin", "mutau", "logit", "full")) {
       #replace by extract:
       # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
       # drop mu if model has mu (baseline/control value)
       if(bg$model == "mutau")
         m <- m[,,2]
-    } else if(bg$model == "full") {
-      m <- rstan::extract(bg$fit, pars = "mutau_k")[[1]][,,2]
     } else if(bg$model == "quantiles") {
       # In this case we have 3D array, last dim is quantiles
       m <- rstan::extract(bg$fit, pars = "beta_1_k")[[1]]

@@ -10,7 +10,8 @@
 #'              see [baggr] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
-#' @param covariates Character vector with column names in `data`. The corresponding columns are used as
+#' @param covariates Character vector with column names in `data`.
+#'                   The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model.
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
@@ -129,20 +130,35 @@ convert_inputs <- function(data,
         treatment = data[[treatment]],
         site = group_numeric
       )
-    }
-    if(model == "logit") {
+    # }
+    # if(model == "logit") {
       if(is.null(test_data)) {
         out$N_test <- 0
         out$K_test <- 0
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
         out$test_treatment <- array(0, dim = 0)
+        if(model == "full")
+          out$test_sigma_y_k <- array(0, dim = 0)
+
       } else {
         out$N_test <- nrow(test_data)
         out$K_test <- max(group_numeric_test)
         out$test_y <- test_data[[outcome]]
         out$test_treatment <- test_data[[treatment]]
         out$test_site <- group_numeric_test
+        # calculate SEs in each test group
+        if(model == "full"){
+          se_in_each_group <- sapply(
+            1:max(group_numeric_test), function(i) {
+              n <- sum(group_numeric_test == i)
+              sd(test_data[[outcome]][group_numeric_test == i])/sqrt(n)
+          })
+          if(any(is.na(se_in_each_group)))
+            stop("Cannot calculate SE in groups in test data. Each out-of-sample ",
+                 "group must be of size at least 2.")
+          out$test_sigma_y_k <- se_in_each_group
+        }
       }
     }
     if(model == "quantiles"){
@@ -251,7 +267,7 @@ convert_inputs <- function(data,
   }
 
   # Include covariates ------
-  if(required_data != "individual") {
+  # if(required_data != "individual") {
     if(length(covariates) > 0) {
 
       if(!all(covariates %in% names(data)))
@@ -287,7 +303,7 @@ convert_inputs <- function(data,
       out$X <- array(0, dim=c(nrow(data), 0))
       out$X_test <- array(0, dim=c(ifelse(is.null(test_data), 0, nrow(test_data)), 0))
     }
-  }
+  # }
 
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))

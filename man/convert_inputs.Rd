@@ -31,7 +31,8 @@ automatically}
 
 \item{treatment}{name of column with treatment variable}
 
-\item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
+\item{covariates}{Character vector with column names in \code{data}.
+The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model.}
 
 \item{test_data}{same format as \code{data} argument, gets left aside for

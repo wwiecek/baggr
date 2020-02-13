@@ -23,7 +23,7 @@ treatment_effect <- function(bg, summary = FALSE,
     message("There is no treatment effect estimated when pooling = 'none'.")
     return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
-  if(bg$model %in% c("rubin", "mutau", "logit")) {
+  if(bg$model %in% c("rubin", "mutau", "logit", "full")) {
     tau <- rstan::extract(bg$fit, pars="mu")[[1]]
     if(bg$model %in% c("rubin", "logit"))
       tau <- c(tau)
@@ -39,11 +39,6 @@ treatment_effect <- function(bg, summary = FALSE,
     }
     if(bg$pooling == "full")
       sigma_tau <- 0 #same dim as tau, but by convention set to 0
-  } else if(bg$model == "full") {
-    tau <- as.matrix(bg$fit)[,"mutau[2]"]
-    sigma_tau <- as.matrix(bg$fit)[,"sigma_mutau[2,2]"]
-    # in model with correlation, we have Var(), not SD():
-    sigma_tau <- sqrt(sigma_tau)
   } else if(bg$model == "quantiles") {
     # In this case we have N columns = N quantiles
     tau <- as.matrix(bg$fit, "beta_1")

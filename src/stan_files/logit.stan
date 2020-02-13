@@ -23,7 +23,7 @@ data {
   //cross-validation variables:
   int<lower=0> N_test;
   int<lower=0> K_test;
-  real test_y[N_test];
+  int<lower=0,upper=1> test_y[N_test];
   int<lower=0, upper=K> test_site[N_test];
   int<lower=0, upper=1> test_treatment[N_test];
 }
@@ -74,7 +74,6 @@ model {
     target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
 
   //fixed effect coefficients
-  // beta ~ normal(0, 10);
   target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
 
   if(pooling_type == 1)

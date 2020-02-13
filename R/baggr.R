@@ -76,11 +76,16 @@
 #' For individual level data three columns are needed: outcome, treatment, group. These
 #' are identified by using the `outcome`, `treatment` and `group` arguments.
 #'
-#' When working with individual-level data,
-#' many data preparation steps (summarising, standardisation etc.)
-#' can be done through a helper function [prepare_ma].
-#' Using it will also automatically format data inputs to be
-#' work with `baggr()`.
+#' Both aggregate and individual-level data can include extra `covariates` columns
+#' (specified as a character vector of column names) to be used in regression (for
+#' individual data) or
+#' [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
+#' (for summary data). We also refer to impact of these covariates as _fixed effects_.
+#'
+#' Many data preparation steps can be done through a helper function [prepare_ma].
+#' It can convert individual to summary-level data, calculate
+#' odds/risk ratios (with/without corrections) in binary data, standardise variables and more.
+#' Using it will automatically format data inputs to work with `baggr()`.
 #'
 #' __Models.__ Available models are:
 #'
@@ -111,7 +116,7 @@
 #'
 #' * [treatment_effect] for distribution of hyperparameters
 #' * [group_effects] for distributions of group-specific parameters
-#' * [fixed_effects] for coefficients in meta-regression
+#' * [fixed_effects] for coefficients in (meta-)regression
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions
 #' * [baggr_compare] for comparing multiple `baggr` models
 #' * [loocv] for cross-validation

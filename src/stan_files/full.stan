@@ -1,101 +1,112 @@
 functions {
-  real normal_log_ss(int N, real y_sq_sum, vector xy_sum,
-                     matrix xx_sum, vector beta, real sigma) {
-    real beta_xy;
-    real lp;
-    beta_xy = dot_product(xy_sum, beta);
-    lp = -.5*(y_sq_sum - 2*beta_xy + sum(beta * beta' .* xx_sum))/sigma^2;
-    lp = lp - .5*N*log(sigma^2);
-    return lp;
-  }
+#include /functions/prior_increment.stan
 }
 
 data {
   int<lower=0> K;  // number of sites
   int<lower=0> N;  // total number of observations
-  int<lower=0> P;  // dimensionality of parameter vector which  is
-                   // jointly distributed - here, it is 2 dimensional
-  real y[N];       // outcome variable of interest
-  int treatment[N];      // intention to treat indicator
-  int site[N];     // factor variable to split them out into K sites
-  int pooling_type;//0 if none, 1 if partial, 2 if full
-  int<lower=0, upper=1> joint; //is the distribution on parameters (mu and tau) joint?
-  matrix[P,P] mutau_prior_sigma;
-  vector[P]   mutau_prior_mean;
+  int<lower=0> Nc; //number of covariates (fixed effects)
+  matrix[N,Nc] X;  //covariate values (design matrix for FE)
+  int pooling_type; //0 if none, 1 if partial, 2 if full
+  real y[N];
+  int<lower=0,upper=K> site[N];
+  vector<lower=0,upper=1>[N] treatment;
+
+    //priors
+  int prior_hypermean_fam;
+  int prior_hypersd_fam;
+  int prior_beta_fam;
+  vector[3] prior_hypermean_val;
+  vector[3] prior_hypersd_val;
+  vector[3] prior_beta_val;
+
+  //cross-validation variables:
+  int<lower=0> N_test;
+  int<lower=0> K_test;
+  matrix[N_test,Nc] X_test;
+  int<lower=0, upper=K> test_site[N_test];
+  int<lower=0, upper=1> test_treatment[N_test];
+
+  real test_y[N_test];
+  real test_sigma_y_k[K_test];
+
 }
 transformed data {
-  int N_k[K];           // number of observations from site K
-  real y_sq_sum[K];     // sum_i y_{ki}^2
-  vector[P] xy_sum[K];  // sum_i y_ki [1, ITT_{ki}]
-  matrix[P,P] xx_sum[K];// sum_i [1, ITT_{ki}] [1, ITT_{ki}]'
-  int s;
-  vector[P] x;
-  // initialize everything to zero
-  N_k = rep_array(0, K);
-  y_sq_sum = rep_array(0.0, K);
-  xy_sum = rep_array(rep_vector(0.0, P), K);
-  xx_sum = rep_array(rep_matrix(0.0, P, P), K);
-  // x[1] is always 1
-  x[1] = 1.0;
-  for (n in 1:N) {
-    s = site[n];
-    x[2] = treatment[n];
-    N_k[s] = N_k[s] + 1;
-    y_sq_sum[s] = y_sq_sum[s] + y[n]^2;
-    xy_sum[s] = xy_sum[s] + y[n]*x;
-    xx_sum[s] = xx_sum[s] + x*x';
-  }
+  int K_pooled; // number of modelled sites if we take pooling into account
+  if(pooling_type == 2)
+    K_pooled = 0;
+  if(pooling_type != 2)
+    K_pooled = K;
 }
-
 parameters {
-  vector[P] mutau;
-  matrix[K,P] mutau_k;
-
+  real mu[pooling_type != 0? 1: 0];
+  real<lower=0> tau[pooling_type == 1? 1: 0];
   real<lower=0> sigma_y_k[K];
-  corr_matrix[P] Omega;        //  correlation
-  vector<lower=0>[P] theta;    //  scale
+  real eta[K_pooled];
+  vector[Nc] beta;
 }
 transformed parameters {
-  matrix[P,P] sigma_mutau;
-  sigma_mutau = quad_form_diag(Omega,theta);
-}
-
-model {
-  //data variance priors
-  sigma_y_k ~ uniform(0,100000);
-  // sigma_y_k ~ inv_gamma(0.1,10);
-
-  // parameter variance priors
-  theta ~ cauchy(0,10);
-
-  // theta ~ normal(0,100);
-  Omega ~ lkj_corr(3);
-
-  // hyperparameter priors
-  if(pooling_type != 0)
-    mutau ~ multi_normal(mutau_prior_mean, mutau_prior_sigma);
-  if(pooling_type == 0)
-    for(p in 1:P)
-      mutau[p] ~ normal(0, 1);
-
-  for (k in 1:K) {
+  real theta_k[K_pooled];
+  for(k in 1:K_pooled){
     if(pooling_type == 0)
-      mutau_k[k] ~ multi_normal(mutau_prior_mean, mutau_prior_sigma);
-    if(pooling_type != 0)
-      mutau_k[k] ~ multi_normal(mutau, sigma_mutau);
-    if(pooling_type != 2)
-      target += normal_log_ss(N_k[k], y_sq_sum[k], xy_sum[k],
-                              xx_sum[k], mutau_k[k]', sigma_y_k[k]);
-    if(pooling_type == 2)
-        target += normal_log_ss(N_k[k], y_sq_sum[k], xy_sum[k],
-                            xx_sum[k], mutau, sigma_y_k[k]);
+      theta_k[k] = eta[k];
+    if(pooling_type == 1)
+      theta_k[k] = mu[1] + eta[k]*tau[1];
   }
 }
-generated quantities{
-  // vector[2] predicted_mutau_k;
-  // real signal_noise_ratio_mu;
-  // real signal_noise_ratio_tau;
-  // signal_noise_ratio_mu = mutau[1]/sqrt(sigma_mutau[1,1]);
-  // signal_noise_ratio_tau = mutau[2]/sqrt(sigma_mutau[2,2]);
-  // predicted_mutau_k = multi_normal_rng(mutau, sigma_mutau);
+model {
+  vector[N] fe;
+  if(N > 0){
+    if(Nc == 0)
+      fe = rep_vector(0.0, N);
+    else
+      fe = X*beta;
+  }
+
+  //hypermean priors:
+  if(pooling_type > 0)
+    target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
+  else{
+    for(k in 1:K)
+      target += prior_increment_real(prior_hypermean_fam, eta[k], prior_hypermean_val);
+  }
+
+  //hyper-SD priors:
+  if(pooling_type == 1)
+    target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
+
+  //fixed effect coefficients
+  target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+
+  if(pooling_type == 1)
+    eta ~ normal(0,1);
+
+  for(i in 1:N){
+    if(pooling_type < 2)
+      y[i] ~ normal(theta_k[site[i]] * treatment[i] + fe[i], sigma_y_k[site[i]]);
+    if(pooling_type == 2)
+      y[i] ~ normal(mu[1] * treatment[i] + fe[i], sigma_y_k[site[i]]);
+  }
+}
+generated quantities {
+  // to do this, we must first (outside of Stan) calculate SEs in each test group,
+  // i.e. test_sigma_y_k
+
+  real logpd[K_test > 0? 1: 0];
+  vector[N_test] fe_test;
+  if(K_test > 0){
+    if(Nc == 0)
+      fe_test = rep_vector(0.0, K_test);
+    else
+      fe_test = X_test*beta;
+    logpd[1] = 0;
+    for(i in 1:N_test){
+      if(pooling_type == 1)
+        logpd[1] += normal_lpdf(test_y[i] | mu[1] * test_treatment[i] + fe_test[i],
+                                sqrt(tau[1]^2 + test_sigma_y_k[test_site[i]]^2));
+      if(pooling_type == 2)
+        logpd[1] += normal_lpdf(test_y[i] | mu[1] * test_treatment[i] + fe_test[i],
+                                sqrt(test_sigma_y_k[test_site[i]]^2));
+    }
+  }
 }

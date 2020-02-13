@@ -27,16 +27,19 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
   prior_list <- list()
 
-  # message("Automatically setting prior values:")
-  if(model == "logit") {
-    # Swap data for summary data for logOR,
-    # then proceed as you would in Rubin model
+  # Swap data for summary data...
+  if(model %in% c("full", "logit")) {
     pma_data <- data.frame(outcome = stan_data$y,
                            group = stan_data$site,
                            treatment = stan_data$treatment)
-    data <- prepare_ma(pma_data, effect = "logOR")
+    if(model == "logit")
+      data <- prepare_ma(pma_data, effect = "logOR")
+    if(model == "full")
+      data <- prepare_ma(pma_data, effect = "mean")
   }
-  if(model %in% c("rubin", "logit")) {
+  # ...then proceed as you would in Rubin model
+
+  if(model %in% c("rubin", "logit", "full")) {
     # Hypermean
     if(is.null(prior$hypermean)){
       val <- 10*max(abs(data$tau))
@@ -128,17 +131,17 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                                "hypercor"  = c("lkj"),
                                "hypermean" = c("multinormal")))
   }
-  if(model == "full") {
-    # empirical variance of outcome:
-    vhat <- var(stan_data$y) #this may give trouble, look out!
-    message(paste0("SD of treatment effect is Uniform(0, ",
-                   format(10*sqrt(vhat), digits=2),
-                   "); 10*(observed outcome SD)"))
-    prior_list[["joint"]] <- 1
-    prior_list[["P"]] <- 2
-    prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
-    prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)
-  }
+  # if(model == "full") {
+  #   # empirical variance of outcome:
+  #   vhat <- var(stan_data$y) #this may give trouble, look out!
+  #   message(paste0("SD of treatment effect is Uniform(0, ",
+  #                  format(10*sqrt(vhat), digits=2),
+  #                  "); 10*(observed outcome SD)"))
+  #   prior_list[["joint"]] <- 1
+  #   prior_list[["P"]] <- 2
+  #   prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
+  #   prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)
+  # }
   if(model == "quantiles") {
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$N)
     prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$N)
