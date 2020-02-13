@@ -15,8 +15,10 @@ data {
   //priors
   int prior_hypermean_fam;
   int prior_hypersd_fam;
+  int prior_beta_fam;
   vector[3] prior_hypermean_val;
   vector[3] prior_hypersd_val;
+  vector[3] prior_beta_val;
 
   //cross-validation variables:
   int<lower=0> N_test;
@@ -61,18 +63,19 @@ model {
 
   //hypermean priors:
   if(pooling_type > 0)
-    target += prior_increment_vec(prior_hypermean_fam, mu[1], prior_hypermean_val);
+    target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
   else{
     for(k in 1:K)
-      target += prior_increment_vec(prior_hypermean_fam, eta[k], prior_hypermean_val);
+      target += prior_increment_real(prior_hypermean_fam, eta[k], prior_hypermean_val);
   }
 
   //hyper-SD priors:
   if(pooling_type == 1)
-    target += prior_increment_vec(prior_hypersd_fam, tau[1], prior_hypersd_val);
+    target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
 
   //fixed effect coefficients
-  beta ~ normal(0, 10);
+  // beta ~ normal(0, 10);
+  target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
 
   if(pooling_type == 1)
     eta ~ normal(0,1);

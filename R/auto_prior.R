@@ -12,6 +12,7 @@
 #'                  this is already pre-obtained through [convert_inputs]
 #' @param model same as in [baggr]
 #' @param pooling same as in [baggr]
+#' @param covariates same as in [baggr]
 #' @param quantiles  same as in [baggr]
 #'
 #' @return A named list with prior values that can be appended to `stan_data`
@@ -19,7 +20,7 @@
 #'
 
 
-prepare_prior <- function(prior, data, stan_data, model,pooling,
+prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                           quantiles = c()) {
   if(missing(prior))
     prior <- list()
@@ -142,6 +143,20 @@ prepare_prior <- function(prior, data, stan_data, model,pooling,
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$N)
     prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$N)
     message("prior_dispersion_on_beta = 1000*diag(stan_data$N)")
+  }
+
+  # Setting covariates prior
+  if(length(covariates) > 0) {
+    if(is.null(prior$beta)){
+      val <- max(10*sd(data$mu), 10*sd(data$tau))
+      prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, 10))
+      message(paste0("Set beta prior (on covariates in regression)to N(0, 10^2)",
+                     " -- purely experimental, use with caution"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
+    }
+  } else {
+    prior_list <- set_prior_val(prior_list, "prior_beta", uniform(0,0))
   }
 
   return(prior_list)

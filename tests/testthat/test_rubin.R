@@ -182,9 +182,13 @@ sb <- sa
 sb$b <- NULL
 bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
 bg_cov_test <- baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0)
+bg_cov_prior1 <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0, prior_beta = normal(0, 3))
+bg_cov_prior2 <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5)))
 
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")
+  expect_equal(bg_cov$formatted_prior$prior_beta_fam, 1)
+  expect_equal(bg_cov$formatted_prior$prior_beta_val, c(0,10,0))
   expect_error(baggr(sa, covariates = c("made_up_covariates")))
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
   expect_length(bg5_p$covariates, 0)
@@ -203,6 +207,13 @@ test_that("Model with covariates works fine", {
   expect_is(bg_cov_test$mean_lpd, "numeric")
   expect_length(bg_cov_test$covariates, 1)
 
+  # Setting priors for covariates manually works
+  expect_is(bg_cov_prior1, "baggr")
+  expect_is(bg_cov_prior2, "baggr")
+  expect_equal(bg_cov_prior1$formatted_prior$prior_beta_fam, 1)
+  expect_equal(bg_cov_prior1$formatted_prior$prior_beta_val, c(0,3,0))
+  expect_equal(bg_cov_prior2$formatted_prior$prior_beta_fam, 0)
+  expect_equal(bg_cov_prior2$formatted_prior$prior_beta_val, c(-5,5,0))
 })
 
 # test helpers -----

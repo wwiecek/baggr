@@ -36,8 +36,11 @@
 #'                       by Rubin and `"mutau"`` models;
 #'                       same rules apply as for `_hypermean`;
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
+#' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
+#'                       experimental normal(0, 10^2) distribution
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
-#'              `hypersd`, `hypercor`, e.g. `prior = list(hypermean = normal(0,10))`
+#'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
+#'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
 #' @param ppd       logical; use prior predictive distribution? (_p.p.d._) Default is no.
 #'                  If `ppd=TRUE`, Stan model will sample from the prior distributions
 #'                  and ignore `data` in inference. However, `data` argument might still
@@ -144,8 +147,9 @@
 
 baggr <- function(data, model = NULL, pooling = "partial",
                   effect = NULL,
-                  prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   covariates = c(),
+                  prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
+                  prior_beta = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
@@ -215,15 +219,16 @@ baggr <- function(data, model = NULL, pooling = "partial",
   if(is.null(prior))
     prior <- list(hypermean = prior_hypermean,
                   hypercor  = prior_hypercor,
-                  hypersd   = prior_hypersd)
+                  hypersd   = prior_hypersd,
+                  beta      = prior_beta)
   else {
-    if(!is.null(prior_hypermean) ||
+    if(!is.null(prior_hypermean) || !is.null(prior_beta) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd')))
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta')))
       stop(paste("Prior argument must be a list with names",
-                 "'hypermean', 'hypercor', 'hypersd'"))
+                 "'hypermean', 'hypercor', 'hypersd', 'beta'"))
   }
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
@@ -232,7 +237,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stan_args$formatted_prior <- NULL
   } else { # extract priors from inputs & fill in missing priors
     formatted_prior <- prepare_prior(prior, data, stan_data, model,
-                                     pooling, quantiles = quantiles)
+                                     pooling, covariates, quantiles = quantiles)
   }
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]

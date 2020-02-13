@@ -9,10 +9,11 @@ baggr(
   model = NULL,
   pooling = "partial",
   effect = NULL,
+  covariates = c(),
   prior_hypermean = NULL,
   prior_hypersd = NULL,
   prior_hypercor = NULL,
-  covariates = c(),
+  prior_beta = NULL,
   prior = NULL,
   ppd = FALSE,
   test_data = NULL,
@@ -42,6 +43,12 @@ quantiles in \code{quantiles} model etc.
 These labels are used in various print and plot outputs.
 Comparable models (e.g. in \link{baggr_compare}) should have same \code{effect}.}
 
+\item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
+covariates (fixed effects) in the meta-regression model (in case of aggregate data).
+In the case of individual level data the model does not differentiate between group-level
+variables (same values of the covariate for all rows related to a given group) and
+individual-level covariates.}
+
 \item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
 \code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
 See Details:Priors below for more possible specifications.
@@ -53,14 +60,12 @@ by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
 
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 
-\item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
-covariates (fixed effects) in the meta-regression model (in case of aggregate data).
-In the case of individual level data the model does not differentiate between group-level
-variables (same values of the covariate for all rows related to a given group) and
-individual-level covariates.}
+\item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
+experimental normal(0, 10^2) distribution}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
-\code{hypersd}, \code{hypercor}, e.g. \code{prior = list(hypermean = normal(0,10))}}
+\code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
+e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
 
 \item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.}) Default is no.
 If \code{ppd=TRUE}, Stan model will sample from the prior distributions

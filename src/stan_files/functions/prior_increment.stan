@@ -1,4 +1,4 @@
-  real prior_increment (int family, real[] y, real[] pars) {
+  real prior_increment_real (int family, real y, vector pars) {
     real inc;
     if(family == 0)
       inc = uniform_lpdf(y | pars[1], pars[2]);
@@ -11,7 +11,7 @@
     return inc;
   }
 
-  real prior_increment_vec (int family, real y, vector pars) {
+  real prior_increment_vec (int family, vector y, vector pars) {
     real inc;
     if(family == 0)
       inc = uniform_lpdf(y | pars[1], pars[2]);
