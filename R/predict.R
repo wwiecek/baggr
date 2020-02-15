@@ -12,12 +12,21 @@ predict.baggr <- function(x, nsamples,
                           newdata = NULL,
                           allow_new_levels = T) {
   switch(x$model,
-         rubin = predict_rubin(x, nsamples = nsamples,
+         rubin = predict_rubin(x,
+                               nsamples = nsamples,
                                newdata = newdata,
                                allow_new_levels = allow_new_levels),
-         quantiles = predict_quantiles(x, newdata = newdata,
-                                       allow_new_levels = allow_new_levels,
-                                       nsamples = nsamples))
+         predict_unknown(x))
+}
+
+#' Predict method for model that is unknown or not implemented
+#' @param x baggr model to generate predictions from
+predict_unknown <- function(x) {
+  stop("The ", x$model, " model",
+       " does not yet have a posterior prediction method",
+       " implemented. If you would like this to be implemented,",
+       " open a github issue here: \n",
+       "https://github.com/wwiecek/baggr/issues")
 }
 
 #' Make model matrix for the rubin data
@@ -68,8 +77,9 @@ predict_rubin <- function(x,
                           nsamples,
                           newdata = NULL,
                           allow_new_levels = T) {
-  if(missing(nsamples))
+  if(missing(nsamples)){
     nsamples <- get_n_samples(x)
+  }
 
   pred_data <- rubin_data(x, newdata)
   se <- sapply(x$data$se, rep, times = nsamples)
@@ -136,7 +146,7 @@ predict_quantiles <- function(x,
 #' @import bayesplot
 #' @importFrom utils getFromNamespace
 #' @export
-#'
+
 pp_check.baggr <- function(x, type = "dens_overlay", nsamples = 40) {
   pp_fun <- utils::getFromNamespace(paste0("ppc_",type),ns = "bayesplot")
   col <- switch(x$model,
@@ -157,8 +167,14 @@ stop_not_implemented <- function() {
 }
 
 #' Extract number of samples from a baggr object
+#' @param x baggr fit to get samples from
+#' @details Checks for number of iterations and
+#' number of Markov chains, returns maximum number
+#' of valid samples
 get_n_samples <- function(x) {
   check_if_baggr(x)
-  nsamples <- attr(x$fit, "stan_args")[[1]]$iter -
-    attr(x$fit, "stan_args")[[1]]$warmup
+  iter <- attr(x$fit, "stan_args")[[1]]$iter - attr(x$fit, "stan_args")[[1]]$warmup
+  chains <- max(sapply(x$fit@stan_args,function(x) x$chain_id))
+  iter * chains
 }
+
