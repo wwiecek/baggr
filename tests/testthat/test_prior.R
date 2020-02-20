@@ -102,7 +102,7 @@ test_that("Prior vs posterior and PPD comparisons work", {
 
   # Effect plot of PPD:
   gg <- effect_plot(bg_ppd1)
-  expect_identical(gg$labels$title, "Prior distribution for pooled treatment effect")
+  expect_identical(gg$labels$title, "Prior distribution for possible treatment effect")
 
 
 })

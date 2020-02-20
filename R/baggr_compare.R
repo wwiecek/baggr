@@ -1,15 +1,13 @@
 #' (Run and) compare multiple baggr models
 #'
-#' @description Compare multiple [baggr](baggr) models by either
-#' specifying multiple [baggr](baggr) models you have run or
-#' passing parameters to run a [baggr](baggr) model. If you pass
-#' existing models, you will get a layered effect plot
-#' of the treatment effects for the different models.
+#' @description Compare multiple [baggr] models by either
+#' providing multiple already existing models as (named) arguments or
+#' passing parameters necessary to run a [baggr] model.
 #'
-#' @param ... Either a number (at least 1) of objects of class `baggr`
+#' @param ... Either some (at least 1) objects of class `baggr`
 #'            (you should name your objects, see the example below)
-#'            or the same arguments you'd pass to [baggr],
-#'            in which you must case specify `what` to compare.
+#'            or the same arguments you'd pass to [baggr].
+#'            In the latter case you must specify `what` to compare.
 #' @param what  One of `"pooling"` (comparison between no, partial and
 #'              full pooling) or `"prior"` (comparison between prior and
 #'              posterior predictive). If pre-existing baggr models are
@@ -24,7 +22,8 @@
 #'                  exponent transform is used automatically,
 #'                  you can plot on log scale by setting
 #'                  transform = identity
-#' @return a `ggplot` is rendered and/or returned
+#' @return an object of class `baggr_compare`
+#' @seealso [plot.baggr_compare] and [print.baggr_compare] for working with results of this function
 #' @author Witold Wiecek, Brice Green
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2

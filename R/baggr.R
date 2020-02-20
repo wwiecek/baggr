@@ -113,7 +113,9 @@
 #' (or re-using between models), a single `prior = list(...)` argument can be used instead.
 #' Appropriate examples are given in `vignette("baggr")`.
 #'
-#' __Outputs.__ Standard functions for analysing the `baggr` object are
+#' __Outputs.__ By default, some outputs are printed. There is also a
+#' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
+#' Other standard functions for working with `baggr` object are
 #'
 #' * [treatment_effect] for distribution of hyperparameters
 #' * [group_effects] for distributions of group-specific parameters
@@ -121,6 +123,7 @@
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions
 #' * [baggr_compare] for comparing multiple `baggr` models
 #' * [loocv] for cross-validation
+#' * [pp_check] for posterior predictive checks
 #'
 #'
 #' @author Witold Wiecek, Rachael Meager
@@ -138,8 +141,9 @@
 #' # "mu & tau" model, using a built-in dataset
 #' # prepare_ma() can summarise individual-level data
 #' \donttest{
-#' microcredit_summary_data <- prepare_ma(microcredit_simplified,
-#'                                        outcome = "consumerdurables")
+#' ms <- microcredit_simplified
+#' ms$outcome <- microcredit_simplified$consumerdurables + 1
+#' microcredit_summary_data <- prepare_ma(ms)
 #' baggr(microcredit_summary_data, model = "mutau",
 #'       pooling = "partial", prior_hypercor = lkj(1),
 #'       prior_hypersd = normal(0,10),
