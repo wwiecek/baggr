@@ -17,14 +17,14 @@ library(baggr)
 ```
 
 
-This is a vignette intended for baggr users who have no or little experience with Markov Chain Monte Carlo (MCMC) programs used for Bayesian inference. It is intended to help you understand common problems that may occur when running models. One of the nice things about using `baggr` is that it makes the barrier to entry for running fully Bayesian meta-analysis models very low. But because of this, it is entirely possible that you, the end user, has no previous experience with MCMC methods at all. As a consequence, some of the error messages that come from the underlying algorithm can appear quite cryptic, like
+This is a vignette intended for _baggr_ users who have no or little experience with fitting Bayesian model. This vignette will help you understand common problems that may occur when running models. While `baggr` is designed to make running Bayesian meta-analysis models easy, there is no guarantee of correctness and you still have to ensure that the Bayesian inference is correct. The package will provide you with accurate error messages, but to a non-technical user these can appear quite cryptic, e.g.
 
 ```
 Warning: There were 110 divergent transitions after warmup. Increasing adapt_delta above 0.9 may help. See
 http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 ```
 
-These errors arise from Stan, the underlying implementation of the MCMC algorithm that baggr uses to fit the models. [Stan](https://mc-stan.org) is a general purpose programming language for Bayesian modeling; most notably it implements an algorithm called Hamiltonian Monte Carlo with No-U-Turn-Sampling, a general purpose sampler that can explore unknown distributions without much tuning by the end user. 
+These errors arise from Stan, the underlying implementation of the MCMC algorithm that baggr uses to fit the models. [Stan](https://mc-stan.org) is a general purpose programming language for Bayesian modeling; most notably it implements an algorithm called Hamiltonian Monte Carlo with No-U-Turn-Sampling, an algorithm to explore unknown distributions without much tuning by the end user. 
 
 When you run a model with `baggr`, it kicks off a series of Markov Chains which sample the underlying model parameters that you are interested in. This vignette will walk through the basics of the algorithm, the associated behaviors, and how to diagnose them.
 
