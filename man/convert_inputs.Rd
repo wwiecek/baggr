@@ -13,7 +13,7 @@ convert_inputs(
   treatment = "treatment",
   covariates = c(),
   test_data = NULL,
-  silence_messages = FALSE
+  silent = FALSE
 )
 }
 \arguments{
@@ -39,7 +39,7 @@ covariates (fixed effects) in the meta-regression model.}
 \item{test_data}{same format as \code{data} argument, gets left aside for
 testing purposes (see \link{baggr})}
 
-\item{silence_messages}{Whether to print messages when evaluated}
+\item{silent}{Whether to print messages when evaluated}
 }
 \value{
 R structure that's appropriate for use by \link{baggr} Stan models;

@@ -118,7 +118,7 @@ baggr_compare <- function(...,
 
         # suppress baggr/rstan output
         model <- do.call(baggr, c(l, "pooling" = pool,
-                                  "silence_messages" = T,
+                                  "silent" = T,
                                   "refresh" = 0))
 
         # return model
@@ -133,7 +133,7 @@ baggr_compare <- function(...,
         check_which <- ifelse(ppdv, "just the prior", "prior and full data")
         message(paste0("Sampling for model with ", check_which, "."))
         model <- do.call(baggr, c(l, "ppd" = ppdv,
-                                  "silence_messages" = T,
+                                  "silent" = T,
                                   "refresh" = 0))
         model
       })

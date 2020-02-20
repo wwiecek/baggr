@@ -55,7 +55,7 @@
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
 #'                  with the same columns as `data` argument
-#' @param silence_messages Whether to silence messages about priors
+#' @param silent Whether to silence messages about prior settings and about other automatic behaviour.
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 #'            number of iterations etc.
@@ -165,7 +165,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                   prior = NULL, ppd = FALSE,
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
-                  silence_messages = FALSE, warn = TRUE, ...) {
+                  silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
   if(!inherits(data, "data.frame") || nrow(data) == 1)
@@ -189,7 +189,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                               group = group,
                               treatment = treatment,
                               test_data = test_data,
-                              silence_messages = silence_messages)
+                              silent = silent)
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
@@ -249,7 +249,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
   } else { # extract priors from inputs & fill in missing priors
     formatted_prior <- prepare_prior(prior, data, stan_data, model,
                                      pooling, covariates, quantiles = quantiles,
-                                     silence_messages = silence_messages)
+                                     silent = silent)
   }
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]

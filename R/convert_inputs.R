@@ -19,7 +19,7 @@
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
-#' @param silence_messages Whether to print messages when evaluated
+#' @param silent Whether to print messages when evaluated
 #' @return R structure that's appropriate for use by [baggr] Stan models;
 #'         `group_label`, `model` and `n_groups` are included as attributes
 #'         and are necessary for [baggr] to work correctly
@@ -43,7 +43,7 @@ convert_inputs <- function(data,
                            treatment = "treatment",
                            covariates = c(),
                            test_data = NULL,
-                           silence_messages = FALSE) {
+                           silent = FALSE) {
 
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
@@ -81,7 +81,7 @@ convert_inputs <- function(data,
   if(is.null(model)) {
     # we take FIRST MODEL THAT SUITS OUR DATA!
     model <- names(model_data_types)[which(model_data_types == available_data)[1]]
-    if(!silence_messages) 
+    if(!silent)
       message(paste0("Automatically set model to ", crayon::bold(model_names[model]),
                      " from data."))
   } else {
