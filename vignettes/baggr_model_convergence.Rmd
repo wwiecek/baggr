@@ -1,0 +1,141 @@
+---
+title: "Understanding Model Convergence"
+author: "Brice Green"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+  toc: true
+vignette: >
+  %\VignetteIndexEntry{baggr_model_convergence}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: baggr.bib
+---
+
+```{r include = F}
+library(baggr)
+```
+
+
+This is a vignette intended for _baggr_ users who have no or little experience with fitting Bayesian model. This vignette will help you understand common problems that may occur when running models. While `baggr` is designed to make running Bayesian meta-analysis models easy, there is no guarantee of correctness and you still have to ensure that the Bayesian inference is correct. The package will provide you with accurate error messages, but to a non-technical user these can appear quite cryptic, e.g.
+
+```
+Warning: There were 110 divergent transitions after warmup. Increasing adapt_delta above 0.9 may help. See
+http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+```
+
+These errors arise from Stan, the underlying implementation of the MCMC algorithm that baggr uses to fit the models. [Stan](https://mc-stan.org) is a general purpose programming language for Bayesian modeling; most notably it implements an algorithm called Hamiltonian Monte Carlo with No-U-Turn-Sampling, an algorithm to explore unknown distributions without much tuning by the end user. 
+
+When you run a model with `baggr`, it kicks off a series of Markov Chains which sample the underlying model parameters that you are interested in. This vignette will walk through the basics of the algorithm, the associated behaviors, and how to diagnose them.
+
+# Behind the scenes: basics of MCMC
+
+The baggr package uses fully Bayesian methods to estimate meta-analysis models, meaning that it takes a prior (which if not specified by the user is assigned by default), and jointly with the data uses that prior to estimate a posterior according to Bayes' rule
+
+$$P(\theta | X) = \dfrac{P(X | \theta) P(\theta)}{P(X)}$$
+
+In order to calculate $P(X)$, we need some computationally expensive machinery that can calculate
+
+$$P(X) = \int P(X | \theta) P(\theta) d\theta$$
+
+which is (in general) really difficult except for a few specific situations. In order to make these types of models easy to run, we use a method that approximates this integral to a high degree of numerical accuracy.
+
+MCMC methods leverage an accept/reject proposal scheme by generating a potential value for $\theta$, which is some set of parameters, and using the relative likelihoods ($P(\theta|X)$) at that new value to determine the probability of whether to accept or reject those proposals. The simplest of these methods, Metropolis-Hastings, pretty much ends there. But for meta-analysis models (and other models with large numbers of parameters), the spaces that the random walk has to explore get really complicated.
+
+So instead of plain-old Metropolis-Hastings, we use Hamiltonian Monte Carlo with No-U-Turn sampling, powered on the back end by Stan. This algorithm leverages the gradient, or the rate of change in the posterior density at a given parameter value, in order to more efficiently generate new parameter proposals.
+
+# Warnings like "divergent transitions"
+
+The gradient is passed into a Hamiltonian equation, which simulates a path for where it thinks the posterior is headed. But this trajectory is based on the local behavior of the posterior, and depending on the geometry of the space, if we move too far away from that point we might get more and more off base. Stan, on the back end, uses the `adapt_delta` parameter to determine how often it needs to check its simulated paths, re-evaluating the trajectory it is using.
+
+If you make `adapt_delta` really big, you end up moving really slowly, but you also are less likely to fly off the true trajectory of the posterior distribution. But if you make it small, you go faster, etc. You get the idea. How high you should set the parameter depends on the extent to which the algorithm is properly modeling the paths. So if you encounter divergent transitions, it is often good to raise `adapt_delta`. This discussion is really oversimplifying things to build the intuition, but you can find an (accessible) deeper discussion [here](https://arxiv.org/abs/1701.02434)
+if it is of interest!
+
+When you get a warning that there are a certain number of "divergent transitions," it means that the samples have gone far away from the anticipated path, and (at worse) are reduced to a random walk. This means that they may not be fully exploring the posterior distribution, and so you may need more iterations to get a good approximation of the distribution.
+
+If you get this warning and want to re-estimate your model with a higher `adapt_delta` setting, you can change the argument in the call to the `baggr` function like so:
+
+```{r}
+# the ... parameters in the call to baggr() are
+# passed to rstan::sampling
+# for documentation see ?rstan::sampling
+fit <- baggr(schools, model = "rubin",
+      pooling = "partial",
+      refresh = 0, # silence printing MCMC draws
+      prior_hypermean = normal(0, 10),
+      prior_hypersd = cauchy(0, 3),
+      control = list(
+        adapt_delta = 0.9 # 0.8 by default
+      ))
+
+fit
+```
+
+If you still get a lot of divergent transitions after raising the `adapt_delta` really high, it may indicate an issue with the way you are modeling your data! This is what is commonly referred to as the [folk theorem of statistical computing](https://statmodeling.stat.columbia.edu/2008/05/13/the_folk_theore/).
+
+# Convergence and Sample Size Warnings
+
+## $\widehat{R}$ being too low
+
+The other warning you get, that “r hat” statistics are too high, indicates that your chains have not converged. Because MCMC is not a deterministic algorithm, we run multiple chains of samples at different starting values for our parameters in order to check that each has converged to a good enough answer. We want to check that Markov chains initialized at different values get to similar places. 
+
+The $\widehat{R}$ statistic measures the ratio of the average variance of samples within each chain to the variance of all of samples in all of the chains. If all chains are have converged to a common distribution, these will be the same and $\widehat{R}$ will be one. If the chains have not converged to a common answer, the $\widehat{R}$ statistic will be greater than one. If you get a high $\widehat{R}$, you can't trust the inference you get from the Markov chains because they have not converged.
+
+## Low ESS (Effective Sample Size)
+
+We also want to check that each chain has enough effective samples for every parameter in our model. Sample size (without the word effective), is just the number of samples you are drawing for each parameter. If these samples are independent, as you get a lot of them, various forms of the central limit theorem kick in, and your estimation error is low relative to the variation of the quantities you are trying to measure. "Effective sample size" measures how efficient the sampler is relative to completely independent samples of those parameters. If you have a very efficient set of samples, you can actually get _higher_ effective sample size than the actual number of draws you took!
+
+This is because effective sample size is a function of the correlation between draws that the sampler takes. If you have positive correlation between subsequent samples, estimation error goes down slower than it would if the draws were independent. Sometimes this correlation is so high that, given the number of iterations you ran, you really don't have enough effective parameter draws to infer anything from the samples you have. In this case, your samples are likely to not accurately represent the distribution of the parameter you are interested in.
+
+## Remedying convergence and effective sample size
+
+If you have a low ESS or high $\widehat{R}$, you are best off running each chain for more iterations until you get a higher ESS/lower $\widehat{R}$. To run chains for longer, you change the `iter` parameter in the `...` arguments to your `baggr()` call.
+
+```{r message = F}
+# runs for 10,000 iterations per chain instead of 2,000
+fit <- baggr(schools, model = "rubin", pooling = "partial",
+      prior_hypermean = normal(0,1), prior_hypersd = cauchy(0,2),
+      refresh = 0, # don't print sampling
+      iter = 10000, 
+      control = list(
+        adapt_delta = 0.95 # like above, to address divergences
+      ))
+
+fit
+```
+
+# Hitting maximum treedepth
+
+Sometimes you get warnings about hitting "maximum treedepth." This is less of an issue than the previous two warnings, which fundamentally throw the resulting inference into question. Hamiltonian Monte Carlo has a whole lot of knobs that need tuning--given the gradient, you need to figure out how far away you want to jump from your current sample draw (this is how we end up getting more efficient exploration of the space). The No-U-Turn sampler automates this so that users don't have to specify these values manually. This is important in practice because different values are optimal for different data and models (and potentially different parts of the posterior distribution).
+
+In order to automatically pick how far away to jump, Stan evaluates a "tree," which is a set of proposed parameter values equally spaced on either side of the current value. Then it does this again at each of the two points that are drawn, and so on, until it meets a certain criteria for accepting the new value. The `max_treedepth` parameter controls how deeply the algorithm should search (how many sub-trees to create) before terminating.
+
+Hitting the maximum treedepth may be indicative of a deeper issue with the model, but if you are confident in your model and your data, you should increase the `max_treedepth` parameter that is passed to the `control` list that `rstan::sampling` uses.
+
+```{r}
+
+# runs for 10,000 iterations per chain instead of 2,000
+fit <- baggr(schools, model = "rubin", pooling = "partial",
+      prior_hypermean = normal(0,1), prior_hypersd = cauchy(0,2),
+      refresh = 0, # don't print sampling
+      iter = 10000, 
+      control = list(
+        adapt_delta = 0.95, # like above, to address divergences
+        max_treedepth = 20 # manually setting maximum tree depth
+      ))
+
+fit
+```
+
+# Additional Resources
+
+If you want a more in-depth treatment of the topics discussed in this vignette, here are a number of good resources:
+
+[Visual MCMC Diagnostics Using the Bayesplot Package](https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html)
+
+[Scale Reduction in the Stan Manual](https://mc-stan.org/docs/2_21/reference-manual/notation-for-samples-chains-and-draws.html)
+
+[Divergent Transitions in the Stan Manual](https://mc-stan.org/docs/2_21/reference-manual/divergent-transitions.html)
+
+
+

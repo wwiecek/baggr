@@ -58,7 +58,7 @@
 #' @param silence_messages Whether to silence messages about priors
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
-#'            number of iterations etc.
+#'            number of iterations etc. For more details see [rstan::sampling()] and [rstan::stan()].
 #' @return `baggr` class structure: a list including Stan model fit
 #'          alongside input data, pooling metrics, various model properties.
 #'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
@@ -303,6 +303,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     warning(paste0("Rhat statistic for ", sum(rhat > 1.05),
                    " parameters exceeded 1.05, with maximum equal to ",
                    round(max(rhat),2), ". This suggests lack of convergence.",
+                   "\n Consider running the model chains for more iterations.",
                    "\n No further warning will be issued.",
                    "\n Stan model saved as $fit in the returned object. \n"))
 
