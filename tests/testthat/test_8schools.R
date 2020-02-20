@@ -29,7 +29,7 @@ baggr_fixef   <- mean(baggr::treatment_effect(baggr_fit)$tau)
 # tolerance for differences
 tol <- 0.25
 
-test_that(desc = "baggr and brms are at least for schools estimates", {
+test_that(desc = "baggr and brms are at least close for schools estimates", {
   # estimates within tolerance of each other
   for(i in 1:nrow(baggr_groupef)){
 

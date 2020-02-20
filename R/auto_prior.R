@@ -14,6 +14,7 @@
 #' @param pooling same as in [baggr]
 #' @param covariates same as in [baggr]
 #' @param quantiles  same as in [baggr]
+#' @param silence_messages same as in [baggr]
 #'
 #' @return A named list with prior values that can be appended to `stan_data`
 #'         and passed to a Stan model.
@@ -21,7 +22,8 @@
 
 
 prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
-                          quantiles = c()) {
+                          quantiles = c(), silence_messages = FALSE) {
+
   if(missing(prior))
     prior <- list()
 
@@ -45,9 +47,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       val <- 10*max(abs(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, val))
       priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
-      message(paste0("Setting prior for ", priorname, " according to max effect:"))
-      message(paste0("* tau ~ Normal(0, (10*",
-                     format(val/10, digits = 2), ")^2)"))
+      if(!silence_messages) {
+        message(paste0("Setting prior for ", priorname, " according to max effect (",
+                       format(val/10, digits = 2), "):"))
+        message(paste0("* tau ~ Normal(0, (10*",
+                       format(val/10, digits = 2), ")^2)"))
+      }
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
     }
@@ -58,11 +63,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
         prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
         if(nrow(data) < 5)
           message(paste("/Dataset has only", nrow(data),
-                        "rows -- consider setting variance prior manually./"))
-        message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites (",
-                       format(10*sd(data$tau), digits = 2), ")"))
-        message(paste0("* sigma_tau ~ Uniform(0, ",
-                       format(10*sd(data$tau), digits = 2), ")"))
+                        "groups -- consider setting variance prior manually./"))
+        if(!silence_messages) {
+          message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites (",
+                         format(10*sd(data$tau), digits = 2), ")"))
+          message(paste0("* sigma_tau ~ Uniform(0, ",
+                         format(10*sd(data$tau), digits = 2), ")"))
+        }
       } else {
         prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 0))
       }
@@ -87,13 +94,16 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       # Behaviour for joint prior-type behaviour:
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
                                   multinormal(c(0,0), c(val1, val2)*diag(2)))
+      if(!silence_messages) {
+
       message("Set hypermean prior according to max effect:")
       message(paste0("* hypermean (mu, tau) ~ Normal([0,0], [",
                      format(val1, digits = 2), ", ",
                      format(val2, digits = 2), "]*Id_2)"))
+      }
       if(nrow(data) < 5)
         message(paste("/Dataset has only", nrow(data),
-                      "rows -- consider setting variance prior manually./"))
+                      "groups -- consider setting variance prior manually./"))
     } else {
       if(prior$hypermean$dist == "normal")
         prior$hypermean <- multinormal(rep(prior$hypermean$values[1], 2),
@@ -107,10 +117,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     if(is.null(prior$hypersd)){
       val <- max(10*sd(data$mu), 10*sd(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypersd", cauchy(0,val))
-      message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
-                     format(val, digits = 2), ")"))
-      message(paste0("* hyper-SD (mu, tau) ~ Cauchy(0,",
-                     format(val, digits = 2), ") (i.i.d.)"))
+
+      if(!silence_messages) {
+        message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
+                format(val, digits = 2), ")"))
+        message(paste0("* hyper-SD (mu, tau) ~ Cauchy(0,",
+                       format(val, digits = 2), ") (i.i.d.)"))
+      }
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
     }
@@ -119,7 +132,9 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     if(is.null(prior$hypercor)){
       prior_list$prior_hypercor_fam <- 4
       prior_list$prior_hypercor_val <- 3
-      message(paste0("* hypercorrelation (mu, tau) ~ LKJ(shape=3)"))
+      if(!silence_messages) {
+        message(paste0("* hypercorrelation (mu, tau) ~ LKJ(shape=3)"))
+      }
     } else {
       prior_list <- set_prior_val(prior_list, "prior_hypercor", prior$hypercor)
     }
@@ -142,10 +157,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   #   prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
   #   prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)
   # }
+
   if(model == "quantiles") {
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$N)
     prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$N)
-    message("prior_dispersion_on_beta = 1000*diag(stan_data$N)")
+    if(!silence_messages) {
+      message("prior_dispersion_on_beta = 1000*diag(stan_data$N)")
+    }
   }
 
   # Setting covariates prior

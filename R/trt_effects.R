@@ -130,11 +130,17 @@ effect_draw <- function(x, n, transform=NULL) {
 effect_plot <- function(..., transform=NULL) {
   l <- list(...)
 
-  caption <- "Possible treatment effect"
+  caption <- list(
+    title = "Posterior distribution for possible treatment effect",
+    subtitle = ""
+  )
   if(!all(unlist(lapply(l, inherits, "baggr"))))
     stop("Effects plots can only be drawn for baggr class objects")
   if(all(unlist(lapply(l, attr, "ppd"))))
-    caption <- "Possible treatment effect (prior predictive)"
+    caption <- list(
+      title = "Prior distribution for possible treatment effect",
+      subtitle = "No data, only sampling from prior"
+    )
   if(is.null(names(l))){
     if(length(l) > 1)
       message("Automatically naming models; please use named arguments to override.")
@@ -144,7 +150,7 @@ effect_plot <- function(..., transform=NULL) {
   # Check effects and prepare X label
   if(any(unlist(lapply(l, function(x) length(x$effects))) > 1))
     stop("Effect_plot is only possible for models with 1-dimensional treatment effects")
-  effects <- paste("Effect on", unique(unlist(lapply(l, function(x) x$effects))))
+  effects <- paste("Treatment effect on", unique(unlist(lapply(l, function(x) x$effects))))
   if(length(effects) > 1)
     stop("All models must have same effects")
 
@@ -158,7 +164,8 @@ effect_plot <- function(..., transform=NULL) {
   ggplot(df, aes(value, group = model, fill = model)) +
     baggr_theme_get() +
     geom_density(alpha = .25) +
-    ggtitle(caption) +
+    ggtitle(label = caption$title,
+            subtitle = caption$subtitle) +
     xlab(effects) +
     {if(single_model_flag) theme(legend.position = "none")}
 }

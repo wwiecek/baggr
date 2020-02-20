@@ -1,7 +1,7 @@
 Package: baggr
 Type: Package
 Title: Bayesian Aggregate Treatment Effects
-Version: 0.3.0
+Version: 0.3.0.9999
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
              person("Rachael", "Meager", role="aut"),
              person("Brice", "Green", role="ctb", comment = "extra features for LOO CV and visuals"),
@@ -20,7 +20,7 @@ Imports:
     rstantools (>= 1.5.0),
     bayesplot,
     crayon,
-    forestplot,
+	forestplot,
     ggplot2,
     gridExtra,
     utils,

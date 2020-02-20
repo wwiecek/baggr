@@ -19,6 +19,7 @@
 #' @param treatment name of column with treatment variable
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
+#' @param silence_messages Whether to print messages when evaluated
 #' @return R structure that's appropriate for use by [baggr] Stan models;
 #'         `group_label`, `model` and `n_groups` are included as attributes
 #'         and are necessary for [baggr] to work correctly
@@ -41,7 +42,8 @@ convert_inputs <- function(data,
                            outcome   = "outcome",
                            treatment = "treatment",
                            covariates = c(),
-                           test_data = NULL) {
+                           test_data = NULL,
+                           silence_messages = FALSE) {
 
   # check what kind of data is required for the model & what's available
   model_data_types <- c("rubin" = "pool_noctrl_narrow",
@@ -77,10 +79,11 @@ convert_inputs <- function(data,
       check_columns(data, outcome, group, treatment)
   }
   if(is.null(model)) {
-    # message("Attempting to infer the correct model for data.")
     # we take FIRST MODEL THAT SUITS OUR DATA!
     model <- names(model_data_types)[which(model_data_types == available_data)[1]]
-    message(paste0("Automatically set model to ", crayon::bold(model), " from data."))
+    if(!silence_messages) 
+      message(paste0("Automatically set model to ", crayon::bold(model_names[model]),
+                     " from data."))
   } else {
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
@@ -157,7 +160,7 @@ convert_inputs <- function(data,
           if(any(is.na(se_in_each_group)))
             stop("Cannot calculate SE in groups in test data. Each out-of-sample ",
                  "group must be of size at least 2.")
-          out$test_sigma_y_k <- se_in_each_group
+          out$test_sigma_y_k <- array(se_in_each_group, dim = max(group_numeric_test))
         }
       }
     }

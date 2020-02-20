@@ -75,8 +75,8 @@ loocv <- function(data, return_models = FALSE, ...) {
   # Prepare the arguments
   args[["data"]] <- data
   args[["model"]] <- full_fit$model
-  if(full_fit$model == "full")
-    stop("LOO CV is not implemented for full data models yet.")
+  # if(full_fit$model == "full")
+    # stop("LOO CV is not implemented for full data models yet.")
   if(!("prior" %in% names(args))) {
     message("(Prior distributions taken from the model with all data. See $prior.)")
     args[["formatted_prior"]] <- full_fit$formatted_prior
