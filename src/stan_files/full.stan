@@ -96,7 +96,7 @@ generated quantities {
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)
-      fe_test = rep_vector(0.0, K_test);
+      fe_test = rep_vector(0.0, N_test);
     else
       fe_test = X_test*beta;
     logpd[1] = 0;

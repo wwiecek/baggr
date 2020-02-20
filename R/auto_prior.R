@@ -45,7 +45,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       val <- 10*max(abs(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, val))
       priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
-      message(paste0("Setting prior for ", priorname, " according to max effect:"))
+      message(paste0("Setting prior for ", priorname, " according to max effect (",
+                     format(val/10, digits = 2), "):"))
       message(paste0("* tau ~ Normal(0, (10*",
                      format(val/10, digits = 2), ")^2)"))
     } else {
@@ -58,7 +59,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
         prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
         if(nrow(data) < 5)
           message(paste("/Dataset has only", nrow(data),
-                        "rows -- consider setting variance prior manually./"))
+                        "groups -- consider setting variance prior manually./"))
         message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites (",
                        format(10*sd(data$tau), digits = 2), ")"))
         message(paste0("* sigma_tau ~ Uniform(0, ",
@@ -93,7 +94,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                      format(val2, digits = 2), "]*Id_2)"))
       if(nrow(data) < 5)
         message(paste("/Dataset has only", nrow(data),
-                      "rows -- consider setting variance prior manually./"))
+                      "groups -- consider setting variance prior manually./"))
     } else {
       if(prior$hypermean$dist == "normal")
         prior$hypermean <- multinormal(rep(prior$hypermean$values[1], 2),
