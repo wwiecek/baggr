@@ -294,8 +294,7 @@ my_baggr_comparison <- baggr_compare(schools)
 ```
 
 ```{r fig.width=5, fig.height=4, echo = TRUE}
-my_baggr_comparison$plot + 
-  theme_minimal() + 
+plot(my_baggr_comparison)[[1]] + 
   ggtitle("8 schools: model comparison")
 ```
 

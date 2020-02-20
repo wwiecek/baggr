@@ -362,8 +362,8 @@ print.plot_list <- function(x) {
   if(length(x) == 1) {
     print(x[[1]])
   } else {
-    for(i in 1:length(plots)) {
-      print(plots[[i]])
+    for(i in 1:length(x)) {
+      print(x[[i]])
     }
   }
 }
