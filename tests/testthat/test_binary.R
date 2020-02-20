@@ -188,7 +188,7 @@ test_that("Model with covariates works fine", {
 
 # tests for helper functions -----
 
-test_that("baggr_compare basic cases work with Rubin", {
+test_that("baggr_compare basic cases work with logit models", {
   # If I pass nothing
   expect_error(baggr_compare(), "Must provide baggr models")
   # pooling

@@ -100,7 +100,7 @@ baggr_compare <- function(...,
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
   if(!compare %in% c("groups","effects")){
-    stop("'compare' argument must be set to either groups or effects.")
+    stop("'compare' argument must be set to either 'groups' or 'effects'.")
   }
   if(all(unlist(lapply(l, class)) == "baggr")) {
     # return_models_flag <- 0
@@ -115,7 +115,7 @@ baggr_compare <- function(...,
              "already set to a particular value.")
       models <- lapply(list("none", "partial", "full"), function(pool){
         # message to display progress
-        message(paste0("Sampling for model with pooling set to ", pool))
+        # message(paste0("Sampling for model with pooling set to ", pool))
 
         # suppress baggr/rstan output
         model <- do.call(baggr, c(l, "pooling" = pool,
