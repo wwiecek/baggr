@@ -82,8 +82,7 @@ test_that("baggr comparison method works for Full model", {
   expect_is(plot(comp_flpl), "plot_list")
   expect_is(plot(comp_flpl)[[1]], "ggplot")
 
-  expect_is(plot(comp_flpr), "plot_list")
-  expect_is(plot(comp_flpr)[[1]], "ggplot")
+  expect_is(plot(comp_flpr), "ggplot")
 
   expect_is(plot(comp_flmdls), "plot_list")
   expect_is(plot(comp_flmdls)[[1]], "ggplot")

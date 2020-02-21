@@ -344,7 +344,7 @@ plot.baggr_compare <- function(x,
       })
     } else if(compare == "effects"){
       plots <- do.call(effect_plot, models) +
-        labs(fill = NULL)
+        ggplot2::labs(fill = NULL)
     } else {
       stop("Argument compare = must be 'effects' or 'groups'.")
     }

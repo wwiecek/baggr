@@ -256,8 +256,7 @@ test_that("baggr comparison method works for Full model", {
   expect_is(plot(comp_pl, arrange = "grid"), "plot_list")
   expect_is(plot(comp_pl, arrange = "grid")[[1]], "ggplot")
 
-  expect_is(plot(comp_pr), "plot_list")
-  expect_is(plot(comp_pr)[[1]], "ggplot")
+  expect_is(plot(comp_pr), "ggplot")
 
   expect_is(plot(comp_pr, arrange = "grid"), "plot_list")
   expect_is(plot(comp_pr, arrange = "grid")[[1]], "ggplot")
