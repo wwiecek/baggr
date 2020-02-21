@@ -329,8 +329,7 @@ plot.baggr_compare <- function(x,
           ggplot2::coord_flip() +
           ggplot2::labs(x = "", y = "Treatment effect (95% interval)",
                         title = paste0(
-                          "Pooled and group-specific effect ",
-                          "of treatment on ",
+                          "Effect of treatment on ",
                           effect_names[i],
                           " outcome."
                           )

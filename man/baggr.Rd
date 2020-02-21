@@ -118,12 +118,6 @@ customised -- see the example below).
 For individual level data three columns are needed: outcome, treatment, group. These
 are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
 
-Both aggregate and individual-level data can include extra \code{covariates} columns
-(specified as a character vector of column names) to be used in regression (for
-individual data) or
-\href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
-(for summary data). We also refer to impact of these covariates as \emph{fixed effects}.
-
 Many data preparation steps can be done through a helper function \link{prepare_ma}.
 It can convert individual to summary-level data, calculate
 odds/risk ratios (with/without corrections) in binary data, standardise variables and more.
@@ -147,6 +141,25 @@ If no model is specified, the function tries to infer the appropriate
 model automatically.
 Additionally, the user must specify type of pooling.
 The default is always partial pooling.
+
+\strong{Covariates.}
+Both aggregate and individual-level data can include extra columns, given by \code{covariates} argument
+(specified as a character vector of column names) to be used in regression models.
+We also refer to impact of these covariates as \emph{fixed effects}.
+
+Two types of covariates may be present in your data:
+\itemize{
+\item In \code{"rubin"} and \code{"mutau"} models, covariates that \strong{change according to group unit}.
+In that case, the model accounting
+for the group covariates is a
+\href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
+model. It can be modelled on summary-level data.
+\item In \code{"logit"} and \code{"full"} models, covariates that \strong{change according to individual unit}.
+Then, the model can be called a
+\href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888}{mixed model}
+. It has to be fitted to individual-level data. Note that the first case can also be
+accounted for by using a mixed model.
+}
 
 \strong{Priors.} It is optional to specify priors yourself,
 as the package will try propose an appropriate
@@ -173,14 +186,15 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                         "se" = rep(1, 8),
                         "state" = datasets::state.name[1:8])
 baggr(df_pooled) #baggr automatically detects the input data
-# correct labels, different pooling & passing some options to Stan
+# same model, but with correct labels,
+# different pooling & passing some options to Stan
 baggr(df_pooled, group = "state", pooling = "full", iter = 500)
-#change the priors:
-baggr(df_pooled, prior_hypermean = normal(5,5))
+# model with different (very informative) priors
+baggr(df_pooled, prior_hypersd = normal(0, 2))
 
+\donttest{
 # "mu & tau" model, using a built-in dataset
 # prepare_ma() can summarise individual-level data
-\donttest{
 ms <- microcredit_simplified
 ms$outcome <- microcredit_simplified$consumerdurables + 1
 microcredit_summary_data <- prepare_ma(ms)

@@ -77,16 +77,11 @@
 #' For individual level data three columns are needed: outcome, treatment, group. These
 #' are identified by using the `outcome`, `treatment` and `group` arguments.
 #'
-#' Both aggregate and individual-level data can include extra `covariates` columns
-#' (specified as a character vector of column names) to be used in regression (for
-#' individual data) or
-#' [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
-#' (for summary data). We also refer to impact of these covariates as _fixed effects_.
-#'
 #' Many data preparation steps can be done through a helper function [prepare_ma].
 #' It can convert individual to summary-level data, calculate
 #' odds/risk ratios (with/without corrections) in binary data, standardise variables and more.
 #' Using it will automatically format data inputs to work with `baggr()`.
+#'
 #'
 #' __Models.__ Available models are:
 #'
@@ -105,6 +100,26 @@
 #'  model automatically.
 #'  Additionally, the user must specify type of pooling.
 #'  The default is always partial pooling.
+#'
+#'
+#' __Covariates.__
+#' Both aggregate and individual-level data can include extra columns, given by `covariates` argument
+#' (specified as a character vector of column names) to be used in regression models.
+#'  We also refer to impact of these covariates as _fixed effects_.
+#'
+#' Two types of covariates may be present in your data:
+#'
+#' * In `"rubin"` and `"mutau"` models, covariates that __change according to group unit__.
+#'   In that case, the model accounting
+#'   for the group covariates is a
+#'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
+#'   model. It can be modelled on summary-level data.
+#' * In `"logit"` and `"full"` models, covariates that __change according to individual unit__.
+#'   Then, the model can be called a
+#'   [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888)
+#'   . It has to be fitted to individual-level data. Note that the first case can also be
+#'   accounted for by using a mixed model.
+#'
 #'
 #' __Priors.__ It is optional to specify priors yourself,
 #' as the package will try propose an appropriate
@@ -133,14 +148,15 @@
 #'                         "se" = rep(1, 8),
 #'                         "state" = datasets::state.name[1:8])
 #' baggr(df_pooled) #baggr automatically detects the input data
-#' # correct labels, different pooling & passing some options to Stan
+#' # same model, but with correct labels,
+#' # different pooling & passing some options to Stan
 #' baggr(df_pooled, group = "state", pooling = "full", iter = 500)
-#' #change the priors:
-#' baggr(df_pooled, prior_hypermean = normal(5,5))
+#' # model with different (very informative) priors
+#' baggr(df_pooled, prior_hypersd = normal(0, 2))
 #'
+#' \donttest{
 #' # "mu & tau" model, using a built-in dataset
 #' # prepare_ma() can summarise individual-level data
-#' \donttest{
 #' ms <- microcredit_simplified
 #' ms$outcome <- microcredit_simplified$consumerdurables + 1
 #' microcredit_summary_data <- prepare_ma(ms)
