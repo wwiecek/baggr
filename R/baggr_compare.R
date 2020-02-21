@@ -164,11 +164,19 @@ baggr_compare <- function(...,
   # Return treatment effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      mint(treatment_effect(x, transform = transform)$tau)
+      est <- treatment_effect(x, transform = transform, summary = T)$tau
+      if(is.matrix(est)) {
+        if(nrow(est) == 1) est <- est[1,]
+      }
+      est
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      mint(treatment_effect(x, transform = transform)$sigma_tau)
+      est <- treatment_effect(x, transform = transform, summary = T)$sigma_tau
+      if(is.matrix(est)) {
+        if(nrow(est) == 1) est <- est[1,]
+      }
+      est
     })))
 
 
@@ -293,7 +301,7 @@ plot.baggr_compare <- function(x,
 
           rank_data <- df_groups[which(df_groups$model == max_spread_model),]
 
-          lvls <- rank_data[order(rank_data$median),]$group
+          lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group), "Pooled Estimate")
           if(hyper) {
 
             ord <- c(
