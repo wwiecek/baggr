@@ -53,3 +53,39 @@ test_that("Full model crashes with nonsense inputs", {
   expect_error(baggr(schools_ipd2), "has to be numeric")
 
 })
+
+
+comp_flpl <- expect_warning(baggr_compare(
+  schools, model = "rubin", iter = 200, what = "pooling"
+))
+
+comp_flpr <- expect_warning(baggr_compare(
+  schools, model = "rubin", iter = 200, what = "prior"
+))
+
+comp_flmdls <- baggr_compare(bg_f, bg_p)
+
+test_that("baggr comparison method works for Full model", {
+
+  expect_is(comp_flpl, "baggr_compare")
+  expect_is(comp_flpr, "baggr_compare")
+  expect_is(comp_flmdls, "baggr_compare")
+
+  expect_is(testthat::capture_output(print(comp_flpl)), "character")
+  expect_is(testthat::capture_output(print(comp_flpr)), "character")
+  expect_is(testthat::capture_output(print(comp_flmdls)), "character")
+
+  expect_gt(length(comp_flpl), 0)
+  expect_gt(length(comp_flpr), 0)
+  expect_gt(length(comp_flmdls), 0)
+
+  expect_is(plot(comp_flpl), "plot_list")
+  expect_is(plot(comp_flpl)[[1]], "ggplot")
+
+  expect_is(plot(comp_flpr), "plot_list")
+  expect_is(plot(comp_flpr)[[1]], "ggplot")
+
+  expect_is(plot(comp_flmdls), "plot_list")
+  expect_is(plot(comp_flmdls)[[1]], "ggplot")
+})
+

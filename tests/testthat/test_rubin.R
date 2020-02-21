@@ -310,3 +310,31 @@ test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
   expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .975)),
                0.31, tolerance = .015)
 })
+
+
+comp_rbpl <- expect_warning(baggr_compare(
+  schools, model = "rubin", iter = 200, what = "pooling"
+))
+
+comp_rbpr <- expect_warning(baggr_compare(
+  schools, model = "rubin", iter = 200, what = "prior"
+))
+
+test_that("baggr comparison method works for Rubin model", {
+
+  expect_is(comp_rbpr, "baggr_compare")
+  expect_is(comp_rbpl, "baggr_compare")
+
+  expect_is(testthat::capture_output(print(comp_rbpl)), "character")
+  expect_is(testthat::capture_output(print(comp_rbpr)), "character")
+
+  expect_gt(length(comp_rbpl), 0)
+  expect_gt(length(comp_rbpr), 0)
+
+  expect_is(plot(comp_rbpl), "plot_list")
+  expect_is(plot(comp_rbpl)[[1]], "ggplot")
+
+  expect_is(plot(comp_rbpr), "plot_list")
+  expect_is(plot(comp_rbpr)[[1]], "ggplot")
+})
+
