@@ -293,24 +293,7 @@ plot.baggr_compare <- function(x,
 
         if(order == T) {
 
-          model_spread <- sapply(
-            split(df_groups, df_groups$model), function(x) max(x$median) - min(x$median)
-          )
-
-          max_spread_model <- names(model_spread[which.max(model_spread)])
-
-          rank_data <- df_groups[which(df_groups$model == max_spread_model),]
-
-          lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group), "Pooled Estimate")
-          if(hyper) {
-
-            ord <- c(
-              rev(lvls),
-              "Pooled Estimate"
-            )
-          } else {
-            ord <- rev(lvls)
-          }
+          ord <- get_order(df_groups, hyper)
 
         } else {
           if(hyper) {
@@ -388,4 +371,30 @@ print.plot_list <- function(x) {
   }
 }
 
+#' Separate out ordering so we can test directly
+#' @param df_groups data.frame of group effects used in plot.baggr_compare
+#' @details Given a set of effects measured by models, identifies the
+#' model which has the biggest range of estimates and ranks groups
+#' by those estimates, returning the order
+get_order <- function(df_groups, hyper) {
 
+  model_spread <- sapply(
+    split(df_groups, df_groups$model), function(x) max(x$median) - min(x$median)
+  )
+
+  max_spread_model <- names(model_spread[which.max(model_spread)])
+
+  rank_data <- df_groups[which(df_groups$model == max_spread_model),]
+
+  lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group), "Pooled Estimate")
+  if(hyper) {
+
+    ord <- c(
+      rev(lvls),
+      "Pooled Estimate"
+    )
+  } else {
+    ord <- rev(lvls)
+  }
+  ord
+}

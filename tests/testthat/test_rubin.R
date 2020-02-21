@@ -344,3 +344,4 @@ test_that("baggr comparison method works for Rubin model", {
   expect_is(plot(comp_rbpr, arrange = "grid")[[1]], "ggplot")
 })
 
+
