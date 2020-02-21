@@ -1,5 +1,5 @@
 #' Predict method for baggr objects
-#' @param x model to predict from
+#' @param object model to predict from
 #' @param newdata optional, new data to predict observations from
 #' @param allow_new_levels whether to allow the model to make predictions
 #' about unobserved groups. Without additional group-level information
@@ -7,17 +7,21 @@
 #' @param nsamples Number of samples to draw from the posterior.
 #' Cannot exceed the number of samples in the fitted model.
 #' @param ... other arguments to pass to predict function
+#'            (currently not used)
 #' @export
-predict.baggr <- function(x, nsamples,
+predict.baggr <- function(object, nsamples,
                           newdata = NULL,
-                          allow_new_levels = T) {
-  switch(x$model,
-         rubin = predict_rubin(x,
+                          allow_new_levels = T,
+                          ...) {
+  switch(object$model,
+         rubin = predict_rubin(object,
                                nsamples = nsamples,
                                newdata = newdata,
                                allow_new_levels = allow_new_levels),
-         predict_unknown(x))
+         predict_unknown(object))
 }
+
+
 
 #' Predict method for model that is unknown or not implemented
 #' @param x baggr model to generate predictions from
@@ -177,4 +181,3 @@ get_n_samples <- function(x) {
   chains <- max(sapply(x$fit@stan_args,function(x) x$chain_id))
   iter * chains
 }
-
