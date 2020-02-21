@@ -336,5 +336,11 @@ test_that("baggr comparison method works for Rubin model", {
 
   expect_is(plot(comp_rbpr), "plot_list")
   expect_is(plot(comp_rbpr)[[1]], "ggplot")
+
+  expect_is(plot(comp_rbpl, arrange = "grid"), "plot_list")
+  expect_is(plot(comp_rbpl, arrange = "grid")[[1]], "ggplot")
+
+  expect_is(plot(comp_rbpr, arrange = "grid"), "plot_list")
+  expect_is(plot(comp_rbpr, arrange = "grid")[[1]], "ggplot")
 })
 
