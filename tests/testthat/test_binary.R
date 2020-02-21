@@ -225,3 +225,46 @@ test_that("loocv", {
   expect_is(loo_model, "baggr_cv")
   capture_output(print(loo_model))
 })
+
+comp_pl <- expect_warning(baggr_compare(
+  df_binary, model = "logit", iter = 200, what = "pooling"
+))
+
+comp_pr <- expect_warning(baggr_compare(
+  df_binary, model = "logit", iter = 200, what = "prior"
+))
+
+comp_existmodels <- baggr_compare(bg5_p, bg5_f)
+
+test_that("baggr comparison method works for Full model", {
+
+  expect_is(comp_pl, "baggr_compare")
+  expect_is(comp_pr, "baggr_compare")
+  expect_is(comp_existmodels, "baggr_compare")
+
+  expect_is(testthat::capture_output(print(comp_pl)), "character")
+  expect_is(testthat::capture_output(print(comp_pr)), "character")
+  expect_is(testthat::capture_output(print(comp_existmodels)), "character")
+
+  expect_gt(length(comp_pl), 0)
+  expect_gt(length(comp_pr), 0)
+  expect_gt(length(comp_existmodels), 0)
+
+  expect_is(plot(comp_pl), "plot_list")
+  expect_is(plot(comp_pl)[[1]], "ggplot")
+
+  expect_is(plot(comp_pl, arrange = "grid"), "plot_list")
+  expect_is(plot(comp_pl, arrange = "grid")[[1]], "ggplot")
+
+  expect_is(plot(comp_pr), "ggplot")
+
+  expect_is(plot(comp_pr, arrange = "grid"), "plot_list")
+  expect_is(plot(comp_pr, arrange = "grid")[[1]], "ggplot")
+
+  expect_is(plot(comp_existmodels), "plot_list")
+  expect_is(plot(comp_existmodels)[[1]], "ggplot")
+
+  expect_is(plot(comp_existmodels, arrange = "grid"), "plot_list")
+  expect_is(plot(comp_existmodels, arrange = "grid")[[1]], "ggplot")
+
+})

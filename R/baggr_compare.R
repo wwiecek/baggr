@@ -156,7 +156,7 @@ baggr_compare <- function(...,
       lapply(
         effect_names,
         function(x) all.equal(effect_names[[1]], x))) == 1)
-    )
+  )
     stop("Models must have the same effects to be comparable")
 
   effect_names <- effect_names[[1]]
@@ -164,22 +164,30 @@ baggr_compare <- function(...,
   # Return treatment effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      mint(treatment_effect(x, transform = transform)$tau)
+      est <- treatment_effect(x, transform = transform, summary = T)$tau
+      if(is.matrix(est)) {
+        if(nrow(est) == 1) est <- est[1,]
+      }
+      est
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      mint(treatment_effect(x, transform = transform)$sigma_tau)
+      est <- treatment_effect(x, transform = transform, summary = T)$sigma_tau
+      if(is.matrix(est)) {
+        if(nrow(est) == 1) est <- est[1,]
+      }
+      est
     })))
 
 
   structure(list(
-              models = models,
-              mean_trt = mean_trt_effects,
-              sd_trt = sd_trt_effects,
-              compare = compare,
-              effect_names = effect_names,
-              transform = deparse(substitute(transform))),
-            class = "baggr_compare")
+    models = models,
+    mean_trt = mean_trt_effects,
+    sd_trt = sd_trt_effects,
+    compare = compare,
+    effect_names = effect_names,
+    transform = deparse(substitute(transform))),
+    class = "baggr_compare")
 }
 
 #' Print method for baggr_compare models
@@ -249,20 +257,24 @@ plot.baggr_compare <- function(x,
           # will need to be modified for quantiles models case:
           if(x$pooling != "none"){
 
-            hyper_treat <- treatment_effect(x)[[i]]
-            hyper_effects <- data.frame(
-              lci = quantile(hyper_treat, (1 - interval)/2),
-              median = quantile(hyper_treat, 0.5),
-              uci = quantile(hyper_treat, 1 - (1 - interval)/2),
-              mean = mean(hyper_treat),
-              sd = sd(hyper_treat),
-              group = "Pooled Estimate"
-            )
+
             m <- as.data.frame(group_effects(x, interval = interval,
                                              summary = TRUE,
                                              transform = transform)[,,i])
             m$group <- rownames(m)
-            m <- rbind(hyper_effects, m)
+            if(hyper) {
+              hyper_treat <- treatment_effect(x)[[i]]
+              hyper_effects <- data.frame(
+                lci = quantile(hyper_treat, (1 - interval)/2),
+                median = quantile(hyper_treat, 0.5),
+                uci = quantile(hyper_treat, 1 - (1 - interval)/2),
+                mean = mean(hyper_treat),
+                sd = sd(hyper_treat),
+                group = "Pooled Estimate"
+              )
+              m <- rbind(hyper_effects, m)
+            }
+
             m
           } else {
             m <- as.data.frame(group_effects(x,
@@ -279,34 +291,26 @@ plot.baggr_compare <- function(x,
           df_groups <- rbind(df_groups,
                              data.frame(model = names(ll)[j], ll[[j]]))
 
-          if(order == T) {
+        if(order == T) {
 
-            model_spread <- sapply(
-              split(df_groups, df_groups$model), function(x) max(x$median) - min(x$median)
-            )
-
-            max_spread_model <- names(model_spread[which.max(model_spread)])
-
-            rank_data <- df_groups[which(df_groups$model == max_spread_model),]
-
-            lvls <- rank_data[order(rank_data$median),]$group
-
-            ord <- c(
-              "Pooled Estimate",
-              rev(lvls)
-            )
+          ord <- get_order(df_groups, hyper)
 
         } else {
-          ord <- c(
-            "Pooled Estimate",
-            setdiff(sort(unique(df_groups$group)),
-                    "Pooled Estimate")
-          )
+          if(hyper) {
+
+            ord <- c(
+              setdiff(sort(unique(df_groups$group)),
+                      "Pooled Estimate"),
+              "Pooled Estimate"
+            )
+          } else {
+            ord <- sort(unique(df_groups$group))
+          }
         }
 
         df_groups$group <- factor(df_groups$group,
                                   levels = rev(ord) # because of flipped coordinates
-                                  )
+        )
 
         # df <- rbind(df_groups, df_trt)
         df <- df_groups
@@ -332,15 +336,15 @@ plot.baggr_compare <- function(x,
                           "Effect of treatment on ",
                           effect_names[i],
                           " outcome."
-                          )
-                        ) +
+                        )
+          ) +
           baggr_theme_get() +
           ggplot2::theme(legend.position="top")
         return(comparison_plot)
       })
     } else if(compare == "effects"){
       plots <- do.call(effect_plot, models) +
-        labs(fill = NULL)
+        ggplot2::labs(fill = NULL)
     } else {
       stop("Argument compare = must be 'effects' or 'groups'.")
     }
@@ -367,4 +371,30 @@ print.plot_list <- function(x) {
   }
 }
 
+#' Separate out ordering so we can test directly
+#' @param df_groups data.frame of group effects used in plot.baggr_compare
+#' @details Given a set of effects measured by models, identifies the
+#' model which has the biggest range of estimates and ranks groups
+#' by those estimates, returning the order
+get_order <- function(df_groups, hyper) {
 
+  model_spread <- sapply(
+    split(df_groups, df_groups$model), function(x) max(x$median) - min(x$median)
+  )
+
+  max_spread_model <- names(model_spread[which.max(model_spread)])
+
+  rank_data <- df_groups[which(df_groups$model == max_spread_model),]
+
+  lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group), "Pooled Estimate")
+  if(hyper) {
+
+    ord <- c(
+      rev(lvls),
+      "Pooled Estimate"
+    )
+  } else {
+    ord <- rev(lvls)
+  }
+  ord
+}

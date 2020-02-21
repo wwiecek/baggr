@@ -148,3 +148,21 @@ test_that("Extracting treatment/study effects works", {
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 })
 
+comp_mt <- baggr_compare(
+  bg5_p, bg5_f
+)
+
+test_that("baggr comparison method works for mu-tau models", {
+
+  expect_is(comp_mt, "baggr_compare")
+  expect_output(print(comp_mt))
+  expect_gt(length(comp_mt), 0)
+
+  expect_is(plot(comp_mt), "plot_list")
+  expect_is(plot(comp_mt)[[1]], "ggplot")
+
+  expect_is(plot(comp_mt, arrange = "grid"), "plot_list")
+  expect_is(plot(comp_mt, arrange = "grid")[[1]], "ggplot")
+
+})
+
