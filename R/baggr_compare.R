@@ -371,11 +371,13 @@ print.plot_list <- function(x) {
   }
 }
 
-#' Separate out ordering so we can test directly
-#' @param df_groups data.frame of group effects used in plot.baggr_compare
-#' @details Given a set of effects measured by models, identifies the
-#' model which has the biggest range of estimates and ranks groups
-#' by those estimates, returning the order
+# Separate out ordering so we can test directly
+# @param df_groups data.frame of group effects used in [plot.baggr_compare]
+# @param hyper show parameter estimate? same as in [plot.baggr_compare]
+# @details Given a set of effects measured by models, identifies the
+# model which has the biggest range of estimates and ranks groups
+# by those estimates, returning the order
+
 get_order <- function(df_groups, hyper) {
 
   model_spread <- sapply(
