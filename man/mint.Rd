@@ -2,7 +2,7 @@
 % Please edit documentation in R/mint.R
 \name{mint}
 \alias{mint}
-\title{Output mean, intervals and other summaries for matrix (by column) or vector}
+\title{"Mean and interval" function, including other summaries, calculated for matrix (by column) or vector}
 \usage{
 mint(y, int = 0.95, digits = NULL, median = FALSE, sd = FALSE)
 }

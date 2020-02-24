@@ -1,4 +1,4 @@
-#' Output mean, intervals and other summaries for matrix (by column) or vector
+#' "Mean and interval" function, including other summaries, calculated for matrix (by column) or vector
 #'
 #' This function is just a convenient shorthand for getting typical summary statistics.
 #'
@@ -14,9 +14,15 @@
 #' mint(rnorm(100, 12, 5))
 #'
 mint <- function(y, int=0.95, digits = NULL, median = FALSE, sd = FALSE){
-  if(class(y) == "array" && length(dim(y)) == 1)
-    y <- as.vector(y)
-  if (class(y) == "matrix")
+  # this is a wrapper that checks for type and applies mintv() accordingly
+  if(is.array(y)){
+    if(length(dim(y)) == 1)
+      y <- as.vector(y)
+    if(length(dim(y)) > 2)
+      # This behaviour might have to change!
+      stop("mint() can't summarise arrays of more than 2 dimensions")
+  }
+  if (is.matrix(y))
     t(apply(y, 2, mintv, int = int, digits = digits, median = median, sd = sd))
   else if (class(y) == "numeric")
     mintv(y, int = int, digits = digits, median = median, sd = sd)
@@ -24,7 +30,7 @@ mint <- function(y, int=0.95, digits = NULL, median = FALSE, sd = FALSE){
     return(NULL)
 }
 
-# vectors only
+# mint() applied to vectors
 mintv <- function(y, int=0.95, digits = NULL, median = FALSE, sd = FALSE){
   if(all(is.na(y))){
     y <- 1:10 #spoof, just to get the labels
