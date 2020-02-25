@@ -47,7 +47,7 @@ There are certain aspects of modelling binary data that are not yet covered by _
 Typically, a meta-analysis of binary data is done on summary statistics such as $\log(OR)$ or $\log(RR)$. The reason for this is two-fold: 1) they are the statistics most commonly reported by studies and 2) they are approximately normally distributed. The second assumption needs to be treated carefully, as we will show later.
 
 
-For the first example we will use a simple summary data based on (part of) Table 6 in @yusuf_beta_1985, a famous study of impact of beta blockers on occurence of strokes and mortality.
+For the first example we will use a simple summary data based on (part of) Table 6 in @yusuf_beta_1985, a famous study of impact of beta blockers on occurrence of strokes and mortality.
 
 ```{r}
 df_yusuf <- read.table(text="
@@ -244,7 +244,7 @@ There will be difference in speed -- in our example logistic model has to work w
 
 
 
-## When to use summary and when to use indvidual-level data
+## When to use summary and when to use individual-level data
 
 To sum up: 
 
@@ -279,7 +279,7 @@ df_rare <- data.frame(group = paste("Study", LETTERS[1:4]),
                       n2i = c(120, 300, 110, 250))
 ```
 
-In Study 1 you can see that no events occured in `a` column. Assume, that we have individual-level data for these studies (if not, we can generate it as we did in the example above):
+In Study 1 you can see that no events occurred in `a` column. Assume, that we have individual-level data for these studies (if not, we can generate it as we did in the example above):
 
 ```{r}
 df_rare_ind <- data.frame()
