@@ -33,7 +33,7 @@
 #' will run fully/partially/un-pooled models and compare them
 #' or "prior" which will generate estimates without the data
 #' and compare them to the model with the full data. For more
-#' details see [baggr](baggr), specifically the PPD argument.
+#' details see [baggr], specifically the PPD argument.
 #' @examples \donttest{
 #' # Most basic comparison between no, partial and full pooling
 #' # (This will run the models)
@@ -359,7 +359,6 @@ plot.baggr_compare <- function(x,
 
 #' Print list of baggr plots
 #' @param x list of plots to print
-#' @param ... ignored for now
 #' @details prints plots in a loop, internal use only
 print.plot_list <- function(x) {
   if(length(x) == 1) {
@@ -379,24 +378,15 @@ print.plot_list <- function(x) {
 # by those estimates, returning the order
 
 get_order <- function(df_groups, hyper) {
-
   model_spread <- sapply(
     split(df_groups, df_groups$model), function(x) max(x$median) - min(x$median)
   )
-
   max_spread_model <- names(model_spread[which.max(model_spread)])
-
   rank_data <- df_groups[which(df_groups$model == max_spread_model),]
-
   lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group), "Pooled Estimate")
-  if(hyper) {
-
-    ord <- c(
-      rev(lvls),
-      "Pooled Estimate"
-    )
-  } else {
+  if(hyper)
+    ord <- c(rev(lvls), "Pooled Estimate")
+  else
     ord <- rev(lvls)
-  }
   ord
 }

@@ -14,8 +14,6 @@ predict_quantiles(x, nsamples, newdata = NULL, allow_new_levels = T)
 \item{newdata}{new data to predict, defaults to NULL}
 
 \item{allow_new_levels}{allow the predictive of new, unobserved groups}
-
-\item{...}{additional arguments, unused for now}
 }
 \description{
 Predict function for the quantiles model
