@@ -43,7 +43,7 @@ what kind of comparison you want, either "pooling" which
 will run fully/partially/un-pooled models and compare them
 or "prior" which will generate estimates without the data
 and compare them to the model with the full data. For more
-details see \url{baggr}, specifically the PPD argument.
+details see \link{baggr}, specifically the PPD argument.
 }
 \examples{
 \donttest{

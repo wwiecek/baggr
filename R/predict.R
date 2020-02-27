@@ -120,7 +120,6 @@ predict_mutau <- function(x,
 #' @param nsamples number of samples to predict
 #' @param newdata new data to predict, defaults to NULL
 #' @param allow_new_levels allow the predictive of new, unobserved groups
-#' @param ... additional arguments, unused for now
 predict_quantiles <- function(x,
                               nsamples,
                               newdata = NULL,

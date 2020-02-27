@@ -8,8 +8,6 @@
 }
 \arguments{
 \item{x}{list of plots to print}
-
-\item{...}{ignored for now}
 }
 \description{
 Print list of baggr plots
