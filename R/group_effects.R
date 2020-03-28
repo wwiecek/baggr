@@ -1,30 +1,41 @@
 #' Extract baggr study effects
 #'
 #' Given a baggr object, returns the raw MCMC draws of the posterior for
-#' each group's effect, or a summary of these draws. This is an internal
-#' function currently used as a helper for plotting and printing of results.
+#' each group's effect or a summary of these draws.
+#' If there are no covariates in the model, this effect is a single random variable.
+#' If there are covariates, the group effect is a sum of effect of covariates (fixed effects)
+#' and the study-specific random variable (random effects).
+#' This is an internal function currently used as a helper for plotting and
+#' printing of results.
 #'
 #' @param bg baggr object
-#' @param summary logical; if TRUE returns summary statistics as explained below.
+#' @param summary logical; if `TRUE` returns summary statistics as explained below.
 #' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `group_effects` from other
 #'                  plotting or printing functions)
-#' @return Either a matrix with MCMC samples (if summary = FALSE)
-#'         or a summary of these samples (if summary = TRUE).
+#' @param random_only logical; for meta-regression models, should [fixed_effects] be included in the
+#'                    returned group effect?
+#' @return Either a matrix with MCMC samples (if `summary = FALSE`)
+#'         or a summary of these samples (if `summary = TRUE`).
 #' @examples
 #' fit1 <- baggr(schools)
 #' group_effects(fit1, summary = TRUE, interval = 0.5)
-#' @details If summary = TRUE, the returned object contains, for each study
+#' @details If `summary = TRUE`, the returned object contains, for each study
 #' or group, the following 5 values:
 #' the posterior medians, the lower and upper bounds of the
 #' uncertainty intervals using the central posterior credible interval
 #' of width specified in the argument `interval`, the posterior mean, and
 #' the posterior standard deviation.
 #'
+#' @seealso [fixed_effects] for effects of covariates on outcome. To extract random effects
+#'          when covariates are present, you can use either [random_effects] or, equivalently,
+#'          `group_effects(random_only=TRUE)`.
+#'
 #' @export
 
-group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95) {
+group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
+                          random_only = FALSE) {
   check_if_baggr(bg)
 
   # m <- as.matrix(bg$fit)
@@ -47,6 +58,14 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95)
       # drop mu if model has mu (baseline/control value)
       if(bg$model == "mutau")
         m <- m[,,2]
+
+      # If dealing with a meta-regression model, we automatically add effect of covariates
+      # unless user requests random_only
+      if(bg$model == "rubin" && !random_only && !is.null(bg$covariates)) {
+        m_fe <- fixed_effects(bg) %*% t(bg$inputs$X)
+        m <- m + m_fe
+      }
+
     } else if(bg$model == "quantiles") {
       # In this case we have 3D array, last dim is quantiles
       m <- rstan::extract(bg$fit, pars = "beta_1_k")[[1]]
@@ -77,4 +96,15 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95)
     m <- do.call(transform, list(m))
 
   return(m)
+}
+
+#' Extract random effects from a baggr model
+#'
+#' This is a shortcut for writing `group_effects(random_only=TRUE, ...)`
+#'
+#' @param ... arguments passed to [group_effects]
+#'
+#' @export
+random_effects <- function(...) {
+  group_effects(random_only = TRUE, ...)
 }
