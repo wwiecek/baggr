@@ -100,21 +100,22 @@ As with continuous quantities, the prior is chosen automatically. However, it is
 
 # Choice of summary statistic for meta-analysis
 
-We summarised our data as log(OR). Alternatively, we could work with log(RR). Risk difference is also a simple model that could be useful in some cases. Each model makes different assumptions on how the treatment of interest works. How do we choose the appropriate model for our data? A very good discussion of these choices is provided @deeks_issues_2002 (see especially Figures 1-3).
+We summarised our data as log(OR). Alternatively, we could work with log(RR). Risk difference is also a simple model that could be useful in some cases. Each model makes different assumptions on how the treatment of interest works. How do we choose the appropriate model for our data? 
 
 The basic tool that can help us choose is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
 
 ```{r}
-labbe()
+labbe(df, plot_model = TRUE, shade_se = "or")
 ```
 
+When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
 
 
 ## Using risk ratios instead of odds ratios
 
-, which is also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). All of the analysis would be analogous in that case -- with exception of interpretation of treatment effect, which will then be on risk ratios. 
+Risk ratio is also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). All of the analysis flow would be identical in that case -- with exception of interpretation of treatment effect, of course.
 
-Quick reminder on how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
+Before we present the results for the OR model, a reminder on how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
 
 ```{r}
 a <- 9; b <- 1; c <- 99; d <- 1
@@ -128,6 +129,23 @@ cat("Risk ratio is", (a/(a+b))/(c/(c+d)), "\n" )
 cat("Odds ratio is", a*d/(b*c), "\n")
 ```
 
+We can illustrate the similarities and differences of OR and RR with one example:
+
+```{r}
+par(mfrow = c(2,3), oma = rep(2,4))
+for(es in c(1, .9, .8, .5, .25, .1)){
+  p_bsl    <- seq(0,1,length=100)
+  p_trt_rr <- es*p_bsl
+  odds_trt <- es*(p_bsl/(1-p_bsl))
+  p_trt_or <- odds_trt / (1 + odds_trt)
+  plot(p_trt_or ~ p_bsl, type = "l", 
+       xlab = "control event rate", ylab = "treatment event rate", main = paste0("RR=OR=",es))
+  lines(p_trt_rr ~ p_bsl, lty = "dashed")
+}
+title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
+```
+
+A very good discussion of these choices and intuituve plots are provided by @deeks_issues_2002 (see especially Figures 1-3). 
 
 
 
