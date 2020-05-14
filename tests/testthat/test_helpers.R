@@ -29,7 +29,7 @@ test_that("prepare_ma()", {
 
   mc2 <- microcredit_simplified
   names(mc2)[1] <- "study"
-  expect_error(prepare_ma(mc2, outcome = "consumerdurables"), "no column")
+  expect_error(prepare_ma(mc2, outcome = "consumerdurables"), "must be individual")
   expect_is(prepare_ma(mc2, group = "study", outcome = "consumerdurables"), "data.frame")
 
   # prepare_ma for binary data

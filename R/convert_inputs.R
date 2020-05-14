@@ -100,6 +100,10 @@ convert_inputs <- function(data,
 
   required_data <- model_data_types[[model]]
 
+  if(required_data == "individual_binary" && grepl("pool", available_data)) {
+    data <- binary_to_individual(data, group = group)
+    available_data <- "individual_binary"
+  }
 
   if(required_data != available_data)
     stop(paste(
