@@ -9,7 +9,7 @@
 #' @param group Column name storing group
 #'
 #' @return A data frame with columns `group`, `outcome` and `treatment`.
-#'
+#' @export
 #' @seealso [prepare_ma] uses this function
 #'
 #' @examples
