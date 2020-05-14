@@ -14,11 +14,12 @@
 #' @seealso `vignette("baggr_binary")` for an illustrative example
 #' @return A `ggplot` object
 #' @export
+#' @import ggplot2
 #'
 labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
                   shade_se = c("rr", "or", "none")) {
   # Global bindings fix:
-  risk_trt <- risk_control <- se_size <- p_trt <- p_bsl <- a <-b<-c<-d <- NULL
+  risk_trt <- risk_control <- se_size <- p_trt <- p_bsl <- a <-b<-c<-d <- model <- NULL
 
   if(is.null(data[[group]])){
     data$group <- 1:nrow(data)
@@ -31,9 +32,9 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
   data_or <- prepare_ma(data, group=group, effect = "logOR")
   data_rr  <- prepare_ma(data_or, effect = "logRR")
 
-  ggdata <-  dplyr::mutate(data_or,
-                           risk_trt     = a/(a+b),
-                           risk_control = c/(c+d))
+  ggdata <-  data_or
+  ggdata$risk_trt <- ggdata$a/(ggdata$a+ggdata$b)
+  ggdata$risk_control <- ggdata$d/(ggdata$d+ggdata$d)
 
   if(shade_se == "or") ggdata$se_size <- 1 / data_or$se
   if(shade_se == "rr") ggdata$se_size <- 1 / data_rr$se

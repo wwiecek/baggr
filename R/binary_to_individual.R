@@ -24,9 +24,11 @@
 #'   Ledwich  2  20  3  20
 #'   ", header=TRUE)
 #' bti <- binary_to_individual(df_yusuf, group = "trial")
-#' bti
+#' head(bti)
 #' # to go back to summary-level data
 #' prepare_ma(bti, effect = "logOR")
+#' # the last operation is equivalent to simply doing
+#' prepare_ma(df_yusuf, group="trial", effect="logOR")
 #'
 binary_to_individual <- function(data, group = "group") {
   df_ind <- data.frame()
