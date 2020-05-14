@@ -6,6 +6,7 @@
 #' @param data A data frame with columns `a`, `c` and `b`/`n1`, `d`/`n2`.
 #'
 #' See `vignette("baggr_binary")` for an example of use and notation details.
+#' @param group Column name storing group
 #'
 #' @return A data frame with columns `group`, `outcome` and `treatment`.
 #'
@@ -22,7 +23,7 @@
 #'   Kahler  3  38  6  31
 #'   Ledwich  2  20  3  20
 #'   ", header=TRUE)
-#' bti <- binary_to_individual(df_yusuf)
+#' bti <- binary_to_individual(df_yusuf, group = "trial")
 #' bti
 #' # to go back to summary-level data
 #' prepare_ma(bti, effect = "logOR")

@@ -11,13 +11,15 @@
 #' @param labels if `TRUE`, names from the `group` column are displayed
 #' @param shade_se if `"none"`, nothing is plotted, if `"or"` or `"rr"`, a shaded area corresponding to
 #'                 inverse of effect's (OR or RR) SE is added to each data point; the default is `"rr"`
-#'
+#' @seealso `vignette("baggr_binary")` for an illustrative example
 #' @return A `ggplot` object
 #' @export
 #'
-#' @examples
 labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
                   shade_se = c("rr", "or", "none")) {
+  # Global bindings fix:
+  risk_trt <- risk_control <- se_size <- p_trt <- p_bsl <- a <-b<-c<-d <- NULL
+
   if(is.null(data[[group]])){
     data$group <- 1:nrow(data)
     labels <- FALSE
@@ -57,6 +59,7 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
   lim_min <- min(c(ggdata$risk_trt, ggdata$risk_control))
   lim_max <- max(c(ggdata$risk_trt*1.1, ggdata$risk_control*1.1))
   lim_max <- min(c(lim_max, 1))
+
 
   ggplot(ggdata, aes(x = risk_control, y = risk_trt)) +
     geom_point() +

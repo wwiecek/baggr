@@ -10,6 +10,8 @@ binary_to_individual(data, group = "group")
 \item{data}{A data frame with columns \code{a}, \code{c} and \code{b}/\code{n1}, \code{d}/\code{n2}.
 
 See \code{vignette("baggr_binary")} for an example of use and notation details.}
+
+\item{group}{Column name storing group}
 }
 \value{
 A data frame with columns \code{group}, \code{outcome} and \code{treatment}.
@@ -29,7 +31,7 @@ df_yusuf <- read.table(text="
   Kahler  3  38  6  31
   Ledwich  2  20  3  20
   ", header=TRUE)
-bti <- binary_to_individual(df_yusuf)
+bti <- binary_to_individual(df_yusuf, group = "trial")
 bti
 # to go back to summary-level data
 prepare_ma(bti, effect = "logOR")

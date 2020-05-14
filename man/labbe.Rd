@@ -32,3 +32,6 @@ A \code{ggplot} object
 \description{
 This plot shows relationship between proportions of events in control and treatment groups in binary data.
 }
+\seealso{
+\code{vignette("baggr_binary")} for an illustrative example
+}

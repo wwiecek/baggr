@@ -230,16 +230,10 @@ loo_compare(a,b) #...but typically we compare them to each other
 
 # Model for individual-level binary data
 
-Let's assume that you have access to underlying individual-level data. In our example above, we do not, but we can create a data.frame with individual level data as we know the contingency table:
+Let's assume that you have access to underlying individual-level data. In our example above, we do not, but we can create a data.frame with individual level data since we know the contingency table. In practice this is not necessary as _baggr_ will do the appropriate conversions behind the scenes, but for our example we will convert our data by hand. Fortunately, a built-in function, `binary_to_individual` can do the conversion for us:
 
 ```{r}
-df_ind <- data.frame()
-for(i in 1:nrow(df_yusuf)) {
-  df_ind <- rbind(df_ind, data.frame(group = df_yusuf$trial[i],
-             treatment = c(rep(1, df_yusuf$n1i[i]), rep(0, df_yusuf$n2i[i])),
-             outcome = c(rep(1, df_yusuf$a[i]), rep(0, df_yusuf$n1i[i] - df_yusuf$a[i]),
-                         rep(1, df_yusuf$c[i]), rep(0, df_yusuf$n2i[i] - df_yusuf$c[i]))))
-}
+df_ind <- binary_to_individual(df_yusuf)
 head(df_ind)
 ```
 
@@ -253,7 +247,7 @@ bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio
 bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
 ```
 
-> Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` .
+> Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` . Alternatively, if we used `"df_yusuf"` and requested `model = "logit"`, the conversion to individual-level data would be done automatically.
 
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
