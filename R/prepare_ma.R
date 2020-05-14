@@ -27,17 +27,19 @@
 #' @param baseline name of column with baseline variable
 #'
 #' @return
-#' * If you `summarise` data.frame with columns for `group` \code{tau} and \code{se.tau}
-#'         (for `effect = "mean"`, also baseline means, for `"logRR"` or `"logOR"` also
-#'         `a`, `b`, `c`, `d`, which correspond to typical contingency table notation).
+#' * If you `summarise`: a data.frame with columns for `group`, `tau` and `se.tau`
+#'         (for `effect = "mean"`, also baseline means; for `"logRR"` or `"logOR"` also
+#'         `a`, `b`, `c`, `d`, which correspond to typical contingency table notation, that is:
+#'         `a` = events in exposed; `b` = no events in exposed, `c` = events in unexposed,
+#'         `d` = no events in unexposed).
 #' * If you do not summarise data, individual level data will be returned, but
-#'   some columns may be renamed or transformed (see above).
+#'   some columns may be renamed or transformed (see the arguments above).
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
-#' when data is fed to [baggr]. However, this function can be used to explicitly
+#' when `data` is given to [baggr]. However, this function can be used to explicitly
 #' convert from full to reduced (summarised) data without analysing it in any model.
-#' It can be useful for examining your data.
+#' It can be useful for examining your data and generating summary tables.
 #'
 #' If multiple operations are performed, they are taken in this order:
 #' 1) conversion to log scale,
@@ -45,7 +47,8 @@
 #' 3) summarising data (using appropriate `effect`)
 #'
 #' @author Witold Wiecek
-#' @seealso [convert_inputs] for how any type of data is (internally) converted into Stan inputs;
+#' @seealso [convert_inputs] for how any type of data is (internally) converted into
+#'          a list of Stan inputs;
 #' @export
 #' @import stats
 #'

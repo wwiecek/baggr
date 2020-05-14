@@ -4,30 +4,43 @@
 \alias{group_effects}
 \title{Extract baggr study effects}
 \usage{
-group_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
+group_effects(
+  bg,
+  summary = FALSE,
+  transform = NULL,
+  interval = 0.95,
+  random_only = FALSE
+)
 }
 \arguments{
 \item{bg}{baggr object}
 
-\item{summary}{logical; if TRUE returns summary statistics as explained below.}
+\item{summary}{logical; if \code{TRUE} returns summary statistics as explained below.}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
 (this is commonly used when calling \code{group_effects} from other
 plotting or printing functions)}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+
+\item{random_only}{logical; for meta-regression models, should \link{fixed_effects} be included in the
+returned group effect?}
 }
 \value{
-Either a matrix with MCMC samples (if summary = FALSE)
-or a summary of these samples (if summary = TRUE).
+Either a matrix with MCMC samples (if \code{summary = FALSE})
+or a summary of these samples (if \code{summary = TRUE}).
 }
 \description{
 Given a baggr object, returns the raw MCMC draws of the posterior for
-each group's effect, or a summary of these draws. This is an internal
-function currently used as a helper for plotting and printing of results.
+each group's effect or a summary of these draws.
+If there are no covariates in the model, this effect is a single random variable.
+If there are covariates, the group effect is a sum of effect of covariates (fixed effects)
+and the study-specific random variable (random effects).
+This is an internal function currently used as a helper for plotting and
+printing of results.
 }
 \details{
-If summary = TRUE, the returned object contains, for each study
+If \code{summary = TRUE}, the returned object contains, for each study
 or group, the following 5 values:
 the posterior medians, the lower and upper bounds of the
 uncertainty intervals using the central posterior credible interval
@@ -37,4 +50,9 @@ the posterior standard deviation.
 \examples{
 fit1 <- baggr(schools)
 group_effects(fit1, summary = TRUE, interval = 0.5)
+}
+\seealso{
+\link{fixed_effects} for effects of covariates on outcome. To extract random effects
+when covariates are present, you can use either \link{random_effects} or, equivalently,
+\code{group_effects(random_only=TRUE)}.
 }

@@ -52,11 +52,13 @@ converted (e.g. logged) data with columns renamed}
 }
 \value{
 \itemize{
-\item If you \code{summarise} data.frame with columns for \code{group} \code{tau} and \code{se.tau}
-(for \code{effect = "mean"}, also baseline means, for \code{"logRR"} or \code{"logOR"} also
-\code{a}, \code{b}, \code{c}, \code{d}, which correspond to typical contingency table notation).
+\item If you \code{summarise}: a data.frame with columns for \code{group}, \code{tau} and \code{se.tau}
+(for \code{effect = "mean"}, also baseline means; for \code{"logRR"} or \code{"logOR"} also
+\code{a}, \code{b}, \code{c}, \code{d}, which correspond to typical contingency table notation, that is:
+\code{a} = events in exposed; \code{b} = no events in exposed, \code{c} = events in unexposed,
+\code{d} = no events in unexposed).
 \item If you do not summarise data, individual level data will be returned, but
-some columns may be renamed or transformed (see above).
+some columns may be renamed or transformed (see the arguments above).
 }
 }
 \description{
@@ -65,9 +67,9 @@ Input must be pre-formatted appropriately.
 }
 \details{
 The conversions done by this function are not typically needed and may happen automatically
-when data is fed to \link{baggr}. However, this function can be used to explicitly
+when \code{data} is given to \link{baggr}. However, this function can be used to explicitly
 convert from full to reduced (summarised) data without analysing it in any model.
-It can be useful for examining your data.
+It can be useful for examining your data and generating summary tables.
 
 If multiple operations are performed, they are taken in this order:
 \enumerate{
@@ -77,7 +79,8 @@ If multiple operations are performed, they are taken in this order:
 }
 }
 \seealso{
-\link{convert_inputs} for how any type of data is (internally) converted into Stan inputs;
+\link{convert_inputs} for how any type of data is (internally) converted into
+a list of Stan inputs;
 }
 \author{
 Witold Wiecek
