@@ -67,12 +67,15 @@ In a typical notation, `a` (`c`) are numbers of events in treatment (control) gr
 In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calculated from the values (if you're not familiar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
 
 ```{r}
-df <- df_yusuf
-df$b <- df$n1i-df$a
-df$d <- df$n2i-df$c
-df$tau <- log((df$a*df$d)/(df$b*df$c))
-df$se <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
+# This is a calculation we could do by hand:
+# df <- df_yusuf
+# df$b <- df$n1i-df$a
+# df$d <- df$n2i-df$c
+# df$tau <- log((df$a*df$d)/(df$b*df$c))
+# df$se <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
 
+# But prepare_ma() automates these operations:
+df <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
 df
 ```
 
@@ -81,25 +84,35 @@ We use `tau` and `se` notation for our effect, same as we would for analysing co
 
 ```{r, include = F}
 bg_model_agg <- baggr(df, 
-                    effect = "logarithm of odds ratio",
-                    group = "trial")
+                    effect = "logarithm of odds ratio")
 ```
 
 ```{r, eval = F, echo = T}
 bg_model_agg <- baggr(df, 
-                    effect = "logarithm of odds ratio",
-                    group = "trial")
+                    effect = "logarithm of odds ratio")
 ```
 
-The two arguments we customised, `effect` and `group` do not impact results, but make outputs nicer, as we will see in the next section.
+The argument we speficied, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
 
-As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing logged quantities, because the priors may be needlessly diffuse (in other words, with the command above _baggr_ does not "know" that data are logged). 
+As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
+
+
+
+# Choice of summary statistic for meta-analysis
+
+We summarised our data as log(OR). Alternatively, we could work with log(RR). Risk difference is also a simple model that could be useful in some cases. Each model makes different assumptions on how the treatment of interest works. How do we choose the appropriate model for our data? A very good discussion of these choices is provided @deeks_issues_2002 (see especially Figures 1-3).
+
+The basic tool that can help us choose is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
+
+```{r}
+labbe()
+```
 
 
 
 ## Using risk ratios instead of odds ratios
 
-We summarised our data as log(OR). Alternatively, we could work with log(RR), which is also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). All of the analysis would be analogous in that case -- with exception of interpretation of treatment effect, which will then be on risk ratios. 
+, which is also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). All of the analysis would be analogous in that case -- with exception of interpretation of treatment effect, which will then be on risk ratios. 
 
 Quick reminder on how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
 
