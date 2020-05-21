@@ -112,8 +112,8 @@ model {
 
 generated quantities {
   real logpd[K_test > 0? 1: 0];
-  logpd[1] = 0;
   if(K_test > 0){
+    logpd[1] = 0;
     for(k in 1:K_test){
       //if pooling_type == 0, then lpd will be 0, by convention
       if(pooling_type == 1){
