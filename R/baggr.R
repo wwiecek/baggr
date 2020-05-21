@@ -29,11 +29,11 @@
 #'                   individual-level covariates.
 #' @param prior_hypermean prior distribution for hypermean; you can use "plain text" notation like
 #'              `prior_hypermean=normal(0,100)` or `uniform(-10, 10)`.
-#'              See Details:Priors below for more possible specifications.
+#'              See _Details:Priors_ section below for more possible specifications.
 #'              If unspecified, the priors will be derived automatically based on data
 #'              (and printed out in the console).
 #' @param prior_hypersd  prior for hyper-standard deviation, used
-#'                       by Rubin and `"mutau"`` models;
+#'                       by Rubin and `"mutau"` models;
 #'                       same rules apply as for `_hypermean`;
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
@@ -42,9 +42,10 @@
 #'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
 #' @param ppd       logical; use prior predictive distribution? (_p.p.d._) Default is no.
-#'                  If `ppd=TRUE`, Stan model will sample from the prior distributions
+#'                  If `ppd=TRUE`, Stan model will sample from the prior distribution(s)
 #'                  and ignore `data` in inference. However, `data` argument might still
-#'                  be used to infer the correct model and to set the default priors.
+#'                  be used to infer the correct model (if `model=NULL`) and to set the
+#'                  default priors.
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
@@ -115,10 +116,10 @@
 #'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
 #'   model. It can be modelled on summary-level data.
 #' * In `"logit"` and `"full"` models, covariates that __change according to individual unit__.
-#'   Then, the model can be called a
+#'   Then, such a model is commonly referred to as a
 #'   [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888)
-#'   . It has to be fitted to individual-level data. Note that the first case can also be
-#'   accounted for by using a mixed model.
+#'   . It has to be fitted to individual-level data. Note that meta-regression is a special
+#'   case of a mixed model for individual-level data.
 #'
 #'
 #' __Priors.__ It is optional to specify priors yourself,
@@ -339,6 +340,8 @@ remove_data_for_prior_pred <- function(data) {
   vectors_to_remove <- c("theta_hat_k", "se_theta_k",
                          "y", "treatment", "site")
   matrices_to_remove <- c("X")
+  matrices_to_rescale <- c("y_0", "y_1")
+  arrays_to_rescale <- c("Sigma_y_k_0", "Sigma_y_k_1")
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
@@ -350,6 +353,16 @@ remove_data_for_prior_pred <- function(data) {
   for(nm in matrices_to_remove)
     if(!is.null(data[[nm]]))
       data[[nm]] <- array(0, dim = c(0,0))
+
+  # This is for quantiles model where you have K x Nq inputs
+  # i.e. sites x Nquantiles
+  # For PPD we will need 0 x Nq
+  for(nm in matrices_to_rescale)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0, data$Nq))
+  for(nm in arrays_to_rescale)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0, data$Nq, data$Nq))
 
   data
 }

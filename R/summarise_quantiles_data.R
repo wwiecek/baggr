@@ -37,7 +37,8 @@
 summarise_quantiles_data <- function(data, quantiles,
                                      outcome   = "outcome",
                                      group  = "group",
-                                     treatment = "treatment") {
+                                     treatment = "treatment",
+                                     means_only = FALSE) {
   N <- length(quantiles)
   K <- length(unique(data[[group]]))
   if(!all(quantiles[-1] - quantiles[-length(quantiles)] > 0))
@@ -103,11 +104,17 @@ summarise_quantiles_data <- function(data, quantiles,
   }
 
   # Output:
-  list(y_0 = y_0,
-       y_1 = y_1,
-       Sigma_y_k_0 = Sigma_y_k_0,
-       Sigma_y_k_1 = Sigma_y_k_1,
-       quantiles = quantiles,
-       K = K, N = N
-  )
+  if(means_only)
+    return(list(
+      y_0 = y_0,
+      y_1 = y_1
+    ))
+  else
+    return(list(y_0 = y_0,
+                y_1 = y_1,
+                Sigma_y_k_0 = Sigma_y_k_0,
+                Sigma_y_k_1 = Sigma_y_k_1,
+                quantiles = quantiles,
+                K = K, Nq = N
+    ))
 }

@@ -169,7 +169,7 @@ convert_inputs <- function(data,
          (any(quantiles > 1)))
         stop("quantiles must be between 0 and 1")
       if(length(quantiles) < 2)
-        stop("cannot model less then 2 quantiles")
+        stop("cannot model less than 2 quantiles")
       data[[group]] <- group_numeric
       out <- summarise_quantiles_data(data, quantiles, outcome, group, treatment)
       message("Data have been automatically summarised for quantiles model.")
@@ -177,7 +177,7 @@ convert_inputs <- function(data,
       # Fix for R 3.5.1. on Windows
       # https://stackoverflow.com/questions/51343022/
       out$temp <- out[["y_0"]]
-      out$y_0 <- NULL
+      # out$y_0 <- NULL
       out[["y_0"]] <- out$temp
       out$temp <- NULL
 
@@ -269,6 +269,8 @@ convert_inputs <- function(data,
   # Include covariates ------
   # if(required_data != "individual") {
   if(length(covariates) > 0) {
+    if(model == "quantiles")
+      stop("Quantiles model cannot regress on covariates.")
 
     if(!all(covariates %in% names(data)))
       stop(paste0("Covariates ",
