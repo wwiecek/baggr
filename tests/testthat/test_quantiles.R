@@ -153,9 +153,9 @@ test_that("Calculation of effects works", {
 
 test_that("Plotting works", {
   expect_error(plot(bg5_ppd), "1-dimensional treatment effects")
-  expect_is(plot(bg5_n), "gg")
-  expect_is(plot(bg5_p, order = TRUE), "gg")
-  expect_is(plot(bg5_f, order = FALSE), "gg")
+  expect_is(plot(bg5_n), "list")
+  expect_is(plot(bg5_p, order = TRUE), "list")
+  expect_is(plot(bg5_f, order = FALSE), "list")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })
@@ -216,7 +216,10 @@ test_that("Test data can be used in the quantiles model", {
 
 # covariates ------
 test_that("Model with covariates works fine", {
-  expect_error(baggr(df_quantiles, covariates = c("made_up_covariates")),
+  df2 <- df_quantiles
+  df2$x <- rnorm(nrow(df2))
+  # expect_error(baggr(df2, covariates = c("made_up_covariates"), model = "quantiles"), "made_up_covariates")
+  expect_error(baggr(df2, covariates = c("x"), model = "quantiles"),
                "Quantiles model cannot regress on covariates.")
 })
 
@@ -229,7 +232,6 @@ test_that("Extracting treatment/study effects works", {
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "matrix") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
-  expect_identical(dim(treatment_effect(bg5_p, summary = T)$tau), c(3,5))
 
   # Drawing values of tau:
   # expect_error(effect_draw(cars))
