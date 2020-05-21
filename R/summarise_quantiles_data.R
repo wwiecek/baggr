@@ -10,7 +10,8 @@
 #' @param outcome   character: column name in `data` for outcome variable
 #' @param group     character: column name in `data` for grouping variable
 #' @param treatment character: column name in `data` for treatment variable
-#'
+#' @param means_only logical; if true, covariances and extra outputs are not
+#'                   returned, but only means (`y_0` and `y_1`)
 #' @details
 #' This function is intended for data exploration outside of [baggr]
 #' function. When calling [baggr], individual-level data should be supplied --
