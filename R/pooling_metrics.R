@@ -116,9 +116,9 @@ pooling <- function(bg,
 
     # discard everything off-diagonal, we only care about variances here:
     sigma_tau <- treatment_effect(bg)$sigma_tau
-    for(i in 1:dim(sigma_tau)[2])
-      sigma_tau[,i,1] <- sigma_tau[,i,i]
-    sigma_tau <- sigma_tau[,,1] #rows are samples, columns are quantiles
+    # for(i in 1:dim(sigma_tau)[2])
+      # sigma_tau[,i,1] <- sigma_tau[,i,i]
+    # sigma_tau <- sigma_tau[,,1] #rows are samples, columns are quantiles
 
     # now SE's of study treatment effects: this is our input data!
     # Sigma_y_k_1 is now vcov of trt effect (used to be control + effect, mind)
