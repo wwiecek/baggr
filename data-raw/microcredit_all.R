@@ -31,4 +31,4 @@ microcredit <- lapply(microcredit_all, function(x) {
     x[, vars]
 }) %>% setNames(study) %>% bind_rows(.id = "group")
 
-devtools::use_data(microcredit, overwrite = TRUE)
+usethis::use_data(microcredit, overwrite = TRUE)
