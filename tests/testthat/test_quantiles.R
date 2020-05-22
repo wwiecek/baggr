@@ -83,11 +83,15 @@ bg5_ppd <- expect_warning(baggr(df_quantiles, "quantiles", ppd = T,
                                 quantiles = chosen_quantiles,
                                 iter = 200, chains = 2, refresh = 0,
                                 show_messages = F))
+bg5_labels <- expect_warning(baggr(df_quantiles, "quantiles", pooling = "partial",
+                              quantiles = chosen_quantiles,
+                              effect = "Special", iter = 200, chains = 2, refresh = 0))
 
 test_that("Different pooling methods work for quantiles model", {
   expect_is(bg5_n, "baggr")
   expect_is(bg5_p, "baggr")
   expect_is(bg5_f, "baggr")
+  expect_is(bg5_labels, "baggr")
 })
 
 test_that("Extra args to Stan passed via ... work well", {
@@ -103,6 +107,11 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_p$n_groups, 7)
   expect_equal(bg5_p$effects, c("20% quantile mean", "40% quantile mean", "50% quantile mean"))
   expect_equal(bg5_p$model, "quantiles")
+  expect_equal(bg5_labels$effect, c("20% quantile on Special",
+                                    "40% quantile on Special",
+                                    "50% quantile on Special"))
+  expect_error(baggr(df_quantiles, "quantiles", pooling = "partial",
+                     quantiles = chosen_quantiles, effect = c("L1", "L2")), "length")
   expect_is(bg5_p$fit, "stanfit")
 })
 
@@ -273,3 +282,19 @@ test_that("Extracting treatment/study effects works", {
 #   expect_is(loo_model, "baggr_cv")
 #   capture_output(print(loo_model))
 # })
+
+
+# Helper: summarise quantiles data -----
+
+test_that("Summarising quantiles works", {
+  expect_error(summarise_quantiles_data(df_quantiles,  quantiles = c(.1, .5, .1)))
+  expect_error(summarise_quantiles_data(df_quantiles,  quantiles = c(.1, .5, .5)))
+  expect_error(summarise_quantiles_data(df_quantiles,  quantiles = c(.1)))
+  expect_length(summarise_quantiles_data(df_quantiles, quantiles = c(.1, .5, .9), means_only = TRUE), 2)
+})
+
+test_that("Plot quantiles", {
+  expect_error(plot_quantiles(cars), "a baggr")
+  expect_is(plot_quantiles(bg5_labels), "list")
+  expect_is(plot_quantiles(bg5_labels, ncol  = 3), "list")
+})
