@@ -55,7 +55,7 @@ As an example of an individual-level data set we include in data frames `microcr
 _baggr_ also has a function  that automatically produces summary data from full data sets, in case one wishes to run the comparatively faster summary-data models. The "prepare_ma()" function applied to a dataframe with columns named "group", "outcome", and "treatment" automatically estimates the control group means, treatment effects, and associated standard errors for each group using an Ordinary Least Squares regression. The resulting output is already formatted as a valid input to the _baggr_ command itself: 
 
 ```{r}
-prepare_ma(microcredit_simplified, outcome = "consumerdurables")
+prepare_ma(microcredit_simplified, outcome = "consumption")
 ```
 
 

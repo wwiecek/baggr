@@ -196,8 +196,7 @@ baggr(df_pooled, prior_hypersd = normal(0, 2))
 # "mu & tau" model, using a built-in dataset
 # prepare_ma() can summarise individual-level data
 ms <- microcredit_simplified
-ms$outcome <- microcredit_simplified$consumerdurables + 1
-microcredit_summary_data <- prepare_ma(ms)
+microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
 baggr(microcredit_summary_data, model = "mutau",
       pooling = "partial", prior_hypercor = lkj(1),
       prior_hypersd = normal(0,10),
