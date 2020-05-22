@@ -50,7 +50,7 @@ treatment_effect <- function(bg, summary = FALSE,
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))
     sigma_tau <- NA # by convention we set it to NA so that people don't convert
-                    # and then do operations on it by accident
+    # and then do operations on it by accident
   }
   if(summary) {
     tau <- mint(tau, int=interval, median=TRUE, sd = TRUE)
@@ -79,22 +79,42 @@ treatment_effect <- function(bg, summary = FALSE,
 #'
 effect_draw <- function(x, n, transform=NULL) {
   check_if_baggr(x)
-  # Draw sigma and tau
-  te <- do.call(cbind, treatment_effect(x))
-  if(!missing(n))
-    te <- te[sample(nrow(te), n, replace = T),]
-  new_tau <- apply(te, 1, function(x) {
-    if(any(is.na(x)))
-      return(NA)
-    else
-      return(rnorm(1, x[1], x[2]))
-  })
+
+  te <- treatment_effect(x)
+
+  # Resize trt effects to the demanded size by making extra draws
+  neffects <- length(x$effects)
+  if(!missing(n)){
+    if(neffects > 1){
+      if(n > nrow(te$tau))
+        warning("Making more effect draws than there are available samples in Stan object.",
+                "Consider running baggr() with higher iter=.")
+      rows <- sample(nrow(te$tau), n, replace = T)
+      te$tau   <- te$tau[rows,]
+      te$sigma_tau <- te$sigma_tau[rows,]
+    }
+    if(neffects == 1){
+      if(n > length(te$tau))
+        warning("Making more effect draws than there are available samples in Stan object.",
+                "Consider running baggr() with higher iter=.")
+      rows <- sample(length(te$tau), n, replace = T)
+      te$tau   <- te$tau[rows]
+      te$sigma_tau <- te$sigma_tau[rows]
+    }
+  }
+
+  # Make draws using normal distribution:
+  new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+  if(neffects > 1)
+    new_tau <- matrix(new_tau, nrow(te$tau), ncol(te$tau))
 
   if(!is.null(transform))
     new_tau <- do.call(transform, list(new_tau))
 
   new_tau
 }
+
+
 
 #' Plot posterior distribution for treatment effect
 #'
