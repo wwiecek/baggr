@@ -9,7 +9,8 @@ summarise_quantiles_data(
   quantiles,
   outcome = "outcome",
   group = "group",
-  treatment = "treatment"
+  treatment = "treatment",
+  means_only = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ summarise_quantiles_data(
 \item{group}{character: column name in \code{data} for grouping variable}
 
 \item{treatment}{character: column name in \code{data} for treatment variable}
+
+\item{means_only}{logical; if true, covariances and extra outputs are not
+returned, but only means (\code{y_0} and \code{y_1})}
 }
 \value{
 A list with mean estimates for control and treatment (\code{y_0} and \code{y_1}) and
