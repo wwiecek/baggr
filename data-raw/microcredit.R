@@ -40,5 +40,5 @@ data <- data[complete.cases(data),]
 # WW: now export for use in the package
 microcredit_simplified <- data
 # names(microcredit) <- c("group", "outcome", "treatment")
-devtools::use_data(microcredit_simplified, overwrite = TRUE)
+usethis::use_data(microcredit_simplified, overwrite = TRUE)
 
