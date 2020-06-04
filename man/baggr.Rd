@@ -14,8 +14,10 @@ baggr(
   prior_hypersd = NULL,
   prior_hypercor = NULL,
   prior_beta = NULL,
+  prior_control = NULL,
   prior = NULL,
   ppd = FALSE,
+  pooling_control = "none",
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome",
@@ -64,6 +66,8 @@ by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
 
+\item{prior_control}{prior for the control arm (baseline) mean, currently used in \code{"logit"} model only;}
+
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
 e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
@@ -72,6 +76,9 @@ e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
 If \code{ppd=TRUE}, Stan model will sample from the prior distributions
 and ignore \code{data} in inference. However, \code{data} argument might still
 be used to infer the correct model and to set the default priors.}
+
+\item{pooling_control}{Pooling for group-specific control mean terms (currently only in \code{logit}).
+Either \code{"none"} or \code{"partial"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument}

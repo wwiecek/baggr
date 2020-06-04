@@ -167,7 +167,7 @@ sa$a <- rnorm(nrow(df_binary))
 sa$b <- rnorm(nrow(df_binary))
 sb <- sa
 sb$b <- NULL
-bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
+bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, chains = 1, refresh = 0)
 
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")

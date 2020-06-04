@@ -18,6 +18,8 @@
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
 #'                "partial" can be understood as random effects and "full" as fixed effects
+#' @param pooling_control Pooling for group-specific control mean terms (currently only in `logit`).
+#'                        Either `"none"` or `"partial"`.
 #' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
@@ -38,6 +40,7 @@
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
 #'                       experimental normal(0, 10^2) distribution
+#' @param prior_control prior for the control arm (baseline) mean, currently used in `"logit"` model only;
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
@@ -174,10 +177,11 @@ baggr <- function(data, model = NULL, pooling = "partial",
                   effect = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
-                  prior_beta = NULL,
+                  prior_beta = NULL, prior_control = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
+                  pooling_control = "none",
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   silent = FALSE, warn = TRUE, ...) {
@@ -237,6 +241,13 @@ baggr <- function(data, model = NULL, pooling = "partial",
                                           "none" = 0,
                                           "partial" = 1,
                                           "full" = 2)
+    # FOR NOW WE DO NOT ENABLE POOLING OF CONTROLS
+    if(model == "logit")
+      stan_data[["pooling_baseline"]] <- switch(pooling_control,
+                                                "none" = 0,
+                                                "partial" = 1)
+    if(!(pooling_control %in% c("none", "partial")))
+      stop('Wrong pooling_control parameter; choose from c("none", "partial")')
   } else {
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
@@ -246,15 +257,16 @@ baggr <- function(data, model = NULL, pooling = "partial",
     prior <- list(hypermean = prior_hypermean,
                   hypercor  = prior_hypercor,
                   hypersd   = prior_hypersd,
-                  beta      = prior_beta)
+                  beta      = prior_beta,
+                  control   = prior_control)
   else {
-    if(!is.null(prior_hypermean) || !is.null(prior_beta) ||
+    if(!is.null(prior_hypermean) || !is.null(prior_beta) || !is.null(prior_control) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta')))
-      stop(paste("Prior argument must be a list with names",
-                 "'hypermean', 'hypercor', 'hypersd', 'beta'"))
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta', 'control')))
+      warning(paste("Only names used in the prior argument are:",
+                    "'hypermean', 'hypercor', 'hypersd', 'beta', 'control"))
   }
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
@@ -277,7 +289,6 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stan_data <- remove_data_for_prior_pred(stan_data)
   }
   stan_args$data <- stan_data
-
   fit <- do.call(rstan::sampling, stan_args)
 
   result <- list(

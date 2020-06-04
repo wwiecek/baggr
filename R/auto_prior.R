@@ -20,7 +20,6 @@
 #'         and passed to a Stan model.
 #'
 
-
 prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                           quantiles = c(), silent = FALSE) {
 
@@ -47,8 +46,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       val <- 10*max(abs(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, val))
       priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
+
+      effect_on <- ifelse(model == "logit", "on log OR ", "")
+
       if(!silent) {
-        message(paste0("Setting prior for ", priorname, " according to max effect (",
+        message(paste0("Setting prior for ", priorname, " according to max effect ",
+                       effect_on, "(",
                        format(val/10, digits = 2), "):"))
         message(paste0("* tau ~ Normal(0, (10*",
                        format(val/10, digits = 2), ")^2)"))
@@ -75,10 +78,19 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       }
     } else {
       if(pooling == "full")
-        message("Prior for hyper-SD set, but pooling full. Ignoring SD prior.")
+        message("Prior for hyper-SD set, but pooling is set to full. Ignoring SD prior.")
       prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
     }
 
+    # Controls
+    if(model == "logit"){
+      prior_list <- set_prior_val(prior_list, "prior_hbasesd", normal(0, 10*sd(data$tau)))
+      if(is.null(prior$control)){
+        prior_list <- set_prior_val(prior_list, "prior_hbasemean", normal(0, 10*sd(data$tau)))
+      } else {
+        prior_list <- set_prior_val(prior_list, "prior_hbasemean", prior$control)
+      }
+    }
     check_eligible_priors(prior_list,
                           list("hypersd"   = c("normal", "uniform", "cauchy"),
                                "hypermean" = c("normal", "uniform", "cauchy")))
@@ -96,10 +108,10 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                                   multinormal(c(0,0), c(val1, val2)*diag(2)))
       if(!silent) {
 
-      message("Set hypermean prior according to max effect:")
-      message(paste0("* hypermean (mu, tau) ~ Normal([0,0], [",
-                     format(val1, digits = 2), ", ",
-                     format(val2, digits = 2), "]*Id_2)"))
+        message("Set hypermean prior according to max effect:")
+        message(paste0("* hypermean (mu, tau) ~ Normal([0,0], [",
+                       format(val1, digits = 2), ", ",
+                       format(val2, digits = 2), "]*Id_2)"))
       }
       if(nrow(data) < 5)
         message(paste("/Dataset has only", nrow(data),
@@ -120,7 +132,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
       if(!silent) {
         message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
-                format(val, digits = 2), ")"))
+                       format(val, digits = 2), ")"))
         message(paste0("* hyper-SD (mu, tau) ~ Cauchy(0,",
                        format(val, digits = 2), ") (i.i.d.)"))
       }
