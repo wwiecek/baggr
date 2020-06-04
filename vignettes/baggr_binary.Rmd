@@ -247,7 +247,7 @@ bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio
 bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
 ```
 
-> Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` . Alternatively, if we used `"df_yusuf"` and requested `model = "logit"`, the conversion to individual-level data would be done automatically.
+> Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` . Alternatively, if we wrote `baggr(df_yusuf, model = "logit")`, the conversion to individual-level data would be done automatically behind the scenes.
 
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
@@ -255,17 +255,17 @@ $$
 y_i \sim \text{Bernoulli}(\text{logit}^{-1}[\mu_{\text{group}(i)} + \tau_{\text{group}(i)}z_i])
 $$
 
-where $\mu_k$'s and $\tau_k$'s are parameters to estimate. The former is a nuisance parameter, defining a group-specific mean probability of event, without treatment. The latter are group-specific effects. 
+where $\mu_k$'s and $\tau_k$'s are parameters to estimate. The former is a group-specific mean probability of event in untreated units. We are primarily interested in the latter, the group-specific treatment effects. 
 
-Under this formulation, odds ratio of event between treatment and non-treatment are given by $\tau_k$.  This means, the modelling assumption is the same as when working with summarised data. Moreover, _baggr_'s default prior for $\tau_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One minor difference is that parameter $\mu$ is estimated, but unless dealing with more extreme values of $\mu$, i.e. with rare or common events, this should not impact the modelled result.
+Under this formulation, odds ratio of event between treatment and non-treatment are given by $\tau_k$.  This means, the modelling assumption is the same as in the model of summary data we saw above. Moreover, _baggr_'s default prior for $\tau_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One difference is that parameter $\mu$ is estimated. However, unless dealing with extreme values of $\mu$, i.e. with rare or common events (which we discuss below), this should not impact the modelled result.
 
-Therefore, the result we get from the two models will be very close (albeit with some numerical variation due to short run time):
+Therefore, the result we get from the two models will be close (albeit with some numerical variation due to short run time):
 
 ```{r}
 baggr_compare(bg_model_agg, bg_model_ind)
 ```
 
-There will be difference in speed -- in our example logistic model has to work with `r nrow(df_ind)` rows of data, while the summary level model only has 7 datapoints. Therefore you are better off summarising your data and using the default model, which I will show next.
+There will be difference in speed -- in our example logistic model has to work with `r nrow(df_ind)` rows of data, while the summary level model only had 7 datapoints. Therefore in all standard cases you are better off summarising your data and using the fastest model.
 
 
 
@@ -274,14 +274,15 @@ There will be difference in speed -- in our example logistic model has to work w
 To sum up: 
 
 * If you have no covariates or a particular type of priors (e.g. on baseline risk), you are better off using a summary-level model. I will show how you can summarise your data in the next section.
-* If your data includes covariates or events are rare, you should consider the logistic model. I will show why below.
+* If your data includes covariates or events are rare, you should consider the logistic model. We will show why below.
 
-> Note: as shown above, you can create data for logistic model from `a`, `b`/`n1`, `c`, `d`/`n2` columns. You cannot do it from OR only, as the denominator is missing.
+> Note: as shown above, you can only create input data for the logistic model from `a`, `b`/`n1`, `c`, `d`/`n2` columns. You cannot do it from OR data only, as the probability in the untreated is then unknown.
 
 
 # Summarising individual-level data
 
-In the previous example we analysed individual-level data. It is useful to summarise it, either to speed up modelling (see above) or to better understand the inputs. 
+In the previous example we analysed individual-level data and suggested that typically it is sufficient to work with summarised data, e.g. to speed up modelling. Summarising is also essential as it allows us to better understand the inputs and use diagnostics such as L'Abbe plot.
+
 The generic function for doing this in _baggr_ is `prepare_ma`. It can be used with both continuous and binary data. In our case we can summarise `df_ind` to obtain either odds ratios or risk ratios:
 
 ```{r}
@@ -290,6 +291,8 @@ prepare_ma(df_ind, effect = "logRR")
 ```
 
 In both cases the effect (OR or RR) and its SE were renamed to `tau` and `se`, so that the resulting data frame can be used directly as input to `baggr()`.
+
+For already summarised data, you can use the same function to move between different effect measures. For example you can take OR measures `a <- prepare_ma(df_ind, effect = "logOR")` and convert them to RR by using `prepare_ma(a, effect = "logRR")`.
 
 
 

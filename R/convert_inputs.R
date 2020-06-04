@@ -122,10 +122,14 @@ convert_inputs <- function(data,
       groups_test <- as.factor(as.character(test_data[[group]]))
       group_numeric_test <- as.numeric(groups_test)
       group_label_test <- levels(groups_test)
-      if(any(group_label_test %in% group_label))
+      if(any(group_label_test %in% group_label) && model != "logit")
         message(
           "Test data has some groups that have same labels as groups in data. ",
           "For cross-validation they will be treated as 'new' groups.")
+      if((!all(group_label_test %in% group_label) && model == "logit") || !all(test_data[[treatment]] == 1))
+        message(
+          "Test data for logit model should include treated units only.",
+          "Baselines for all these groups should be included in data argument.")
     }
 
     if(model %in% c("full", "logit")){

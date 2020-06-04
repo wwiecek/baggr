@@ -34,7 +34,7 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
 
   ggdata <-  data_or
   ggdata$risk_trt <- ggdata$a/(ggdata$a+ggdata$b)
-  ggdata$risk_control <- ggdata$d/(ggdata$d+ggdata$d)
+  ggdata$risk_control <- ggdata$c/(ggdata$c+ggdata$d)
 
   if(shade_se == "or") ggdata$se_size <- 1 / data_or$se
   if(shade_se == "rr") ggdata$se_size <- 1 / data_rr$se

@@ -24,14 +24,21 @@ These can be examined by using \code{attributes()} function.
 Performs exact leave-one-group-out cross-validation on a baggr model.
 }
 \details{
-The values returned by \code{loocv()} can be used to understand how any
-one group affects the overall result, as well as how well the model
-predicts the omitted group.
+The values returned by \code{loocv()} can be used to understand how excluding
+any one group affects the overall result, as well as how well the model
+predicts the omitted group. LOO-CV approaches are a good general practice
+for comparing Bayesian models, not only in meta-analysis.
 
-This function automatically runs K baggr models, leaving out one group at a time,
-and then calculates expected log predictive density (ELPD) for
-that group (see Gelman et al 2013). The main output is the cross-validation
-information criterion, or -2 times the ELPD averaged over 'K' models.
+This function automatically runs \emph{K} baggr models, where \emph{K} is number of groups (e.g. studies),
+leaving out one group at a time. For each run, it calculates
+\emph{expected log predictive density} (ELPD) for that group (see Gelman et al 2013).
+(In the logistic model, where the proportion in control group is unknown, each of
+the groups is divided into data for controls, which is kept for estimation, and data for
+treated units, which is not used for estimation but only for calculating predictive density.
+This is akin to fixing the baseline risk and only trying to infer the odds ratio.)
+
+The main output is the cross-validation
+information criterion, or -2 times the ELPD averaged over \emph{K} models.
 This is related to, and often approximated by, the Watanabe-Akaike
 Information Criterion. A value closer to zero (i.e. a smaller number in magnitude)
 means a better fit. For more information on cross-validation see
