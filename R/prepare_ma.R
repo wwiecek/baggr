@@ -196,6 +196,9 @@ prepare_ma <- function(data, #standardise = NULL,
                  d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
         }))
       rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
+      if(sum(rare) > 0 && rare_event_correction == 0.25)
+        message("Applied rare event correction (0.25) in ", sum(rare), " studies")
+
       binary_data_table$a  <- v*rare + binary_data_table$a
       binary_data_table$b  <- v*rare + binary_data_table$b
       binary_data_table$c  <- v*rare + binary_data_table$c

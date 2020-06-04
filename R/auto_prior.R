@@ -84,9 +84,24 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
     # Controls
     if(model == "logit"){
-      prior_list <- set_prior_val(prior_list, "prior_hbasesd", normal(0, 10*sd(data$tau)))
+      # Remember that at this stage data is summary data, so we can estimate control props
+      prop_ctrl <- data$c / (data$c + data$d)
+      # val <- max(abs(qlogis(prop_ctrl)))
+      # But I wouldn't guess from data
+
+      if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
+        message("Baseline proportion of events is very low or very common. Consider manually setting the prior.")
+
+      prior_list <- set_prior_val(prior_list, "prior_hbasesd", normal(0, 10))
+
       if(is.null(prior$control)){
-        prior_list <- set_prior_val(prior_list, "prior_hbasemean", normal(0, 10*sd(data$tau)))
+        prior_list <- set_prior_val(prior_list, "prior_hbasemean", normal(0, 10))
+
+        if(!silent)
+          message(paste0("* log odds of event rate in untreated: mean ~ normal(0, 10^2)"))
+          if(stan_data$pooling_baseline != 0)
+            message(paste0("sd ~ normal(0, 10)"))
+
       } else {
         prior_list <- set_prior_val(prior_list, "prior_hbasemean", prior$control)
       }

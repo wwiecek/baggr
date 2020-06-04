@@ -29,8 +29,8 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
   shade_se <- match.arg(shade_se, c("rr", "or", "none"))
 
   # Bring data to a common format (this will guarantee we have a,b,c,d cols)
-  data_or <- prepare_ma(data, group=group, effect = "logOR")
-  data_rr  <- prepare_ma(data_or, effect = "logRR")
+  data_or <- prepare_ma(data, group=group, effect = "logOR", rare_event_correction = 0)
+  data_rr  <- prepare_ma(data_or, effect = "logRR", rare_event_correction = 0)
 
   ggdata <-  data_or
   ggdata$risk_trt <- ggdata$a/(ggdata$a+ggdata$b)
