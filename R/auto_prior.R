@@ -92,27 +92,39 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
         message("Baseline proportion of events is very low or very common. Consider manually setting the prior.")
 
-      prior_list <- set_prior_val(prior_list, "prior_hbasesd", normal(0, 10))
-
+      # Means of control arms:
       if(is.null(prior$control)){
         prior_list <- set_prior_val(prior_list, "prior_hbasemean", normal(0, 10))
-
         if(!silent)
           message(paste0("* log odds of event rate in untreated: mean ~ normal(0, 10^2)"))
-          if(stan_data$pooling_baseline != 0)
-            message(paste0("sd ~ normal(0, 10)"))
-
       } else {
         prior_list <- set_prior_val(prior_list, "prior_hbasemean", prior$control)
       }
+
+      # SDs of control arms: (even if not used we initialise it)
+      if(is.null(prior$control_sd)){
+        prior_list <- set_prior_val(prior_list, "prior_hbasesd", normal(0, 10))
+        if(!silent)
+          if(stan_data$pooling_baseline != 0)
+            message(paste0("* log odds of event rate in untreated: sd ~ normal(0, 10^2)"))
+      } else {
+        if(stan_data$pooling_baseline != 0)
+          message("SD hyperparameter for control groups defined, but there is no pooling. Ignoring.")
+        prior_list <- set_prior_val(prior_list, "prior_hbasesd", prior$control_sd)
+      }
     }
+
     check_eligible_priors(prior_list,
-                          list("hypersd"   = c("normal", "uniform", "cauchy"),
-                               "hypermean" = c("normal", "uniform", "cauchy")))
+                          list("hypersd"    = c("normal", "uniform", "cauchy"),
+                               "hypermean"  = c("normal", "uniform", "cauchy"),
+                               "control"    = c("normal", "uniform", "cauchy"),
+                               "control_sd" = c("normal", "uniform", "cauchy")
+                               ))
   }
 
   if(model == "mutau") {
     # Remember, first row is always mu (baseline), second row is tau (effect)
+    # THIS WILL BE REVIDES TO USE control/control_sd type of specification
 
     # Hypermean
     if(is.null(prior$hypermean)){

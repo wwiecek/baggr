@@ -40,7 +40,11 @@
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
 #'                       experimental normal(0, 10^2) distribution
-#' @param prior_control prior for the control arm (baseline) mean, currently used in `"logit"` model only;
+#' @param prior_control prior for the mean in the control arm (baseline), currently used in `"logit"` model only;
+#'                      if `pooling_control = "partial"`, the prior is hyperprior for all baselines, if `"none"`,
+#'                      then it is an independent prior for all baselines
+#' @param prior_control_sd prior for the SD in the control arm (baseline), currently used in `"logit"` model only;
+#'                         this can only be used if `pooling_control = "partial"`
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
@@ -177,7 +181,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                   effect = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
-                  prior_beta = NULL, prior_control = NULL,
+                  prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
@@ -258,15 +262,17 @@ baggr <- function(data, model = NULL, pooling = "partial",
                   hypercor  = prior_hypercor,
                   hypersd   = prior_hypersd,
                   beta      = prior_beta,
-                  control   = prior_control)
+                  control   = prior_control,
+                  control_sd= prior_control_sd)
   else {
-    if(!is.null(prior_hypermean) || !is.null(prior_beta) || !is.null(prior_control) ||
+    if(!is.null(prior_hypermean) || !is.null(prior_beta) ||
+       !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta', 'control')))
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta', 'control', 'control_sd')))
       warning(paste("Only names used in the prior argument are:",
-                    "'hypermean', 'hypercor', 'hypersd', 'beta', 'control"))
+                    "'hypermean', 'hypercor', 'hypersd', 'beta', 'control', 'control_sd'"))
   }
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
