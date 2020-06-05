@@ -34,7 +34,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                            group = stan_data$site,
                            treatment = stan_data$treatment)
     if(model == "logit")
-      data <- prepare_ma(pma_data, effect = "logOR")
+      data <- prepare_ma(pma_data, effect = "logOR", rare_event_correction = 0.1)
     if(model == "full")
       data <- prepare_ma(pma_data, effect = "mean")
   }
