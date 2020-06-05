@@ -1,3 +1,29 @@
+# baggr 0.5.0 (June 2020)
+
+### New features
+
+* Fixed and random effects for `baggr` models now have their own separate functions,
+  `fixed_effects` and `random_effects`, in addition to `group_effects`
+* LOO CV works for the logistic model (as does general cross-validation).
+* Vignette for binary data analysis has been rewritten in parts.
+* L'Abbe plots for binary data, see `labbe()`.
+* There is now more automatic conversion between summary-level and individual-level
+  data for binary data (e.g. you can run `baggr()` with summary data and `model="logit"`
+  for automatic conversion)
+* For logistic model, priors can be specified for rates of events in the control arm,
+  see arguments `prior_control` and `prior_control_sd` in `baggr()`
+* There are experimental features for working with models of quantiles. 
+  We advise against fitting such models using the package until these features
+  have been fully tested and documented.
+
+### Bug fixes
+
+* Fixed some issues with printing of coefficients in meta-regressions,
+  where wrong values were given for some models.
+
+
+
+
 # baggr 0.4.0 (February 2020)
 
 ### New features
@@ -25,6 +51,8 @@
   + "Full" model might now behave differently.
   + "Mutau" model will be re-written and generalised for next release.
   + LOO CV is also disabled for some models. Prompts will be given.
+
+
 
 # baggr 0.3.0
 
