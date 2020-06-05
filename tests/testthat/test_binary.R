@@ -268,3 +268,33 @@ test_that("baggr comparison method works for Full model", {
   expect_is(plot(comp_existmodels, arrange = "grid")[[1]], "ggplot")
 
 })
+
+
+
+# Setting control pooling, control priors -----
+
+
+bg1 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
+                            pooling_control = "partial",
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
+bg2 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
+                            pooling_control = "partial", prior_control = normal(0, 5),
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
+bg3 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
+                            pooling_control = "partial", prior_control = normal(0, 5), prior_control_sd = uniform(0, 1),
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
+
+
+test_that("Prior specifications for baselines work", {
+  expect_is(bg1, "baggr")
+  expect_is(bg2, "baggr")
+  expect_is(bg3, "baggr")
+
+  expect_error(baggr(df_binary, "logit", pooling = "none",
+                              pooling_control = "partial", prior_control = multinormal(c(0,0), diag(2)),
+                              iter = 200, chains = 2, refresh = 0,
+                              show_messages = F))
+})

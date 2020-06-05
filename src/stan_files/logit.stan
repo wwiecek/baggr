@@ -15,10 +15,10 @@ data {
   vector<lower=0,upper=1>[N] treatment;
 
   //priors for baseline parameters
-  int prior_hbasemean_fam;
-  int prior_hbasesd_fam;
-  vector[3] prior_hbasemean_val;
-  vector[3] prior_hbasesd_val;
+  int prior_control_fam;
+  int prior_control_sd_fam;
+  vector[3] prior_control_val;
+  vector[3] prior_control_sd_val;
   //priors for effects::
   int prior_hypermean_fam;
   int prior_hypersd_fam;
@@ -70,11 +70,11 @@ model {
 
   //controls/baselines (hyper)priors
   if(pooling_baseline == 0)
-    target += prior_increment_vec(prior_hbasemean_fam, eta_baseline, prior_hbasemean_val);
+    target += prior_increment_vec(prior_control_fam, eta_baseline, prior_control_val);
   if(pooling_baseline == 1){
     eta_baseline ~ normal(0,1);
-    target += prior_increment_real(prior_hbasemean_fam, mu_baseline[1], prior_hbasemean_val);
-    target += prior_increment_real(prior_hbasesd_fam, tau_baseline[1], prior_hbasesd_val);
+    target += prior_increment_real(prior_control_fam, mu_baseline[1], prior_control_val);
+    target += prior_increment_real(prior_control_sd_fam, tau_baseline[1], prior_control_sd_val);
   }
 
   //hypermean priors:
