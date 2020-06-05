@@ -146,9 +146,9 @@ test_that("Extracting treatment/study effects works", {
   # Drawing values of tau:
   expect_error(effect_draw(cars))
   expect_is(effect_draw(bg5_p), "numeric")
+  expect_is(effect_draw(bg5_p, transform = exp), "numeric")
   expect_length(effect_draw(bg5_p), 200)
   expect_length(effect_draw(bg5_p,7), 7)
-  expect_identical(effect_draw(bg5_n), NA)
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")

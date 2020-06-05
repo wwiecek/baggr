@@ -200,10 +200,10 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   # }
 
   if(model == "quantiles") {
-    prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$N)
-    prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$N)
+    prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
+    prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$Nq)
     if(!silent) {
-      message("prior_dispersion_on_beta = 1000*diag(stan_data$N)")
+      message("Sigma (hypervariance-covariance) = 1000*I_{Nquantiles}")
     }
   }
 

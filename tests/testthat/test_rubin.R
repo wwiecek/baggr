@@ -233,7 +233,6 @@ test_that("Extracting treatment/study effects works", {
   expect_is(effect_draw(bg5_p), "numeric")
   expect_length(effect_draw(bg5_p), 200)
   expect_length(effect_draw(bg5_p,7), 7)
-  expect_identical(effect_draw(bg5_n), NA)
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")
@@ -346,3 +345,7 @@ test_that("baggr comparison method works for Rubin model", {
 })
 
 
+
+test_that("Plot quantiles", {
+  expect_error(plot_quantiles(bg5_p))
+})
