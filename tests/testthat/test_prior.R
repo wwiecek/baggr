@@ -42,11 +42,11 @@ test_that("Prior specification via different arguments", {
   expect_identical(te3, te2)
 
   # Wrong names in the list
-  expect_error(baggr(df_pooled, prior = list(hypermeann = normal(0,5))),
-               "Prior argument")
-  expect_error(baggr(df_pooled, prior = list(hypermeann = normal(0,5),
+  expect_warning(baggr(df_pooled, prior = list(hypermeann = normal(0,5))),
+               "names used in the prior")
+  expect_warning(baggr(df_pooled, prior = list(hypermeann = normal(0,5),
                                              hypermean = normal(0,5))),
-               "Prior argument")
+               "names used in the prior")
 })
 
 test_that("All possible prior dist's work", {

@@ -8,29 +8,29 @@ test_that("prepare_ma()", {
   expect_warning(prepare_ma(microcredit, outcome = "consumption"))
   expect_warning(prepare_ma(microcredit[!is.na(microcredit$treatment),],
                             outcome = "consumption"))
-  expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
+  expect_error(prepare_ma(microcredit_simplified, outcome = "consumption",
                           effect = "logRR"), "not binary")
-  expect_error(prepare_ma(microcredit_simplified, outcome = "consumerdurables",
+  expect_error(prepare_ma(microcredit_simplified, outcome = "consumption",
                           effect = "logOR"), "not binary")
 
   # Prepare MA without summarising:
-  df <- prepare_ma(microcredit_simplified, outcome = "consumerdurables", summarise = F)
+  df <- prepare_ma(microcredit_simplified, outcome = "consumption", summarise = F)
   expect_is(df, "data.frame")
   expect_identical(dim(df), dim(microcredit_simplified))
   expect_identical(names(df), c("treatment", "group", "outcome"))
 
-  pm <- prepare_ma(microcredit_simplified, outcome = "consumerdurables")
+  pm <- prepare_ma(microcredit_simplified, outcome = "consumption")
   expect_is(pm, "data.frame")
-  expect_equal(dim(pm), c(4,5))
+  expect_equal(dim(pm), c(5,5))
   expect_identical(names(pm), c("group", "mu", "tau", "se.mu", "se.tau"))
 
-  pm <- prepare_ma(microcredit_simplified, outcome = "consumerdurables", summarise = FALSE)
+  pm <- prepare_ma(microcredit_simplified, outcome = "consumption", summarise = FALSE)
   expect_identical(dim(pm), dim(microcredit_simplified))
 
   mc2 <- microcredit_simplified
   names(mc2)[1] <- "study"
-  expect_error(prepare_ma(mc2, outcome = "consumerdurables"), "no column")
-  expect_is(prepare_ma(mc2, group = "study", outcome = "consumerdurables"), "data.frame")
+  expect_error(prepare_ma(mc2, outcome = "consumption"), "must be individual")
+  expect_is(prepare_ma(mc2, group = "study", outcome = "consumption"), "data.frame")
 
   # prepare_ma for binary data
   df_pat2 <- data.frame(treatment = rbinom(900, 1, .5),

@@ -62,20 +62,32 @@ treatment_effect <- function(bg, summary = FALSE,
 
 
 
-#' Make posterior draws for treatment effect
+#' Make predictive draws for treatment effect
 #'
-#' This function takes the samples of hyperparameters of a `baggr` model
-#' (commonly hypermean tau and hyper-SD sigma_tau) and simulates values of
-#' new realisations of tau (a mean effect in some unobserved group).
+#' This function takes the samples of hyperparameters of a [baggr] model
+#' (commonly hypermean `tau` and hyper-SD `sigma_tau`) and draws values of
+#' new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 #'
 #' @param x A `baggr` class object.
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `group_effects` from other
 #'                  plotting or printing functions)
 #' @param n How many values to draw? The default is the same
-#'          as number of samples in the model (default is 2,000).
+#'          as number of samples in the model (default is as long as the number of samples
+#'          in [baggr] object, i.e. related to number of iterations of the Monte Carlo algorithm)
 #' @return A vector of possible values of the treatment effect.
 #' @export
+#'
+#' @details
+#' The predictive distribution can be used to "combine" heterogeneity between treatment effects and
+#' uncertainty in the mean treatment effect. This is useful both in understanding impact of
+#' heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.
+#' as priors in analysis of future data (since the draws can be seen as an expected treatment effect
+#' in a hypothetical study).
+#'
+#' @references
+#' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks. "Interpretation of Random Effects Meta-Analyses".
+#' _BMJ 342 (10 February 2011)._ <https://doi.org/10.1136/bmj.d549>.
 #'
 effect_draw <- function(x, n, transform=NULL) {
   check_if_baggr(x)

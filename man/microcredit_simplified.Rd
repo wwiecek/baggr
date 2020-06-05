@@ -14,7 +14,7 @@ models on the data from 7 randomized controlled trials of expanding access to mi
 }
 \details{
 The columns include the group indicator which gives the name of the lead author on
-each of the respective studies, the value of the household consumer durables
+each of the respective studies, the value of the household consumption
 spending standardised to USD PPP in 2009 dollars per two weeks (these are flow variables),
 and finally a treatment assignment status indicator.
 
@@ -25,7 +25,7 @@ For more information on how and why these variables were chosen and standardised
 see Meager (2019) or consult the associated code repository:
 \href{https://bitbucket.org/rmeager/aggregate-average-impacts-microcredit/src/master/}{link}
 
-This dataset includes only complete cases and only the consumer durables outcome variable.
+This dataset includes only complete cases and only the consumption outcome variable.
 }
 \references{
 Meager, Rachael (2019) Understanding the average impact of microcredit expansions:

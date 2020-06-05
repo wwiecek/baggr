@@ -18,10 +18,10 @@ prepare_ma(
 )
 }
 \arguments{
-\item{data}{data.frame of individual-level observations
+\item{data}{\strong{either} a data.frame of individual-level observations
 with columns for outcome (numeric), treatment (values 0 and 1) and
-group (numeric, character or factor);
-column names can be user-defined (see below)}
+group (numeric, character or factor); \strong{or}, a data frame with binary data
+(must have columns \code{a}, \code{c}, \code{b}/\code{n1}, \code{d}/\code{n2}).}
 
 \item{effect}{what effect to calculate? a \code{mean} (and SE) of outcome in groups or
 (for binary data) \code{logOR} (odds ratio), \code{logRR} (risk ratio);}
@@ -62,7 +62,7 @@ some columns may be renamed or transformed (see the arguments above).
 }
 }
 \description{
-Allows one-way conversion from full to summary data.
+Allows for one-way conversion from full to summary data or for calculation of effects for binary data.
 Input must be pre-formatted appropriately.
 }
 \details{
