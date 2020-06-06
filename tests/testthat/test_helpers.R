@@ -41,6 +41,71 @@ test_that("prepare_ma()", {
 
 })
 
+test_that("binary_to_individual() and prepare_ma() with summary data", {
+  df_yusuf <- read.table(text="
+  trial  a n1i  c n2i
+  Balcon 14  56 15  58
+  Clausen 18  66 19  64
+  Multicentre 15 100 12  95
+  Barber 10  52 12  47
+  Norris 21 226 24 228
+  Kahler  3  38  6  31
+  Ledwich  2  20  3  20
+  ", header=TRUE)
+
+  expect_error(binary_to_individual(df_yusuf), "group")
+  expect_error(binary_to_individual(cars, group = "speed"), "undefined")
+
+  bti <- binary_to_individual(df_yusuf, group = "trial")
+  expect_is(bti, "data.frame")
+  expect_equal(nrow(bti), 1101)
+  expect_equal(ncol(bti), 3)
+
+  expect_error(prepare_ma(df_yusuf, effect="logOR"))
+  agg <- prepare_ma(df_yusuf, group="trial", effect="logOR")
+  expect_is(agg, "data.frame")
+  expect_equal(nrow(agg), 7)
+  expect_equal(ncol(agg), 9)
+
+
+  expect_identical(
+    prepare_ma(bti, effect = "logOR"),
+    agg)
+
+  # What if we had different cols
+  df_yusuf$b <- df_yusuf$n1i
+  df_yusuf$d <- df_yusuf$n2i
+  bti <- binary_to_individual(df_yusuf, group = "trial")
+  expect_is(bti, "data.frame")
+  expect_equal(nrow(bti), 1101)
+  expect_equal(ncol(bti), 3)
+})
+
+
+
+test_that("labbe()", {
+  df_yusuf <- read.table(text="
+  trial  a n1i  c n2i
+  Balcon 14  56 15  58
+  Clausen 18  66 19  64
+  Multicentre 15 100 12  95
+  Barber 10  52 12  47
+  Norris 21 226 24 228
+  Kahler  3  38  6  31
+  Ledwich  2  20  3  20
+  ", header=TRUE)
+
+  gg <- labbe(df_yusuf, group = "trial")
+  expect_is(gg, "gg")
+
+  expect_is(labbe(df_yusuf, shade_se = "rr"), "gg")
+  expect_is(labbe(df_yusuf, plot_model = TRUE, shade_se = "rr", labels = FALSE), "gg")
+
+
+})
+
+
+
 test_that("convert_inputs()", {
   # Rubin model
   expect_is(convert_inputs(schools, "rubin"), "list")
