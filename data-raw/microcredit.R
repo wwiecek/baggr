@@ -1,7 +1,7 @@
 load("data-raw/microcredit_project_data.RData")
 
 # Rachael Meager's code from the original project
-# for consumer durables outcome
+# for consumption outcome
 
 
 # This preps data so that the model can be written efficiently -

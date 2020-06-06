@@ -50,6 +50,6 @@ future versions of the package.
 \examples{
 \donttest{
 summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),
-                         outcome = "consumerdurables")
+                         outcome = "consumption")
 }
 }

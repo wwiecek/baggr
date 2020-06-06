@@ -29,7 +29,7 @@
 #' @examples
 #' \donttest{
 #' summarise_quantiles_data(microcredit_simplified, c(.2, .4, .6),
-#'                          outcome = "consumerdurables")
+#'                          outcome = "consumption")
 #' }
 #' @importFrom quantreg rq
 #' @import stats

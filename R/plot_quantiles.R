@@ -14,7 +14,7 @@
 #' \donttest{
 #' bg <- baggr(microcredit_simplified, model = "quantiles",
 #'             quantiles = c(0.25, 0.50, 0.75), iter = 1000,
-#'             outcome = "consumerdurables")
+#'             outcome = "consumption")
 #' #vanilla plot
 #' plot_quantiles(bg)
 #'

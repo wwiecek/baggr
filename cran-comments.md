@@ -16,5 +16,5 @@ N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements. 
 
 In R-hub tests 
-* Debian Linux, R-devel, GCC ASAN/UBSAN failed due to lack of availability of 1 dependencies (loo).
+* Debian Linux, R-devel, GCC ASAN/UBSAN failed due to lack of availability of various dependencies (loo, forestplot, rstan).
 * Windows Server 2008 R2 SP1, R-devel, 32/64 bit cannot compile .stan files.
