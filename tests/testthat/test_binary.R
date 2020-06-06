@@ -189,24 +189,8 @@ test_that("Model with covariates works fine", {
 # tests for helper functions -----
 
 test_that("baggr_compare basic cases work with logit models", {
-  # If I pass nothing
-  expect_error(baggr_compare(), "Must provide baggr models")
-  # pooling
-  expect_error(baggr_compare(schools, pooling = "full"))
-  # if I pass rubbish
-  expect_error(baggr_compare(cars))
-  # if I pass list of rubbish
-  expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # try to make nonexistant comparison:
   expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"))
-  # Run models from baggr_compare:
-  bgcomp <- expect_warning(baggr_compare(schools,
-                                         iter = 200, refresh = 0))
-  expect_is(bgcomp, "baggr_compare")
-  # Compare prior vs posterior:
-  bgcomp <- expect_warning(baggr_compare(schools, iter = 200,
-                                         what = "prior", refresh = 0))
-  expect_is(bgcomp, "baggr_compare")
   # Compare existing models:
   bgcomp2 <- plot(baggr_compare(bg5_p, bg5_n, bg5_f), arrange = "single")
   # bgcomp3 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "grid")
@@ -219,9 +203,10 @@ test_that("loocv", {
   # Rubbish model
   # expect_error(loocv(schools, model = "mutau"))
   # Can't do pooling none
-  expect_error(loocv(schools, pooling = "none"))
+  expect_error(loocv(df_binary, pooling = "none"))
 
-  loo_model <- expect_warning(loocv(schools, return_models = TRUE, iter = 200, refresh = 0))
+  loo_model <- expect_warning(loocv(df_binary, model = "logit",
+                                    return_models = TRUE, iter = 200, chains = 1, refresh = 0))
   expect_is(loo_model, "baggr_cv")
   capture_output(print(loo_model))
 })
