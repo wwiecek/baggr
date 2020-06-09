@@ -56,7 +56,7 @@ bg5_p <- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "
 bg5_f <- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
-bg5_ppd <- expect_warning(baggr(df_pooled, "rubin", ppd = T,
+bg5_ppd <- expect_warning(baggr(df_pooled, "rubin", ppd = TRUE,
                                 iter = 200, chains = 2, refresh = 0,
                                 show_messages = F))
 

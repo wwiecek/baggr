@@ -79,7 +79,7 @@ bg5_f <- expect_warning(baggr(df_quantiles, "quantiles", pooling = "full",
                               quantiles = chosen_quantiles,
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
-bg5_ppd <- expect_warning(baggr(df_quantiles, "quantiles", ppd = T,
+bg5_ppd <- expect_warning(baggr(df_quantiles, "quantiles", ppd = TRUE,
                                 quantiles = chosen_quantiles,
                                 iter = 200, chains = 2, refresh = 0,
                                 show_messages = F))

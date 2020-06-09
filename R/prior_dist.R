@@ -54,6 +54,8 @@
 #' https://doi.org/10.1016/j.jmva.2009.04.008.
 #'
 #' @examples
+#' # (these are not the recommended priors -- for syntax illustration only)
+#'
 #' # change the priors for 8 schools:
 #' baggr(schools, model = "rubin", pooling = "partial",
 #'       prior_hypermean = normal(5,5),
@@ -63,6 +65,7 @@
 #' # passing priors as a list
 #' custom_priors <- list(hypercor = lkj(1), hypersd = normal(0,10),
 #'                       hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
+#' microcredit_summary_data <- prepare_ma(microcredit, outcome = "consumption")
 #' baggr(microcredit_summary_data, model = "mutau",
 #'       pooling = "partial", prior = custom_priors)
 #' }

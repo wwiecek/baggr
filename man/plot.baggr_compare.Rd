@@ -9,7 +9,7 @@
   style = "areas",
   arrange = "single",
   interval = 0.95,
-  hyper = T,
+  hyper = TRUE,
   transform = NULL,
   order = F,
   ...

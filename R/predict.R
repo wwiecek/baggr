@@ -11,7 +11,7 @@
 #' @export
 predict.baggr <- function(object, nsamples,
                           newdata = NULL,
-                          allow_new_levels = T,
+                          allow_new_levels = TRUE,
                           ...) {
   switch(object$model,
          rubin = predict_rubin(object,

@@ -4,7 +4,9 @@
 \name{schools}
 \alias{schools}
 \title{8 schools example}
-\format{An object of class \code{data.frame} with 8 rows and 3 columns.}
+\format{
+An object of class \code{data.frame} with 8 rows and 3 columns.
+}
 \usage{
 schools
 }
