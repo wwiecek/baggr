@@ -139,7 +139,7 @@ test_that("silent_messages option", {
   expect_silent(baggr(schools,
                       control = list(adapt_delta = 0.99999),
                       refresh = 0,
-                      silent = T)
+                      silent = TRUE)
   )
 }
 )

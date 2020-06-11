@@ -226,7 +226,7 @@ test_that("Extracting treatment/study effects works", {
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
-  expect_length(treatment_effect(bg5_p, summary = T)$tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
 
   # Drawing values of tau:
   expect_error(effect_draw(cars))

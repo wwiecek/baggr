@@ -253,8 +253,8 @@ convert_inputs <- function(data,
       P = 2, #fixed for this case
       # Remember, first row is always mu (baseline), second row is tau (effect)
       # (Has to be consistent against ordering of prior values.)
-      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
-      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
+      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = TRUE),
+      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = TRUE)
     )
     if(is.null(test_data)){
       out$K_test <- 0
@@ -268,9 +268,9 @@ convert_inputs <- function(data,
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       out$test_theta_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
-                                     2, nrow(test_data), byrow = T)
+                                     2, nrow(test_data), byrow = TRUE)
       out$test_se_theta_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
-                                    2, nrow(test_data), byrow = T)
+                                    2, nrow(test_data), byrow = TRUE)
     }
   }
 

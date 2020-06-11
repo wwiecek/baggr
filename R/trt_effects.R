@@ -101,7 +101,7 @@ effect_draw <- function(x, n, transform=NULL) {
       if(n > nrow(te$tau))
         warning("Making more effect draws than there are available samples in Stan object.",
                 "Consider running baggr() with higher iter=.")
-      rows <- sample(nrow(te$tau), n, replace = T)
+      rows <- sample(nrow(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows,]
       te$sigma_tau <- te$sigma_tau[rows,]
     }
@@ -109,7 +109,7 @@ effect_draw <- function(x, n, transform=NULL) {
       if(n > length(te$tau))
         warning("Making more effect draws than there are available samples in Stan object.",
                 "Consider running baggr() with higher iter=.")
-      rows <- sample(length(te$tau), n, replace = T)
+      rows <- sample(length(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows]
       te$sigma_tau <- te$sigma_tau[rows]
     }
