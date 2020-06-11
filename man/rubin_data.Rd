@@ -4,7 +4,7 @@
 \alias{rubin_data}
 \title{Make model matrix for the rubin data}
 \usage{
-rubin_data(x, newdata = NULL, allow_new_levels = T)
+rubin_data(x, newdata = NULL, allow_new_levels = TRUE)
 }
 \arguments{
 \item{x}{model to get data from}

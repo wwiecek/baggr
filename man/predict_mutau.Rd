@@ -4,7 +4,7 @@
 \alias{predict_mutau}
 \title{Predict function for the mu & tau model}
 \usage{
-predict_mutau(x, nsamples, newdata = NULL, allow_new_levels = T)
+predict_mutau(x, nsamples, newdata = NULL, allow_new_levels = TRUE)
 }
 \arguments{
 \item{x}{model to predict from}

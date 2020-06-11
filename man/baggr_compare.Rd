@@ -78,13 +78,13 @@ bg2 <- baggr(schools, pooling = "full")
 baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2)
 
 #' ...or simply draw prior predictive dist (note ppd=T)
-bg1 <- baggr(schools, ppd=T)
-bg2 <- baggr(schools, prior_hypermean = normal(0, 5), ppd=T)
+bg1 <- baggr(schools, ppd=TRUE)
+bg2 <- baggr(schools, prior_hypermean = normal(0, 5), ppd=TRUE)
 baggr_compare("Prior A, p.p.d."=bg1,
               "Prior B p.p.d."=bg2,
               compare = "effects")
 
-# Compare posterior effects as a function of priors (note ppd=F)
+# Compare posterior effects as a function of priors (note ppd=FALSE)
 bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
 bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
 plot(baggr_compare("Uniform prior on SD"=bg1,

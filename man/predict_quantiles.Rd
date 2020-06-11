@@ -4,7 +4,7 @@
 \alias{predict_quantiles}
 \title{Predict function for the quantiles model}
 \usage{
-predict_quantiles(x, nsamples, newdata = NULL, allow_new_levels = T)
+predict_quantiles(x, nsamples, newdata = NULL, allow_new_levels = TRUE)
 }
 \arguments{
 \item{x}{model to predict from}
