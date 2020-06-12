@@ -42,11 +42,11 @@ test_that("Prior specification via different arguments", {
   expect_identical(te3, te2)
 
   # Wrong names in the list
-  expect_error(baggr(df_pooled, prior = list(hypermeann = normal(0,5))),
-               "Prior argument")
-  expect_error(baggr(df_pooled, prior = list(hypermeann = normal(0,5),
+  expect_warning(baggr(df_pooled, prior = list(hypermeann = normal(0,5))),
+               "names used in the prior")
+  expect_warning(baggr(df_pooled, prior = list(hypermeann = normal(0,5),
                                              hypermean = normal(0,5))),
-               "Prior argument")
+               "names used in the prior")
 })
 
 test_that("All possible prior dist's work", {
@@ -88,8 +88,8 @@ test_that("Prior vs posterior and PPD comparisons work", {
   expect_error(baggr_compare(schools, ppd = TRUE, what = "prior"))
 
   # Typical PPD objects:
-  bg_ppd1 <- expect_warning(baggr(schools, ppd = T, refresh = 0, iter = 200))
-  bg_ppd2 <- expect_warning(baggr(schools, ppd = T, prior_hypermean = normal(0,10), refresh = 0, iter = 200))
+  bg_ppd1 <- expect_warning(baggr(schools, ppd = TRUE, refresh = 0, iter = 200))
+  bg_ppd2 <- expect_warning(baggr(schools, ppd = TRUE, prior_hypermean = normal(0,10), refresh = 0, iter = 200))
   expect_is(bg_ppd1, "baggr")
   expect_is(bg_ppd2, "baggr")
   # Regular comparison (don't have to say compare = "groups")

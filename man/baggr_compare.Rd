@@ -49,57 +49,51 @@ details see \link{baggr}, specifically the PPD argument.
 \donttest{
 # Most basic comparison between no, partial and full pooling
 # (This will run the models)
-
 # run model with just prior and then full data for comparison
 # with the same arguments that are passed to baggr
 prior_comparison <-
-    baggr_compare(schools,
-                  model = 'rubin',
-                  prior_hypermean = normal(0, 3),
-                  prior_hypersd = normal(0,2),
-                  prior_hypercor = lkj(2),
-                  what = "prior")
-
+  baggr_compare(schools,
+                model = 'rubin',
+                prior_hypermean = normal(0, 3),
+                prior_hypersd = normal(0,2),
+                prior_hypercor = lkj(2),
+                what = "prior")
 # print the aggregated treatment effects
 prior_comparison
-
 # plot the comparison of the two distributions
 plot(prior_comparison)
-
 # Now compare different types of pooling for the same model
 pooling_comparison <-
-   baggr_compare(schools,
-                 model = 'rubin',
-                 prior_hypermean = normal(0, 3),
-                 prior_hypersd = normal(0,2),
-                 prior_hypercor = lkj(2),
-                 what = "pooling")
-
+  baggr_compare(schools,
+                model = 'rubin',
+                prior_hypermean = normal(0, 3),
+                prior_hypersd = normal(0,2),
+                prior_hypercor = lkj(2),
+                what = "pooling")
 # plot this comparison
 plot(pooling_comparison)
-
 # Compare existing models:
 bg1 <- baggr(schools, pooling = "partial")
 bg2 <- baggr(schools, pooling = "full")
-baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2,
-              arrange = "grid")
+baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2)
 
 #' ...or simply draw prior predictive dist (note ppd=T)
-bg1 <- baggr(schools, ppd=T)
-bg2 <- baggr(schools, prior_hypermean = normal(0, 5), ppd=T)
+bg1 <- baggr(schools, ppd=TRUE)
+bg2 <- baggr(schools, prior_hypermean = normal(0, 5), ppd=TRUE)
 baggr_compare("Prior A, p.p.d."=bg1,
               "Prior B p.p.d."=bg2,
               compare = "effects")
 
-# Compare posterior effects as a function of priors (note ppd=F)
+# Compare posterior effects as a function of priors (note ppd=FALSE)
 bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
 bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
-baggr_compare("Uniform prior on SD"=bg1,
-              "Normal prior on SD"=bg2,
-              compare = "effects")
+plot(baggr_compare("Uniform prior on SD"=bg1,
+                   "Normal prior on SD"=bg2,
+                   compare = "effects"))
+
 # You can also compare different subsets of input data
 bg1_small <- baggr(schools[1:6,], pooling = "partial")
-baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small)
+plot(baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small))
 }
 }
 \seealso{

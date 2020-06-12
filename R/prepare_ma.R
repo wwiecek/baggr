@@ -1,12 +1,12 @@
 #' @title Convert from individual to summary data in meta-analyses
 #'
-#' @description Allows one-way conversion from full to summary data.
+#' @description Allows for one-way conversion from full to summary data or for calculation of effects for binary data.
 #'              Input must be pre-formatted appropriately.
 #'
-#' @param data data.frame of individual-level observations
+#' @param data __either__ a data.frame of individual-level observations
 #'             with columns for outcome (numeric), treatment (values 0 and 1) and
-#'             group (numeric, character or factor);
-#'             column names can be user-defined (see below)
+#'             group (numeric, character or factor); __or__, a data frame with binary data
+#'             (must have columns `a`, `c`, `b`/`n1`, `d`/`n2`).
 #' @param effect what effect to calculate? a `mean` (and SE) of outcome in groups or
 #'               (for binary data) `logOR` (odds ratio), `logRR` (risk ratio);
 #' @param log logical; log-transform the outcome variable?
@@ -27,17 +27,19 @@
 #' @param baseline name of column with baseline variable
 #'
 #' @return
-#' * If you `summarise` data.frame with columns for `group` \code{tau} and \code{se.tau}
-#'         (for `effect = "mean"`, also baseline means, for `"logRR"` or `"logOR"` also
-#'         `a`, `b`, `c`, `d`, which correspond to typical contingency table notation).
+#' * If you `summarise`: a data.frame with columns for `group`, `tau` and `se.tau`
+#'         (for `effect = "mean"`, also baseline means; for `"logRR"` or `"logOR"` also
+#'         `a`, `b`, `c`, `d`, which correspond to typical contingency table notation, that is:
+#'         `a` = events in exposed; `b` = no events in exposed, `c` = events in unexposed,
+#'         `d` = no events in unexposed).
 #' * If you do not summarise data, individual level data will be returned, but
-#'   some columns may be renamed or transformed (see above).
+#'   some columns may be renamed or transformed (see the arguments above).
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
-#' when data is fed to [baggr]. However, this function can be used to explicitly
+#' when `data` is given to [baggr]. However, this function can be used to explicitly
 #' convert from full to reduced (summarised) data without analysing it in any model.
-#' It can be useful for examining your data.
+#' It can be useful for examining your data and generating summary tables.
 #'
 #' If multiple operations are performed, they are taken in this order:
 #' 1) conversion to log scale,
@@ -45,7 +47,8 @@
 #' 3) summarising data (using appropriate `effect`)
 #'
 #' @author Witold Wiecek
-#' @seealso [convert_inputs] for how any type of data is (internally) converted into Stan inputs;
+#' @seealso [convert_inputs] for how any type of data is (internally) converted into
+#'          a list of Stan inputs;
 #' @export
 #' @import stats
 #'
@@ -58,8 +61,17 @@ prepare_ma <- function(data, #standardise = NULL,
                        baseline = NULL,
                        group="group",
                        outcome="outcome") {
-  if(grepl("pool", detect_input_type(data, group, treatment, outcome)))
-    stop("Data must be individual-level to use prepare_ma.")
+
+  effect <- match.arg(effect, c("mean", "logOR", "logRR"))
+  if(grepl("pool|unknown", detect_input_type(data, group, treatment, outcome))){
+    if(effect %in% c("logOR", "logRR")){
+      check_columns_binary(data)
+      data <- binary_to_individual(data, group)
+      group <- "group"
+    }else
+      stop("Data must be individual-level (if summarising) or binary data (if converting), see ?prepare_ma")
+  }
+
   check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
 
 
@@ -77,7 +89,6 @@ prepare_ma <- function(data, #standardise = NULL,
       check_columns(data, outcome, group, treatment, stop.for.na = TRUE)
   }
 
-  effect <- match.arg(effect, c("mean", "logOR", "logRR"))
   if(effect %in% c("logOR", "logRR")) {
     if(!is_binary(data$outcome))
       stop("Outcome column is not binary (only 0 and 1 values allowed).")
@@ -153,12 +164,12 @@ prepare_ma <- function(data, #standardise = NULL,
   # 4. Summarising
   if(summarise){
     if(effect == "mean") {
-      magg  <- stats::aggregate(outcome ~ treatment + group,
-                                mean, data = data)
-      seagg <- stats::aggregate(outcome ~ treatment + group,
-                                function(x) sd(x)/sqrt(length(x)), data = data)
-      mwide <- stats::reshape(data = magg, timevar = "treatment",
-                              idvar = "group", direction = "wide")
+      magg   <- stats::aggregate(outcome ~ treatment + group,
+                                 mean, data = data)
+      seagg  <- stats::aggregate(outcome ~ treatment + group,
+                                 function(x) sd(x)/sqrt(length(x)), data = data)
+      mwide  <- stats::reshape(data = magg, timevar = "treatment",
+                               idvar = "group", direction = "wide")
       sewide <- stats::reshape(data = seagg, timevar = "treatment",
                                idvar = "group", direction = "wide")
       out <- data.frame(group = mwide$group,
@@ -177,20 +188,23 @@ prepare_ma <- function(data, #standardise = NULL,
           with(x,
                data.frame(
                  group = unique(as.character(group)),
-                 a = sum(outcome[treatment == 1]),
-                 n1 = sum(treatment == 1),
-                 c = sum(outcome[treatment == 0]),
-                 n2 = sum(treatment == 0),
-                 b = sum(treatment == 1) - sum(outcome[treatment == 1]),
-                 d = sum(treatment == 0) - sum(outcome[treatment == 0])))
+                 a     = sum(outcome[treatment == 1]),
+                 n1    = sum(treatment == 1),
+                 c     = sum(outcome[treatment == 0]),
+                 n2    = sum(treatment == 0),
+                 b     = sum(treatment == 1) - sum(outcome[treatment == 1]),
+                 d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
         }))
       rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
-      binary_data_table$a = v*rare + binary_data_table$a
-      binary_data_table$b = v*rare + binary_data_table$b
-      binary_data_table$c = v*rare + binary_data_table$c
-      binary_data_table$d = v*rare + binary_data_table$d
-      binary_data_table$n1 = v*rare + binary_data_table$n1
-      binary_data_table$n2 = v*rare + binary_data_table$n2
+      if(sum(rare) > 0 && rare_event_correction == 0.25)
+        message("Applied default rare event correction (0.25) in ", sum(rare), " studies")
+
+      binary_data_table$a  <- v*rare + binary_data_table$a
+      binary_data_table$b  <- v*rare + binary_data_table$b
+      binary_data_table$c  <- v*rare + binary_data_table$c
+      binary_data_table$d  <- v*rare + binary_data_table$d
+      binary_data_table$n1 <- v*rare + binary_data_table$n1
+      binary_data_table$n2 <- v*rare + binary_data_table$n2
 
 
       out <- binary_data_table
@@ -198,11 +212,11 @@ prepare_ma <- function(data, #standardise = NULL,
 
       if(effect == "logRR") {
         out$tau <- with(out, log((a/(a+b))/(c/(c+d))))
-        out$se <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
+        out$se  <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
       }
       if(effect == "logOR") {
         out$tau <- with(out, log((a*d)/(b*c)))
-        out$se <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
+        out$se  <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
       }
 
     }

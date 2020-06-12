@@ -56,7 +56,7 @@ bg5_p <- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "
 bg5_f <- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
                               iter = 200, chains = 2, refresh = 0,
                               show_messages = F))
-bg5_ppd <- expect_warning(baggr(df_pooled, "rubin", ppd = T,
+bg5_ppd <- expect_warning(baggr(df_pooled, "rubin", ppd = TRUE,
                                 iter = 200, chains = 2, refresh = 0,
                                 show_messages = F))
 
@@ -182,8 +182,10 @@ sb <- sa
 sb$b <- NULL
 bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
 bg_cov_test <- baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0)
-bg_cov_prior1 <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0, prior_beta = normal(0, 3))
-bg_cov_prior2 <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5)))
+bg_cov_prior1 <- baggr(sa, covariates = c("a", "b"),
+                       iter = 200, refresh = 0, prior_beta = normal(0, 3))
+bg_cov_prior2 <- baggr(sa, covariates = c("a", "b"),
+                       iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5)))
 
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")
@@ -224,14 +226,13 @@ test_that("Extracting treatment/study effects works", {
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
   expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
-  expect_length(treatment_effect(bg5_p, summary = T)$tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
 
   # Drawing values of tau:
   expect_error(effect_draw(cars))
   expect_is(effect_draw(bg5_p), "numeric")
   expect_length(effect_draw(bg5_p), 200)
   expect_length(effect_draw(bg5_p,7), 7)
-  expect_identical(effect_draw(bg5_n), NA)
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")
@@ -344,3 +345,7 @@ test_that("baggr comparison method works for Rubin model", {
 })
 
 
+
+test_that("Plot quantiles", {
+  expect_error(plot_quantiles(bg5_p))
+})

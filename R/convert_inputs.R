@@ -100,6 +100,10 @@ convert_inputs <- function(data,
 
   required_data <- model_data_types[[model]]
 
+  if(required_data == "individual_binary" && grepl("pool", available_data)) {
+    data <- binary_to_individual(data, group = group)
+    available_data <- "individual_binary"
+  }
 
   if(required_data != available_data)
     stop(paste(
@@ -118,10 +122,14 @@ convert_inputs <- function(data,
       groups_test <- as.factor(as.character(test_data[[group]]))
       group_numeric_test <- as.numeric(groups_test)
       group_label_test <- levels(groups_test)
-      if(any(group_label_test %in% group_label))
+      if(any(group_label_test %in% group_label) && model != "logit")
         message(
           "Test data has some groups that have same labels as groups in data. ",
           "For cross-validation they will be treated as 'new' groups.")
+      if((!all(group_label_test %in% group_label) && model == "logit") || !all(test_data[[treatment]] == 1))
+        message(
+          "Test data for logit model should include treated units only.",
+          "Baselines for all these groups should be included in data argument.")
     }
 
     if(model %in% c("full", "logit")){
@@ -133,8 +141,8 @@ convert_inputs <- function(data,
         treatment = data[[treatment]],
         site = group_numeric
       )
-    # }
-    # if(model == "logit") {
+      # }
+      # if(model == "logit") {
       if(is.null(test_data)) {
         out$N_test <- 0
         out$K_test <- 0
@@ -156,7 +164,7 @@ convert_inputs <- function(data,
             1:max(group_numeric_test), function(i) {
               n <- sum(group_numeric_test == i)
               sd(test_data[[outcome]][group_numeric_test == i])/sqrt(n)
-          })
+            })
           if(any(is.na(se_in_each_group)))
             stop("Cannot calculate SE in groups in test data. Each out-of-sample ",
                  "group must be of size at least 2.")
@@ -169,16 +177,15 @@ convert_inputs <- function(data,
          (any(quantiles > 1)))
         stop("quantiles must be between 0 and 1")
       if(length(quantiles) < 2)
-        stop("cannot model less then 2 quantiles")
+        stop("cannot model less than 2 quantiles")
       data[[group]] <- group_numeric
-      # out <- summarise_quantiles_data(data, quantiles,
-      # outcome, group, treatment)
+      out <- summarise_quantiles_data(data, quantiles, outcome, group, treatment)
       message("Data have been automatically summarised for quantiles model.")
 
       # Fix for R 3.5.1. on Windows
       # https://stackoverflow.com/questions/51343022/
       out$temp <- out[["y_0"]]
-      out$y_0 <- NULL
+      # out$y_0 <- NULL
       out[["y_0"]] <- out$temp
       out$temp <- NULL
 
@@ -192,16 +199,14 @@ convert_inputs <- function(data,
         out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
         out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
       } else {
-        # Disabled until summarise_quantiles_data() gets included
-        # in the release again.
-        # out_test <- summarise_quantiles_data(test_data, quantiles,
-        # outcome, group, treatment)
-        # out$K_test <- out_test$K #reminder: K is number of sites,
+        out_test <- summarise_quantiles_data(test_data, quantiles,
+                                             outcome, group, treatment)
+        out$K_test <- out_test$K #reminder: K is number of sites,
         # N is number of quantiles
-        # out$test_y_0 <- out_test$y_0
-        # out$test_y_1 <- out_test$y_1
-        # out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
-        # out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
+        out$test_y_0 <- out_test$y_0
+        out$test_y_1 <- out_test$y_1
+        out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
+        out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
       }
     }
   }
@@ -248,8 +253,8 @@ convert_inputs <- function(data,
       P = 2, #fixed for this case
       # Remember, first row is always mu (baseline), second row is tau (effect)
       # (Has to be consistent against ordering of prior values.)
-      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = T),
-      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = T)
+      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = TRUE),
+      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = TRUE)
     )
     if(is.null(test_data)){
       out$K_test <- 0
@@ -263,49 +268,53 @@ convert_inputs <- function(data,
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       out$test_theta_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
-                                     2, nrow(test_data), byrow = T)
+                                     2, nrow(test_data), byrow = TRUE)
       out$test_se_theta_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
-                                    2, nrow(test_data), byrow = T)
+                                    2, nrow(test_data), byrow = TRUE)
     }
   }
 
   # Include covariates ------
   # if(required_data != "individual") {
-    if(length(covariates) > 0) {
+  if(length(covariates) > 0) {
+    if(model == "quantiles")
+      stop("Quantiles model cannot regress on covariates.")
 
-      if(!all(covariates %in% names(data)))
-        stop(paste0("Covariates ",
-                    paste(covariates[!(covariates %in% names(data))], collapse=","),
-                    " are not columns in input data"))
+    if(!all(covariates %in% names(data)))
+      stop(paste0("Covariates ",
+                  paste(covariates[!(covariates %in% names(data))], collapse=","),
+                  " are not columns in input data"))
 
-      # Test_data preparation
-      if(!is.null(test_data)){
-        data_bind <- try(rbind(data[,covariates, drop = FALSE],
-                               test_data[,covariates, drop = FALSE]))
-        if(class(data_bind) == "try-error")
-          stop("Cannot bind data and test_data. Ensure that all ",
-               "covariates are present and same levels are used.")
-        data_bind$tau <- 0
+    # Test_data preparation
+    if(!is.null(test_data)){
+      data_bind <- try(rbind(data[,covariates, drop = FALSE],
+                             test_data[,covariates, drop = FALSE]))
+      if(class(data_bind) == "try-error")
+        stop("Cannot bind data and test_data. Ensure that all ",
+             "covariates are present and same levels are used.")
+      data_bind$tau <- 0
 
-        out$X_test <- model.matrix(as.formula(
-          paste("tau ~", paste(covariates, collapse="+"), "-1")),
-          data=data_bind[(nrow(data)+1):nrow(data_bind),])
-      } else {
-        data_bind <- data[,covariates, drop = FALSE]
-        data_bind$tau <- 0
-        out$X_test <- array(0, dim=c(0, length(covariates)))
-      }
-
-      out$X <- model.matrix(as.formula(
+      out$X_test <- model.matrix(as.formula(
         paste("tau ~", paste(covariates, collapse="+"), "-1")),
-        data=data_bind[1:nrow(data),])
-      out$Nc <- length(covariates)
-
+        data=data_bind[(nrow(data)+1):nrow(data_bind),])
     } else {
-      out$Nc <- length(covariates)
+      data_bind <- data[,covariates, drop = FALSE]
+      data_bind$tau <- 0
+      out$X_test <- array(0, dim=c(0, length(covariates)))
+    }
+
+    out$X <- model.matrix(as.formula(
+      paste("tau ~", paste(covariates, collapse="+"), "-1")),
+      data=data_bind[1:nrow(data),])
+    out$Nc <- length(covariates)
+
+  } else {
+    out$Nc <- 0
+    if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
       out$X_test <- array(0, dim=c(ifelse(is.null(test_data), 0, nrow(test_data)), 0))
     }
+  }
   # }
 
 

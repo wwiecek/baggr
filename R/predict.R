@@ -11,7 +11,7 @@
 #' @export
 predict.baggr <- function(object, nsamples,
                           newdata = NULL,
-                          allow_new_levels = T,
+                          allow_new_levels = TRUE,
                           ...) {
   switch(object$model,
          rubin = predict_rubin(object,
@@ -37,7 +37,7 @@ predict_unknown <- function(x) {
 #' @param x model to get data from
 #' @param newdata new data to use with model
 #' @param allow_new_levels whether to allow for unobserved groups
-rubin_data <- function(x, newdata = NULL, allow_new_levels = T) {
+rubin_data <- function(x, newdata = NULL, allow_new_levels = TRUE) {
   check_if_baggr(x)
   # if(x$model != "rubin")
     # stop("Model must be type Rubin.")
@@ -80,7 +80,7 @@ rubin_data <- function(x, newdata = NULL, allow_new_levels = T) {
 predict_rubin <- function(x,
                           nsamples,
                           newdata = NULL,
-                          allow_new_levels = T) {
+                          allow_new_levels = TRUE) {
   if(missing(nsamples)){
     nsamples <- get_n_samples(x)
   }
@@ -107,7 +107,7 @@ predict_rubin <- function(x,
 predict_mutau <- function(x,
                           nsamples,
                           newdata = NULL,
-                          allow_new_levels = T) {
+                          allow_new_levels = TRUE) {
   if(missing(nsamples))
     nsamples <- get_n_samples(x)
 
@@ -123,7 +123,7 @@ predict_mutau <- function(x,
 predict_quantiles <- function(x,
                               nsamples,
                               newdata = NULL,
-                              allow_new_levels = T){
+                              allow_new_levels = TRUE){
   if(missing(nsamples))
     nsamples <- get_n_samples(x)
 
@@ -143,7 +143,7 @@ predict_quantiles <- function(x,
 #'
 #' @details For a detailed explanation of each of the ppc functions,
 #' see the \code{\link[bayesplot:PPC-overview]{PPC}}
-#' documentation of the \pkg{\link[bayesplot:bayesplot]{bayesplot}}
+#' documentation of the `bayesplot`
 #' package.
 #'
 #' @import bayesplot

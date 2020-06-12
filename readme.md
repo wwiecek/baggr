@@ -27,7 +27,7 @@ with weakly informative priors by calling [Stan](https://mc-stan.org/)
 to carry out Bayesian inference. Modelling of variances or quantiles,
 standardisation and transformation of data is also possible.
 
-The current version (v0.4, February 2020) is a stable version of a tool
+The current version (v0.5, June 2020) is a stable version of a tool
 that’s in active development so we are counting on your feedback.
 
 ## Installation
@@ -87,16 +87,18 @@ treatment effects are available.
 
 Try `vignette('baggr')` for an overview of these functions and an
 example of meta-analysis workflow with `baggr`. If working with binary
-data, try `vignette("baggr_binary")`.
+data, try `vignette("baggr_binary")`. Compiled vignettes are available
+[on CRAN](https://cran.r-project.org/web/packages/baggr/index.html).
 
 ## Current and future releases
 
-Included in baggr v0.4:
+Included in baggr v0.5 (June 2020):
 
-  - Meta-analysis and Hierarchical models for continuous and binary
+  - Meta-analysis and hierarchical models for continuous and binary
     outcomes
   - Both full and aggregate data sets can be used
-  - Summaries and plots specific to meta-analysis
+  - Summaries and plots specific to meta-analysis, typical diagnostic
+    plots
   - Meta-regression / fixed effect modelling capabilities
   - Compatibility with `rstan` and `bayesplot` features
   - Automatic choice of priors or “plain-text” specification of priors
@@ -104,11 +106,10 @@ Included in baggr v0.4:
   - Cross-validation (including leave-one-group-out)
   - Prior and posterior predictive distributions
 
-In the coming months (spring-summer 2020) we will be including more
-models and more features such as:
+In the coming months (summer 2020) we will be including more models and
+more features such as:
 
   - Modelling of quantiles and of variances
   - Better modelling of log-normal data
-  - Additional models for binary data
   - Automatic standardisation of variables
   - More model diagnostics

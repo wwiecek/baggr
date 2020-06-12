@@ -14,8 +14,11 @@ baggr(
   prior_hypersd = NULL,
   prior_hypercor = NULL,
   prior_beta = NULL,
+  prior_control = NULL,
+  prior_control_sd = NULL,
   prior = NULL,
   ppd = FALSE,
+  pooling_control = "none",
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome",
@@ -52,26 +55,38 @@ individual-level covariates.}
 
 \item{prior_hypermean}{prior distribution for hypermean; you can use "plain text" notation like
 \code{prior_hypermean=normal(0,100)} or \code{uniform(-10, 10)}.
-See Details:Priors below for more possible specifications.
+See \emph{Details:Priors} section below for more possible specifications.
 If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
 \item{prior_hypersd}{prior for hyper-standard deviation, used
-by Rubin and \verb{"mutau"`` models; same rules apply as for }_hypermean`;}
+by Rubin and \code{"mutau"} models;
+same rules apply as for \verb{_hypermean};}
 
 \item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
 
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
 
+\item{prior_control}{prior for the mean in the control arm (baseline), currently used in \code{"logit"} model only;
+if \code{pooling_control = "partial"}, the prior is hyperprior for all baselines, if \code{"none"},
+then it is an independent prior for all baselines}
+
+\item{prior_control_sd}{prior for the SD in the control arm (baseline), currently used in \code{"logit"} model only;
+this can only be used if \code{pooling_control = "partial"}}
+
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
 e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
 
 \item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.}) Default is no.
-If \code{ppd=TRUE}, Stan model will sample from the prior distributions
+If \code{ppd=TRUE}, Stan model will sample from the prior distribution(s)
 and ignore \code{data} in inference. However, \code{data} argument might still
-be used to infer the correct model and to set the default priors.}
+be used to infer the correct model (if \code{model=NULL}) and to set the
+default priors.}
+
+\item{pooling_control}{Pooling for group-specific control mean terms (currently only in \code{logit}).
+Either \code{"none"} or \code{"partial"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument}
@@ -155,10 +170,10 @@ for the group covariates is a
 \href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
 model. It can be modelled on summary-level data.
 \item In \code{"logit"} and \code{"full"} models, covariates that \strong{change according to individual unit}.
-Then, the model can be called a
+Then, such a model is commonly referred to as a
 \href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888}{mixed model}
-. It has to be fitted to individual-level data. Note that the first case can also be
-accounted for by using a mixed model.
+. It has to be fitted to individual-level data. Note that meta-regression is a special
+case of a mixed model for individual-level data.
 }
 
 \strong{Priors.} It is optional to specify priors yourself,
@@ -196,8 +211,7 @@ baggr(df_pooled, prior_hypersd = normal(0, 2))
 # "mu & tau" model, using a built-in dataset
 # prepare_ma() can summarise individual-level data
 ms <- microcredit_simplified
-ms$outcome <- microcredit_simplified$consumerdurables + 1
-microcredit_summary_data <- prepare_ma(ms)
+microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
 baggr(microcredit_summary_data, model = "mutau",
       pooling = "partial", prior_hypercor = lkj(1),
       prior_hypersd = normal(0,10),

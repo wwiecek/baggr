@@ -2,7 +2,7 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_draw}
 \alias{effect_draw}
-\title{Make posterior draws for treatment effect}
+\title{Make predictive draws for treatment effect}
 \usage{
 effect_draw(x, n, transform = NULL)
 }
@@ -10,7 +10,8 @@ effect_draw(x, n, transform = NULL)
 \item{x}{A \code{baggr} class object.}
 
 \item{n}{How many values to draw? The default is the same
-as number of samples in the model (default is 2,000).}
+as number of samples in the model (default is as long as the number of samples
+in \link{baggr} object, i.e. related to number of iterations of the Monte Carlo algorithm)}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
 (this is commonly used when calling \code{group_effects} from other
@@ -20,7 +21,18 @@ plotting or printing functions)}
 A vector of possible values of the treatment effect.
 }
 \description{
-This function takes the samples of hyperparameters of a \code{baggr} model
-(commonly hypermean tau and hyper-SD sigma_tau) and simulates values of
-new realisations of tau (a mean effect in some unobserved group).
+This function takes the samples of hyperparameters of a \link{baggr} model
+(commonly hypermean \code{tau} and hyper-SD \code{sigma_tau}) and draws values of
+new realisations of treatment effect, i.e. an additional draw from the "population of studies".
+}
+\details{
+The predictive distribution can be used to "combine" heterogeneity between treatment effects and
+uncertainty in the mean treatment effect. This is useful both in understanding impact of
+heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.
+as priors in analysis of future data (since the draws can be seen as an expected treatment effect
+in a hypothetical study).
+}
+\references{
+Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks. "Interpretation of Random Effects Meta-Analyses".
+\emph{BMJ 342 (10 February 2011).} \url{https://doi.org/10.1136/bmj.d549}.
 }

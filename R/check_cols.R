@@ -47,3 +47,9 @@ check_columns <- function(data, outcome, group, treatment, stop.for.na = TRUE)  
     stop("Treatment column has to have values 0 or 1")
 
 }
+
+check_columns_binary <- function(data) {
+  if(is.null(data$a) || is.null(data$c) ||
+     ((is.null(data$b) || is.null(data$d)) && (is.null(data$n1) || is.null(data$n2))))
+    stop("Binary data must have columns 'a', 'c' and 'b'/'n1', 'd'/'n2'")
+}

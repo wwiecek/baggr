@@ -4,7 +4,7 @@
 \alias{predict.baggr}
 \title{Predict method for baggr objects}
 \usage{
-\method{predict}{baggr}(object, nsamples, newdata = NULL, allow_new_levels = T, ...)
+\method{predict}{baggr}(object, nsamples, newdata = NULL, allow_new_levels = TRUE, ...)
 }
 \arguments{
 \item{object}{model to predict from}

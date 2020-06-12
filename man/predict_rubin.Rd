@@ -4,7 +4,7 @@
 \alias{predict_rubin}
 \title{Predict function for the rubin model}
 \usage{
-predict_rubin(x, nsamples, newdata = NULL, allow_new_levels = T)
+predict_rubin(x, nsamples, newdata = NULL, allow_new_levels = TRUE)
 }
 \arguments{
 \item{x}{model to predict from}

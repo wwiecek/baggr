@@ -35,12 +35,12 @@ df_groups <- data.frame(model = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L,
 
 
 test_that("baggr comparison has the correct ranking of models when order = T", {
-  expect_equal(get_order(df_groups, hyper = T),
+  expect_equal(get_order(df_groups, hyper = TRUE),
                c("School A", "School G", "School H",
                  "School B", "School D",
                  "School F", "School C",
                  "School E", "Pooled Estimate"))
-  expect_equal(get_order(df_groups, hyper = F),
+  expect_equal(get_order(df_groups, hyper = FALSE),
                c("School A", "School G", "School H",
                  "School B", "School D",
                  "School F", "School C",

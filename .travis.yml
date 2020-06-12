@@ -31,4 +31,4 @@ before_install:
   - echo "CXX14FLAGS = -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-attributes -O3" >> ~/.R/Makevars
 
 after_success:
-  - travis_wait 40 Rscript -e 'covr::codecov()'
+  - travis_wait 80 Rscript -e 'covr::codecov()'
