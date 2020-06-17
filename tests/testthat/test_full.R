@@ -21,9 +21,9 @@ for(i in 1:8){
 }
 
 
-bg_n <- expect_warning(baggr(schools_ipd, pooling = "none", iter = 200, refresh=0))
-bg_p <- expect_warning(baggr(schools_ipd, pooling = "partial", iter = 200, refresh=0))
-bg_f <- expect_warning(baggr(schools_ipd, pooling = "full", iter = 200, refresh=0))
+bg_n <- expect_warning(baggr(schools_ipd, pooling = "none", iter = 150, refresh=0))
+bg_p <- expect_warning(baggr(schools_ipd, pooling = "partial", iter = 150, refresh=0))
+bg_f <- expect_warning(baggr(schools_ipd, pooling = "full", iter = 150, refresh=0))
 
 
 test_that("Different pooling methods work for the full model", {
@@ -56,11 +56,11 @@ test_that("Full model crashes with nonsense inputs", {
 
 
 comp_flpl <- expect_warning(baggr_compare(
-  schools, model = "rubin", iter = 200, what = "pooling"
+  schools, model = "rubin", iter = 150, what = "pooling"
 ))
 
 comp_flpr <- expect_warning(baggr_compare(
-  schools, model = "rubin", iter = 200, what = "prior"
+  schools, model = "rubin", iter = 150, what = "prior"
 ))
 
 comp_flmdls <- baggr_compare(bg_f, bg_p)
