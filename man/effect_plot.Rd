@@ -2,12 +2,12 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_plot}
 \alias{effect_plot}
-\title{Plot posterior distribution for treatment effect}
+\title{Plot predictive posterior draws from baggr model}
 \usage{
 effect_plot(..., transform = NULL)
 }
 \arguments{
-\item{...}{Object(s) of class \code{baggr}. If there is more than one,
+\item{...}{Object(s) of class \link{baggr}. If there is more than one,
 the names of objects will be used as a plot legend (see example).}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
@@ -15,10 +15,11 @@ the names of objects will be used as a plot legend (see example).}
 plotting or printing functions)}
 }
 \value{
-A ggplot.
+A \code{ggplot} object.
 }
 \description{
-This function plots the \link{effect_draw} for one or more baggr objects.
+This function plots values from \link{effect_draw}, the posterior predictive distribution,
+for one or more \code{baggr} objects.
 }
 \examples{
 
@@ -39,6 +40,7 @@ effect_plot("Uniform prior on SD"=bg1_ppd,
 
 }
 \seealso{
+\link{effect_draw} documents the process of drawing values;
 \link{baggr_compare} can be used as a shortcut for \code{effect_plot} with argument
 \code{compare = "effects"}
 }

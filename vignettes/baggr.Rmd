@@ -271,13 +271,22 @@ Plotting functions always take `baggr` class object as their first argument. By 
 plot(baggr_schools, order = FALSE)
 ```
 
-Similarly important is the plot of potential treatment effects, obtained by repeatedly drawing hypermean and hypervariance values, then drawing from normal distribution conditional on these values.
+Similarly important is the plot of potential treatment effects (posterior predictive distribution), obtained by repeatedly drawing hypermean and hyper-SD values from baggr's Markov Chain model, then drawing new value of treatment effect conditional on these:
 
 ```{r fig.width = 4}
 effect_plot(baggr_schools)
 ```
 
-However, the viewpoint of building a model, the most important plots are the ones that directly compare many possible models.
+
+The values underlying the plot can be obtained by `effect_draw`, which can be used e.g. to draw 1 new value:
+
+```{r}
+effect_draw(baggr_schools, n = 1)
+```
+
+However, from the viewpoint of model building, the most important plots are the ones that directly compare many possible models.
+
+
 
 ### Basic model comparison with *baggr_compare*
 

@@ -2,16 +2,15 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_draw}
 \alias{effect_draw}
-\title{Make predictive draws for treatment effect}
+\title{Make predictive posterior draws from baggr model}
 \usage{
 effect_draw(x, n, transform = NULL)
 }
 \arguments{
 \item{x}{A \code{baggr} class object.}
 
-\item{n}{How many values to draw? The default is the same
-as number of samples in the model (default is as long as the number of samples
-in \link{baggr} object, i.e. related to number of iterations of the Monte Carlo algorithm)}
+\item{n}{How many values to draw? The default is as long as the number of samples
+in the \code{baggr} object (see \emph{Details}).}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
 (this is commonly used when calling \code{group_effects} from other
@@ -22,7 +21,7 @@ A vector of possible values of the treatment effect.
 }
 \description{
 This function takes the samples of hyperparameters of a \link{baggr} model
-(commonly hypermean \code{tau} and hyper-SD \code{sigma_tau}) and draws values of
+(typically hypermean and hyper-SD returned by \link{treatment_effect}) and draws values of
 new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 }
 \details{
@@ -31,8 +30,18 @@ uncertainty in the mean treatment effect. This is useful both in understanding i
 heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.
 as priors in analysis of future data (since the draws can be seen as an expected treatment effect
 in a hypothetical study).
+
+The default number of samples is the same as what is returned by Stan model implemented in \link{baggr},
+(depending on such options as \code{iter}, \code{chains}, \code{thin}). If \code{n} is larger than what is available
+in Stan model, we draw values with replacement. This is not recommended and warning is printed in
+these cases.
 }
 \references{
-Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks. "Interpretation of Random Effects Meta-Analyses".
+Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
+"Interpretation of Random Effects Meta-Analyses".
 \emph{BMJ 342 (10 February 2011).} \url{https://doi.org/10.1136/bmj.d549}.
+}
+\seealso{
+\link{treatment_effect} returns samples of hypermean and hyper-SD
+which are used by this function
 }

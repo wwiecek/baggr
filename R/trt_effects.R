@@ -62,21 +62,24 @@ treatment_effect <- function(bg, summary = FALSE,
 
 
 
-#' Make predictive draws for treatment effect
+#' Make predictive posterior draws from baggr model
 #'
 #' This function takes the samples of hyperparameters of a [baggr] model
-#' (commonly hypermean `tau` and hyper-SD `sigma_tau`) and draws values of
+#' (typically hypermean and hyper-SD returned by [treatment_effect]) and draws values of
 #' new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 #'
 #' @param x A `baggr` class object.
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `group_effects` from other
 #'                  plotting or printing functions)
-#' @param n How many values to draw? The default is the same
-#'          as number of samples in the model (default is as long as the number of samples
-#'          in [baggr] object, i.e. related to number of iterations of the Monte Carlo algorithm)
+#' @param n How many values to draw? The default is as long as the number of samples
+#'          in the `baggr` object (see _Details_).
+#'
 #' @return A vector of possible values of the treatment effect.
 #' @export
+#'
+#' @seealso [treatment_effect] returns samples of hypermean and hyper-SD
+#'          which are used by this function
 #'
 #' @details
 #' The predictive distribution can be used to "combine" heterogeneity between treatment effects and
@@ -85,8 +88,14 @@ treatment_effect <- function(bg, summary = FALSE,
 #' as priors in analysis of future data (since the draws can be seen as an expected treatment effect
 #' in a hypothetical study).
 #'
+#' The default number of samples is the same as what is returned by Stan model implemented in [baggr],
+#' (depending on such options as `iter`, `chains`, `thin`). If `n` is larger than what is available
+#' in Stan model, we draw values with replacement. This is not recommended and warning is printed in
+#' these cases.
+#'
 #' @references
-#' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks. "Interpretation of Random Effects Meta-Analyses".
+#' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
+#' "Interpretation of Random Effects Meta-Analyses".
 #' _BMJ 342 (10 February 2011)._ <https://doi.org/10.1136/bmj.d549>.
 #'
 effect_draw <- function(x, n, transform=NULL) {
@@ -128,19 +137,21 @@ effect_draw <- function(x, n, transform=NULL) {
 
 
 
-#' Plot posterior distribution for treatment effect
+#' Plot predictive posterior draws from baggr model
 #'
-#' This function plots the [effect_draw] for one or more baggr objects.
+#' This function plots values from [effect_draw], the posterior predictive distribution,
+#' for one or more `baggr` objects.
 #'
-#' @param ... Object(s) of class `baggr`. If there is more than one,
+#' @param ... Object(s) of class [baggr]. If there is more than one,
 #'            the names of objects will be used as a plot legend (see example).
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `group_effects` from other
 #'                  plotting or printing functions)
-#' @return A ggplot.
+#' @return A `ggplot` object.
 #' @import bayesplot
 #' @export
-#' @seealso [baggr_compare] can be used as a shortcut for `effect_plot` with argument
+#' @seealso [effect_draw] documents the process of drawing values;
+#'          [baggr_compare] can be used as a shortcut for `effect_plot` with argument
 #'          `compare = "effects"`
 #' @examples
 #'
