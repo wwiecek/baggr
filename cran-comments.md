@@ -5,6 +5,7 @@ Test environments:
 * Ubuntu 16.04.6 LTS x86_64-pc-linux-gnu (64-bit) R 4.0.0 (2020-04-24) via Travis
 * win-builder: devel, old release
 * Two Windows 10 PCs locally: R 3.5.1, R 4.0.1
+* Ubuntu 20.04 R x86_64 3.6.3 locally
 * builder.r-hub.io (platforms = NULL)
 
 Check results are unchanged from v0.4.0:
