@@ -211,8 +211,8 @@ effect_plot(
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
 
 ```{r, include = F, warning = F}
-a <- loocv(df, pooling = "partial")
-b <- loocv(df, pooling = "full")
+a <- loocv(df, pooling = "partial", iter = 1000)
+b <- loocv(df, pooling = "full", iter = 1000)
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```
@@ -238,14 +238,16 @@ head(df_ind)
 We can now use a logistic regression model
 
 ```{r logit model, include = F}
-bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", iter = 5000)
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", chains = 2, iter = 500)
 ```
 
 ```{r, echo = T, eval = F}
-bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", iter = 5000)
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
 ```
 
 > Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` . Alternatively, if we wrote `baggr(df_yusuf, model = "logit")`, the conversion to individual-level data would be done automatically behind the scenes.
+
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. 
 
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
@@ -339,10 +341,10 @@ pma01
 It is important to compare different models with different `rare_event_correction` values:
 
 ```{r rare event comparison, include=F}
-bg_correction01 <- baggr(pma01, effect = "logOR")
-bg_correction025 <- baggr(df_rare_logor, effect = "logOR")
-bg_correction1 <- baggr(pma1, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit")
+bg_correction01 <- baggr(pma01, effect = "logOR", iter = 500)
+bg_correction025 <- baggr(df_rare_logor, effect = "logOR", iter = 500)
+bg_correction1 <- baggr(pma1, effect = "logOR", iter = 500)
+bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit", iter = 500, chains = 2)
 ```
 
 ```{r, echo=T, eval=F}
@@ -362,6 +364,7 @@ bgc <- baggr_compare(
 bgc
 plot(bgc)[[1]] + theme(legend.position = "right")
 ```
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. 
 
 Note in the result above that:
 
@@ -385,7 +388,7 @@ df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
 
 ```{r, include=F}
 bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit")
+bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit", iter = 500, chains = 2)
 ```
 
 ```{r, eval=F, echo=T}
@@ -423,8 +426,10 @@ Choosing between the three is especially important in the case of rare events, a
 #                         prior_control = normal(-4.59, 2))
 bg_rare_prior3 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
                         pooling_control = "partial",
+                        chains = 2, iter = 500,
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
 bg_rare_prior4 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
+                        chains = 2, iter = 500,
                         prior_control = normal(-4.59, 10))
 ```
 
@@ -452,6 +457,7 @@ bgc
 plot(bgc)[[1]] + theme(legend.position = "right")
 ```
 
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
 
 We can see that 
 

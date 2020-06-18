@@ -387,18 +387,15 @@ fit2$mean_lpd
 If we run the full `loocv` for both models, we can estimate the difference between the ELPD of those models as well as the standard error of that difference. As an example, let's consider the two models above.
 
 ```{r results = 'hide'}
-cv_1 <- loocv(data = schools, 
-              model = "rubin", 
-              pooling = "partial")
-cv_2 <- loocv(data = schools, 
-              model = "rubin", 
-              pooling = "full")
+loocv_full <- loocv(data = schools, 
+                    model = "rubin", 
+                    pooling = "full")
 ```
 
 We can compare those fits with `loo_compare`, which gives use the differences in ELPD for the various models we pass it. Generally it is important to pay attention to _both_ the difference in the predictive density and also the standard error of that difference.
 
 ```{r}
-loo_compare(cv_1, cv_2)
+loo_compare(loocv_res, loocv_full)
 ```
 
 ## References

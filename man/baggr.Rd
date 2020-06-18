@@ -204,7 +204,8 @@ baggr(df_pooled) #baggr automatically detects the input data
 # same model, but with correct labels,
 # different pooling & passing some options to Stan
 baggr(df_pooled, group = "state", pooling = "full", iter = 500)
-# model with different (very informative) priors
+# model with non-default (and very informative) priors
+
 baggr(df_pooled, prior_hypersd = normal(0, 2))
 
 \donttest{
