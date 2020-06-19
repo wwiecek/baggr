@@ -31,11 +31,14 @@ in addition to group treatment effects}
 
 \item{transform}{a function (e.g. exp(), log())
 to apply to the values of group (and hyper, if hyper=TRUE)
-effects before plotting; when working with effects that are on log scale, exponent transform is used automatically,
+effects before plotting; when working with effects that are on
+log scale, exponent transform is used automatically,
 you can plot on log scale by setting transform = identity}
 
-\item{order}{Whether to order by median treatment effect by group. If not, this
-sorts group alphabetically. The pooled estimate is always listed first, when applicable.}
+\item{order}{Whether to sort by median treatment effect by group.
+If yes, medians from the model with largest range of estimates
+are used for sorting.
+If not, groups are shown alphabetically.}
 
 \item{...}{ignored for now, may be used in the future}
 }

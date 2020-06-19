@@ -48,11 +48,11 @@
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
-#' @param ppd       logical; use prior predictive distribution? (_p.p.d._) Default is no.
+#' @param ppd       logical; use prior predictive distribution? (_p.p.d._)
 #'                  If `ppd=TRUE`, Stan model will sample from the prior distribution(s)
 #'                  and ignore `data` in inference. However, `data` argument might still
 #'                  be used to infer the correct model (if `model=NULL`) and to set the
-#'                  default priors.
+#'                  default priors, therefore you must specify it.
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
@@ -135,6 +135,10 @@
 #' To set the priors yourself, use `prior_` arguments. For specifying many priors at once
 #' (or re-using between models), a single `prior = list(...)` argument can be used instead.
 #' Appropriate examples are given in `vignette("baggr")`.
+#' Setting `ppd=TRUE` can be used to obtain prior predictive distributions,
+#' which is useful for understanding the prior assumptions,
+#' especially useful in conjunction with [effect_plot]. You can also [baggr_compare]
+#' different priors by setting `baggr_compare(..., compare="prior")`.
 #'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).

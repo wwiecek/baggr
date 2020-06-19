@@ -79,11 +79,11 @@ this can only be used if \code{pooling_control = "partial"}}
 \code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
 e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
 
-\item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.}) Default is no.
+\item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.})
 If \code{ppd=TRUE}, Stan model will sample from the prior distribution(s)
 and ignore \code{data} in inference. However, \code{data} argument might still
 be used to infer the correct model (if \code{model=NULL}) and to set the
-default priors.}
+default priors, therefore you must specify it.}
 
 \item{pooling_control}{Pooling for group-specific control mean terms (currently only in \code{logit}).
 Either \code{"none"} or \code{"partial"}.}
@@ -182,6 +182,10 @@ prior for the input data if you do not pass a \code{prior} argument.
 To set the priors yourself, use \code{prior_} arguments. For specifying many priors at once
 (or re-using between models), a single \code{prior = list(...)} argument can be used instead.
 Appropriate examples are given in \code{vignette("baggr")}.
+Setting \code{ppd=TRUE} can be used to obtain prior predictive distributions,
+which is useful for understanding the prior assumptions,
+especially useful in conjunction with \link{effect_plot}. You can also \link{baggr_compare}
+different priors by setting \code{baggr_compare(..., compare="prior")}.
 
 \strong{Outputs.} By default, some outputs are printed. There is also a
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).

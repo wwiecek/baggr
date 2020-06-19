@@ -49,8 +49,8 @@ treatment_effect <- function(bg, summary = FALSE,
   }
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))
-    sigma_tau <- NA # by convention we set it to NA so that people don't convert
-    # and then do operations on it by accident
+    sigma_tau <- NA # by convention we set it to NA so that people don't transform
+                    # and then do operations on it by accident
   }
   if(summary) {
     tau <- mint(tau, int=interval, median=TRUE, sd = TRUE)

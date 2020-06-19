@@ -75,19 +75,19 @@ In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calcu
 # df$se <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
 
 # But prepare_ma() automates these operations:
-df <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
-df
+df_ma <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
+df_ma
 ```
 
 We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for logOR is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
 
 
 ```{r, include = F}
-bg_model_agg <- baggr(df, iter = 5000, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, iter = 5000, effect = "logarithm of odds ratio")
 ```
 
 ```{r, eval = F, echo = T}
-bg_model_agg <- baggr(df, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
 ```
 
 The argument we speficied, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
@@ -103,7 +103,7 @@ We summarised our data as log(OR). Alternatively, we could work with log(RR). Ri
 The basic tool that can help us choose is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
 
 ```{r}
-labbe(df, plot_model = TRUE, shade_se = "or")
+labbe(df_ma, plot_model = TRUE, shade_se = "or")
 ```
 
 When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
@@ -182,16 +182,16 @@ We can compare with no pooling and full pooling models using `baggr_compare`
 
 ```{r, echo=T, eval = F}
 # Instead of writing...
-# bg1 <- baggr(df, pooling = "none")
-# bg2 <- baggr(df, pooling = "partial")
-# bg3 <- baggr(df, pooling = "full")
+# bg1 <- baggr(df_ma, pooling = "none")
+# bg2 <- baggr(df_ma, pooling = "partial")
+# bg3 <- baggr(df_ma, pooling = "full")
 
 # ...we use this one-liner
-bg_c <- baggr_compare(df, effect = "logarithm of odds ratio")
+bg_c <- baggr_compare(df_ma, effect = "logarithm of odds ratio")
 ```
 
 ```{r, include = FALSE}
-bg_c <- baggr_compare(df, what = "pooling", effect = "logarithm of odds ratio")
+bg_c <- baggr_compare(df_ma, what = "pooling", effect = "logarithm of odds ratio")
 ```
 
 ```{r}
@@ -211,15 +211,15 @@ effect_plot(
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
 
 ```{r, include = F, warning = F}
-a <- loocv(df, pooling = "partial", iter = 1000)
-b <- loocv(df, pooling = "full", iter = 1000)
+a <- loocv(df_ma, pooling = "partial", iter = 1000)
+b <- loocv(df_ma, pooling = "full", iter = 1000)
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```
 
 ```{r, echo = T, eval = F}
-a <- loocv(df, pooling = "partial")
-b <- loocv(df, pooling = "full")
+a <- loocv(df_ma, pooling = "partial")
+b <- loocv(df_ma, pooling = "full")
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```
@@ -482,16 +482,16 @@ In both cases we only need to name one extra argument to `baggr`: `covariates=`,
 
 ```{r, include = FALSE, echo = FALSE}
 #let's use the data.frame we created from Yusuf et al earlier
-df$study_grouping      <- c(1,1,1,0,0,0,0)
-df$different_contrasts <- c(1,1,1,0,0,0,0) - .5
-bg_cov1 <- baggr(df, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
+df_ma$study_grouping      <- c(1,1,1,0,0,0,0)
+df_ma$different_contrasts <- c(1,1,1,0,0,0,0) - .5
+bg_cov1 <- baggr(df_ma, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
 ```
 
 ```{r, echo = TRUE, eval = FALSE}
 #let's use the data.frame we created from Yusuf et al earlier
-df$study_grouping      <- c(1,1,1,0,0,0,0)
-df$different_contrasts <- c(1,1,1,0,0,0,0) - .5
-bg_cov1 <- baggr(df, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
+df_ma$study_grouping      <- c(1,1,1,0,0,0,0)
+df_ma$different_contrasts <- c(1,1,1,0,0,0,0) - .5
+bg_cov1 <- baggr(df_ma, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
 ```
 
 ```{r}

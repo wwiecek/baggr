@@ -22,6 +22,7 @@
 #'                  exponent transform is used automatically,
 #'                  you can plot on log scale by setting
 #'                  transform = identity
+#' @param plot logical; calls [plot.baggr_compare] when running `baggr_compare`
 #' @return an object of class `baggr_compare`
 #' @seealso [plot.baggr_compare] and [print.baggr_compare]
 #'          for working with results of this function
@@ -58,9 +59,9 @@
 #'                 prior_hypermean = normal(0, 3),
 #'                 prior_hypersd = normal(0,2),
 #'                 prior_hypercor = lkj(2),
-#'                 what = "pooling")
-#' # plot this comparison
-#' plot(pooling_comparison)
+#'                 what = "pooling",
+#'                 # You can automatically plot:
+#'                 plot = TRUE)
 #' # Compare existing models:
 #' bg1 <- baggr(schools, pooling = "partial")
 #' bg2 <- baggr(schools, pooling = "full")
@@ -76,19 +77,21 @@
 #' # Compare posterior effects as a function of priors (note ppd=FALSE)
 #' bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
 #' bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
-#' plot(baggr_compare("Uniform prior on SD"=bg1,
+#' baggr_compare("Uniform prior on SD"=bg1,
 #'                    "Normal prior on SD"=bg2,
-#'                    compare = "effects"))
+#'                    compare = "effects", plot = TRUE)
 #'
 #' # You can also compare different subsets of input data
 #' bg1_small <- baggr(schools[1:6,], pooling = "partial")
-#' plot(baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small))
+#' baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small,
+#'               plot = TRUE)
 #' }
 
 baggr_compare <- function(...,
                           what    = "pooling",
                           compare = "groups",
-                          transform = NULL) {
+                          transform = NULL,
+                          plot = FALSE) {
   l <- list(...)
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
@@ -173,8 +176,7 @@ baggr_compare <- function(...,
       est
     })))
 
-
-  structure(list(
+  bgc <- structure(list(
     models = models,
     mean_trt = mean_trt_effects,
     sd_trt = sd_trt_effects,
@@ -182,6 +184,11 @@ baggr_compare <- function(...,
     effect_names = effect_names,
     transform = deparse(substitute(transform))),
     class = "baggr_compare")
+
+  if(plot)
+    print(plot(bgc))
+
+  bgc
 }
 
 #' Print method for baggr_compare models

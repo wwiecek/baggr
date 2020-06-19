@@ -65,8 +65,9 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
         cat("Hyper-SD (sigma_tau) =", sigma_tau[2], "with 95% interval",
             sigma_tau[1], "to", sigma_tau[3], "\n")
         tot_pool <- format(heterogeneity(x)[,,1], digits = digits, trim = TRUE)
-        cat("Total pooling (1 - I^2) =", tot_pool[2], "with 95% interval",
-            tot_pool[1], "to", tot_pool[3], "\n")
+        if(!ppd)
+          cat("Total pooling (1 - I^2) =", tot_pool[2], "with 95% interval",
+              tot_pool[1], "to", tot_pool[3], "\n")
       }
     } else { #quantiles
       tau <- mint(te[[1]])

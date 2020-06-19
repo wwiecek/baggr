@@ -8,47 +8,62 @@
 #' @param bg output of a baggr() function
 #' @param type In `pooling` calculation is done for each of the `"groups"`
 #'            (default) or for `"total"` hypereffect(s).
-#'             See Details section for how calculation is done.
+#'             See _Details_ section for how calculation is done.
 #' @param summary logical; if `FALSE` a whole vector of pooling values is returned,
 #'                otherwise only the means and intervals
 #'
 #' @details
 #' Pooling statistic describes the extent to which group-level estimates of treatment
-#' effect are "pooled" (or pulled!) toward average treatment effect in the meta-analysis model.
-#' If `pooling = "none"` or "full" in [baggr], then the returned values are always 0 or 1, respectively.
+#' effect are "pooled" (or pulled!) closer to average treatment effect in the meta-analysis model.
+#' If `pooling = "none"` or "full" in [baggr], then the values are always 0 or 1, respectively.
 #' If `pooling = "partial"`, the value is somewhere between 0 and 1.
 #'
-#' **Formulae for the calculations below are provided in main package vignette.** See `vignette("baggr").`
+#' **Formulae for the calculations below are provided in main package vignette.**
 #'
-#' #' **Estimate of pooling in a group**: this is the calculation done by `pooling()`
-#' if `type = "groups"` (default).
+#' @section Group pooling:
 #'
-#' In a partial pooling model (see [baggr]), group _k_ (e.g. study) has a treatment effect
-#' estimate, with some SE around the real treatment effect (TE).
-#' Each TE itself is distributed with mean and variance.
+#' This is the calculation done by `pooling()` if `type = "groups"` (default).
+#' See `vignette("baggr")` for more details on pooling calculations.
 #'
-#' The quantity of interest is ratio of variability in \eqn{\tau} to total variability.
+#' In a partial pooling model (see [baggr]), group _k_ (e.g. study) has
+#' standard error of treatment effect estimate, \eqn{se_k}.
+#' The treatment effect (across _k_ groups) is variable across groups, with
+#' hyper-SD parameter \eqn{\sigma_(\tau)}.
+#'
+#' The quantity of interest is ratio of variation in treatment effects to the
+#' total variation.
 #' By convention, we subtract it from 1, to obtain a _pooling metric_ _p_.
 #'
-#' \deqn{p = 1 - (\sigma(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
+#' \deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
 #'
-#' * If \eqn{p < 0.5}, that means the variation across studies is higher than variation within studies.
+#' * If \eqn{p < 0.5}, the variation across studies is higher than variation within studies.
 #' * Values close to 1 indicate nearly full pooling. Variation across studies dominates.
-#' * Values close to 0 -- no pooling. Variation within studies dominates.
+#' * Values close to 0 indicate no pooling. Variation within studies dominates.
 #'
-#' Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a single fixed value)
+#' Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a single fixed value),
 #' _p_ is also a parameter. It is typical for _p_ to have very high dispersion, as in many cases we
 #' cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution of_p_
 #' (rather than summarised values), set `summary=FALSE`.
 #'
-#' **Overall pooling (in the model)**
 #'
-#' Typically it is a single measure of heterogeneity that is of interest to researchers.
-#' This is calculated by setting `type = "total"` or simply writing `heterogeneity(mymodel)`
+#'
+#' @section Overall pooling in the model:
+#'
+#' Typically researchers want to report a single measure from the model,
+#' relating to heterogeneity across groups.
+#' This is calculated by either `pooling(mymodel, type = "total")` or simply `heterogeneity(mymodel)`
 #'
 #' In many contexts, i.e. medical statistics, it is typical to report _1-P_, called \eqn{I^2}
-#' (see Higgins _et al_, 2003). Higher values of _I-squared_ indicate higher heterogeneity.
+#' (see Higgins and Thompson, 2002; sometimes another statistic, \eqn{H^2 = 1 / P},
+#' is used).
+#' Higher values of _I-squared_ indicate higher heterogeneity;
 #' Von Hippel (2015) provides useful details for _I-squared_ calculations.
+#'
+#' To obtain such single estimate we need to substitute average variability of group-specific
+#' treatment effects and then calculate the same way we would calculate \eqn{p}.
+#' By default we use the mean across _k_ \eqn{se_k^2} values. Typically, implementations of
+#' \eqn{I^2} in statistical packages use a different calculation for this quantity,
+#' which may make _I_'s not comparable when different studies have different SE's.
 #'
 #' Same as for group-specific estimates, _P_ is a Bayesian parameter and its dispersion can be high.
 #'
@@ -64,9 +79,9 @@
 #' "Bayesian Measures of Explained Variance and Pooling in Multilevel (Hierarchical) Models."
 #' _Technometrics 48, no. 2 (May 2006): 241-51_. <https://doi.org/10.1198/004017005000000517>.
 #'
-#' Higgins, Julian P T, Simon G Thompson, Jonathan J Deeks, and Douglas G Altman.
-#' "Measuring Inconsistency in Meta-Analyses."
-#' _British Medical Journal 327, no. 7414 (September 6, 2003): 557-60._
+#' Higgins, Julian P. T., and Simon G. Thompson.
+#' “Quantifying Heterogeneity in a Meta-Analysis.”
+#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. <doi:10.1002/sim.1186>.
 #'
 #' Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
 #' _BMC Medical Research Methodology 15 (April 14, 2015)._ <https://doi.org/10.1186/s12874-015-0024-z>.
@@ -99,7 +114,7 @@ pooling <- function(bg,
     if(bg$model == "rubin")
       sigma_k <- bg$data$se
     if(bg$model == "logit")
-      sigma_k <- prepare_ma(bg$data, effect = "logOR")$se
+      sigma_k <- suppressMessages(prepare_ma(bg$data, effect = "logOR")$se)
     if(bg$model == "full")
       sigma_k <- group_effects(bg, summary = TRUE)[, "sd", 1]
 

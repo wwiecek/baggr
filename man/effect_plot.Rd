@@ -2,7 +2,7 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_plot}
 \alias{effect_plot}
-\title{Plot predictive posterior draws from baggr model}
+\title{Plot predictive draws from baggr model}
 \usage{
 effect_plot(..., transform = NULL)
 }
@@ -18,10 +18,18 @@ plotting or printing functions)}
 A \code{ggplot} object.
 }
 \description{
-This function plots values from \link{effect_draw}, the posterior predictive distribution,
+This function plots values from \link{effect_draw}, the predictive distribution
+(under default settings, \emph{posterior} predictive),
 for one or more \code{baggr} objects.
 }
+\details{
+Under default settings in \link{baggr} posterior predictive is obtained. But
+\code{effect_plot} can also be used for \emph{prior} predictive distributions when
+setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same, but
+labels will change to indicate this difference.
+}
 \examples{
+
 
 # A single effects plot
 bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))

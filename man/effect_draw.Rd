@@ -2,7 +2,7 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_draw}
 \alias{effect_draw}
-\title{Make predictive posterior draws from baggr model}
+\title{Make predictive draws from baggr model}
 \usage{
 effect_draw(x, n, transform = NULL)
 }
@@ -23,6 +23,7 @@ A vector of possible values of the treatment effect.
 This function takes the samples of hyperparameters of a \link{baggr} model
 (typically hypermean and hyper-SD returned by \link{treatment_effect}) and draws values of
 new realisations of treatment effect, i.e. an additional draw from the "population of studies".
+This can be used for both prior and posterior draws, depending on \link{baggr} model.
 }
 \details{
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
@@ -35,6 +36,10 @@ The default number of samples is the same as what is returned by Stan model impl
 (depending on such options as \code{iter}, \code{chains}, \code{thin}). If \code{n} is larger than what is available
 in Stan model, we draw values with replacement. This is not recommended and warning is printed in
 these cases.
+
+Under default settings in \link{baggr}, a \emph{posterior} predictive distribution is obtained. But
+\code{effect_draw} can also be used for \emph{prior} predictive distributions when
+setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
 }
 \references{
 Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
