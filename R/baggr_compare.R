@@ -23,7 +23,8 @@
 #'                  you can plot on log scale by setting
 #'                  transform = identity
 #' @return an object of class `baggr_compare`
-#' @seealso [plot.baggr_compare] and [print.baggr_compare] for working with results of this function
+#' @seealso [plot.baggr_compare] and [print.baggr_compare]
+#'          for working with results of this function
 #' @author Witold Wiecek, Brice Green
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
@@ -209,13 +210,16 @@ print.baggr_compare <- function(x, digits, ...){
 #'              passed to the `style` argument in [baggr_plot].
 #' @param interval probability level used for display of posterior interval
 #' @param hyper Whether to plot pooled treatment effect
-#' in addition to group treatment effects
+#'              in addition to group treatment effects
 #' @param transform a function (e.g. exp(), log())
-#' to apply to the values of group (and hyper, if hyper=TRUE)
-#' effects before plotting; when working with effects that are on log scale, exponent transform is used automatically,
-#' you can plot on log scale by setting transform = identity
-#' @param order Whether to order by median treatment effect by group. If not, this
-#' sorts group alphabetically. The pooled estimate is always listed first, when applicable.
+#'                  to apply to the values of group (and hyper, if hyper=TRUE)
+#'                  effects before plotting; when working with effects that are on
+#'                  log scale, exponent transform is used automatically,
+#'                  you can plot on log scale by setting transform = identity
+#' @param order Whether to sort by median treatment effect by group.
+#'              If yes, medians from the model with largest range of estimates
+#'              are used for sorting.
+#'              If not, groups are shown alphabetically.
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
@@ -327,9 +331,7 @@ plot.baggr_compare <- function(x,
           ggplot2::labs(x = "", y = "Treatment effect (95% interval)",
                         title = paste0(
                           "Effect of treatment on ",
-                          effect_names[i],
-                          " outcome."
-                        )
+                          effect_names[i])
           ) +
           baggr_theme_get() +
           ggplot2::theme(legend.position="top")

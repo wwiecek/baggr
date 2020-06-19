@@ -297,7 +297,13 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stan_data <- remove_data_for_prior_pred(stan_data)
   }
   stan_args$data <- stan_data
+
+
+
+  # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
+
+
 
   result <- list(
     "data" = data,
