@@ -99,7 +99,7 @@ Gelman, Andrew, and Iain Pardoe.
 
 Higgins, Julian P. T., and Simon G. Thompson.
 “Quantifying Heterogeneity in a Meta-Analysis.”
-\emph{Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58}. \url{doi:10.1002/sim.1186}.
+\emph{Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58}. \url{https://doi.org/10.1002/sim.1186}.
 
 Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
 \emph{BMC Medical Research Methodology 15 (April 14, 2015).} \url{https://doi.org/10.1186/s12874-015-0024-z}.

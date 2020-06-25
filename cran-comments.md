@@ -13,13 +13,10 @@ Test environments:
 * builder.r-hub.io (platforms = NULL)
 
 Check results are unchanged from v0.4.0:
-There are no WARNINGs or ERRORs and 2 NOTEs:
+There are no WARNINGs or ERRORs and 2 NOTEs (on some OS's):
 
 N checking installed package size ... NOTE
   sub-directories of 1Mb or more: libs
   
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements. 
-
-In R-hub tests 
-* Windows Server 2008 R2 SP1, R-devel, 32/64 bit crashed when compiling C++ code

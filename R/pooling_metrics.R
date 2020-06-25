@@ -81,7 +81,7 @@
 #'
 #' Higgins, Julian P. T., and Simon G. Thompson.
 #' “Quantifying Heterogeneity in a Meta-Analysis.”
-#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. <doi:10.1002/sim.1186>.
+#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. <https://doi.org/10.1002/sim.1186>.
 #'
 #' Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
 #' _BMC Medical Research Methodology 15 (April 14, 2015)._ <https://doi.org/10.1186/s12874-015-0024-z>.
