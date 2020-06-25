@@ -83,7 +83,7 @@ We use `tau` and `se` notation for our effect, same as we would for analysing co
 
 
 ```{r, include = F}
-bg_model_agg <- baggr(df_ma, iter = 5000, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, iter = 2000, effect = "logarithm of odds ratio")
 ```
 
 ```{r, eval = F, echo = T}
@@ -211,8 +211,8 @@ effect_plot(
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
 
 ```{r, include = F, warning = F}
-a <- loocv(df_ma, pooling = "partial", iter = 1000)
-b <- loocv(df_ma, pooling = "full", iter = 1000)
+a <- loocv(df_ma, pooling = "partial", iter = 500, chains = 2)
+b <- loocv(df_ma, pooling = "full", iter = 500, chains = 2)
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```

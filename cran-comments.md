@@ -1,5 +1,9 @@
 ## cran-comments for baggr v0.5.0
 
+Run times have for vignettes and examples have been shortened by a factor of 3-4.
+If this is too slow for CRAN servers, we will re-write the vignettes to include
+precompiled results.
+
 Test environments:
 
 * Ubuntu 16.04.6 LTS x86_64-pc-linux-gnu (64-bit) R 4.0.0 (2020-04-24) via Travis
