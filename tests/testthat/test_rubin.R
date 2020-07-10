@@ -180,12 +180,16 @@ sa$a <- rnorm(8)
 sa$b <- rnorm(8)
 sb <- sa
 sb$b <- NULL
-bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
-bg_cov_test <- baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0)
-bg_cov_prior1 <- baggr(sa, covariates = c("a", "b"),
-                       iter = 200, refresh = 0, prior_beta = normal(0, 3))
-bg_cov_prior2 <- baggr(sa, covariates = c("a", "b"),
-                       iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5)))
+bg_cov <- expect_warning(
+  baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0))
+bg_cov_test <- expect_warning(
+  baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0))
+bg_cov_prior1 <- expect_warning(
+  baggr(sa, covariates = c("a", "b"),
+        iter = 200, refresh = 0, prior_beta = normal(0, 3)))
+bg_cov_prior2 <- expect_warning(
+  baggr(sa, covariates = c("a", "b"),
+        iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5))))
 
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")

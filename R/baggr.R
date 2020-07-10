@@ -235,17 +235,29 @@ baggr <- function(data, model = NULL, pooling = "partial",
     else if(length(effect) == 1)
       effect <- paste0(100*quantiles, "% quantile on ", effect)
     else if(length(length(effect) != length(quantiles)))
-      stop("'effect' must be of length 1 or same as number of quantiles")
-  }
-  if(model == "logit"){
+      stop("For quantile models, 'effect' must be of length 1",
+           "or same as number of quantiles")
+  } else if(model == "logit"){
     if(is.null(effect))
       effect <- "logOR"
+  } else if(model == "sslab") {
+    effect <- c("Location of negative log-normal",
+                "Location of positive log-normal",
+                "Scale of negative log-normal",
+                "Scale of positive log-normal",
+                "LogOR on being negative",
+                "LogOR on being equal to 0")
   }
   # In all other cases we set it to mean
   if(is.null(effect))
     effect <- "mean"
 
-  # pooling type
+  # Number of TE parameters
+  # (in the future this can be built into the models):
+  n_parameters <- length(effect)
+
+
+  # Pooling type:
   if(pooling %in% c("none", "partial", "full")) {
     stan_data[["pooling_type"]] <- switch(pooling,
                                           "none" = 0,
@@ -262,24 +274,29 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
 
+
+
   # Prior settings:
-  if(is.null(prior))
+  if(is.null(prior)){
     prior <- list(hypermean = prior_hypermean,
                   hypercor  = prior_hypercor,
                   hypersd   = prior_hypersd,
                   beta      = prior_beta,
                   control   = prior_control,
                   control_sd= prior_control_sd)
-  else {
+  } else {
     if(!is.null(prior_hypermean) || !is.null(prior_beta) ||
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta', 'control', 'control_sd')))
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd',
+                                'beta', 'control', 'control_sd')))
       warning(paste("Only names used in the prior argument are:",
-                    "'hypermean', 'hypercor', 'hypersd', 'beta', 'control', 'control_sd'"))
+                    "'hypermean', 'hypercor', 'hypersd',
+                    'beta', 'control', 'control_sd'"))
   }
+
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){
@@ -290,6 +307,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                                      pooling, covariates, quantiles = quantiles,
                                      silent = silent)
   }
+
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]
 
@@ -315,7 +333,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     "user_prior" = prior,
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
-    "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
+    "n_parameters" = n_parameters,
     "effects" = effect,
     "covariates" = covariates,
     "pooling" = pooling,

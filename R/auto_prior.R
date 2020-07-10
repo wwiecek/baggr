@@ -207,6 +207,31 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     }
   }
 
+  if(model == "sslab") {
+    prior_list <- list(
+      prior_hypermu_fam = 1,
+      prior_hypertau_fam = 1,
+      prior_hypersigmacontrol_fam = 1,
+      prior_hypersigmaTE_fam = 1,
+      prior_hyperbeta_fam = 1,
+      prior_hypermu_val = c(0, 100,0),
+      prior_hypertau_val = c(0,100,0),
+      prior_hypersigmacontrol_val = c(0,5,0),
+      prior_hypersigmaTE_val = c(0,5,0),
+      prior_hyperbeta_val = c(0,5,0),
+      prior_hypersd_mu_fam = 1,
+      prior_hypersd_tau_fam = 1,
+      prior_hypersd_sigmacontrol_fam = 1,
+      prior_hypersd_sigmaTE_fam = 1,
+      prior_hypersd_beta_fam = 1,
+      prior_hypersd_mu_val = c(0,10,0),
+      prior_hypersd_tau_val = c(0,10,0),
+      prior_hypersd_sigmacontrol_val = c(0,5,0),
+      prior_hypersd_sigmaTE_val = c(0,5,0),
+      prior_hypersd_beta_val = c(0,5,0)
+    )
+  }
+
   # Setting covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){

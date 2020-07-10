@@ -46,7 +46,23 @@ treatment_effect <- function(bg, summary = FALSE,
     sigma_tau <- t(apply(rstan::extract(bg$fit, "Sigma_1")[[1]], 1, diag))
     # in model with correlation, we have Var(), not SD()
     sigma_tau <- sqrt(sigma_tau)
+  } else if(bg$model == "sslab") {
+    mean_params <- c("tau[1]", "tau[2]",
+                   "sigma_TE[1]", "sigma_TE[2]",
+                   "beta[1,1,2]", "beta[1,2,2]")
+    sigma_params <- c("hypersd_tau[1]", "hypersd_tau[2]",
+                      "hypersd_sigma_TE[1]", "hypersd_sigma_TE[2]",
+                      "hypersd_beta[1,1,2]", "hypersd_beta[1,2,2]")
+    tau <- as.matrix(bg$fit, mean_params)
+    sigma_tau <- as.matrix(bg$fit, sigma_params)
+
+  } else {
+    stop("Can't calculate treatment effect for this model.")
   }
+
+  if(length(bg$effects) > 1)
+    colnames(tau) <- colnames(sigma_tau) <- bg$effects
+
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))
     sigma_tau <- NA # by convention we set it to NA so that people don't transform

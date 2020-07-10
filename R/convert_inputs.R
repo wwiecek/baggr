@@ -46,16 +46,6 @@ convert_inputs <- function(data,
                            silent = FALSE) {
 
   # check what kind of data is required for the model & what's available
-  model_data_types <- c("rubin" = "pool_noctrl_narrow",
-                        "mutau" = "pool_wide",
-                        "logit" = "individual_binary",
-                        "full" = "individual",
-                        #for now no quantiles model from summary level data
-                        "quantiles" = "individual")
-  data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
-                       "pool_wide" = "Aggregate (control and effects)",
-                       "individual" = "Individual-level with continuous outcome",
-                       "individual_binary" = "Individual-level with binary outcome")
 
   available_data <- detect_input_type(data, group, treatment, outcome)
 
@@ -208,6 +198,28 @@ convert_inputs <- function(data,
         out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
         out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
       }
+    }
+
+    if(model == "sslab") {
+      # Generic code for dividing observations into positive, negative and == 0 components
+      cat <- ifelse(data[[outcome]] < 0, 1, ifelse(data[[outcome]] == 0, 2, 3))
+      out <- list(
+        K = max(group_numeric),
+        N = nrow(data),
+        M = 3,
+        P = 2, #covariates are taken care of later in this function
+        x = array(cbind(1, data[[treatment]]), c(nrow(data), 2)),
+        N_neg = sum(cat == 1),
+        N_pos = sum(cat == 3),
+        y_neg = -1*data[[outcome]][cat == 1],
+        site_neg = group_numeric[cat == 1],
+        y_pos = data[[outcome]][cat == 3],
+        site_pos = group_numeric[cat == 3],
+        cat = cat,
+        treatment_pos = data[[treatment]][cat == 3],
+        treatment_neg = data[[treatment]][cat == 1],
+        site = group_numeric
+      )
     }
   }
 
