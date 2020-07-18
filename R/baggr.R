@@ -241,12 +241,15 @@ baggr <- function(data, model = NULL, pooling = "partial",
     if(is.null(effect))
       effect <- "logOR"
   } else if(model == "sslab") {
-    effect <- c("Location of negative log-normal",
-                "Location of positive log-normal",
-                "Scale of negative log-normal",
-                "Scale of positive log-normal",
-                "LogOR on being negative",
-                "LogOR on being equal to 0")
+    if(is.null(effect))
+      effect <- c("Location of negative log-normal",
+                  "Location of positive log-normal",
+                  "Scale of negative log-normal",
+                  "Scale of positive log-normal",
+                  "LogOR on being negative",
+                  "LogOR on being equal to 0")
+    else if(length(effect) != 6)
+      stop("For spike & slab models, 'effect' must be of length 6")
   }
   # In all other cases we set it to mean
   if(is.null(effect))
@@ -382,12 +385,20 @@ check_if_baggr <- function(bg) {
 }
 
 remove_data_for_prior_pred <- function(data) {
-  scalars_to0 <- c("K", "N", "Nc")
+  scalars_to0 <- c("K", "N", "Nc",
+                   # specific to sslab (generalise this)
+                   "N_neg", "N_pos")
   vectors_to_remove <- c("theta_hat_k", "se_theta_k",
-                         "y", "treatment", "site")
+                         "y", "treatment", "site",
+                         # specific to sslab
+                         "treatment_neg", "treatment_pos", "cat",
+                         "site_neg", "site_pos", "y_neg", "y_pos")
   matrices_to_remove <- c("X")
+  # Specific to quantiles:
   matrices_to_rescale <- c("y_0", "y_1")
   arrays_to_rescale <- c("Sigma_y_k_0", "Sigma_y_k_1")
+  matrices_remove_rows <- c("x")
+
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
@@ -399,6 +410,10 @@ remove_data_for_prior_pred <- function(data) {
   for(nm in matrices_to_remove)
     if(!is.null(data[[nm]]))
       data[[nm]] <- array(0, dim = c(0,0))
+
+  for(nm in matrices_remove_rows)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0,ncol(data[[nm]])))
 
   # This is for quantiles model where you have K x Nq inputs
   # i.e. sites x Nquantiles
