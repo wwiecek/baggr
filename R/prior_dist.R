@@ -85,6 +85,17 @@ prior_dist_fam <- c("uniform" = 0,
                     "multinormal" = 3,
                     "lkj" = 4)
 
+#' Output a distribution as a string
+print_dist <- function(dist){
+  if(dist$dist == "multinormal")
+    return("multinormal(...)")
+
+  paste0(dist$dist, "(",
+         paste0(format(dist$values, digits = 2, trim = TRUE), collapse = ", "),
+         ifelse(dist$dist == "normal", "^2", ""), ")")
+}
+
+
 #' Add prior values to Stan input for baggr
 #'
 #' @param target list object (Stan input) to which prior will be added
@@ -96,6 +107,7 @@ prior_dist_fam <- c("uniform" = 0,
 set_prior_val <- function(target, name, prior, p = 1) {
   if(is.null(prior$dist))
     stop("Wrong prior specification")
+
   if(!(prior$dist %in% names(prior_dist_fam)))
     stop(paste("Prior family must be one of: ",
                paste(names(prior_dist_fam), collapse = ", ")))

@@ -18,3 +18,9 @@ data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
                      "pool_wide" = "Aggregate (control and effects)",
                      "individual" = "Individual-level with continuous outcome",
                      "individual_binary" = "Individual-level with binary outcome")
+available_priors <- list(
+  "real" = c("normal", "uniform", "cauchy"),
+  "positive_real" = c("normal", "uniform", "cauchy"),
+  "R^n" = c("multinormal"),
+  "cov" = c("lkj")
+)
