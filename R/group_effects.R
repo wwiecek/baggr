@@ -87,7 +87,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
       m <- abind::abind(
         rstan::extract(bg$fit, "tau_k")[[1]],
         rstan::extract(bg$fit, "sigma_TE_k")[[1]],
-        rstan::extract(bg$fit, "beta_k")[[1]][,,1:2,2])
+        rstan::extract(bg$fit, "kappa_k")[[1]][,,1:2,2])
     } else {
       stop("Can't calculate treatment effect for this model.")
     }

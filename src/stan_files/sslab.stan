@@ -7,7 +7,7 @@ data {
   // actual data inputs
   int M; // number of categories
   int N; // number of observations
-  int P; // dimentionality of beta parameter
+  int P; // dimentionality of kappa parameter
   int K; // number of sites
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int cat[N]; // category indicator
@@ -27,22 +27,22 @@ data {
   int prior_hypertau_fam;
   int prior_hypersigmacontrol_fam;
   int prior_hypersigmaTE_fam;
-  int prior_hyperbeta_fam;
+  int prior_hyperkappa_fam;
   int prior_hypersd_mu_fam;
   int prior_hypersd_tau_fam;
   int prior_hypersd_sigmacontrol_fam;
   int prior_hypersd_sigmaTE_fam;
-  int prior_hypersd_beta_fam;
+  int prior_hypersd_kappa_fam;
   vector[3] prior_hypermu_val;
   vector[3] prior_hypertau_val;
   vector[3] prior_hypersigmacontrol_val;
   vector[3] prior_hypersigmaTE_val;
-  vector[3] prior_hyperbeta_val;
+  vector[3] prior_hyperkappa_val;
   vector[3] prior_hypersd_mu_val;
   vector[3] prior_hypersd_tau_val;
   vector[3] prior_hypersd_sigmacontrol_val;
   vector[3] prior_hypersd_sigmaTE_val;
-  vector[3] prior_hypersd_beta_val;
+  vector[3] prior_hypersd_kappa_val;
 }
 
 transformed data {
@@ -62,13 +62,13 @@ parameters {
   matrix[K_pooled,2] eta_tau_k;
   matrix[K_pooled,2] eta_sigma_control_k;
   matrix[K_pooled,2] eta_sigma_TE_k;
-  matrix[M-1,P] beta[pooling_type != 0? 1: 0]; // the parent parameters minus the Mth category
-  matrix<lower=0>[M,P] hypersd_beta[pooling_type == 1? 1: 0]; // the set of M*P parent variances (not a covariance matrix)
-  matrix[M,P] beta_k_raw[K_pooled]; // the hierarchical increments
+  matrix[M-1,P] kappa[pooling_type != 0? 1: 0]; // the parent parameters minus the Mth category
+  matrix<lower=0>[M,P] hypersd_kappa[pooling_type == 1? 1: 0]; // the set of M*P parent variances (not a covariance matrix)
+  matrix[M,P] kappa_k_raw[K_pooled]; // the hierarchical increments
 }
 
 transformed parameters{
-  matrix[M,P] beta_k[K_pooled];
+  matrix[M,P] kappa_k[K_pooled];
   matrix[K_pooled,2] mu_k;
   matrix[K_pooled,2] tau_k;
   matrix[K_pooled,2] sigma_control_k;
@@ -79,7 +79,7 @@ transformed parameters{
     tau_k = eta_tau_k;
     sigma_control_k = eta_sigma_control_k;
     sigma_TE_k = eta_sigma_TE_k;
-    beta_k = beta_k_raw;
+    kappa_k = kappa_k_raw;
   }
 
   if(pooling_type == 1){
@@ -90,8 +90,8 @@ transformed parameters{
       sigma_TE_k[,i] = sigma_TE[i] + hypersd_sigma_TE[i]*eta_sigma_TE_k[,i];
     }
     for (k in 1:K_pooled)
-      //IS THIS BIT CORRECT? (mean Beta = 0 on the last row, but then group-effect is added)
-      beta_k[k] = append_row(beta[1],rep_row_vector(0, P)) + hypersd_beta[1] .* beta_k_raw[k];
+      //IS THIS BIT CORRECT? (mean kappa = 0 on the last row, but then group-effect is added)
+      kappa_k[k] = append_row(kappa[1],rep_row_vector(0, P)) + hypersd_kappa[1] .* kappa_k_raw[k];
   }
 }
 
@@ -101,7 +101,7 @@ model {
   if(pooling_type==0){
     for (m in 1:M)
       for (k in 1:K)
-        target += prior_increment_vec(prior_hyperbeta_fam, beta_k_raw[k,m]', prior_hyperbeta_val);
+        target += prior_increment_vec(prior_hyperkappa_fam, kappa_k_raw[k,m]', prior_hyperkappa_val);
 
     for (k in 1:K){ // should have the HYPERPARAMETER'S PRIORS WHEN YOU FIX PRIORS
       for (i in 1:2){
@@ -124,14 +124,14 @@ model {
       target += prior_increment_real(prior_hypersigmaTE_fam, sigma_TE[i], prior_hypersigmaTE_val);
       target += prior_increment_real(prior_hypersd_sigmaTE_fam, hypersd_sigma_TE[i], prior_hypersd_sigmaTE_val);
     } // closes the i loop
-    target += prior_increment_vec(prior_hyperbeta_fam, to_vector(beta[1]) , prior_hyperbeta_val);
-    // WW: HYPERSD_beta matrix here is converted to vector and then iid priors given on each element of this matrix
+    target += prior_increment_vec(prior_hyperkappa_fam, to_vector(kappa[1]) , prior_hyperkappa_val);
+    // WW: HYPERSD_kappa matrix here is converted to vector and then iid priors given on each element of this matrix
     //     is this ok?
-    target += prior_increment_vec(prior_hypersd_beta_fam, to_vector(hypersd_beta[1]) , prior_hypersd_beta_val);
+    target += prior_increment_vec(prior_hypersd_kappa_fam, to_vector(hypersd_kappa[1]) , prior_hypersd_kappa_val);
   } // closes the pooling = 1 case
 
   if(pooling_type ==2){
-    target += prior_increment_vec(prior_hyperbeta_fam, to_vector(beta[1]) , prior_hyperbeta_val);
+    target += prior_increment_vec(prior_hyperkappa_fam, to_vector(kappa[1]) , prior_hyperkappa_val);
     for (i in 1:2){
       target += prior_increment_real(prior_hypermu_fam, mu[i], prior_hypermu_val);
       target += prior_increment_real(prior_hypertau_fam, tau[i], prior_hypertau_val);
@@ -148,7 +148,7 @@ model {
     if(pooling_type==1){
       for (k in 1:K){
         for (m in 1:M){
-          beta_k_raw[k,m] ~ normal(0,1);
+          kappa_k_raw[k,m] ~ normal(0,1);
         }
         eta_mu_k[k] ~ normal(0,1);
         eta_tau_k[k] ~ normal(0,1);
@@ -162,10 +162,10 @@ model {
     // All pooling types need the data level but split up as follows
     if(pooling_type < 2){
       for (n in 1:N)
-        cat[n] ~ categorical_logit(beta_k[site[n]] * x[n]);
+        cat[n] ~ categorical_logit(kappa_k[site[n]] * x[n]);
     } else if(pooling_type == 2){
       for (n in 1:N)
-        cat[n] ~ categorical_logit(append_row(beta[1],rep_row_vector(0, P)) * x[n]);
+        cat[n] ~ categorical_logit(append_row(kappa[1],rep_row_vector(0, P)) * x[n]);
     }
 
     //Likelihood: 3/ log-normal components

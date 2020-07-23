@@ -49,10 +49,10 @@ treatment_effect <- function(bg, summary = FALSE,
   } else if(bg$model == "sslab") {
     mean_params <- c("tau[1]", "tau[2]",
                      "sigma_TE[1]", "sigma_TE[2]",
-                     "beta[1,1,2]", "beta[1,2,2]")
+                     "kappa[1,1,2]", "kappa[1,2,2]")
     sigma_params <- c("hypersd_tau[1]", "hypersd_tau[2]",
                       "hypersd_sigma_TE[1]", "hypersd_sigma_TE[2]",
-                      "hypersd_beta[1,1,2]", "hypersd_beta[1,2,2]")
+                      "hypersd_kappa[1,1,2]", "hypersd_kappa[1,2,2]")
     tau <- as.matrix(bg$fit, mean_params)
     sigma_tau <- as.matrix(bg$fit, sigma_params)
 
