@@ -99,7 +99,8 @@ test_that("labbe()", {
   expect_is(gg, "gg")
 
   expect_is(labbe(df_yusuf, shade_se = "rr"), "gg")
-  expect_is(labbe(df_yusuf, plot_model = TRUE, shade_se = "rr", labels = FALSE), "gg")
+  expect_is(suppressWarnings(labbe(df_yusuf, plot_model = TRUE,
+                                 shade_se = "rr", labels = FALSE), "gg"))
 
 
 })
@@ -134,7 +135,7 @@ test_that("silent_messages option", {
   expect_message(baggr(schools,
                        control = list(adapt_delta = 0.99999),
                        refresh = 0
-                       )
+  )
   )
   expect_silent(baggr(schools,
                       control = list(adapt_delta = 0.99999),

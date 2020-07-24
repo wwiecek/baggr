@@ -48,7 +48,8 @@ test_that("Error messages for wrong inputs are in place", {
   expect_error(baggr(df_na),"numeric")
   expect_error(baggr(df_quantiles, group = "state1000"), "no column")
 
-  expect_error(baggr(df_quantiles, rubbish = 41), "unknown")
+  expect_error(expect_warning(
+    baggr(df_quantiles, model = "quantiles", rubbish = 41)), "unknown")
 
   # Improper quantiles spec:
   expect_error(convert_inputs(df_quantiles, "quantiles"), "quantiles")
@@ -163,7 +164,6 @@ test_that("All basic quantile models tests", {
 
 
   # Plotting works
-  expect_error(plot(bg5_ppd), "1-dimensional treatment effects")
   expect_is(plot(bg5_n), "list")
   expect_is(plot(bg5_p, order = TRUE), "list")
   expect_is(plot(bg5_f, order = FALSE), "list")

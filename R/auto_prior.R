@@ -40,90 +40,126 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   }
   # ...then proceed as you would in Rubin model
 
-  if(model %in% c("rubin", "logit", "full")) {
-    # Hypermean
-    if(is.null(prior$hypermean)){
-      val <- 10*max(abs(data$tau))
-      prior_list <- set_prior_val(prior_list, "prior_hypermean", normal(0, val))
-      priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
+  if(model %in% c("rubin", "logit", "full", "sslab")) {
+    # For each model we need a list of what priors can be specified and
+    # what families of distributions are allowed for them
+    # (this second part should be changed to just specifying dimensionality/type)
+    priors_spec <- list(
+      "rubin" = c("hypermean" = "real", "hypersd" = "positive_real"),
+      "full"  = c("hypermean" = "real", "hypersd" = "positive_real"),
+      "logit"  = c("hypermean" = "real", "hypersd" = "positive_real",
+                   "control" = "real", "control_sd" = "positive_real"),
+      "sslab"  = c("hypermean" = "real", "hypersd" = "positive_real",
+                   "control" = "real", "control_sd" = "positive_real",
+                   "control_sigma"  = "real",
+                   "control_sigma_sd"  = "real",
+                   "sigma"  = "real",
+                   "sigma_sd"  = "real",
+                   "kappa"  = "real",
+                   "kappa_sd"  = "real")
 
-      effect_on <- ifelse(model == "logit", "on log OR ", "")
+    )
 
-      if(!silent) {
-        message(paste0("Setting prior for ", priorname, " according to max effect ",
-                       effect_on, "(",
-                       format(val/10, digits = 2), "):"))
-        message(paste0("* tau ~ Normal(0, (10*",
-                       format(val/10, digits = 2), ")^2)"))
-      }
-    } else {
-      prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
-    }
+    # "mutau" = list("hypermean"        = list(allowed = c("multinormal"),
+    #                                          default = function(data) normal(0, 10*max(abs(data$tau)))),
+    #                "hypersd"          = list(allowed = c("cauchy", "normal", "uniform"),
+    #                                          default = function(data) normal(0, 10*max(abs(data$tau)))),
+    #                "hypercor"         = list(allowed = c("lkj"),
+    #                                          default = function(data) normal(0, 10*max(abs(data$tau))))
 
-    # Hyper-SD
-    if(is.null(prior$hypersd)){
-      if(pooling == "partial") {
-        prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 10*sd(data$tau)))
-        if(nrow(data) < 5)
-          message(paste("/Dataset has only", nrow(data),
-                        "groups -- consider setting variance prior manually./"))
-        if(!silent) {
-          message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites (",
-                         format(10*sd(data$tau), digits = 2), ")"))
-          message(paste0("* sigma_tau ~ Uniform(0, ",
-                         format(10*sd(data$tau), digits = 2), ")"))
+    for(current_prior in names(priors_spec[[model]])) {
+      if(is.null(prior[[current_prior]])) {
+
+        if(model != "sslab")
+          default_prior_dist <- switch(current_prior,
+                                       "hypermean"  = normal(0, 10*max(abs(data$tau))),
+                                       "hypersd"    = uniform(0, 10*sd(data$tau)),
+                                       "control"    = normal(0, 10),
+                                       "control_sd" = normal(0, 10)
+          )
+
+        if(model == "sslab") {
+
+          sd_y_neg_ctrl <- sd(stan_data$y_neg[stan_data$treatment_neg == 0])
+          sd_y_neg_trt  <- sd(stan_data$y_neg[stan_data$treatment_neg == 1])
+          sd_y_pos_ctrl <- sd(stan_data$y_pos[stan_data$treatment_pos == 0])
+          sd_y_pos_trt  <- sd(stan_data$y_pos[stan_data$treatment_pos == 1])
+          max_hypermean <- max(c(sd_y_neg_trt, sd_y_pos_trt))
+          max_control   <- max(c(sd_y_neg_ctrl, sd_y_pos_ctrl))
+
+          default_prior_dist <- switch(current_prior,
+                                       # Prior settings from Rachael, 17/07/2020
+                                       "hypermean"        = normal(0, 10*max_hypermean),
+                                       "hypersd"          = normal(0, 2.5),
+                                       "control"          = normal(0, 10*max_control),
+                                       "control_sd"       = normal(0, 10),
+                                       "control_sigma"    = normal(0, 10),
+                                       "control_sigma_sd" = normal(0, 10),
+                                       "sigma"            = normal(0, 10),
+                                       "sigma_sd"         = normal(0, 10),
+                                       "kappa"            = normal(0, 2.5),
+                                       "kappa_sd"         = normal(0, 2.5)
+          )
         }
+
+        prior_list <- set_prior_val(prior_list,
+                                    paste0("prior_", current_prior),
+                                    default_prior_dist)
+
       } else {
-        prior_list <- set_prior_val(prior_list, "prior_hypersd", uniform(0, 0))
+        prior_list <- set_prior_val(prior_list,
+                                    paste0("prior_", current_prior),
+                                    prior[[current_prior]])
       }
-    } else {
-      if(pooling == "full")
-        message("Prior for hyper-SD set, but pooling is set to full. Ignoring SD prior.")
-      prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
+
+      # Print out priors
+      if(!silent) {
+        if(is.null(prior[[current_prior]])) {
+          if(current_prior == "hypermean") {
+            priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
+            effect_on <- switch(model,
+                                "logit" = "on log OR ",
+                                "sslab" = "in either of the tails",
+                                "")
+            message(paste0("Setting prior for ", priorname, " using 10 times the max effect ",
+                           effect_on, ":"))
+            message(paste0("* tau ~ ", print_dist(default_prior_dist)))
+          } else if(current_prior == "hypersd") {
+            if(nrow(data) < 5)
+              message(paste("/Dataset has only", nrow(data),
+                            "groups -- consider setting variance prior manually./"))
+            if(model != "sslab")
+              message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites"))
+            message(paste0("* sigma_tau ~ ", print_dist(default_prior_dist)))
+
+          } else if(current_prior == "control" && model == "logit") {
+            prop_ctrl <- data$c / (data$c + data$d)
+            if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
+              message("Baseline proportion of events is very low or very common.",
+                      "Consider manually setting prior_control.")
+            message(paste0("* log odds of event rate in untreated: mean ~ ",
+                           print_dist(default_prior_dist)))
+          } else if(current_prior == "control_sd" && model == "logit") {
+            if(stan_data$pooling_baseline != 0)
+              message(paste0("* log odds of event rate in untreated: sd ~ ",
+                             print_dist(default_prior_dist)))
+          } else {
+            message(paste0("* ", current_prior, " ~ ", print_dist(default_prior_dist)))
+          }
+        } else {
+          if(current_prior == "hypersd" && pooling != "partial")
+            message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
+          if(current_prior == "control_sd" && model == "logit" && stan_data$pooling_baseline != 0)
+            message("SD hyperparameter for control groups defined, but there is no pooling. Ignoring.")
+        }
+      }
     }
 
-    # Controls
-    if(model == "logit"){
-      # Remember that at this stage data is summary data, so we can estimate control props
-      prop_ctrl <- data$c / (data$c + data$d)
-      # val <- max(abs(qlogis(prop_ctrl)))
-      # But I wouldn't guess from data
-
-      if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
-        message("Baseline proportion of events is very low or very common. Consider manually setting the prior.")
-
-      # Means of control arms:
-      if(is.null(prior$control)){
-        prior_list <- set_prior_val(prior_list, "prior_control", normal(0, 10))
-        if(!silent)
-          message(paste0("* log odds of event rate in untreated: mean ~ normal(0, 10^2)"))
-      } else {
-        prior_list <- set_prior_val(prior_list, "prior_control", prior$control)
-      }
-
-      # SDs of control arms: (even if not used we initialise it)
-      if(is.null(prior$control_sd)){
-        prior_list <- set_prior_val(prior_list, "prior_control_sd", normal(0, 10))
-        if(!silent)
-          if(stan_data$pooling_baseline != 0)
-            message(paste0("* log odds of event rate in untreated: sd ~ normal(0, 10^2)"))
-      } else {
-        if(stan_data$pooling_baseline != 0)
-          message("SD hyperparameter for control groups defined, but there is no pooling. Ignoring.")
-        prior_list <- set_prior_val(prior_list, "prior_control_sd", prior$control_sd)
-      }
-    }
-
-    check_eligible_priors(prior_list,
-                          list("hypersd"    = c("normal", "uniform", "cauchy"),
-                               "hypermean"  = c("normal", "uniform", "cauchy")
-                          ))
-    if(model == "logit")
-      check_eligible_priors(prior_list,
-                            list("control"    = c("normal", "uniform", "cauchy"),
-                                 "control_sd" = c("normal", "uniform", "cauchy")))
+    # Check eligibility
+    check_eligible_priors(prior_list, priors_spec[[model]])
   }
 
+  # This is a special case for now.
   if(model == "mutau") {
     # Remember, first row is always mu (baseline), second row is tau (effect)
     # THIS WILL BE REVIDES TO USE control/control_sd type of specification
@@ -135,16 +171,6 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       # Behaviour for joint prior-type behaviour:
       prior_list <- set_prior_val(prior_list, "prior_hypermean",
                                   multinormal(c(0,0), c(val1, val2)*diag(2)))
-      if(!silent) {
-
-        message("Set hypermean prior according to max effect:")
-        message(paste0("* hypermean (mu, tau) ~ Normal([0,0], [",
-                       format(val1, digits = 2), ", ",
-                       format(val2, digits = 2), "]*Id_2)"))
-      }
-      if(nrow(data) < 5)
-        message(paste("/Dataset has only", nrow(data),
-                      "groups -- consider setting variance prior manually./"))
     } else {
       if(prior$hypermean$dist == "normal")
         prior$hypermean <- multinormal(rep(prior$hypermean$values[1], 2),
@@ -182,22 +208,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     # Make sure prior_list$prior_hypercor_val is an array:
     prior_list$prior_hypercor_val <- array(prior_list$prior_hypercor_val, dim=c(1))
 
-    check_eligible_priors(prior_list,
-                          list("hypersd"   = c("cauchy", "normal", "uniform"),
-                               "hypercor"  = c("lkj"),
-                               "hypermean" = c("multinormal")))
   }
-  # if(model == "full") {
-  #   # empirical variance of outcome:
-  #   vhat <- var(stan_data$y) #this may give trouble, look out!
-  #   message(paste0("SD of treatment effect is Uniform(0, ",
-  #                  format(10*sqrt(vhat), digits=2),
-  #                  "); 10*(observed outcome SD)"))
-  #   prior_list[["joint"]] <- 1
-  #   prior_list[["P"]] <- 2
-  #   prior_list[["mutau_prior_mean"]]  <- rep(0, prior_list$P)
-  #   prior_list[["mutau_prior_sigma"]] <- 100*vhat*diag(prior_list$P)
-  # }
 
   if(model == "quantiles") {
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
@@ -205,31 +216,6 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     if(!silent) {
       message("Sigma (hypervariance-covariance) = 1000*I_{Nquantiles}")
     }
-  }
-
-  if(model == "sslab") {
-    prior_list <- list(
-      prior_hypermu_fam = 1,
-      prior_hypertau_fam = 1,
-      prior_hypersigmacontrol_fam = 1,
-      prior_hypersigmaTE_fam = 1,
-      prior_hyperbeta_fam = 1,
-      prior_hypermu_val = c(0, 100,0),
-      prior_hypertau_val = c(0,100,0),
-      prior_hypersigmacontrol_val = c(0,5,0),
-      prior_hypersigmaTE_val = c(0,5,0),
-      prior_hyperbeta_val = c(0,5,0),
-      prior_hypersd_mu_fam = 1,
-      prior_hypersd_tau_fam = 1,
-      prior_hypersd_sigmacontrol_fam = 1,
-      prior_hypersd_sigmaTE_fam = 1,
-      prior_hypersd_beta_fam = 1,
-      prior_hypersd_mu_val = c(0,10,0),
-      prior_hypersd_tau_val = c(0,10,0),
-      prior_hypersd_sigmacontrol_val = c(0,5,0),
-      prior_hypersd_sigmaTE_val = c(0,5,0),
-      prior_hypersd_beta_val = c(0,5,0)
-    )
   }
 
   # Setting covariates prior
@@ -249,14 +235,16 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   return(prior_list)
 }
 
-check_eligible_priors <- function(prior, eligible) {
-  for(i in seq_along(eligible)){
-    if(!(paste0("prior_", names(eligible)[i], "_fam") %in% names(prior)))
-      stop(paste("Prior needed for", names(eligible)[i]))
 
-    allowed_dist <- prior_dist_fam[eligible[[i]]]
 
-    if(!any(prior[[paste0("prior_", names(eligible)[i], "_fam")]] == allowed_dist))
-      stop("Prior for ", names(eligible)[i], " must be one of ", eligible[i])
+check_eligible_priors <- function(prior, spec) {
+  for(nm in names(spec)){
+    if(!(paste0("prior_", nm, "_fam") %in% names(prior)))
+      stop(paste("Prior needed for", nm))
+
+    allowed_dist <- available_priors[[spec[[nm]]]]
+
+    if(!any(prior_dist_fam[allowed_dist] == prior[[paste0("prior_", nm, "_fam")]]))
+      stop("Prior for ", nm, " must be one of ", allowed_dist)
   }
 }

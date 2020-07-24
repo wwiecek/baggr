@@ -23,26 +23,29 @@ data {
   real y_pos[N_pos]; // the positive tail
 
   // now the prior inputs
-  int prior_hypermu_fam;
-  int prior_hypertau_fam;
-  int prior_hypersigmacontrol_fam;
-  int prior_hypersigmaTE_fam;
-  int prior_hyperkappa_fam;
-  int prior_hypersd_mu_fam;
-  int prior_hypersd_tau_fam;
-  int prior_hypersd_sigmacontrol_fam;
-  int prior_hypersd_sigmaTE_fam;
-  int prior_hypersd_kappa_fam;
-  vector[3] prior_hypermu_val;
-  vector[3] prior_hypertau_val;
-  vector[3] prior_hypersigmacontrol_val;
-  vector[3] prior_hypersigmaTE_val;
-  vector[3] prior_hyperkappa_val;
-  vector[3] prior_hypersd_mu_val;
-  vector[3] prior_hypersd_tau_val;
-  vector[3] prior_hypersd_sigmacontrol_val;
-  vector[3] prior_hypersd_sigmaTE_val;
-  vector[3] prior_hypersd_kappa_val;
+  int prior_control_fam;
+  int prior_hypermean_fam;
+  int prior_control_sigma_fam;
+  int prior_sigma_fam;
+
+  int prior_control_sd_fam;
+  int prior_hypersd_fam;
+  int prior_control_sigma_sd_fam;
+  int prior_sigma_sd_fam;
+
+  int prior_kappa_fam;
+  int prior_kappa_sd_fam;
+
+  vector[3] prior_control_val;
+  vector[3] prior_hypermean_val;
+  vector[3] prior_control_sigma_val;
+  vector[3] prior_sigma_val;
+  vector[3] prior_kappa_val;
+  vector[3] prior_control_sd_val;
+  vector[3] prior_hypersd_val;
+  vector[3] prior_control_sigma_sd_val;
+  vector[3] prior_sigma_sd_val;
+  vector[3] prior_kappa_sd_val;
 }
 
 transformed data {
@@ -101,42 +104,42 @@ model {
   if(pooling_type==0){
     for (m in 1:M)
       for (k in 1:K)
-        target += prior_increment_vec(prior_hyperkappa_fam, kappa_k_raw[k,m]', prior_hyperkappa_val);
+        target += prior_increment_vec(prior_kappa_fam, kappa_k_raw[k,m]', prior_kappa_val);
 
     for (k in 1:K){ // should have the HYPERPARAMETER'S PRIORS WHEN YOU FIX PRIORS
       for (i in 1:2){
-        target += prior_increment_real(prior_hypermu_fam, eta_mu_k[k,i], prior_hypermu_val);
-        target += prior_increment_real(prior_hypertau_fam, eta_tau_k[k,i], prior_hypertau_val);
-        target += prior_increment_real(prior_hypersigmacontrol_fam, eta_sigma_control_k[k,i], prior_hypersigmacontrol_val);
-        target += prior_increment_real(prior_hypersigmaTE_fam, eta_sigma_TE_k[k,i], prior_hypersigmaTE_val);
+        target += prior_increment_real(prior_control_fam, eta_mu_k[k,i], prior_control_val);
+        target += prior_increment_real(prior_hypermean_fam, eta_tau_k[k,i], prior_hypermean_val);
+        target += prior_increment_real(prior_control_sigma_fam, eta_sigma_control_k[k,i], prior_control_sigma_val);
+        target += prior_increment_real(prior_sigma_fam, eta_sigma_TE_k[k,i], prior_sigma_val);
       }
     }
   } // closes the pooling = 0 case
 
   if(pooling_type == 1){
     for (i in 1:2){
-      target += prior_increment_real(prior_hypermu_fam, mu[i], prior_hypermu_val);
-      target += prior_increment_real(prior_hypertau_fam, tau[i], prior_hypertau_val);
-      target += prior_increment_real(prior_hypersd_mu_fam, hypersd_mu[i], prior_hypersd_mu_val);
-      target += prior_increment_real(prior_hypersd_tau_fam, hypersd_tau[i], prior_hypersd_tau_val);
-      target += prior_increment_real(prior_hypersigmacontrol_fam, sigma_control[i], prior_hypersigmacontrol_val);
-      target += prior_increment_real(prior_hypersd_sigmacontrol_fam, hypersd_sigma_control[i], prior_hypersd_sigmacontrol_val);
-      target += prior_increment_real(prior_hypersigmaTE_fam, sigma_TE[i], prior_hypersigmaTE_val);
-      target += prior_increment_real(prior_hypersd_sigmaTE_fam, hypersd_sigma_TE[i], prior_hypersd_sigmaTE_val);
+      target += prior_increment_real(prior_control_fam, mu[i], prior_control_val);
+      target += prior_increment_real(prior_hypermean_fam, tau[i], prior_hypermean_val);
+      target += prior_increment_real(prior_control_sd_fam, hypersd_mu[i], prior_control_sd_val);
+      target += prior_increment_real(prior_hypersd_fam, hypersd_tau[i], prior_hypersd_val);
+      target += prior_increment_real(prior_control_sigma_fam, sigma_control[i], prior_control_sigma_val);
+      target += prior_increment_real(prior_control_sigma_sd_fam, hypersd_sigma_control[i], prior_control_sigma_sd_val);
+      target += prior_increment_real(prior_sigma_fam, sigma_TE[i], prior_sigma_val);
+      target += prior_increment_real(prior_sigma_sd_fam, hypersd_sigma_TE[i], prior_sigma_sd_val);
     } // closes the i loop
-    target += prior_increment_vec(prior_hyperkappa_fam, to_vector(kappa[1]) , prior_hyperkappa_val);
+    target += prior_increment_vec(prior_kappa_fam, to_vector(kappa[1]) , prior_kappa_val);
     // WW: HYPERSD_kappa matrix here is converted to vector and then iid priors given on each element of this matrix
     //     is this ok?
-    target += prior_increment_vec(prior_hypersd_kappa_fam, to_vector(hypersd_kappa[1]) , prior_hypersd_kappa_val);
+    target += prior_increment_vec(prior_kappa_sd_fam, to_vector(hypersd_kappa[1]) , prior_kappa_sd_val);
   } // closes the pooling = 1 case
 
   if(pooling_type ==2){
-    target += prior_increment_vec(prior_hyperkappa_fam, to_vector(kappa[1]) , prior_hyperkappa_val);
+    target += prior_increment_vec(prior_kappa_fam, to_vector(kappa[1]) , prior_kappa_val);
     for (i in 1:2){
-      target += prior_increment_real(prior_hypermu_fam, mu[i], prior_hypermu_val);
-      target += prior_increment_real(prior_hypertau_fam, tau[i], prior_hypertau_val);
-      target += prior_increment_real(prior_hypersigmacontrol_fam, sigma_control[i], prior_hypersigmacontrol_val);
-      target += prior_increment_real(prior_hypersigmaTE_fam, sigma_TE[i], prior_hypersigmaTE_val);
+      target += prior_increment_real(prior_control_fam, mu[i], prior_control_val);
+      target += prior_increment_real(prior_hypermean_fam, tau[i], prior_hypermean_val);
+      target += prior_increment_real(prior_control_sigma_fam, sigma_control[i], prior_control_sigma_val);
+      target += prior_increment_real(prior_sigma_fam, sigma_TE[i], prior_sigma_val);
     } // closes the for loop indexed by i
   } // closes the pooling = 2 case
 

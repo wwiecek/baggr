@@ -215,7 +215,7 @@ effect_plot <- function(..., transform=NULL) {
   if(all(unlist(lapply(l, attr, "ppd"))))
     caption <- list(
       title = "Prior distribution for possible treatment effect",
-      subtitle = "No data, only sampling from prior"
+      subtitle = "No data used, only sampling from priors"
     )
   if(is.null(names(l))){
     if(length(l) > 1)
@@ -261,7 +261,7 @@ effect_plot <- function(..., transform=NULL) {
     geom_density(alpha = .25) +
     ggtitle(label = caption$title,
             subtitle = caption$subtitle) +
-    xlab(effects) +
+    {if(n_parameters == 1) xlab(effects)} +
     {if(single_model_flag) theme(legend.position = "none")} +
     {if(n_parameters > 1) facet_wrap(~variable, ncol = 3, scales = "free")}
 }
