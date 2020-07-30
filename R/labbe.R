@@ -57,7 +57,7 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
     # p_trt_or <- te_or[["mean"]]
   }
 
-  lim_min <- min(c(ggdata$risk_trt, ggdata$risk_control))
+  lim_min <- min(c(ggdata$risk_trt*0.9, ggdata$risk_control*0.9))
   lim_max <- max(c(ggdata$risk_trt*1.1, ggdata$risk_control*1.1))
   lim_max <- min(c(lim_max, 1))
 

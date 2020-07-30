@@ -27,8 +27,10 @@ plotting or printing functions)}
 returned group effect?}
 }
 \value{
-Either a matrix with MCMC samples (if \code{summary = FALSE})
+Either an array with MCMC samples (if \code{summary = FALSE})
 or a summary of these samples (if \code{summary = TRUE}).
+For arrays the three dimensions are: N samples, N groups and N effects
+(equal to 1 for the basic models).
 }
 \description{
 Given a baggr object, returns the raw MCMC draws of the posterior for

@@ -176,13 +176,15 @@ baggr_compare <- function(...,
       est
     })))
 
-  bgc <- structure(list(
-    models = models,
-    mean_trt = mean_trt_effects,
-    sd_trt = sd_trt_effects,
-    compare = compare,
-    effect_names = effect_names,
-    transform = deparse(substitute(transform))),
+  bgc <- structure(
+    list(
+      models = models,
+      mean_trt = mean_trt_effects,
+      sd_trt = sd_trt_effects,
+      compare = compare,
+      effect_names = effect_names,
+      transform = transform
+    ),
     class = "baggr_compare")
 
   if(plot)
@@ -202,8 +204,8 @@ print.baggr_compare <- function(x, digits, ...){
   cat("\n")
   cat("SD for treatment effects:\n")
   print(signif(x$sd_trt, digits = digits))
-  cat("\n")
-  cat(paste0("Transform: ", x$transform))
+  if(!is.null(x$transform))
+    cat(paste0("\nTransform: ", deparse(x$transform)))
 }
 
 #' Plot method for baggr_compare models
@@ -238,6 +240,9 @@ plot.baggr_compare <- function(x,
                                order = F,
                                ...) {
 
+  if(is.null(transform))
+    transform <- x$transform
+
   models <- x$models
   compare <- x$compare
   effect_names <- x$effect_names
@@ -267,7 +272,7 @@ plot.baggr_compare <- function(x,
                                              transform = transform)[,,i])
             m$group <- rownames(m)
             if(hyper) {
-              hyper_treat <- treatment_effect(x)[[i]]
+              hyper_treat <- treatment_effect(x, transform = transform)[[i]]
               hyper_effects <- data.frame(
                 lci = quantile(hyper_treat, (1 - interval)/2),
                 median = quantile(hyper_treat, 0.5),

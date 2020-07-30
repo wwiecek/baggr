@@ -12,12 +12,11 @@ effect_draw(x, n, transform = NULL)
 \item{n}{How many values to draw? The default is as long as the number of samples
 in the \code{baggr} object (see \emph{Details}).}
 
-\item{transform}{a transformation to apply to the result, should be an R function;
-(this is commonly used when calling \code{group_effects} from other
-plotting or printing functions)}
+\item{transform}{a transformation (an R function) to apply to the result of a draw.}
 }
 \value{
-A vector of possible values of the treatment effect.
+A vector (with \code{n} values) for models with one treatment effect parameter,
+a matrix (\code{n} rows and same number of columns as number of parameters) otherwise.
 }
 \description{
 This function takes the samples of hyperparameters of a \link{baggr} model

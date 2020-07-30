@@ -57,7 +57,6 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                    "sigma_sd"  = "real",
                    "kappa"  = "real",
                    "kappa_sd"  = "real")
-
     )
 
     # "mutau" = list("hypermean"        = list(allowed = c("multinormal"),
@@ -154,7 +153,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
             message(paste0("* ", current_prior, " ~ ",
                            print_dist(default_prior_dist)))
           else
-            message(paste0("* ", current_prior, "[", special_name, "] ~ ",
+            message(paste0("* ", current_prior, " [", special_name, "] ~ ",
                            print_dist(default_prior_dist)))
 
         } else {

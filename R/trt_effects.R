@@ -86,9 +86,7 @@ treatment_effect <- function(bg, summary = FALSE,
 #' This can be used for both prior and posterior draws, depending on [baggr] model.
 #'
 #' @param x A `baggr` class object.
-#' @param transform a transformation to apply to the result, should be an R function;
-#'                  (this is commonly used when calling `group_effects` from other
-#'                  plotting or printing functions)
+#' @param transform a transformation (an R function) to apply to the result of a draw.
 #' @param n How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
 #'
