@@ -114,43 +114,58 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
       # Print out priors
       if(!silent) {
+
         if(is.null(prior[[current_prior]])) {
+
+          # 1) Go through various automated prompts
           if(current_prior == "hypermean") {
             priorname <- ifelse(pooling == "none", "mean in each group", "hypermean")
             effect_on <- switch(model,
                                 "logit" = "on log OR ",
                                 "sslab" = "in either of the tails",
                                 "")
-            message(paste0("Setting prior for ", priorname, " using 10 times the max effect ",
+            message(paste0("Setting prior for ", priorname,
+                           " using 10 times the max effect ",
                            effect_on, ":"))
-            message(paste0("* tau ~ ", print_dist(default_prior_dist)))
+            if(model != "sslab")
+              special_name <- "tau"
           } else if(current_prior == "hypersd") {
             if(nrow(data) < 5)
               message(paste("/Dataset has only", nrow(data),
                             "groups -- consider setting variance prior manually./"))
-            if(model != "sslab")
-              message(paste0("Setting hyper-SD prior using 10 times the naive SD across sites"))
-            message(paste0("* sigma_tau ~ ", print_dist(default_prior_dist)))
-
+            if(model != "sslab"){
+              message("Setting hyper-SD prior using 10 times the naive SD across sites")
+              special_name <- "sigma_tau"
+            }
           } else if(current_prior == "control" && model == "logit") {
             prop_ctrl <- data$c / (data$c + data$d)
             if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
               message("Baseline proportion of events is very low or very common.",
                       "Consider manually setting prior_control.")
-            message(paste0("* log odds of event rate in untreated: mean ~ ",
-                           print_dist(default_prior_dist)))
+            special_name <- "log odds of event rate in untreated: mean"
           } else if(current_prior == "control_sd" && model == "logit") {
             if(stan_data$pooling_baseline != 0)
-              message(paste0("* log odds of event rate in untreated: sd ~ ",
-                             print_dist(default_prior_dist)))
-          } else {
-            message(paste0("* ", current_prior, " ~ ", print_dist(default_prior_dist)))
+              special_name <- "log odds of event rate in untreated: sd"
           }
+
+          # 2) Print the prior:
+
+          if(special_name == "")
+            message(paste0("* ", current_prior, " ~ ",
+                           print_dist(default_prior_dist)))
+          else
+            message(paste0("* ", current_prior, "[", special_name, "] ~ ",
+                           print_dist(default_prior_dist)))
+
         } else {
-          if(current_prior == "hypersd" && pooling != "partial")
+          if(current_prior == "hypersd" &&
+             pooling != "partial")
             message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
-          if(current_prior == "control_sd" && model == "logit" && stan_data$pooling_baseline != 0)
-            message("SD hyperparameter for control groups defined, but there is no pooling. Ignoring.")
+          if(current_prior == "control_sd" &&
+             model == "logit" &&
+             stan_data$pooling_baseline != 0)
+            message("SD hyperparameter for control groups defined,",
+                    "but there is no pooling. Ignoring.")
         }
       }
     }
