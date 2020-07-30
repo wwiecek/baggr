@@ -213,9 +213,13 @@ print.baggr_compare <- function(x, digits, ...){
 #' that were passed for comparison purposes to baggr compare or
 #' run automatically by baggr_compare
 #' @param x baggr_compare model to plot
-#' @param arrange If `"single"` (default), generate a single comparison plot;
-#'                if `"grid"`, display multiple plots side-by-side.
-#' @param style What kind of plot to display (if `arrange = "grid"`),
+#' @param grid_models If `FALSE` (default), generate a single comparison plot;
+#'                if `TRUE`, display each model (using individual [baggr_plot]'s)
+#'                side-by-side.
+#' @param grid_parameters if `TRUE`, uses `ggplot`-style facetting when plotting models
+#'                        with many parameters (especially `"quantiles"`, `"sslab"`);
+#'                        if `FALSE`, returns separate plot for each parameter
+#' @param style What kind of plot to display (if `grid_models = TRUE`),
 #'              passed to the `style` argument in [baggr_plot].
 #' @param interval probability level used for display of posterior interval
 #' @param hyper Whether to plot pooled treatment effect
@@ -233,12 +237,18 @@ print.baggr_compare <- function(x, digits, ...){
 #' @export
 plot.baggr_compare <- function(x,
                                style   = "areas",
-                               arrange = "single",
+                               grid_models = FALSE,
+                               grid_parameters = TRUE,
                                interval = 0.95,
                                hyper = TRUE,
                                transform = NULL,
                                order = F,
                                ...) {
+
+  # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
+  # https://stackoverflow.com/questions/9439256/
+  #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+  lci <- uci <- model <- group <- NULL
 
   if(is.null(transform))
     transform <- x$transform
@@ -247,7 +257,9 @@ plot.baggr_compare <- function(x,
   compare <- x$compare
   effect_names <- x$effect_names
 
-  if(arrange == "grid") {
+  if(grid_models) {
+    if(length(effect_names) > 1)
+      stop("Cannot plot models with more than 1 effect in a grid")
     plots <- lapply(models, baggr_plot,
                     style = style,
                     order = FALSE,
@@ -256,126 +268,122 @@ plot.baggr_compare <- function(x,
     # if each plots element contains multiple plots (like with quantiles):
     if(class(plots[[1]])[1] == "list")
       plots <- unlist(plots, recursive = FALSE)
-    gridExtra::grid.arrange(grobs = plots, ncol = grid_width)
+
+    for(i in 1:length(models))
+      plots[[i]] <- plots[[i]] + ggplot2::ggtitle(names(models)[i])
+
+    return(gridExtra::grid.arrange(grobs = plots, ncol = grid_width))
   }
-  if(arrange == "single") {
-    if(compare == "groups") {
-      plots <- lapply(as.list(1:(length(effect_names))), function(i) {
-        # Note: pipe operators are dplyr not used here for compatibility
-        ll <- lapply(models, function(x) {
-          # will need to be modified for quantiles models case:
-          if(x$pooling != "none"){
 
+  # This is not-grid, baggr_compare specific code:
 
-            m <- as.data.frame(group_effects(x, interval = interval,
-                                             summary = TRUE,
-                                             transform = transform)[,,i])
-            m$group <- rownames(m)
-            if(hyper) {
-              hyper_treat <- treatment_effect(x, transform = transform)[[i]]
-              hyper_effects <- data.frame(
-                lci = quantile(hyper_treat, (1 - interval)/2),
-                median = quantile(hyper_treat, 0.5),
-                uci = quantile(hyper_treat, 1 - (1 - interval)/2),
-                mean = mean(hyper_treat),
-                sd = sd(hyper_treat),
-                group = "Pooled Estimate"
-              )
-              m <- rbind(hyper_effects, m)
-            }
+  if(compare == "groups") {
 
-            m
-          } else {
-            m <- as.data.frame(group_effects(x,
-                                             interval = interval,
-                                             summary = TRUE,
-                                             transform = transform)[,,i])
-            m$group <- rownames(m)
-            m
-          }
+    # Create input data frames for ggplots
+    plot_dfs <- lapply(as.list(1:(length(effect_names))), function(i) {
 
-        })
-        df_groups <- data.frame()
-        for(j in 1:length(ll))
-          df_groups <- rbind(df_groups,
-                             data.frame(model = names(ll)[j], ll[[j]]))
+      # Note: pipe operators are dplyr not used here to reduce dependencies
 
-        if(order == T) {
+      effects_list <- lapply(models, function(cmodel) {
+        m <- as.data.frame(group_effects(cmodel,
+                                         interval = interval,
+                                         summary = TRUE,
+                                         transform = transform)[,,i])
+        m$group <- rownames(m)
 
-          ord <- get_order(df_groups, hyper)
-
-        } else {
-          if(hyper) {
-
-            ord <- c(
-              setdiff(sort(unique(df_groups$group)),
-                      "Pooled Estimate"),
-              "Pooled Estimate"
-            )
-          } else {
-            ord <- sort(unique(df_groups$group))
-          }
+        if(cmodel$pooling != "none" && hyper) {
+          if(length(effect_names) == 1)
+            hyper_treat <- treatment_effect(cmodel, transform = transform)$tau
+          if(length(effect_names) > 1)
+            hyper_treat <- treatment_effect(cmodel, transform = transform)$tau[,i]
+          hyper_effects <- data.frame(
+            lci = quantile(hyper_treat, (1 - interval)/2),
+            median = quantile(hyper_treat, 0.5),
+            uci = quantile(hyper_treat, 1 - (1 - interval)/2),
+            mean = mean(hyper_treat),
+            sd = sd(hyper_treat),
+            group = "Pooled Estimate"
+          )
+          m <- rbind(hyper_effects, m)
         }
+        return(m)
+      })
 
-        df_groups$group <- factor(df_groups$group,
-                                  levels = rev(ord) # because of flipped coordinates
+      df_groups <- data.frame()
+      for(j in 1:length(effects_list))
+        df_groups <- rbind(
+          df_groups,
+          data.frame(model = names(effects_list)[j], effects_list[[j]])
         )
 
-        # df <- rbind(df_groups, df_trt)
-        df <- df_groups
+      # Find the ordering for groups
+      if(order == T) {
+        ord <- get_order(df_groups, hyper)
+      } else if(hyper) {
+        ord <- c(setdiff(sort(unique(df_groups$group)),
+                         "Pooled Estimate"),
+                 "Pooled Estimate")
+      } else {
+        ord <- sort(unique(df_groups$group))
+      }
 
-        # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
-        # https://stackoverflow.com/questions/9439256/
-        #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
-        lci <- uci <- model <- group <- NULL
+      # Rearrange ordering of groups/hypereffects
+      df_groups$group <- factor(df_groups$group,
+                                levels = rev(ord) # because of flipped coordinates
+      )
 
-        comparison_plot <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
-                                                            ymin = lci, ymax = uci,
-                                                            group = interaction(model),
-                                                            color = model)) +
-          # geom_jitter(size = 2) +
-          ggplot2::geom_errorbar(size = 1.2, width = 0,
-                                 position = ggplot2::position_dodge(width=0.5)) +
-          ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
-                              position = ggplot2::position_dodge(width=0.5),
-                              pch = 21) +
-          ggplot2::coord_flip() +
-          ggplot2::labs(x = "", y = "Treatment effect (95% interval)",
-                        title = paste0(
-                          "Effect of treatment on ",
-                          effect_names[i])
-          ) +
-          baggr_theme_get() +
-          ggplot2::theme(legend.position="top")
-        return(comparison_plot)
-      })
-    } else if(compare == "effects"){
-      plots <- do.call(effect_plot, models) +
-        ggplot2::labs(fill = NULL)
+      df_groups
+    })
+
+    names(plot_dfs) <- effect_names
+
+    single_comp_plot <- function(df, title="", legend = "top", grid = F) {
+      ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
+                                       ymin = lci, ymax = uci,
+                                       group = interaction(model),
+                                       color = model)) +
+        {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
+        ggplot2::geom_errorbar(size = 1.2, width = 0,
+                               position = ggplot2::position_dodge(width = 0.5)
+                               ) +
+        ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
+                            position = ggplot2::position_dodge(width=0.5),
+                            pch = 21) +
+        ggplot2::coord_flip() +
+        ggplot2::labs(x = "",
+                      y = paste0("Treatment effect (", round(100*interval), "% interval)")) +
+        {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
+        baggr_theme_get() +
+        ggplot2::theme(legend.position=legend)
+    }
+
+    # This is an unpleasant way of doing map2...
+    # Sorry to everyone.
+    if(grid_parameters){
+      big_df <- data.frame()
+      for(i in 1:length(plot_dfs))
+        big_df <- rbind(big_df,
+                        data.frame(parameter = effect_names[i], plot_dfs[[i]]))
+
+      plots <- single_comp_plot(big_df, "", "none", grid = T)
     } else {
-      stop("Argument compare = must be 'effects' or 'groups'.")
+      plots <- lapply(as.list(1:(length(effect_names))), function(i) {
+        single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F)
+      })
     }
+  } else if(compare == "effects"){
+    plots <- do.call(effect_plot, models) +
+      ggplot2::labs(fill = NULL)
+
+  } else {
+    stop("Argument compare = must be 'effects' or 'groups'.")
   }
 
-  if("ggplot" %in% class(plots)){
-    return(plots)
-  } else {
-    structure(plots, class = "plot_list")
-  }
+  # return the plots
+  plots
 }
 
-#' Print list of baggr plots
-#' @param x list of plots to print
-#' @details prints plots in a loop, internal use only
-print.plot_list <- function(x) {
-  if(length(x) == 1) {
-    print(x[[1]])
-  } else {
-    for(i in 1:length(x)) {
-      print(x[[i]])
-    }
-  }
-}
+
 
 # Separate out ordering so we can test directly
 # @param df_groups data.frame of group effects used in [plot.baggr_compare]
@@ -390,7 +398,8 @@ get_order <- function(df_groups, hyper) {
   )
   max_spread_model <- names(model_spread[which.max(model_spread)])
   rank_data <- df_groups[which(df_groups$model == max_spread_model),]
-  lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group), "Pooled Estimate")
+  lvls <- setdiff(as.character(rank_data[order(rank_data$median),]$group),
+                  "Pooled Estimate")
   if(hyper)
     ord <- c(rev(lvls), "Pooled Estimate")
   else

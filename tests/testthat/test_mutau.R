@@ -158,11 +158,8 @@ test_that("baggr comparison method works for mu-tau models", {
   expect_output(print(comp_mt))
   expect_gt(length(comp_mt), 0)
 
-  expect_is(plot(comp_mt), "plot_list")
-  expect_is(plot(comp_mt)[[1]], "ggplot")
-
-  expect_is(plot(comp_mt, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_mt, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_mt), "gg")
+  expect_is(plot(comp_mt, grid_models = TRUE), "gtable")
 
 })
 

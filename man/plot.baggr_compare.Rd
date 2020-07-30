@@ -7,7 +7,8 @@
 \method{plot}{baggr_compare}(
   x,
   style = "areas",
-  arrange = "single",
+  grid_models = FALSE,
+  grid_parameters = TRUE,
   interval = 0.95,
   hyper = TRUE,
   transform = NULL,
@@ -18,11 +19,16 @@
 \arguments{
 \item{x}{baggr_compare model to plot}
 
-\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
+\item{style}{What kind of plot to display (if \code{grid_models = TRUE}),
 passed to the \code{style} argument in \link{baggr_plot}.}
 
-\item{arrange}{If \code{"single"} (default), generate a single comparison plot;
-if \code{"grid"}, display multiple plots side-by-side.}
+\item{grid_models}{If \code{FALSE} (default), generate a single comparison plot;
+if \code{TRUE}, display each model (using individual \link{baggr_plot}'s)
+side-by-side.}
+
+\item{grid_parameters}{if \code{TRUE}, uses \code{ggplot}-style facetting when plotting models
+with many parameters (especially \code{"quantiles"}, \code{"sslab"});
+if \code{FALSE}, returns separate plot for each parameter}
 
 \item{interval}{probability level used for display of posterior interval}
 

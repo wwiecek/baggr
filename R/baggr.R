@@ -99,6 +99,7 @@
 #'   which works with individual-level data
 #' * for __continuous variable quantiles__: `"quantiles"`` model
 #'   (see Meager, 2019 in references)
+#' * for _mixture data_: `"sslab"` (experimental)
 #' * for __binary data__: `"logit"` model can be used on individual-level data;
 #'   you can also analyse continuous statistics such as
 #'   log odds ratios and logs risk ratios using the models listed above;
@@ -134,7 +135,8 @@
 #' prior for the input data if you do not pass a `prior` argument.
 #' To set the priors yourself, use `prior_` arguments. For specifying many priors at once
 #' (or re-using between models), a single `prior = list(...)` argument can be used instead.
-#' Appropriate examples are given in `vignette("baggr")`.
+#' Meaning of the prior parameters may slightly change from model to model.
+#' Details and examples are given in `vignette("baggr")`.
 #' Setting `ppd=TRUE` can be used to obtain prior predictive distributions,
 #' which is useful for understanding the prior assumptions,
 #' especially useful in conjunction with [effect_plot]. You can also [baggr_compare]

@@ -146,6 +146,7 @@ version which takes into account means of control groups, \code{"full"},
 which works with individual-level data
 \item for \strong{continuous variable quantiles}: `"quantiles"`` model
 (see Meager, 2019 in references)
+\item for \emph{mixture data}: \code{"sslab"} (experimental)
 \item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
 you can also analyse continuous statistics such as
 log odds ratios and logs risk ratios using the models listed above;
@@ -181,7 +182,8 @@ as the package will try propose an appropriate
 prior for the input data if you do not pass a \code{prior} argument.
 To set the priors yourself, use \code{prior_} arguments. For specifying many priors at once
 (or re-using between models), a single \code{prior = list(...)} argument can be used instead.
-Appropriate examples are given in \code{vignette("baggr")}.
+Meaning of the prior parameters may slightly change from model to model.
+Details and examples are given in \code{vignette("baggr")}.
 Setting \code{ppd=TRUE} can be used to obtain prior predictive distributions,
 which is useful for understanding the prior assumptions,
 especially useful in conjunction with \link{effect_plot}. You can also \link{baggr_compare}

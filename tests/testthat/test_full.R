@@ -79,21 +79,16 @@ test_that("baggr comparison method works for Full model", {
   expect_gt(length(comp_flpr), 0)
   expect_gt(length(comp_flmdls), 0)
 
-  expect_is(plot(comp_flpl), "plot_list")
-  expect_is(plot(comp_flpl)[[1]], "ggplot")
+  expect_is(plot(comp_flpl), "gg")
 
   expect_is(plot(comp_flpr), "ggplot")
 
-  expect_is(plot(comp_flmdls), "plot_list")
-  expect_is(plot(comp_flmdls)[[1]], "ggplot")
+  expect_is(plot(comp_flmdls), "gg")
 
-  expect_is(plot(comp_flpl, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_flpl, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_flpl, grid_models = TRUE), "gtable")
 
-  expect_is(plot(comp_flpr, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_flpr, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_flpr, grid_models = TRUE), "gtable")
 
-  expect_is(plot(comp_flmdls, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_flmdls, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_flmdls, grid_models = TRUE), "gtable")
 })
 

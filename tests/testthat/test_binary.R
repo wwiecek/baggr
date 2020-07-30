@@ -193,11 +193,7 @@ test_that("baggr_compare basic cases work with logit models", {
   # try to make nonexistant comparison:
   expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"))
   # Compare existing models:
-  bgcomp2 <- plot(baggr_compare(bg5_p, bg5_n, bg5_f), arrange = "single")
-  # bgcomp3 <- baggr_compare(bg5_p, bg5_n, bg5_f, arrange = "grid")
-  expect_is(bgcomp2, "plot_list")
-  expect_is(bgcomp2[[1]], "gg")
-
+  expect_is(plot(baggr_compare(bg5_p, bg5_n, bg5_f)), "gg")
 })
 
 test_that("loocv", {
@@ -238,22 +234,12 @@ test_that("baggr comparison method works for Full model", {
   expect_gt(length(comp_pr), 0)
   expect_gt(length(comp_existmodels), 0)
 
-  expect_is(plot(comp_pl), "plot_list")
-  expect_is(plot(comp_pl)[[1]], "ggplot")
-
-  expect_is(plot(comp_pl, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_pl, arrange = "grid")[[1]], "ggplot")
-
-  expect_is(plot(comp_pr), "ggplot")
-
-  expect_is(plot(comp_pr, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_pr, arrange = "grid")[[1]], "ggplot")
-
-  expect_is(plot(comp_existmodels), "plot_list")
-  expect_is(plot(comp_existmodels)[[1]], "ggplot")
-
-  expect_is(plot(comp_existmodels, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_existmodels, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_pl), "gg")
+  expect_is(plot(comp_pl, grid_models = TRUE), "gtable")
+  expect_is(plot(comp_pr), "gg")
+  expect_is(plot(comp_pr, grid_models = TRUE), "gtable")
+  expect_is(plot(comp_existmodels), "gg")
+  expect_is(plot(comp_existmodels, grid_models = TRUE), "gtable")
 
 })
 

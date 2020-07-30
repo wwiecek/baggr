@@ -18,7 +18,7 @@ pooling model (which you may know as
 \href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode}{random effects models})
 with weakly informative priors by calling \href{https://mc-stan.org/}{Stan} to carry
 out Bayesian inference. Modelling of variances or quantiles, standardisation and
-transformation of data is also possible.
+transformation of data are also possible.
 }
 \section{Getting help}{
 

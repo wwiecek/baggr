@@ -113,6 +113,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
       # Print out priors
       if(!silent) {
+        special_name <- ""
 
         if(is.null(prior[[current_prior]])) {
 
