@@ -244,10 +244,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
       effect <- "logOR"
   } else if(model == "sslab") {
     if(is.null(effect))
-      effect <- c("Location of negative log-normal",
-                  "Location of positive log-normal",
-                  "Scale of negative log-normal",
-                  "Scale of positive log-normal",
+      effect <- c("Location of negative tail",
+                  "Location of positive tail",
+                  "Scale of negative tail",
+                  "Scale of positive tail",
                   "LogOR on being negative",
                   "LogOR on being equal to 0")
     else if(length(effect) != 6)

@@ -51,12 +51,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                    "control" = "real", "control_sd" = "positive_real"),
       "sslab"  = c("hypermean" = "real", "hypersd" = "positive_real",
                    "control" = "real", "control_sd" = "positive_real",
-                   "control_sigma"  = "real",
-                   "control_sigma_sd"  = "real",
-                   "sigma"  = "real",
-                   "sigma_sd"  = "real",
+                   "scale_control"  = "real",
+                   "scale_control_sd"  = "positive_real",
+                   "scale"  = "real",
+                   "scale_sd"  = "positive_real",
                    "kappa"  = "real",
-                   "kappa_sd"  = "real")
+                   "kappa_sd"  = "positive_real")
     )
 
     # "mutau" = list("hypermean"        = list(allowed = c("multinormal"),
