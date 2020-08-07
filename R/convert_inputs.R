@@ -220,6 +220,16 @@ convert_inputs <- function(data,
         treatment_neg = data[[treatment]][cat == 1],
         site = group_numeric
       )
+
+      if(is.null(test_data)){
+        # This will have to be done for v0.8 release
+        out_test <- list()
+      } else {
+        out_test <- list()
+      }
+
+      for(nm in names(out_test))
+        out[[nm]] <- out_test[[nm]]
     }
   }
 

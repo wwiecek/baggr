@@ -25,27 +25,39 @@ data {
   // now the prior inputs
   int prior_control_fam;
   int prior_hypermean_fam;
-  int prior_control_sigma_fam;
-  int prior_sigma_fam;
-
+  int prior_scale_control_fam;
+  int prior_scale_fam;
   int prior_control_sd_fam;
   int prior_hypersd_fam;
-  int prior_control_sigma_sd_fam;
-  int prior_sigma_sd_fam;
-
+  int prior_scale_control_sd_fam;
+  int prior_scale_sd_fam;
   int prior_kappa_fam;
   int prior_kappa_sd_fam;
 
   vector[3] prior_control_val;
   vector[3] prior_hypermean_val;
-  vector[3] prior_control_sigma_val;
-  vector[3] prior_sigma_val;
+  vector[3] prior_scale_control_val;
+  vector[3] prior_scale_val;
   vector[3] prior_kappa_val;
   vector[3] prior_control_sd_val;
   vector[3] prior_hypersd_val;
-  vector[3] prior_control_sigma_sd_val;
-  vector[3] prior_sigma_sd_val;
+  vector[3] prior_scale_control_sd_val;
+  vector[3] prior_scale_sd_val;
   vector[3] prior_kappa_sd_val;
+
+  /* //cross-validation variables:
+  int test_N;
+  int test_cat[test_N]; // category indicator
+  int test_N_neg; // number of obvs in negative tail
+  int test_N_pos; // number of obvs in positive tail
+  vector[P] test_x[N]; // covariates
+  int test_site[test_N]; // site indicator
+  vector[test_N_neg] test_treatment_neg; // treatment in neg tail
+  vector[test_N_pos] test_treatment_pos; // treatment in pos tail
+  int test_site_neg[test_N_neg]; // site indicator in neg tail
+  int test_site_pos[test_N_pos]; // site indicator in pos tail
+  real test_y_neg[test_N_neg]; // the negative tail
+  real test_y_pos[test_N_pos]; // the positive tail */
 }
 
 transformed data {
@@ -110,8 +122,8 @@ model {
       for (i in 1:2){
         target += prior_increment_real(prior_control_fam, eta_mu_k[k,i], prior_control_val);
         target += prior_increment_real(prior_hypermean_fam, eta_tau_k[k,i], prior_hypermean_val);
-        target += prior_increment_real(prior_control_sigma_fam, eta_sigma_control_k[k,i], prior_control_sigma_val);
-        target += prior_increment_real(prior_sigma_fam, eta_sigma_TE_k[k,i], prior_sigma_val);
+        target += prior_increment_real(prior_scale_control_fam, eta_sigma_control_k[k,i], prior_scale_control_val);
+        target += prior_increment_real(prior_scale_fam, eta_sigma_TE_k[k,i], prior_scale_val);
       }
     }
   } // closes the pooling = 0 case
@@ -122,10 +134,10 @@ model {
       target += prior_increment_real(prior_hypermean_fam, tau[i], prior_hypermean_val);
       target += prior_increment_real(prior_control_sd_fam, hypersd_mu[i], prior_control_sd_val);
       target += prior_increment_real(prior_hypersd_fam, hypersd_tau[i], prior_hypersd_val);
-      target += prior_increment_real(prior_control_sigma_fam, sigma_control[i], prior_control_sigma_val);
-      target += prior_increment_real(prior_control_sigma_sd_fam, hypersd_sigma_control[i], prior_control_sigma_sd_val);
-      target += prior_increment_real(prior_sigma_fam, sigma_TE[i], prior_sigma_val);
-      target += prior_increment_real(prior_sigma_sd_fam, hypersd_sigma_TE[i], prior_sigma_sd_val);
+      target += prior_increment_real(prior_scale_control_fam, sigma_control[i], prior_scale_control_val);
+      target += prior_increment_real(prior_scale_control_sd_fam, hypersd_sigma_control[i], prior_scale_control_sd_val);
+      target += prior_increment_real(prior_scale_fam, sigma_TE[i], prior_scale_val);
+      target += prior_increment_real(prior_scale_sd_fam, hypersd_sigma_TE[i], prior_scale_sd_val);
     } // closes the i loop
     target += prior_increment_vec(prior_kappa_fam, to_vector(kappa[1]) , prior_kappa_val);
     // WW: HYPERSD_kappa matrix here is converted to vector and then iid priors given on each element of this matrix
@@ -138,8 +150,8 @@ model {
     for (i in 1:2){
       target += prior_increment_real(prior_control_fam, mu[i], prior_control_val);
       target += prior_increment_real(prior_hypermean_fam, tau[i], prior_hypermean_val);
-      target += prior_increment_real(prior_control_sigma_fam, sigma_control[i], prior_control_sigma_val);
-      target += prior_increment_real(prior_sigma_fam, sigma_TE[i], prior_sigma_val);
+      target += prior_increment_real(prior_scale_control_fam, sigma_control[i], prior_scale_control_val);
+      target += prior_increment_real(prior_scale_fam, sigma_TE[i], prior_scale_val);
     } // closes the for loop indexed by i
   } // closes the pooling = 2 case
 

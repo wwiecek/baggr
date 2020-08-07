@@ -78,25 +78,28 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
           )
 
         if(model == "sslab") {
-
-          sd_y_neg_ctrl <- sd(stan_data$y_neg[stan_data$treatment_neg == 0])
-          sd_y_neg_trt  <- sd(stan_data$y_neg[stan_data$treatment_neg == 1])
-          sd_y_pos_ctrl <- sd(stan_data$y_pos[stan_data$treatment_pos == 0])
-          sd_y_pos_trt  <- sd(stan_data$y_pos[stan_data$treatment_pos == 1])
-          max_hypermean <- max(c(sd_y_neg_trt, sd_y_pos_trt))
-          max_control   <- max(c(sd_y_neg_ctrl, sd_y_pos_ctrl))
+          data_pos <- prepare_ma(data.frame(outcome = stan_data$y_pos,
+                                            group = stan_data$site_pos,
+                                            treatment = stan_data$treatment_pos), effect = "mean")
+          data_neg <- prepare_ma(data.frame(outcome = stan_data$y_neg,
+                                            group = stan_data$site_neg,
+                                            treatment = stan_data$treatment_neg), effect = "mean")
+          max_hypermean <- max(c(abs(data_pos$tau), abs(data_neg$tau)))
+          max_control   <- max(c(abs(data_pos$mu),  abs(data_neg$mu)))
+          sd_hypermean  <- 10*max(c(sd(data_pos$mu),  sd(data_neg$mu)))
+          sd_control    <- 10*max(c(sd(data_pos$tau), sd(data_neg$tau)))
 
           default_prior_dist <- switch(current_prior,
                                        # Prior settings from Rachael, 17/07/2020
                                        "hypermean"        = normal(0, 10*max_hypermean),
-                                       "hypersd"          = normal(0, 2.5),
+                                       "hypersd"          = normal(0, 10*sd_hypermean),
                                        "control"          = normal(0, 10*max_control),
-                                       "control_sd"       = normal(0, 10),
-                                       "control_sigma"    = normal(0, 10),
-                                       "control_sigma_sd" = normal(0, 10),
-                                       "sigma"            = normal(0, 10),
-                                       "sigma_sd"         = normal(0, 10),
-                                       "kappa"            = normal(0, 2.5),
+                                       "control_sd"       = normal(0, 10*sd_control),
+                                       "scale_control"    = normal(0, 10),
+                                       "scale_control_sd" = normal(0, 10),
+                                       "scale"            = normal(0, 5),
+                                       "scale_sd"         = normal(0, 5),
+                                       "kappa"            = normal(0, 5),
                                        "kappa_sd"         = normal(0, 2.5)
           )
         }
