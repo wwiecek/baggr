@@ -64,3 +64,7 @@
 #' Bayesian Data Analysis. Taylor & Francis, 1995.
 "schools"
 
+#' Spike & slab example dataset
+#'
+#'
+"data_spike"
