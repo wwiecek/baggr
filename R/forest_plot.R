@@ -41,11 +41,11 @@ forest_plot <- function(bg, show = c("inputs", "posterior", "both", "covariates"
     stop("forest_plot only works with 1-dimensional effects")
 
   # Get the summary-level data with tau and se columns
-  if(bg$model %in% c("full", "logit"))
+  if(bg$model %in% c("rubin_full", "logit"))
     ge_raw <- bg$summary_data
   else
     ge_raw <- bg$data
-  if(bg$model %in% c("full", "mutau"))
+  if(bg$model %in% c("rubin_full", "mutau"))
     ge_raw$se <- ge_raw$se.tau
 
   ge_raw$mean  <- ge_raw$tau

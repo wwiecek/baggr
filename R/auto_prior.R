@@ -29,24 +29,24 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   prior_list <- list()
 
   # Swap data for summary data...
-  if(model %in% c("full", "logit")) {
+  if(model %in% c("rubin_full", "logit")) {
     pma_data <- data.frame(outcome = stan_data$y,
                            group = stan_data$site,
                            treatment = stan_data$treatment)
     if(model == "logit")
       data <- prepare_ma(pma_data, effect = "logOR", rare_event_correction = 0.1)
-    if(model == "full")
+    if(model == "rubin_full")
       data <- prepare_ma(pma_data, effect = "mean")
   }
   # ...then proceed as you would in Rubin model
 
-  if(model %in% c("rubin", "logit", "full", "sslab")) {
+  if(model %in% c("rubin", "logit", "rubin_full", "sslab")) {
     # For each model we need a list of what priors can be specified and
     # what families of distributions are allowed for them
     # (this second part should be changed to just specifying dimensionality/type)
     priors_spec <- list(
       "rubin" = c("hypermean" = "real", "hypersd" = "positive_real"),
-      "full"  = c("hypermean" = "real", "hypersd" = "positive_real"),
+      "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real"),
       "logit"  = c("hypermean" = "real", "hypersd" = "positive_real",
                    "control" = "real", "control_sd" = "positive_real"),
       "sslab"  = c("hypermean" = "real", "hypersd" = "positive_real",

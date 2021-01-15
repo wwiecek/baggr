@@ -54,6 +54,13 @@ test_that("Full model crashes with nonsense inputs", {
 
 })
 
+test_that("Using old syntax works still", {
+  bg <- expect_message(baggr(schools_ipd,
+                       model = "full",
+                       pooling = "none", iter = 10, refresh=0))
+  expect_is(bg, "baggr")
+})
+
 
 comp_flpl <- expect_warning(baggr_compare(
   schools, model = "rubin", iter = 150, what = "pooling"

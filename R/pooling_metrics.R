@@ -104,7 +104,7 @@ pooling <- function(bg,
     return(array(1, c(3, bg$n_groups, bg$n_parameters)))
 
   # we'll replace by switch() in the future
-  # if(bg$model %in% c("rubin", "mutau", "logit", "full")) {
+  # if(bg$model %in% c("rubin", "mutau", "logit", "rubin_full")) {
   if(bg$n_parameters == 1) {
     # 1-dimensional vector of S values (S=N samples)
     sigma_tau <- treatment_effect(bg)$sigma_tau
@@ -114,7 +114,7 @@ pooling <- function(bg,
                       "mutau" = bg$data$se.tau,
                       "rubin" = bg$data$se,
                       "logit" = suppressMessages(prepare_ma(bg$data, effect = "logOR")$se),
-                      "full"  = group_effects(bg, summary = TRUE)[, "sd", 1])
+                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1])
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))

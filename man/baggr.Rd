@@ -34,7 +34,7 @@ baggr(
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from
-\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+\code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
 (see Details).}
 
 \item{pooling}{Type of pooling;
@@ -141,9 +141,9 @@ Using it will automatically format data inputs to work with \code{baggr()}.
 \strong{Models.} Available models are:
 \itemize{
 \item for the \strong{continuous variable} means:
-\code{"rubin"} model for average treatment effect, \code{"mutau"}
-version which takes into account means of control groups, \code{"full"},
-which works with individual-level data
+\code{"rubin"} model for average treatment effect (using summary data), \code{"mutau"}
+version which takes into account means of control groups (also using summary data),
+\code{"rubin_full"},  which is the same model as \code{"rubin"} but works with individual-level data
 \item for \strong{continuous variable quantiles}: `"quantiles"`` model
 (see Meager, 2019 in references)
 \item for \emph{mixture data}: \code{"sslab"} (experimental)
@@ -170,7 +170,7 @@ In that case, the model accounting
 for the group covariates is a
 \href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
 model. It can be modelled on summary-level data.
-\item In \code{"logit"} and \code{"full"} models, covariates that \strong{change according to individual unit}.
+\item In \code{"logit"} and \code{"rubin_full"} models, covariates that \strong{change according to individual unit}.
 Then, such a model is commonly referred to as a
 \href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888}{mixed model}
 . It has to be fitted to individual-level data. Note that meta-regression is a special

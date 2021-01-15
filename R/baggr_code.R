@@ -1,7 +1,7 @@
 #' Show Stan code for baggr models or objects
 #'
 #' @param model either a `baggr` object (fitted model) or one of
-#'        `"rubin"`, `"mutau"`, `"individual"`
+#'        `"rubin"`, `"mutau"`, `"rubin_full"`
 #' @return Nothing is returned in R. Stan code will be opened externally
 #'         (e.g. via notepad).
 #' @export

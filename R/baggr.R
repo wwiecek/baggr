@@ -12,7 +12,7 @@
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
-#'              \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+#'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
 #'              (see Details).
 #' @param pooling Type of pooling;
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
@@ -94,9 +94,9 @@
 #' __Models.__ Available models are:
 #'
 #' * for the __continuous variable__ means:
-#'   `"rubin"` model for average treatment effect, `"mutau"`
-#'   version which takes into account means of control groups, `"full"`,
-#'   which works with individual-level data
+#'   `"rubin"` model for average treatment effect (using summary data), `"mutau"`
+#'   version which takes into account means of control groups (also using summary data),
+#'   `"rubin_full"`,  which is the same model as `"rubin"` but works with individual-level data
 #' * for __continuous variable quantiles__: `"quantiles"`` model
 #'   (see Meager, 2019 in references)
 #' * for _mixture data_: `"sslab"` (experimental)
@@ -123,7 +123,7 @@
 #'   for the group covariates is a
 #'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
 #'   model. It can be modelled on summary-level data.
-#' * In `"logit"` and `"full"` models, covariates that __change according to individual unit__.
+#' * In `"logit"` and `"rubin_full"` models, covariates that __change according to individual unit__.
 #'   Then, such a model is commonly referred to as a
 #'   [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888)
 #'   . It has to be fitted to individual-level data. Note that meta-regression is a special
@@ -212,6 +212,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
   attr(data, "group") <- group
   attr(data, "treatment") <- treatment
 
+  if(!is.null(model) && (model == "full")){
+    message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
+    model <- "rubin_full"
+  }
   stan_data <- convert_inputs(data,
                               model,
                               covariates = covariates,

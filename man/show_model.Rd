@@ -8,7 +8,7 @@ show_model(model)
 }
 \arguments{
 \item{model}{either a \code{baggr} object (fitted model) or one of
-\code{"rubin"}, \code{"mutau"}, \code{"individual"}}
+\code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}}
 }
 \value{
 Nothing is returned in R. Stan code will be opened externally
