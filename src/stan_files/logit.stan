@@ -43,10 +43,9 @@ transformed data {
     K_pooled = K;
 }
 parameters {
-  // vector[K] baseline_k;
   real mu_baseline[pooling_baseline != 0? 1: 0];
-  real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
   real mu[pooling_type != 0? 1: 0];
+  real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
   real<lower=0> tau[pooling_type == 1? 1: 0];
   vector[K_pooled] eta;
   vector[K] eta_baseline;
@@ -67,6 +66,13 @@ transformed parameters {
     baseline_k = rep_vector(mu_baseline[1], K) + tau_baseline[1]*eta_baseline;
 }
 model {
+  vector[N] fe;
+  if(N > 0){
+    if(Nc == 0)
+      fe = rep_vector(0.0, N);
+    else
+      fe = X*beta;
+  }
 
   //controls/baselines (hyper)priors
   if(pooling_baseline == 0)
@@ -95,25 +101,13 @@ model {
   if(pooling_type == 1)
     eta ~ normal(0,1);
 
-
-  // Branching logic to account for fixed-effects yes/no, full pooling yes/no
   if(pooling_type < 2){
-    if(Nc == 0){
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i]);
-    }else{
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + X[i,]*beta);
-    }
+    for(i in 1:N)
+      y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + X[i,]*beta);
   }
   if(pooling_type == 2) {
-    if(Nc == 0){
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i]);
-    }else{
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i] + X[i,]*beta);
-    }
+    for(i in 1:N)
+      y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i] + fe[i]);
   }
 }
 
@@ -121,7 +115,12 @@ model {
 generated quantities {
   real logpd[K_test > 0? 1: 0];
   real theta_k_test[K_test];
+  vector[N_test] fe_test;
   if(K_test > 0){
+    if(Nc == 0)
+      fe_test = rep_vector(0.0, N_test);
+    else
+      fe_test = X_test*beta;
     logpd[1] = 0;
     if(pooling_type != 0){
       for(k in 1:K_test)
