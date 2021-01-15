@@ -34,7 +34,8 @@ RoxygenNote: 7.1.0
 Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
-    covr
+    covr,
+    rmarkdown
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
