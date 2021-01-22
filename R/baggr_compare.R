@@ -365,7 +365,7 @@ plot.baggr_compare <- function(x,
         big_df <- rbind(big_df,
                         data.frame(parameter = effect_names[i], plot_dfs[[i]]))
 
-      plots <- single_comp_plot(big_df, "", "none", grid = T)
+      plots <- single_comp_plot(big_df, "", grid = T)
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F)
