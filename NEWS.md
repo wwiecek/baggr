@@ -1,3 +1,13 @@
+# baggr 0.6.0 (January 2021)
+
+### New features
+
+* Spike and slab model can be called via `model="sslab"`. See `?baggr` for basics of
+  working with this type of a model. A vignette will be added soon.
+* Rubin model with full data is now called via `model="rubin_full"` rather than `"full"`. 
+  Old syntax will still work, however. Made some documentation and code improvements
+  around this issue.
+
 # baggr 0.5.0 (June 2020)
 
 ### New features

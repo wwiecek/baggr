@@ -273,7 +273,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                                           "partial" = 1,
                                           "full" = 2)
     # FOR NOW WE DO NOT ENABLE POOLING OF CONTROLS
-    if(model == "logit")
+    if(model %in% c("logit", "rubin_full"))
       stan_data[["pooling_baseline"]] <- switch(pooling_control,
                                                 "none" = 0,
                                                 "partial" = 1)

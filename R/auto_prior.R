@@ -33,8 +33,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     pma_data <- data.frame(outcome = stan_data$y,
                            group = stan_data$site,
                            treatment = stan_data$treatment)
-    if(model == "logit")
+    if(model == "logit"){
       data <- prepare_ma(pma_data, effect = "logOR", rare_event_correction = 0.1)
+      # Must add mu for automatic definition of baseline prior
+      p <- data$c/data$n2
+      data$mu <- log(p/(1-p))
+    }
     if(model == "rubin_full")
       data <- prepare_ma(pma_data, effect = "mean")
   }
@@ -46,7 +50,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     # (this second part should be changed to just specifying dimensionality/type)
     priors_spec <- list(
       "rubin" = c("hypermean" = "real", "hypersd" = "positive_real"),
-      "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real"),
+      "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real",
+                        "control" = "real", "control_sd" = "positive_real"),
       "logit"  = c("hypermean" = "real", "hypersd" = "positive_real",
                    "control" = "real", "control_sd" = "positive_real"),
       "sslab"  = c("hypermean" = "real", "hypersd" = "positive_real",
@@ -68,13 +73,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
     for(current_prior in names(priors_spec[[model]])) {
       if(is.null(prior[[current_prior]])) {
-
         if(model != "sslab")
           default_prior_dist <- switch(current_prior,
                                        "hypermean"  = normal(0, 10*max(abs(data$tau))),
                                        "hypersd"    = uniform(0, 10*sd(data$tau)),
-                                       "control"    = normal(0, 10),
-                                       "control_sd" = normal(0, 10)
+                                       "control"    = normal(0, 10*max(abs(data$mu))),
+                                       "control_sd" = uniform(0, 10*sd(data$mu))
           )
 
         if(model == "sslab") {

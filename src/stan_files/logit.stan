@@ -3,14 +3,14 @@ functions {
 }
 
 data {
-  int<lower=0> K;  // number of sites
+  // SHARED ACROSS FULL MODELS:
   int<lower=0> N;  // total number of observations
+  int<lower=0> K;  // number of sites
   int<lower=0> Nc; //number of covariates (fixed effects)
   matrix[N,Nc] X;  //covariate values (design matrix for FE)
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int pooling_baseline; //pooling for proportions in control arm;
                         //0 if none, 1 if partial
-  int<lower=0,upper=1> y[N];
   int<lower=0,upper=K> site[N];
   vector<lower=0,upper=1>[N] treatment;
 
@@ -34,6 +34,9 @@ data {
   int<lower=0,upper=1> test_y[N_test];
   int<lower=0, upper=K> test_site[N_test];
   int<lower=0, upper=1> test_treatment[N_test];
+
+  //LOGIT-specific:
+  int<lower=0,upper=1> y[N];
 }
 transformed data {
   int K_pooled; // number of modelled sites if we take pooling into account
@@ -43,6 +46,7 @@ transformed data {
     K_pooled = K;
 }
 parameters {
+  // SHARED ACROSS FULL MODELS:
   real mu_baseline[pooling_baseline != 0? 1: 0];
   real mu[pooling_type != 0? 1: 0];
   real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
@@ -66,6 +70,7 @@ transformed parameters {
     baseline_k = rep_vector(mu_baseline[1], K) + tau_baseline[1]*eta_baseline;
 }
 model {
+  // SHARED ACROSS FULL MODELS:
   vector[N] fe;
   if(N > 0){
     if(Nc == 0)
@@ -101,17 +106,16 @@ model {
   if(pooling_type == 1)
     eta ~ normal(0,1);
 
+  //LOGIT-specific:
   if(pooling_type < 2){
     for(i in 1:N)
-      y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + X[i,]*beta);
+      y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + fe[i]);
   }
   if(pooling_type == 2) {
     for(i in 1:N)
       y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i] + fe[i]);
   }
 }
-
-
 generated quantities {
   real logpd[K_test > 0? 1: 0];
   real theta_k_test[K_test];
@@ -124,17 +128,11 @@ generated quantities {
     logpd[1] = 0;
     if(pooling_type != 0){
       for(k in 1:K_test)
-      theta_k_test[k] = normal_rng(mu[1], tau[1]);
+        theta_k_test[k] = normal_rng(mu[1], tau[1]);
       // This will only work if we predict for baselines which are already estimated
-      if(Nc == 0){
-        for(i in 1:N_test)
-          logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
-                                           theta_k_test[test_site[i]] * test_treatment[i]);
-      } else {
-        for(i in 1:N_test)
-          logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
-                                           theta_k_test[test_site[i]] * test_treatment[i] + X_test*beta);
-      }
+      for(i in 1:N_test)
+        logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
+                                         theta_k_test[test_site[i]] * test_treatment[i] + fe_test[i]);
     }
   }
 }

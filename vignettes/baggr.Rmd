@@ -44,15 +44,15 @@ Suppose that $y_{ik}$ varies randomly around its mean $\mu_k + \tau_k T_i$. In t
 
 For average effects aggregation, _baggr_ allows 3 types of data inputs. The user may supply, within a data frame environment, any of the following:
 
-1. A set of estimated treatment effects $\{\hat{\tau_k}\}_{k=1}^{K}$ and their standard errors $\{\hat{se_k}\}_{k=1}^{K}$ from each study. This should be formatted as two column vectors of length $K$ within the data frame, where $\hat{\tau_k}$ is the $k$-th entry of the treatment effect vector and  $\hat{se_k}$ is the $k$-th entry of the standard errors vector. Columns should be names "tau" and "se". 
+1. A set of estimated treatment effects $\{\hat{\tau_k}\}_{k=1}^{K}$ and their standard errors $\{\hat{se_k}\}_{k=1}^{K}$ from each study. This should be formatted as two column vectors of length $K$ within the data frame, where $\hat{\tau_k}$ is the $k$-th entry of the treatment effect vector and  $\hat{se_k}$ is the $k$-th entry of the standard errors vector. Columns should be named `"tau"` and `"se"`. Model will be `"rubin"` (see below).
 
-2. A set of control group means and estimated treatment effects $\{\hat{\mu_k},\hat{\tau_k}\}_{k=1}^{K}$, as well as the standard errors for both $\{\hat{se}_{\mu k}, \hat{se}_{\tau k}\}_{k=1}^{K}$, for each study site This should be formatted as four vectors of length $K$ within the data frame, analogous to the above. Columns should be names "mu", "tau", "se.mu", "se.tau".
+2. A set of control group means and estimated treatment effects $\{\hat{\mu_k},\hat{\tau_k}\}_{k=1}^{K}$, as well as the standard errors for both $\{\hat{se}_{\mu k}, \hat{se}_{\tau k}\}_{k=1}^{K}$, for each study site This should be formatted as four vectors of length $K$ within the data frame, analogous to the above. Columns should be names `"mu"`, `"tau"`, `"se.mu"`, `"se.tau"`. Model will be `"mutau"` (see below).
 
-3. The full data sets from all the original studies $\{Y_k, T_k\}_{k=1}^{K}$. This should be formatted as three vectors of length $\sum_{k=1}^K N_{k}$, which we recommend naming "outcome", "treatment", "group" (for site indicators), but the names can also be specified when calling `baggr()` function.
+3. The full data sets from all the original studies $\{Y_k, T_k\}_{k=1}^{K}$. This should be formatted as three vectors of length $\sum_{k=1}^K N_{k}$, which we recommend naming `"outcome"`, `"treatment"`, `"group"` (for site indicators), but the names can also be specified when calling `baggr()` function. Model will be `"rubin_full"` (see below).
 
 As an example of an individual-level data set we include in data frames `microcredit` and `microcredit_simplified`. The former contains all the microcredit outcome data used in @meager_aggregating_2019-1, standardized to USD PPP in 2009 terms per two weeks (a time period is necessary as these are flow variables). It therefore contains NAs and other undesirable features, to allow the user to see how _baggr_ handles these common data issues. The data set `microcredit_simplified` has these issues cleaned up and contains only one outcome of interest, consumer durables spending. 
 
-_baggr_ also has a function  that automatically produces summary data from full data sets, in case one wishes to run the comparatively faster summary-data models. The "prepare_ma()" function applied to a dataframe with columns named "group", "outcome", and "treatment" automatically estimates the control group means, treatment effects, and associated standard errors for each group using an Ordinary Least Squares regression. The resulting output is already formatted as a valid input to the _baggr_ command itself: 
+_baggr_ also has a function  that automatically produces summary data from full data sets, in case one wishes to run the comparatively faster summary-data models. The `prepare_ma()` function applied to a dataframe with columns named `"group"`, `"outcome"`, and `"treatment"` automatically estimates the control group means, treatment effects, and associated standard errors for each group using an Ordinary Least Squares regression. The resulting output is already formatted as a valid input to the `baggr()` command itself: 
 
 ```{r}
 prepare_ma(microcredit_simplified, outcome = "consumption")
@@ -110,13 +110,13 @@ If you have only few groups, the priors on $V$ will need to be relatively strong
 
 <!-- This is a mess to edit, sorry. But it presents nicely in Markdown -->
 
-|Model               | Input columns       | Level-1 likelihood                              | Level-2 likelihood                      | Default priors   |
+|Model (name in `baggr`)              | Input columns       | Level-1 likelihood                              | Level-2 likelihood                      | Default priors   |
 |--------------------|--------------------------------|-------------------------------------------------|-----------------------------------------|------------------|
-| "Rubin"            | `tau` and `se`                 | $\hat{\tau_k} \sim N(\tau_k, \hat{se_k}^2)$     | $\tau_k \sim N(\tau, \sigma_{\tau}^2)$  | $\tau \sim \mathcal{N}(0, 100)$, $\sigma_{\tau} \sim \mathcal{U}(0, 10\tilde{\sigma})$  | 
-| "$\mu$ and $\tau$" | `tau`, `mu`, `se.tau`, `se.mu` | $\hat{\tau_k} \sim N(\tau_k, \hat{se_{\tau,k}}^2)$, $\hat{\mu_k} \sim N(\mu_k, \hat{se_{\mu,k}}^2)$  | $\pmatrix{\mu_k \\ \tau_k} \sim N(\pmatrix{\mu \\ \tau}, V)$ | $V = \theta \Omega \theta'$ where $\theta \sim Cauchy(0,10)$, $\Omega \sim LKJ(3)$, $\pmatrix{\mu \\ \tau} \sim N(0,100^2Id_2 )$ |
-| Full data          | `outcome`, `treatment`, `group`  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" |
-| Quantiles          | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  |
-| Logit model   | `outcome`, `treatment`, `group`  | See `vignette("baggr_binary")` | ... | ... |
+| summary data "Rubin" (`"rubin"`)           | `tau` and `se`                 | $\hat{\tau_k} \sim N(\tau_k, \hat{se_k}^2)$     | $\tau_k \sim N(\tau, \sigma_{\tau}^2)$  | $\tau \sim \mathcal{N}(0, 100)$, $\sigma_{\tau} \sim \mathcal{U}(0, 10\tilde{\sigma})$  | 
+| "$\mu$ and $\tau$" (`"mutau"`) | `tau`, `mu`, `se.tau`, `se.mu` | $\hat{\tau_k} \sim N(\tau_k, \hat{se_{\tau,k}}^2)$, $\hat{\mu_k} \sim N(\mu_k, \hat{se_{\mu,k}}^2)$  | $\pmatrix{\mu_k \\ \tau_k} \sim N(\pmatrix{\mu \\ \tau}, V)$ | $V = \theta \Omega \theta'$ where $\theta \sim Cauchy(0,10)$, $\Omega \sim LKJ(3)$, $\pmatrix{\mu \\ \tau} \sim N(0,100^2Id_2 )$ |
+| full data "Rubin" (`"rubin_full"`)          | `outcome`, `treatment`, `group`  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" |
+| Quantiles (`"quantiles"`)         | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  |
+| Logit (`"logit"`)  | `outcome`, `treatment`, `group`  | See `vignette("baggr_binary")` | ... | ... |
 
 Where inputs are individual-level data, i.e.  `outcome`, `treatment`, `group`, you can specify column names in as arguments to `baggr()` function. 
 
