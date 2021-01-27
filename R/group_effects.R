@@ -35,7 +35,6 @@
 #'          `group_effects(random_only=TRUE)`.
 #'
 #' @export
-#' @import abind
 
 group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
                           random_only = FALSE) {
@@ -84,10 +83,10 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
       # In this case we have 3D array, last dim is quantiles
       m <- rstan::extract(bg$fit, pars = "beta_1_k")[[1]]
     } else if(bg$model == "sslab") {
-      m <- abind::abind(
-        rstan::extract(bg$fit, "tau_k")[[1]],
-        rstan::extract(bg$fit, "sigma_TE_k")[[1]],
-        rstan::extract(bg$fit, "kappa_k")[[1]][,,1:2,2])
+      m1 <- rstan::extract(bg$fit, "tau_k")[[1]]
+      m2 <- rstan::extract(bg$fit, "sigma_TE_k")[[1]]
+      m3 <- rstan::extract(bg$fit, "kappa_k")[[1]][,,1:2,2]
+      m <- array(c(m1, m2, m3), c(nrow(m1), ncol(m1), length(effect_names)))
     } else {
       stop("Can't calculate treatment effect for this model.")
     }
