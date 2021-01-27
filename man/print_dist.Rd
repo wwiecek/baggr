@@ -6,6 +6,12 @@
 \usage{
 print_dist(dist)
 }
+\arguments{
+\item{dist}{distribution name, one of \link{priors}}
+}
+\value{
+Character string like \code{normal(0, 10^2)}.
+}
 \description{
-Output a distribution as a string
+Used for printing nicely formatted outputs when reporting results etc.
 }

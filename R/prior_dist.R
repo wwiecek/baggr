@@ -86,6 +86,10 @@ prior_dist_fam <- c("uniform" = 0,
                     "lkj" = 4)
 
 #' Output a distribution as a string
+#'
+#' Used for printing nicely formatted outputs when reporting results etc.
+#' @param dist distribution name, one of [priors]
+#' @return Character string like `normal(0, 10^2)`.
 print_dist <- function(dist){
   if(dist$dist == "multinormal")
     return("multinormal(...)")
