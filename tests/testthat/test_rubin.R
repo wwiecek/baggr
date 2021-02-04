@@ -345,8 +345,6 @@ test_that("baggr comparison method works for Rubin model", {
   expect_is(plot(comp_rbpr, grid_models = TRUE), "gtable")
 })
 
-
-
 test_that("Plot quantiles", {
   expect_error(plot_quantiles(bg5_p))
 })

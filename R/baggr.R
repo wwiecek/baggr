@@ -228,6 +228,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
+  # data might also change if Rubin model requested but mutau
+  # type inputs supplied
+  data <- attr(stan_data, "data")
+
 
   # remember number of groups:
   n_groups <- attr(stan_data, "n_groups")

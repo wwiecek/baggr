@@ -37,7 +37,7 @@ baggr_plot <- function(bg, hyper=FALSE,
                        style = "intervals",
                        transform = NULL,
                        prob = 0.5, prob_outer = 0.95,
-                       vline = TRUE, order = TRUE, ...) {
+                       vline = FALSE, order = TRUE, ...) {
   if(attr(bg, "ppd")){
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))

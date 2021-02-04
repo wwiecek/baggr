@@ -11,6 +11,7 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                        "mu" = rnorm(8),
                        "se.mu" = rep(1, 8),
                        "state" = datasets::state.name[1:8])
+
 #
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {

@@ -31,12 +31,12 @@ data {
   int<lower=0> N_test;
   int<lower=0> K_test;
   matrix[N_test, Nc] X_test;
-  int<lower=0,upper=1> test_y[N_test];
   int<lower=0, upper=K> test_site[N_test];
   int<lower=0, upper=1> test_treatment[N_test];
 
   // NORMAL specific:
   real y[N];
+  real<lower=0,upper=1> test_y[N_test];
   real test_sigma_y_k[K_test];
 
 }

@@ -54,10 +54,10 @@ test_that("Full model crashes with nonsense inputs", {
 
 })
 
-test_that("Using old syntax works still", {
-  bg <- expect_message(baggr(schools_ipd,
+test_that("Using old syntax (model = full) still works", {
+  bg <- expect_warning(expect_message(baggr(schools_ipd,
                        model = "full",
-                       pooling = "none", iter = 10, refresh=0))
+                       pooling = "none", iter = 10, refresh=0)))
   expect_is(bg, "baggr")
 })
 

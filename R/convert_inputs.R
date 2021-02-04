@@ -80,13 +80,13 @@ convert_inputs <- function(data,
   }
 
   # Convert mutau data to Rubin model data if requested
-  # (For now disabled as it won't work with functions that then
-  #  re-use the input data)
-  # if(model == "rubin" && available_data == "pool_wide"){
-  #   data$se <- data$se.tau
-  #   data$se.tau <- data$se.mu <- data$mu <- NULL
-  #   available_data <- "pool_noctrl_narrow"
-  # }
+  if(model == "rubin" && available_data == "pool_wide"){
+    test_data$se <- test_data$se.tau
+    test_data$se.tau <- test_data$se.mu <- test_data$mu <- NULL
+    data$se <- data$se.tau
+    data$se.tau <- data$se.mu <- data$mu <- NULL
+    available_data <- "pool_noctrl_narrow"
+  }
 
   required_data <- model_data_types[[model]]
 
@@ -349,6 +349,7 @@ convert_inputs <- function(data,
   return(structure(
     out,
     data_type = available_data,
+    data = data,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))

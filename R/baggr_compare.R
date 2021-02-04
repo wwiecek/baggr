@@ -233,6 +233,7 @@ print.baggr_compare <- function(x, digits, ...){
 #'              If yes, medians from the model with largest range of estimates
 #'              are used for sorting.
 #'              If not, groups are shown alphabetically.
+#' @param vline logical; show vertical line through 0 in the plot?
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
@@ -243,6 +244,7 @@ plot.baggr_compare <- function(x,
                                hyper = TRUE,
                                transform = NULL,
                                order = F,
+                               vline = FALSE,
                                ...) {
 
   # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
@@ -263,7 +265,8 @@ plot.baggr_compare <- function(x,
     plots <- lapply(models, baggr_plot,
                     style = style,
                     order = FALSE,
-                    transform = transform)
+                    transform = transform,
+                    vline = vline)
     grid_width <- length(plots)
     # if each plots element contains multiple plots (like with quantiles):
     if(class(plots[[1]])[1] == "list")
