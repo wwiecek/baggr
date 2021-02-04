@@ -7,6 +7,8 @@
 * Rubin model with full data is now called via `model="rubin_full"` rather than `"full"`. 
   Old syntax will still work, however. Made some documentation and code improvements
   around this issue.
+* Leave-one-out cross-validation works for `model="rubin_full"` now. It works the same 
+  way as for `model="logit"`. See `?baggr` for more information on how to use it.
 * It's now possible to use `model="rubin"` with the same inputs as `model="mutau"`.
   Some data columns are removed automatically in that case.
   

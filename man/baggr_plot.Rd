@@ -11,7 +11,7 @@ baggr_plot(
   transform = NULL,
   prob = 0.5,
   prob_outer = 0.95,
-  vline = TRUE,
+  vline = FALSE,
   order = TRUE,
   ...
 )

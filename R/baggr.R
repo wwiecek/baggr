@@ -62,7 +62,7 @@
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
-#'                  with the same columns as `data` argument
+#'                  with the same columns as `data` argument. See "Cross-validation" section below.
 #' @param silent Whether to silence messages about prior settings and about other automatic behaviour.
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
@@ -141,6 +141,17 @@
 #' which is useful for understanding the prior assumptions,
 #' especially useful in conjunction with [effect_plot]. You can also [baggr_compare]
 #' different priors by setting `baggr_compare(..., compare="prior")`.
+#'
+#' __Cross-validation.__ When `test_data` are specified, an extra parameter, the
+#' log predictive density, will be returned by the model.
+#' (The fitted model itself is the same regardless of whether there are `test_data`.)
+#' To understand this parameter, see documentation of [loocv], a function that
+#' can be used to assess out of sample prediction of the model using all available data.
+#' If using individual-level data model, `test_data` should only include treatment arms
+#' of the groups of interest. (This is because in cross-validation we are not typically
+#' interested in the model's ability to fit heterogeneity in control arms, but
+#' only heterogeneity in treatment arms.)
+#' For using aggregate level data, there is no such restriction.
 #'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).

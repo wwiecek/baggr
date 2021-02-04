@@ -89,7 +89,7 @@ default priors, therefore you must specify it.}
 Either \code{"none"} or \code{"partial"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
-with the same columns as \code{data} argument}
+with the same columns as \code{data} argument. See "Cross-validation" section below.}
 
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}
@@ -188,6 +188,17 @@ Setting \code{ppd=TRUE} can be used to obtain prior predictive distributions,
 which is useful for understanding the prior assumptions,
 especially useful in conjunction with \link{effect_plot}. You can also \link{baggr_compare}
 different priors by setting \code{baggr_compare(..., compare="prior")}.
+
+\strong{Cross-validation.} When \code{test_data} are specified, an extra parameter, the
+log predictive density, will be returned by the model.
+(The fitted model itself is the same regardless of whether there are \code{test_data}.)
+To understand this parameter, see documentation of \link{loocv}, a function that
+can be used to assess out of sample prediction of the model using all available data.
+If using individual-level data model, \code{test_data} should only include treatment arms
+of the groups of interest. (This is because in cross-validation we are not typically
+interested in the model's ability to fit heterogeneity in control arms, but
+only heterogeneity in treatment arms.)
+For using aggregate level data, there is no such restriction.
 
 \strong{Outputs.} By default, some outputs are printed. There is also a
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).

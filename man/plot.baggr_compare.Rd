@@ -13,6 +13,7 @@
   hyper = TRUE,
   transform = NULL,
   order = F,
+  vline = FALSE,
   ...
 )
 }
@@ -45,6 +46,8 @@ you can plot on log scale by setting transform = identity}
 If yes, medians from the model with largest range of estimates
 are used for sorting.
 If not, groups are shown alphabetically.}
+
+\item{vline}{logical; show vertical line through 0 in the plot?}
 
 \item{...}{ignored for now, may be used in the future}
 }
