@@ -38,11 +38,6 @@ test_that("Error messages for wrong inputs are in place", {
                      "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
 })
 
-
-test_that("We can't run Rubin model with mutau outputs", {
-  expect_error(baggr(df_mutau, model = "rubin", iter = 200, refresh = 0))
-})
-
 bg5_n <- expect_warning(baggr(df_mutau, pooling = "none", group = "state",
                iter = 200, chains = 2, refresh = 0))
 bg5_p <- expect_warning(baggr(df_mutau, pooling = "partial", group = "state",

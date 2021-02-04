@@ -348,3 +348,18 @@ test_that("baggr comparison method works for Rubin model", {
 test_that("Plot quantiles", {
   expect_error(plot_quantiles(bg5_p))
 })
+
+test_that("You can run Rubin model with mutau type inputs", {
+  df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                         "se.tau" = rep(1, 8),
+                         "mu" = rnorm(8),
+                         "se.mu" = rep(1, 8),
+                         "state" = datasets::state.name[1:8])
+  bg <- expect_warning(baggr(df_mutau, model = "rubin", iter = 20, refresh = 0))
+  expect_is(bg, "baggr")
+  expect_equal(bg$model, "rubin")
+  bg <- expect_warning(baggr(df_mutau[1:6,], test_data = df_mutau[7:8,],
+                             model = "rubin", iter = 20, refresh = 0))
+  expect_is(bg, "baggr")
+  expect_gt(bg$mean_lpd, 0)
+})

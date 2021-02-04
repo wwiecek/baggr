@@ -36,7 +36,7 @@ data {
 
   // NORMAL specific:
   real y[N];
-  real<lower=0,upper=1> test_y[N_test];
+  real test_y[N_test];
   real test_sigma_y_k[K_test];
 
 }

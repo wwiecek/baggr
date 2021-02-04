@@ -118,7 +118,7 @@ convert_inputs <- function(data,
           "For cross-validation they will be treated as 'new' groups.")
       if((!all(group_label_test %in% group_label) && model == "logit") || !all(test_data[[treatment]] == 1))
         message(
-          "Test data for logit model should include treated units only.",
+          "Test data for ", model, " model should include treated units only. ",
           "Baselines for all these groups should be included in data argument.")
     }
 

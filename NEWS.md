@@ -1,4 +1,4 @@
-# baggr 0.6.0 (January 2021)
+# baggr 0.6.0 (February 2021)
 
 ### New features
 
@@ -7,6 +7,14 @@
 * Rubin model with full data is now called via `model="rubin_full"` rather than `"full"`. 
   Old syntax will still work, however. Made some documentation and code improvements
   around this issue.
+* It's now possible to use `model="rubin"` with the same inputs as `model="mutau"`.
+  Some data columns are removed automatically in that case.
+  
+### Bugs
+
+* Fixed a few issues with formatting data for individual-level data models.
+* Fixed a major bug with distributions of baselines in the `rubin_full` (`full`) model.
+
 
 # baggr 0.5.0 (June 2020)
 
@@ -25,6 +33,7 @@
 * There are experimental features for working with models of quantiles. 
   We advise against fitting such models using the package until these features
   have been fully tested and documented.
+  
 
 ### Bug fixes
 
