@@ -5,7 +5,7 @@
 #' individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 #' (For overall package help file see [baggr-package])
 #'
-#'
+#' @useDynLib baggr, .registration = TRUE
 #' @importFrom rstan summary
 #' @importFrom rstan sampling
 #'
