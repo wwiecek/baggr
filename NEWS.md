@@ -11,11 +11,17 @@
   way as for `model="logit"`. See `?baggr` for more information on how to use it.
 * It's now possible to use `model="rubin"` with the same inputs as `model="mutau"`.
   Some data columns are removed automatically in that case.
-  
+
+For v0.6 we added more generic code around plotting, printing, grabbing treatment effects
+etc. While there are no differences on the front-end, this means that for the next
+versions we will be able to consider some new models and have more homogeneous syntax
+for all models.
+
 ### Bugs
 
 * Fixed a few issues with formatting data for individual-level data models.
 * Fixed a major bug with distributions of baselines in the `rubin_full` (`full`) model.
+* Fixed glitchy display for some `baggr_compare` plots.
 
 
 # baggr 0.5.0 (June 2020)

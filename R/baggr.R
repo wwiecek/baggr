@@ -219,9 +219,6 @@ baggr <- function(data, model = NULL, pooling = "partial",
   #                    summarise = FALSE, cfb = cfb,
   #                    treatment=treatment, group=group,
   #                    outcome=outcome, baseline=baseline)
-  attr(data, "outcome") <- outcome
-  attr(data, "group") <- group
-  attr(data, "treatment") <- treatment
 
   if(!is.null(model) && (model == "full")){
     message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
@@ -242,7 +239,9 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # data might also change if Rubin model requested but mutau
   # type inputs supplied
   data <- attr(stan_data, "data")
-
+  attr(data, "outcome") <- outcome
+  attr(data, "group") <- group
+  attr(data, "treatment") <- treatment
 
   # remember number of groups:
   n_groups <- attr(stan_data, "n_groups")

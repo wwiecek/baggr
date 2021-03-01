@@ -9,7 +9,8 @@ Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role 
 Maintainer: Witold Wiecek <witold.wiecek@gmail.com>
 Description: Running and comparing meta-analyses of data with hierarchical 
     Bayesian models in Stan, including convenience functions for formatting
-    data, plotting and pooling measures specific to meta-analysis.
+    data, plotting and pooling measures specific to meta-analysis. This implements many models
+    from Meager (2019) <doi:10.1257/app.20170299>.
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
