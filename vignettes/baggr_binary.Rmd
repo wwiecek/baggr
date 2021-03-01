@@ -1,12 +1,12 @@
 ---
-title: "Meta-analysis of binary data with baggr: a case study"
+title: "Meta-analysis of binary data with baggr"
 author: "Witold Wiecek"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{baggr_binary}
+  %\VignetteIndexEntry{Meta-analysis of binary data with baggr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: baggr.bib
