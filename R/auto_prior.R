@@ -267,6 +267,6 @@ check_eligible_priors <- function(prior, spec) {
     allowed_dist <- available_priors[[spec[[nm]]]]
 
     if(!any(prior_dist_fam[allowed_dist] == prior[[paste0("prior_", nm, "_fam")]]))
-      stop("Prior for ", nm, " must be one of ", allowed_dist)
+      stop("Prior for ", nm, " must be one of the following: ", paste(allowed_dist, collapse = ", "))
   }
 }
