@@ -43,7 +43,7 @@ parameters {
 transformed parameters {
   matrix[P,P] tau[pooling_type == 1? 1: 0];
   if(pooling_type == 1)
-  tau[1] = quad_form_diag(Omega[1],hypersd[1]);
+    tau[1] = quad_form_diag(Omega[1],hypersd[1]);
 }
 
 model {

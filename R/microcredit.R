@@ -64,7 +64,23 @@
 #' Bayesian Data Analysis. Taylor & Francis, 1995.
 "schools"
 
-#' Spike & slab example dataset
+
+#' Chickens: impact of electromagnetic field on calcium ion efflux in chicken brains
 #'
+#' An experiment conducted by Blackman et al. (1988) and documented in the following
+#' [GitHub repository](https://github.com/VMatthijs/Slamming-the-sham) by Vakar
+#' and Gelman. The dataset consists of a large number of experiments (`tau`, `se.tau`)
+#' repeated at varying wave frequencies. Sham experiments (`mu`, `se.mu`) are also
+#' included, allowing us to compare performance of models with and without
+#' control measurements.
+#'
+#' @references Blackman, C. F., S. G. Benane, D. J. Elliott, D. E. House, and
+#' M. M. Pollock.
+#' “Influence of Electromagnetic Fields on the Efflux of Calcium Ions from Brain
+#' Tissue in Vitro: A Three-Model Analysis Consistent with the Frequency
+#' Response up to 510 Hz.” Bioelectromagnetics 9, no. 3 (1988): 215–27.
+"chicks"
+
+#' Spike & slab example dataset
 #'
 "data_spike"
