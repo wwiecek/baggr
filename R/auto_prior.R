@@ -29,7 +29,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   prior_list <- list()
 
   # Swap data for summary data...
-  if(model %in% c("rubin_full", "logit")) {
+  if(model %in% c("rubin_full", "logit", "mutau_full")) {
     pma_data <- data.frame(outcome = stan_data$y,
                            group = stan_data$site,
                            treatment = stan_data$treatment)
@@ -39,7 +39,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       p <- data$c/data$n2
       data$mu <- log(p/(1-p))
     }
-    if(model == "rubin_full")
+    if(model %in% c("mutau_full", "rubin_full"))
       data <- prepare_ma(pma_data, effect = "mean")
   }
   # ...then proceed as you would in Rubin model
@@ -182,7 +182,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   }
 
   # This is a special case for now.
-  if(model == "mutau") {
+  if(model %in% c("mutau", "mutau_full")) {
     # Remember, first row is always mu (baseline), second row is tau (effect)
     # THIS WILL BE REVIDES TO USE control/control_sd type of specification
 

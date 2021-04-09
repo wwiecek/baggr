@@ -122,7 +122,7 @@ convert_inputs <- function(data,
           "Baselines for all these groups should be included in data argument.")
     }
 
-    if(model %in% c("rubin_full", "logit")){
+    if(model %in% c("rubin_full", "mutau_full", "logit")){
       out <- list(
         K = max(group_numeric),
         N = nrow(data),
@@ -139,7 +139,7 @@ convert_inputs <- function(data,
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
         out$test_treatment <- array(0, dim = 0)
-        if(model == "rubin_full")
+        if(model %in% c("rubin_full", "mutau_full"))
           out$test_sigma_y_k <- array(0, dim = 0)
 
       } else {
@@ -149,7 +149,7 @@ convert_inputs <- function(data,
         out$test_treatment <- test_data[[treatment]]
         out$test_site <- group_numeric_test
         # calculate SEs in each test group
-        if(model == "rubin_full"){
+        if(model %in% c("rubin_full", "mutau_full")){
           se_in_each_group <- sapply(
             1:max(group_numeric_test), function(i) {
               n <- sum(group_numeric_test == i)

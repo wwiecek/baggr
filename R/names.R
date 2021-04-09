@@ -1,5 +1,6 @@
 # fancy display names in the package
 model_names <- c("mutau" = "Aggregate data (with control group)",
+                 "mutau_full" = "Individual-level data with control and treatment",
                  "rubin" = "Rubin model with aggregate data",
                  "rubin_full" = "Rubin model with individual-level data",
                  "quantiles" = "Effects on quantiles",
@@ -10,6 +11,7 @@ model_data_types <- c("rubin" = "pool_noctrl_narrow",
                       "mutau" = "pool_wide",
                       "logit" = "individual_binary",
                       "rubin_full"  = "individual",
+                      "mutau_full"  = "individual",
                       "sslab" = "individual",
                       #for now no quantiles model from summary level data
                       "quantiles" = "individual")
