@@ -6,7 +6,7 @@
 \title{baggr - a package for Bayesian meta-analysis}
 \description{
 This is \emph{baggr} (pronounced as \emph{bagger} or \emph{badger}), a Bayesian meta-analysis
-package for R using \href{https://mc-stan.org/}{Stan}.
+package for R that uses \href{https://mc-stan.org/}{Stan} to fit the models.
 \emph{Baggr} is intended to be user-friendly and transparent so that
 it's easier to understand the models you are building and criticise them.
 }
@@ -29,3 +29,6 @@ For description of models, data types and priors available in the package,
 try the built-in vignette (\code{vignette("baggr")}).
 }
 
+\references{
+Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.21.2. https://mc-stan.org
+}

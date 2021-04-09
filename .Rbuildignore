@@ -10,7 +10,4 @@
 ^Meta$
 ^\.travis\.yml$
 LICENSE$
-src/stan_files/.*\.o$
-src/stan_files/.*\.cc$
-src/stan_files/.*\.hpp$
 ^CRAN-RELEASE$
