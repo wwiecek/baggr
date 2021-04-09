@@ -46,6 +46,9 @@ transformed parameters {
   vector[K_pooled] theta_k;
   for(k in 1:K_pooled){
     if(pooling_type == 0)
+      // if there is no pooling then eta's assume role of study means
+      // this is done to avoid defining yet another parameter but rather
+      // recycle something that already exists
       theta_k[k] = eta[k];
     if(pooling_type == 1)
       theta_k[k] = mu[1] + eta[k]*tau[1];
@@ -65,6 +68,7 @@ model {
     target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
   else{
     for(k in 1:K)
+    // eta's are study means in this case
       target += prior_increment_real(prior_hypermean_fam, eta[k], prior_hypermean_val);
   }
 
