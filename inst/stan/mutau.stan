@@ -16,7 +16,7 @@ data {
   int prior_hypersd_fam;
   real prior_hypersd_val[3];
   int prior_hypercor_fam; //only LKJ allowed for now...
-  real prior_hypercor_val[1];
+  real prior_hypercor_val;
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites
@@ -67,7 +67,7 @@ model {
       hypersd[1] ~ cauchy(prior_hypersd_val[1], prior_hypersd_val[2]);
 
     //for Omega only LKJ allowed for now
-    Omega[1] ~ lkj_corr(prior_hypercor_val[1]);
+    Omega[1] ~ lkj_corr(prior_hypercor_val);
   }
 
   if(pooling_type == 1 && K > 0) {

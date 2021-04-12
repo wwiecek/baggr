@@ -24,9 +24,9 @@ data {
   matrix<lower=0>[P, P] prior_hypermean_scale;
 
   //priors for independent mean parameters (if joint_prior == 0)
-  int prior_control_fam;
-  vector[3] prior_control_val;
-  vector[3] prior_hypermean_val;
+  // int prior_control_fam;
+  // vector[3] prior_control_val;
+  // vector[3] prior_hypermean_val;
 
   //dispersions for effect and baselines:
   int prior_hypersd_fam;
@@ -115,13 +115,13 @@ model {
   if(pooling_type > 0){
     if(joint_prior_mean)
       mu[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
-    else {
-      target += prior_increment_real(prior_control_fam,   mu[1][1], prior_control_val);
-      target += prior_increment_real(prior_hypermean_fam, mu[1][2], prior_hypermean_val);
-    }
+    // else {
+    //   target += prior_increment_real(prior_control_fam,   mu[1][1], prior_control_val);
+    //   target += prior_increment_real(prior_hypermean_fam, mu[1][2], prior_hypermean_val);
+    // }
   } else {
-    for(k in 1:K)
-      target += prior_increment_vec(prior_hypermean_fam, to_vector(eta[1]), prior_hypermean_val);
+    // for(k in 1:K)
+      // target += prior_increment_vec(prior_hypermean_fam, to_vector(eta[1][,k]), prior_hypermean_val);
   }
 
   if(pooling_type == 1) {

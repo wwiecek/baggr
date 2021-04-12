@@ -24,6 +24,6 @@ data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
 available_priors <- list(
   "real" = c("normal", "uniform", "cauchy"),
   "positive_real" = c("normal", "uniform", "cauchy"),
-  "R^n" = c("multinormal"),
-  "cov" = c("lkj")
+  "real_2" = c("multinormal"),
+  "corr" = c("lkj")
 )

@@ -28,6 +28,11 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
   prior_list <- list()
 
+  if(model %in% c("mutau", "mutau_full"))
+    re_dim <- 2
+  else
+    re_dim <- 1
+
   # Swap data for summary data...
   if(model %in% c("rubin_full", "logit", "mutau_full")) {
     pma_data <- data.frame(outcome = stan_data$y,
@@ -44,14 +49,22 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   }
   # ...then proceed as you would in Rubin model
 
-  if(model %in% c("rubin", "logit", "rubin_full", "sslab")) {
+  if(model %in% c("rubin", "mutau", "logit", "rubin_full", "sslab", "mutau_full")) {
     # For each model we need a list of what priors can be specified and
     # what families of distributions are allowed for them
     # (this second part should be changed to just specifying dimensionality/type)
+    # This must match names.R
     priors_spec <- list(
       "rubin" = c("hypermean" = "real", "hypersd" = "positive_real"),
       "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real",
                         "control" = "real", "control_sd" = "positive_real"),
+      "mutau" = c("hypermean" = "real_2",
+                  "hypercor" = "corr",
+                  "hypersd" = "positive_real"),
+      "mutau_full" = c("hypermean" = "real_2",
+                       "hypercor" = "corr",
+                       "hypersd" = "positive_real",
+                       "control_sd" = "positive_real"),
       "logit"  = c("hypermean" = "real", "hypersd" = "positive_real",
                    "control" = "real", "control_sd" = "positive_real"),
       "sslab"  = c("hypermean" = "real", "hypersd" = "positive_real",
@@ -75,8 +88,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       if(is.null(prior[[current_prior]])) {
         if(model != "sslab")
           default_prior_dist <- switch(current_prior,
-                                       "hypermean"  = normal(0, 10*max(abs(data$tau))),
+                                       "hypermean"  = if(re_dim == 1)
+                                         normal(0, 10*max(abs(data$tau)))
+                                       else
+                                         multinormal(c(0,0),
+                                                     c(100*max(abs(data$mu)), 100*max(abs(data$tau)))*diag(2)),
                                        "hypersd"    = uniform(0, 10*sd(data$tau)),
+                                       "hypercor"   = lkj(3),
                                        "control"    = normal(0, 10*max(abs(data$mu))),
                                        "control_sd" = uniform(0, 10*sd(data$mu))
           )
@@ -113,6 +131,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                                     default_prior_dist)
 
       } else {
+
+        # Expand Normal() to Normal_p() when P > 1
+        if(re_dim > 1 && prior[[current_prior]][["dist"]] == "normal")
+          prior$hypermean <- multinormal(rep(prior[[current_prior]]$values[1], 2),
+                                         (prior[[current_prior]]$values[2]^2)*diag(2))
+
         prior_list <- set_prior_val(prior_list,
                                     paste0("prior_", current_prior),
                                     prior[[current_prior]])
@@ -181,56 +205,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     check_eligible_priors(prior_list, priors_spec[[model]])
   }
 
-  # This is a special case for now.
-  if(model %in% c("mutau", "mutau_full")) {
-    # Remember, first row is always mu (baseline), second row is tau (effect)
-    # THIS WILL BE REVIDES TO USE control/control_sd type of specification
 
-    # Hypermean
-    if(is.null(prior$hypermean)){
-      val1 <- 100*max(abs(data$mu))
-      val2 <- 100*max(abs(data$tau))
-      # Behaviour for joint prior-type behaviour:
-      prior_list <- set_prior_val(prior_list, "prior_hypermean",
-                                  multinormal(c(0,0), c(val1, val2)*diag(2)))
-    } else {
-      if(prior$hypermean$dist == "normal")
-        prior$hypermean <- multinormal(rep(prior$hypermean$values[1], 2),
-                                       (prior$hypermean$values[2]^2)*diag(2))
-      if(prior$hypermean$dimension != 2)
-        stop("Prior for mu & tau model must have 2 dimensions.")
-      prior_list <- set_prior_val(prior_list, "prior_hypermean", prior$hypermean)
-    }
-
-    # Hyper-SD
-    if(is.null(prior$hypersd)){
-      val <- max(10*sd(data$mu), 10*sd(data$tau))
-      prior_list <- set_prior_val(prior_list, "prior_hypersd", cauchy(0,val))
-
-      if(!silent) {
-        message(paste0("Set hyper-SD prior using 10 times the naive SD across sites (",
-                       format(val, digits = 2), ")"))
-        message(paste0("* hyper-SD (mu, tau) ~ Cauchy(0,",
-                       format(val, digits = 2), ") (i.i.d.)"))
-      }
-    } else {
-      prior_list <- set_prior_val(prior_list, "prior_hypersd", prior$hypersd)
-    }
-
-    # Hypercorrelation (Only LKJ enabled for now)
-    if(is.null(prior$hypercor)){
-      prior_list$prior_hypercor_fam <- 4
-      prior_list$prior_hypercor_val <- 3
-      if(!silent) {
-        message(paste0("* hypercorrelation (mu, tau) ~ LKJ(shape=3)"))
-      }
-    } else {
-      prior_list <- set_prior_val(prior_list, "prior_hypercor", prior$hypercor)
-    }
-    # Make sure prior_list$prior_hypercor_val is an array:
-    prior_list$prior_hypercor_val <- array(prior_list$prior_hypercor_val, dim=c(1))
-
-  }
 
   if(model == "quantiles") {
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
@@ -245,7 +220,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     if(is.null(prior$beta)){
       val <- max(10*sd(data$mu), 10*sd(data$tau))
       prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, 10))
-      message(paste0("Set beta prior (on covariates in regression)to N(0, 10^2)",
+      message(paste0("Set beta prior (on covariates in regression) to N(0, 10^2)",
                      " -- purely experimental, use with caution"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
@@ -268,5 +243,10 @@ check_eligible_priors <- function(prior, spec) {
 
     if(!any(prior_dist_fam[allowed_dist] == prior[[paste0("prior_", nm, "_fam")]]))
       stop("Prior for ", nm, " must be one of the following: ", paste(allowed_dist, collapse = ", "))
+
+    if(spec[[nm]] == "real_2"){
+      if(length(prior[[paste0("prior_", nm, "_mean")]]) != 2)
+        stop("Prior for ", nm, " must have the dimension equal to 2")
+    }
   }
 }

@@ -275,7 +275,7 @@ test_that("baggr_compare basic cases work with Rubin", {
 
 test_that("loocv", {
   # Rubbish model
-  expect_error(loocv(schools, model = "rubbish"))
+  expect_error(loocv(schools, model = "rubbish"), "Inference failed")
   # Can't do pooling none
   expect_error(loocv(schools, pooling = "none"))
 
