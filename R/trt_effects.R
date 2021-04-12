@@ -23,18 +23,18 @@ treatment_effect <- function(bg, summary = FALSE,
     message("There is no treatment effect estimated when pooling = 'none'.")
     return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
-  if(bg$model %in% c("rubin", "mutau", "logit", "rubin_full")) {
+  if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
     tau <- rstan::extract(bg$fit, pars="mu")[[1]]
     if(bg$model %in% c("rubin", "logit"))
       tau <- c(tau)
-    if(bg$model == "mutau")
+    if(bg$model %in% c("mutau", "mutau_full"))
       tau <- tau[,1,2]
 
     if(bg$pooling == "partial"){
       sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
       if(bg$model %in% c("rubin", "logit"))
         sigma_tau <- c(sigma_tau)
-      if(bg$model == "mutau")
+      if(bg$model %in% c("mutau", "mutau_full"))
         sigma_tau <- sqrt(sigma_tau[,1,2,2])
     }
     if(bg$pooling == "full")

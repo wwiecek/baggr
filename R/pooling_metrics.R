@@ -114,7 +114,9 @@ pooling <- function(bg,
                       "mutau" = bg$data$se.tau,
                       "rubin" = bg$data$se,
                       "logit" = suppressMessages(prepare_ma(bg$data, effect = "logOR")$se),
-                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1])
+                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
+                      "mutau_full"  = group_effects(bg, summary = TRUE)[, "sd", 1]
+                      )
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))

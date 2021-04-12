@@ -64,13 +64,15 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
 
   } else {
     # choose correct columns for the given models:
-    if(bg$model %in% c("rubin", "mutau", "logit", "rubin_full")) {
+    if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
       #replace by extract:
       # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
       # drop mu if model has mu (baseline/control value)
-      if(bg$model == "mutau")
+      if(bg$model %in% "mutau")
         m <- m[,,2]
+      if(bg$model %in% "mutau_full")
+        m <- m[,1,2,]
 
       # If dealing with a meta-regression model, we automatically add effect of covariates
       # unless user requests random_only
