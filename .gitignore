@@ -2,8 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-*.hpp
 *.o
+*.h
 *.cc
 src-i386/
 src-x64/
