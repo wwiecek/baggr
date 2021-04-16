@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 *.o
+*.h
 *.cc
 src-i386/
 src-x64/
