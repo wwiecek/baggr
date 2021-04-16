@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-*.hpp
 *.o
 *.cc
 src-i386/
@@ -12,3 +11,5 @@ doc
 Meta
 misc/*
 log
+src/RcppExports.cpp
+src/*.h

@@ -120,8 +120,8 @@ model {
     //   target += prior_increment_real(prior_hypermean_fam, mu[1][2], prior_hypermean_val);
     // }
   } else {
-    // for(k in 1:K)
-      // target += prior_increment_vec(prior_hypermean_fam, to_vector(eta[1][,k]), prior_hypermean_val);
+    for(k in 1:K)
+      eta[1][,k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   }
 
   if(pooling_type == 1) {
