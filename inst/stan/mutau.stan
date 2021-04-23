@@ -74,7 +74,7 @@ model {
       target += prior_increment_real(prior_hypersd_fam,    hypersd[1][p], prior_hypersd_val);
 
     //for Omega only LKJ allowed for now
-    L_Omega[1] ~ lkj_corr(prior_hypercor_val);
+    L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);
   }
 
   if(pooling_type == 1 && K > 0) {
