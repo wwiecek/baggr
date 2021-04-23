@@ -45,7 +45,7 @@ transformed parameters {
   matrix[P,P] tau[pooling_type == 1? 1: 0];
 
   if(pooling_type == 0)
-    theta_k = eta;
+    theta_k[1] = eta[1];
   if(pooling_type == 1){
     tau[1] = diag_pre_multiply(hypersd[1], L_Omega[1]);
     theta_k[1] = rep_matrix(mu[1], K) + tau[1] * eta[1];
@@ -81,7 +81,7 @@ model {
     for (k in 1:K) {
       // theta_k[k] ~ multi_normal(mu[1], tau[1]);
       for(p in 1:P)
-        theta_hat_k[p,k] ~ normal(theta_k[k,p], se_theta_k[p,k]);
+        theta_hat_k[p,k] ~ normal(theta_k[1][p,k], se_theta_k[p,k]);
     }
   }
   if(pooling_type == 2 && K > 0)

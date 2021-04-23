@@ -69,9 +69,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
       # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
       # drop mu if model has mu (baseline/control value)
-      if(bg$model %in% "mutau")
-        m <- m[,,2]
-      if(bg$model %in% "mutau_full")
+      if(bg$model %in% c("mutau", "mutau_full"))
         m <- m[,1,2,]
 
       # If dealing with a meta-regression model, we automatically add effect of covariates
