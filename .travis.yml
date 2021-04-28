@@ -22,6 +22,5 @@ script:
     travis_wait 42 R CMD build .
     travis_wait 59 R CMD check baggr*tar.gz
 
-after_script:
-  - tar -ztvf baggr_*.tar.gz
-  - echo ${NOT_CRAN}
+after_success:
+  - Rscript -e 'covr::codecov()'
