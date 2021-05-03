@@ -80,13 +80,15 @@ treatment_effect <- function(bg, summary = FALSE,
 
 #' Make predictive draws from baggr model
 #'
-#' This function takes the samples of hyperparameters of a [baggr] model
-#' (typically hypermean and hyper-SD returned by [treatment_effect]) and draws values of
+#' This function takes the samples of hyperparameters from a [baggr] model
+#' (typically hypermean and hyper-SD, which you can see using [treatment_effect]) and draws values of
 #' new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 #' This can be used for both prior and posterior draws, depending on [baggr] model.
 #'
 #' @param x A `baggr` class object.
 #' @param transform a transformation (an R function) to apply to the result of a draw.
+#' @param summary logical; if TRUE returns summary statistics rather than samples from the distribution;
+#' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
 #' @param n How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
 #'
@@ -118,7 +120,7 @@ treatment_effect <- function(bg, summary = FALSE,
 #' "Interpretation of Random Effects Meta-Analyses".
 #' _BMJ 342 (10 February 2011)._ <https://doi.org/10.1136/bmj.d549>.
 #'
-effect_draw <- function(x, n, transform=NULL) {
+effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
   check_if_baggr(x)
 
   te <- treatment_effect(x)
@@ -129,7 +131,7 @@ effect_draw <- function(x, n, transform=NULL) {
     if(neffects > 1){
       if(n > nrow(te$tau))
         warning("Making more effect draws than there are available samples in Stan object.",
-                "Consider running baggr() with higher iter=.")
+                "Consider running baggr() with higher iter= setting")
       rows <- sample(nrow(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows,]
       te$sigma_tau <- te$sigma_tau[rows,]
@@ -137,21 +139,26 @@ effect_draw <- function(x, n, transform=NULL) {
     if(neffects == 1){
       if(n > length(te$tau))
         warning("Making more effect draws than there are available samples in Stan object.",
-                "Consider running baggr() with higher iter=.")
+                "Consider running baggr() with higher iter= setting")
       rows <- sample(length(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows]
       te$sigma_tau <- te$sigma_tau[rows]
     }
   }
 
-  # Make draws using normal distribution:
+  # Make draws using normal distribution (for now it's the only option)
   new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+
   if(neffects > 1){
     new_tau <- matrix(new_tau, nrow(te$tau), ncol(te$tau))
     colnames(new_tau) <- colnames(te$tau)
   }
   if(!is.null(transform))
     new_tau <- do.call(transform, list(new_tau))
+
+  if(summary) {
+    new_tau <- mint(new_tau, int=interval, median=TRUE, sd = TRUE)
+  }
 
   new_tau
 }
