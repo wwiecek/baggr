@@ -19,10 +19,5 @@ before_install:
   - mkdir -p ~/.R/
   - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
 
-script:
-  - |
-    travis_wait 42 R CMD build .
-    travis_wait 59 R CMD check rstantest*tar.gz
-
 after_success:
-  - travis_wait 60 Rscript -e 'covr::codecov()'
+  - travis_wait 120 Rscript -e 'covr::codecov()'
