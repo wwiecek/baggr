@@ -20,4 +20,4 @@ before_install:
   - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
 
 after_success:
-  - Rscript -e 'covr::codecov()'
+  - travis_wait 60 Rscript -e 'covr::codecov()'
