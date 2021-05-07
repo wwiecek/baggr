@@ -315,22 +315,28 @@ convert_inputs <- function(data,
         stop("Cannot bind data and test_data. Ensure that all ",
              "covariates are present and same levels are used.")
       data_bind$tau <- 0
-
       out$X_test <- model.matrix(as.formula(
         paste("tau ~", paste(covariates, collapse="+"), "-1")),
         data=data_bind[(nrow(data)+1):nrow(data_bind),])
     } else {
       data_bind <- data[,covariates, drop = FALSE]
       data_bind$tau <- 0
-      out$X_test <- array(0, dim=c(0, length(covariates)))
+
     }
 
+    # Covariates matrix preparation (based on checks done in test data)
     out$X <- model.matrix(as.formula(
       paste("tau ~", paste(covariates, collapse="+"), "-1")),
       data=data_bind[1:nrow(data),])
-    out$Nc <- length(covariates)
+    out$Nc <- ncol(out$X)
+
+    if(is.null(test_data))
+      out$X_test <- array(0, dim=c(0, out$Nc))
+
+    covariate_coding <- colnames(out$X)
 
   } else {
+    covariate_coding <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -350,6 +356,7 @@ convert_inputs <- function(data,
     out,
     data_type = available_data,
     data = data,
+    covariate_coding = covariate_coding,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))

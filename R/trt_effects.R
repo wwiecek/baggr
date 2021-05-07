@@ -118,7 +118,7 @@ treatment_effect <- function(bg, summary = FALSE,
 #' @references
 #' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 #' "Interpretation of Random Effects Meta-Analyses".
-#' _BMJ 342 (10 February 2011)._ <https://doi.org/10.1136/bmj.d549>.
+#' _BMJ 342 (10 February 2011)._ \doi{10.1136/bmj.d549}.
 #'
 effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
   check_if_baggr(x)
