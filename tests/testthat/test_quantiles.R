@@ -204,7 +204,8 @@ test_that("All basic quantile models tests", {
   # Drawing values of tau:
   # expect_error(effect_draw(cars))
   # expect_is(effect_draw(bg5_p), "numeric")
-  # expect_length(effect_draw(bg5_p), 200)
+  expect_length(effect_draw(bg5_p), 600)
+  expect_warning(effect_draw(bg5_p, 20000), "more effect draws than there are available samples")
   # expect_length(effect_draw(bg5_p,7), 7)
   # expect_identical(effect_draw(bg5_n), NA)
 

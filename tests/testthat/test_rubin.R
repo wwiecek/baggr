@@ -242,6 +242,11 @@ test_that("Extracting treatment/study effects works", {
   expect_is(effect_draw(bg5_p), "numeric")
   expect_length(effect_draw(bg5_p), 200)
   expect_length(effect_draw(bg5_p,7), 7)
+  eds1 <- effect_draw(bg5_p, summary = T)
+  eds2 <- effect_draw(bg5_p, summary = T, interval = .5)
+  expect_length(eds1, 5)
+  expect_gt(eds2[1], eds1[1]) #narrower interval
+  expect_warning(effect_draw(bg5_p, 1e05), "more effect draws than there are available samples")
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")
