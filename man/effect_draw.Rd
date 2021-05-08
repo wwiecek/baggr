@@ -4,7 +4,7 @@
 \alias{effect_draw}
 \title{Make predictive draws from baggr model}
 \usage{
-effect_draw(x, n, transform = NULL)
+effect_draw(x, n, transform = NULL, summary = FALSE, interval = 0.95)
 }
 \arguments{
 \item{x}{A \code{baggr} class object.}
@@ -13,14 +13,18 @@ effect_draw(x, n, transform = NULL)
 in the \code{baggr} object (see \emph{Details}).}
 
 \item{transform}{a transformation (an R function) to apply to the result of a draw.}
+
+\item{summary}{logical; if TRUE returns summary statistics rather than samples from the distribution;}
+
+\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
 }
 \value{
 A vector (with \code{n} values) for models with one treatment effect parameter,
 a matrix (\code{n} rows and same number of columns as number of parameters) otherwise.
 }
 \description{
-This function takes the samples of hyperparameters of a \link{baggr} model
-(typically hypermean and hyper-SD returned by \link{treatment_effect}) and draws values of
+This function takes the samples of hyperparameters from a \link{baggr} model
+(typically hypermean and hyper-SD, which you can see using \link{treatment_effect}) and draws values of
 new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 This can be used for both prior and posterior draws, depending on \link{baggr} model.
 }
@@ -43,7 +47,7 @@ setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
 \references{
 Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 "Interpretation of Random Effects Meta-Analyses".
-\emph{BMJ 342 (10 February 2011).} \url{https://doi.org/10.1136/bmj.d549}.
+\emph{BMJ 342 (10 February 2011).} \doi{10.1136/bmj.d549}.
 }
 \seealso{
 \link{treatment_effect} returns samples of hypermean and hyper-SD

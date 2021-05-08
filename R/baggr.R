@@ -286,11 +286,15 @@ baggr <- function(data, model = NULL, pooling = "partial",
                                           "none" = 0,
                                           "partial" = 1,
                                           "full" = 2)
-    # FOR NOW WE DO NOT ENABLE POOLING OF CONTROLS
-    if(model %in% c("logit", "rubin_full"))
+    if(model %in% c("logit", "rubin_full", "mutau_full"))
       stan_data[["pooling_baseline"]] <- switch(pooling_control,
                                                 "none" = 0,
                                                 "partial" = 1)
+    if(model == "mutau_full"){
+      # For now this model only used for joint prior
+      stan_data[["joint_prior_mean"]] <- 1
+      stan_data[["joint_prior_variance"]] <- 1
+    }
     if(!(pooling_control %in% c("none", "partial")))
       stop('Wrong pooling_control parameter; choose from c("none", "partial")')
   } else {

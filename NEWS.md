@@ -1,3 +1,25 @@
+# baggr 0.6.3 (May 2021)
+
+* A few documentation fixes for re-submission iof v0.6 to CRAN (first one since v0.4).
+* Added `summary` option for `effect_draw`.
+* Factor covariates will work now.
+
+
+# baggr 0.6.2 (April 2021)
+
+* New `"mutau_full"` model is a generalisation of the `"mutau"` model into individual-level data.
+  The idea is similar as for the recent `"rubin_full"` changes, see version 0.6.0.
+  
+* I also reparameterised the `mutau` model. It should be faster and have fewer divergent 
+  transition warnings.Some of the code around the mu and tau model has also been 
+  rewritten on the back end.
+
+
+On the back end the package now follows the rstantools recommended way of compiling models.
+The user experience should be exactly the same, but this may avoid some problems 
+when installing the package from GitHub or otherwise compiling it locally.
+
+
 # baggr 0.6.0 (February 2021)
 
 ### New features

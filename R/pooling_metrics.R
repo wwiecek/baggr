@@ -77,14 +77,14 @@
 #' @references
 #' Gelman, Andrew, and Iain Pardoe.
 #' "Bayesian Measures of Explained Variance and Pooling in Multilevel (Hierarchical) Models."
-#' _Technometrics 48, no. 2 (May 2006): 241-51_. <https://doi.org/10.1198/004017005000000517>.
+#' _Technometrics 48, no. 2 (May 2006): 241-51_. \doi{10.1198/004017005000000517}.
 #'
 #' Higgins, Julian P. T., and Simon G. Thompson.
 #' “Quantifying Heterogeneity in a Meta-Analysis.”
-#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. <https://doi.org/10.1002/sim.1186>.
+#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. \doi{10.1002/sim.1186}.
 #'
 #' Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
-#' _BMC Medical Research Methodology 15 (April 14, 2015)._ <https://doi.org/10.1186/s12874-015-0024-z>.
+#' _BMC Medical Research Methodology 15 (April 14, 2015)._ \doi{10.1186/s12874-015-0024-z}.
 #'
 #' @return Matrix with mean and intervals for chosen pooling metric,
 #'         each row corresponding to one meta-analysis group.
@@ -114,7 +114,9 @@ pooling <- function(bg,
                       "mutau" = bg$data$se.tau,
                       "rubin" = bg$data$se,
                       "logit" = suppressMessages(prepare_ma(bg$data, effect = "logOR")$se),
-                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1])
+                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
+                      "mutau_full"  = group_effects(bg, summary = TRUE)[, "sd", 1]
+                      )
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))

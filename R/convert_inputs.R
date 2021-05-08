@@ -122,7 +122,7 @@ convert_inputs <- function(data,
           "Baselines for all these groups should be included in data argument.")
     }
 
-    if(model %in% c("rubin_full", "logit")){
+    if(model %in% c("rubin_full", "mutau_full", "logit")){
       out <- list(
         K = max(group_numeric),
         N = nrow(data),
@@ -139,7 +139,7 @@ convert_inputs <- function(data,
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
         out$test_treatment <- array(0, dim = 0)
-        if(model == "rubin_full")
+        if(model %in% c("rubin_full", "mutau_full"))
           out$test_sigma_y_k <- array(0, dim = 0)
 
       } else {
@@ -149,7 +149,7 @@ convert_inputs <- function(data,
         out$test_treatment <- test_data[[treatment]]
         out$test_site <- group_numeric_test
         # calculate SEs in each test group
-        if(model == "rubin_full"){
+        if(model %in% c("rubin_full", "mutau_full")){
           se_in_each_group <- sapply(
             1:max(group_numeric_test), function(i) {
               n <- sum(group_numeric_test == i)
@@ -315,22 +315,28 @@ convert_inputs <- function(data,
         stop("Cannot bind data and test_data. Ensure that all ",
              "covariates are present and same levels are used.")
       data_bind$tau <- 0
-
       out$X_test <- model.matrix(as.formula(
         paste("tau ~", paste(covariates, collapse="+"), "-1")),
         data=data_bind[(nrow(data)+1):nrow(data_bind),])
     } else {
       data_bind <- data[,covariates, drop = FALSE]
       data_bind$tau <- 0
-      out$X_test <- array(0, dim=c(0, length(covariates)))
+
     }
 
+    # Covariates matrix preparation (based on checks done in test data)
     out$X <- model.matrix(as.formula(
       paste("tau ~", paste(covariates, collapse="+"), "-1")),
       data=data_bind[1:nrow(data),])
-    out$Nc <- length(covariates)
+    out$Nc <- ncol(out$X)
+
+    if(is.null(test_data))
+      out$X_test <- array(0, dim=c(0, out$Nc))
+
+    covariate_coding <- colnames(out$X)
 
   } else {
+    covariate_coding <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -350,6 +356,7 @@ convert_inputs <- function(data,
     out,
     data_type = available_data,
     data = data,
+    covariate_coding = covariate_coding,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))

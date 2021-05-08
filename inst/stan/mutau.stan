@@ -14,9 +14,9 @@ data {
   vector[P] prior_hypermean_mean;
   matrix<lower=0>[P, P] prior_hypermean_scale;
   int prior_hypersd_fam;
-  real prior_hypersd_val[3];
+  vector[3] prior_hypersd_val;
   int prior_hypercor_fam; //only LKJ allowed for now...
-  real prior_hypercor_val[1];
+  real prior_hypercor_val;
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites
@@ -35,46 +35,53 @@ transformed data {
 
 parameters {
   vector[P] mu[pooling_type != 0? 1: 0];
-  vector[P] theta_k[K_pooled];
-  corr_matrix[P] Omega[pooling_type == 1? 1: 0];        //  correlation
+  cholesky_factor_corr[P] L_Omega[pooling_type == 1? 1: 0];
   vector<lower=0>[P] hypersd[pooling_type == 1? 1: 0];    //  scale
+  matrix[P,K] eta[pooling_type != 2? 1: 0];
 }
 
 transformed parameters {
+  matrix[P,K] theta_k[pooling_type != 2? 1: 0];
   matrix[P,P] tau[pooling_type == 1? 1: 0];
-  if(pooling_type == 1)
-    tau[1] = quad_form_diag(Omega[1],hypersd[1]);
+
+  if(pooling_type == 0)
+    theta_k[1] = eta[1];
+  if(pooling_type == 1){
+    tau[1] = diag_pre_multiply(hypersd[1], L_Omega[1]);
+    theta_k[1] = rep_matrix(mu[1], K) + tau[1] * eta[1];
+  }
 }
 
 model {
 
   // priors: hypermean
-  if(pooling_type == 0 && K > 0)
-    for (k in 1:K)
-      theta_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+  // if(pooling_type == 0 && K > 0)
+    // for (k in 1:K)
+      // theta_k[k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   if(pooling_type != 0) {
     if(prior_hypermean_fam == 3) //only LKJ allowed at the moment
       mu[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+  } else {
+    for(k in 1:K)
+      eta[1][,k] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
   }
 
   //priors variance/correlation
   if(pooling_type == 1) {
-    if(prior_hypersd_fam == 0)
-      hypersd[1] ~ uniform(prior_hypersd_val[1], prior_hypersd_val[2]);
-    if(prior_hypersd_fam == 1)
-      hypersd[1] ~ normal(prior_hypersd_val[1], prior_hypersd_val[2]);
-    if(prior_hypersd_fam == 2)
-      hypersd[1] ~ cauchy(prior_hypersd_val[1], prior_hypersd_val[2]);
+    to_vector(eta[1]) ~ std_normal();
+
+    for(p in 1:P)
+      target += prior_increment_real(prior_hypersd_fam,    hypersd[1][p], prior_hypersd_val);
 
     //for Omega only LKJ allowed for now
-    Omega[1] ~ lkj_corr(prior_hypercor_val[1]);
+    L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);
   }
 
   if(pooling_type == 1 && K > 0) {
     for (k in 1:K) {
-      theta_k[k] ~ multi_normal(mu[1], tau[1]);
+      // theta_k[k] ~ multi_normal(mu[1], tau[1]);
       for(p in 1:P)
-        theta_hat_k[p,k] ~ normal(theta_k[k,p], se_theta_k[p,k]);
+        theta_hat_k[p,k] ~ normal(theta_k[1][p,k], se_theta_k[p,k]);
     }
   }
   if(pooling_type == 2 && K > 0)

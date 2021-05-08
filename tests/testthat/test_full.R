@@ -104,15 +104,15 @@ test_that("baggr comparison method works for rubin_full model", {
 test_that("rubin_full cross-validation works", {
   # Run it first with test data that includes baseline, this will gen a message:
   bg <- expect_warning(expect_message(
-    baggr(dplyr::filter(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-          test_data = dplyr::filter(schools_ipd, group == "School A")),
+    baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
+          test_data = subset(schools_ipd, group == "School A")),
     "Baselines for all these groups"
   )
   )
 
   # Now repeat without bsl data
-  bg <- expect_warning(baggr(dplyr::filter(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-          test_data = dplyr::filter(schools_ipd, group == "School A", treatment == 1)))
+  bg <- expect_warning(baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
+          test_data = subset(schools_ipd, group == "School A" & treatment == 1)))
   expect_is(bg, "baggr")
   expect_gt(bg$mean_lpd, 0)
 })
