@@ -321,9 +321,9 @@ bg_bd <- baggr(dt_bd, group = "study", model = "rubin", iter = 4000,
 test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
   expect_equal(mean(treatment_effect(bg_bd)$tau), 0.22, tolerance = .01)
   expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .025)),
-               0.13, tolerance = .015)
+               0.13, tolerance = .02)
   expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .975)),
-               0.31, tolerance = .015)
+               0.31, tolerance = .02)
 })
 
 
