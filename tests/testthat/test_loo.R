@@ -41,15 +41,15 @@ baggr_kfold <- expect_warning(loocv(schools,
 
 # baggr_ranef <- group_effects(baggr_fit, summary = T)[]
 test_that(desc = "baggr and brms are at least close", {
+  skip_on_cran()
+
   # cross-validation scores
   expect_lt(brms_kfold$estimates[1,1] - baggr_kfold$elpd, 1)
-})
 
-# should be 0
-comp <- loo_compare(baggr_kfold, baggr_kfold)
+  # should be 0
+  comp <- loo_compare(baggr_kfold, baggr_kfold)
 
-# test various things about the loo comparison method
-test_that(desc = "loo_compare method works", {
+  # test various things about the loo comparison method
   expect_error(loo_compare(baggr_kfold, brms_kfold))
   expect_error(loo_compare(list(baggr_kfold, brms_kfold)))
   expect_equal(comp[,1], 0)
