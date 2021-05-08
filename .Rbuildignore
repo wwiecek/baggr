@@ -12,3 +12,4 @@
 LICENSE$
 ^CRAN-RELEASE$
 ^codecov\.yml$
+^tools/checkcoverage.R

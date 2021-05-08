@@ -72,6 +72,7 @@ test_that("All basic quantile models tests", {
 
   # skip("Test")
   skip_on_cran()
+  skip_on_travis()
 
   # There will always be divergent transitions / ESS warning produced by Stan
   # at iter = 200.
@@ -262,6 +263,7 @@ test_that("Test data can be used in the quantiles model", {
   df_test <- df_quantiles[df_quantiles$group >= 3,]
 
   skip_on_cran()
+  skip_on_travis()
 
   bg_lpd <- expect_warning(baggr(df_notest, test_data = df_test, model = "quantiles",
                                  quantiles = chosen_quantiles, iter = 200, refresh = 0))

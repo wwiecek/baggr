@@ -203,6 +203,7 @@ test_that("loocv", {
   expect_error(loocv(df_binary, pooling = "none"))
 
   skip_on_cran()
+  skip_on_travis()
 
   loo_model <- expect_warning(loocv(df_binary, model = "logit",
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
