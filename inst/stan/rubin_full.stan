@@ -3,14 +3,14 @@ functions {
 }
 
 data {
-  int<lower=0> K;  // number of sites
+  // SHARED ACROSS FULL MODELS:
   int<lower=0> N;  // total number of observations
+  int<lower=0> K;  // number of sites
   int<lower=0> Nc; //number of covariates (fixed effects)
   matrix[N,Nc] X;  //covariate values (design matrix for FE)
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int pooling_baseline; //pooling for proportions in control arm;
                         //0 if none, 1 if partial
-  int<lower=0,upper=1> y[N];
   int<lower=0,upper=K> site[N];
   vector<lower=0,upper=1>[N] treatment;
 
@@ -31,9 +31,14 @@ data {
   int<lower=0> N_test;
   int<lower=0> K_test;
   matrix[N_test, Nc] X_test;
-  int<lower=0,upper=1> test_y[N_test];
   int<lower=0, upper=K> test_site[N_test];
   int<lower=0, upper=1> test_treatment[N_test];
+
+  // NORMAL specific:
+  real y[N];
+  real test_y[N_test];
+  real test_sigma_y_k[K_test];
+
 }
 transformed data {
   int K_pooled; // number of modelled sites if we take pooling into account
@@ -43,14 +48,17 @@ transformed data {
     K_pooled = K;
 }
 parameters {
-  // vector[K] baseline_k;
+  // SHARED ACROSS FULL MODELS:
   real mu_baseline[pooling_baseline != 0? 1: 0];
-  real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
   real mu[pooling_type != 0? 1: 0];
+  real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
   real<lower=0> tau[pooling_type == 1? 1: 0];
   vector[K_pooled] eta;
   vector[K] eta_baseline;
   vector[Nc] beta;
+
+  // NORMAL specific:
+  real<lower=0> sigma_y_k[K];
 }
 transformed parameters {
   vector[K_pooled] theta_k;
@@ -67,6 +75,14 @@ transformed parameters {
     baseline_k = rep_vector(mu_baseline[1], K) + tau_baseline[1]*eta_baseline;
 }
 model {
+  // SHARED ACROSS FULL MODELS:
+  vector[N] fe;
+  if(N > 0){
+    if(Nc == 0)
+      fe = rep_vector(0.0, N);
+    else
+      fe = X*beta;
+  }
 
   //controls/baselines (hyper)priors
   if(pooling_baseline == 0)
@@ -95,48 +111,32 @@ model {
   if(pooling_type == 1)
     eta ~ normal(0,1);
 
-
-  // Branching logic to account for fixed-effects yes/no, full pooling yes/no
-  if(pooling_type < 2){
-    if(Nc == 0){
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i]);
-    }else{
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + X[i,]*beta);
-    }
-  }
-  if(pooling_type == 2) {
-    if(Nc == 0){
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i]);
-    }else{
-      for(i in 1:N)
-        y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i] + X[i,]*beta);
-    }
+  // NORMAL specific:
+  for(i in 1:N){
+    if(pooling_type < 2)
+      y[i] ~ normal(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + fe[i], sigma_y_k[site[i]]);
+    if(pooling_type == 2)
+      y[i] ~ normal(baseline_k[site[i]] + mu[1] * treatment[i] + fe[i], sigma_y_k[site[i]]);
   }
 }
-
-
 generated quantities {
+  // to do this, we must first (outside of Stan) calculate SEs in each test group,
+  // i.e. test_sigma_y_k
   real logpd[K_test > 0? 1: 0];
-  real theta_k_test[K_test];
+  vector[N_test] fe_test;
   if(K_test > 0){
+    if(Nc == 0)
+      fe_test = rep_vector(0.0, N_test);
+    else
+      fe_test = X_test*beta;
     logpd[1] = 0;
-    if(pooling_type != 0){
-      for(k in 1:K_test)
-      theta_k_test[k] = normal_rng(mu[1], tau[1]);
-      // This will only work if we predict for baselines which are already estimated
-      if(Nc == 0){
-        for(i in 1:N_test)
-          logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
-                                           theta_k_test[test_site[i]] * test_treatment[i]);
-      } else {
-        for(i in 1:N_test)
-          logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
-                                           theta_k_test[test_site[i]] * test_treatment[i] + X_test*beta);
-      }
+    for(i in 1:N_test){
+      if(pooling_type == 1)
+        logpd[1] += normal_lpdf(test_y[i] | baseline_k[test_site[i]] + mu[1] * test_treatment[i] + fe_test[i],
+                                sqrt(tau[1]^2 + test_sigma_y_k[test_site[i]]^2));
+      if(pooling_type == 2)
+        logpd[1] += normal_lpdf(test_y[i] | baseline_k[test_site[i]] + mu[1] * test_treatment[i] + fe_test[i],
+                                sqrt(test_sigma_y_k[test_site[i]]^2));
     }
   }
 }
-

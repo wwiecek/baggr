@@ -77,14 +77,14 @@
 #' @references
 #' Gelman, Andrew, and Iain Pardoe.
 #' "Bayesian Measures of Explained Variance and Pooling in Multilevel (Hierarchical) Models."
-#' _Technometrics 48, no. 2 (May 2006): 241-51_. <https://doi.org/10.1198/004017005000000517>.
+#' _Technometrics 48, no. 2 (May 2006): 241-51_. \doi{10.1198/004017005000000517}.
 #'
 #' Higgins, Julian P. T., and Simon G. Thompson.
 #' “Quantifying Heterogeneity in a Meta-Analysis.”
-#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. <https://doi.org/10.1002/sim.1186>.
+#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_. \doi{10.1002/sim.1186}.
 #'
 #' Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
-#' _BMC Medical Research Methodology 15 (April 14, 2015)._ <https://doi.org/10.1186/s12874-015-0024-z>.
+#' _BMC Medical Research Methodology 15 (April 14, 2015)._ \doi{10.1186/s12874-015-0024-z}.
 #'
 #' @return Matrix with mean and intervals for chosen pooling metric,
 #'         each row corresponding to one meta-analysis group.
@@ -104,32 +104,34 @@ pooling <- function(bg,
     return(array(1, c(3, bg$n_groups, bg$n_parameters)))
 
   # we'll replace by switch() in the future
-  if(bg$model %in% c("rubin", "mutau", "logit", "full")) {
-
+  # if(bg$model %in% c("rubin", "mutau", "logit", "rubin_full")) {
+  if(bg$n_parameters == 1) {
+    # 1-dimensional vector of S values (S=N samples)
     sigma_tau <- treatment_effect(bg)$sigma_tau
 
-    # Grab the appropriate SE:
-    if(bg$model == "mutau")
-      sigma_k <- bg$data$se.tau
-    if(bg$model == "rubin")
-      sigma_k <- bg$data$se
-    if(bg$model == "logit")
-      sigma_k <- suppressMessages(prepare_ma(bg$data, effect = "logOR")$se)
-    if(bg$model == "full")
-      sigma_k <- group_effects(bg, summary = TRUE)[, "sd", 1]
+    # Grab the appropriate SE (k values)
+    sigma_k <- switch(bg$model,
+                      "mutau" = bg$data$se.tau,
+                      "rubin" = bg$data$se,
+                      "logit" = suppressMessages(prepare_ma(bg$data, effect = "logOR")$se),
+                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
+                      "mutau_full"  = group_effects(bg, summary = TRUE)[, "sd", 1]
+                      )
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
     if(type == "total")
       ret <- replicate(1, mean(sigma_k^2) / (mean(sigma_k^2) + sigma_tau^2))
-    ret <- replicate(1, ret) #third dim is always N parameters, by convention
+
+    ret <- replicate(1, ret) #third dim is always N parameters, by convention,
+                             #so we set it to 1 here
 
   } else if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension
     # which is number of quantiles; so if sigma_tau above is sigma of trt effect
     # here it is N effects on N quantiles etc.
 
-    # discard everything off-diagonal, we only care about variances here:
+    # Nq-dimensional sigma_tau
     sigma_tau <- treatment_effect(bg)$sigma_tau
     # for(i in 1:dim(sigma_tau)[2])
       # sigma_tau[,i,1] <- sigma_tau[,i,i]
@@ -154,8 +156,23 @@ pooling <- function(bg,
 
     if(type == "total"){
       warning("Total pooling not implemented for quantiles model")
-      ret <- 0
+      return(array(NA, c(3, bg$n_groups, bg$n_parameters)))
     }
+  } else if(bg$model == "sslab") {
+    if(type == "total"){
+      warning("Total pooling not implemented for spike & slab model")
+      return(array(NA, c(3, bg$n_groups, bg$n_parameters)))
+    }
+
+    # Must calculate pooling for each effect vector?
+    te <- treatment_effect(bg)$sigma_tau
+    ge <- group_effects(bg, summary = T)[,"sd",]
+    sigma_tau <- aperm(replicate(5, te), c(1,3,2))
+    sigma_k   <- aperm(replicate(dim(sigma_tau)[1], ge), c(3,1,2))
+    ret <- sigma_k / (sigma_k + sigma_tau)
+
+  } else {
+    stop("Cannot calculate pooling metrics.")
   }
 
   if(summary)
@@ -169,3 +186,4 @@ pooling <- function(bg,
 #' @export
 heterogeneity <- function(bg, summary = TRUE)
   pooling(bg, type = "total", summary = summary)
+

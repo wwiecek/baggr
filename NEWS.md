@@ -1,3 +1,51 @@
+# baggr 0.6.3 (May 2021)
+
+* A few documentation fixes for re-submission iof v0.6 to CRAN (first one since v0.4).
+* Added `summary` option for `effect_draw`.
+* Factor covariates will work now.
+
+
+# baggr 0.6.2 (April 2021)
+
+* New `"mutau_full"` model is a generalisation of the `"mutau"` model into individual-level data.
+  The idea is similar as for the recent `"rubin_full"` changes, see version 0.6.0.
+  
+* I also reparameterised the `mutau` model. It should be faster and have fewer divergent 
+  transition warnings.Some of the code around the mu and tau model has also been 
+  rewritten on the back end.
+
+
+On the back end the package now follows the rstantools recommended way of compiling models.
+The user experience should be exactly the same, but this may avoid some problems 
+when installing the package from GitHub or otherwise compiling it locally.
+
+
+# baggr 0.6.0 (February 2021)
+
+### New features
+
+* Spike and slab model can be called via `model="sslab"`. See `?baggr` for basics of
+  working with this type of a model. A vignette will be added soon.
+* Rubin model with full data is now called via `model="rubin_full"` rather than `"full"`. 
+  Old syntax will still work, however. Made some documentation and code improvements
+  around this issue.
+* Leave-one-out cross-validation works for `model="rubin_full"` now. It works the same 
+  way as for `model="logit"`. See `?baggr` for more information on how to use it.
+* It's now possible to use `model="rubin"` with the same inputs as `model="mutau"`.
+  Some data columns are removed automatically in that case.
+
+For v0.6 we added more generic code around plotting, printing, grabbing treatment effects
+etc. While there are no differences on the front-end, this means that for the next
+versions we will be able to consider some new models and have more homogeneous syntax
+for all models.
+
+### Bugs
+
+* Fixed a few issues with formatting data for individual-level data models.
+* Fixed a major bug with distributions of baselines in the `rubin_full` (`full`) model.
+* Fixed glitchy display for some `baggr_compare` plots.
+
+
 # baggr 0.5.0 (June 2020)
 
 ### New features
@@ -15,6 +63,7 @@
 * There are experimental features for working with models of quantiles. 
   We advise against fitting such models using the package until these features
   have been fully tested and documented.
+  
 
 ### Bug fixes
 

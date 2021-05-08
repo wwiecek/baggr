@@ -82,7 +82,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   # Prepare the arguments
   args[["data"]] <- data
   args[["model"]] <- full_fit$model
-  # if(full_fit$model == "full")
+  # if(full_fit$model == "rubin_full")
     # stop("LOO CV is not implemented for full data models yet.")
   if(!("prior" %in% names(args))) {
     message("(Prior distributions taken from the model with all data. See $prior.)")
@@ -90,7 +90,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   }
 
   # Determine number and names of groups
-  if(args[["model"]] %in% c("full", "quantiles", "logit")) {
+  if(args[["model"]] %in% c("rubin_full", "quantiles", "logit")) {
     #For individual-level data models we need to calculate N groups
     if(!is.null(args[["group"]]))
       group_col <- args[["group"]]
@@ -113,10 +113,12 @@ loocv <- function(data, return_models = FALSE, ...) {
   cat("\n")
   pb <- utils::txtProgressBar(style = 3)
   kfits <- lapply(as.list(1:K), function(i) {
-    if(args[["model"]] %in% c("full", "quantiles")) {
+
+    # Partitioning data into the fit data and LOO
+    if(args[["model"]] %in% c("quantiles")) {
       args$data      <- data[data[[group_col]] != group_names[i], ]
       args$test_data <- data[data[[group_col]] == group_names[i], ]
-    } else if(args[["model"]] == "logit") {
+    } else if(args[["model"]] %in% c("rubin_full", "logit")) {
       trt_column <- ifelse(is.null(args[["treatment"]]), "treatment", args[["treatment"]])
       args$data      <- data[data[[group_col]] != group_names[i] | data[[trt_column]] == 0, ]
       args$test_data <- data[data[[group_col]] == group_names[i] & data[[trt_column]] == 1, ]
@@ -124,6 +126,7 @@ loocv <- function(data, return_models = FALSE, ...) {
       args$data      <- data[-i,]
       args$test_data <- data[i,]
     }
+    # Done partitioning data.
 
     utils::setTxtProgressBar(pb, (i-1)/K)
 

@@ -8,7 +8,8 @@ effect_plot(..., transform = NULL)
 }
 \arguments{
 \item{...}{Object(s) of class \link{baggr}. If there is more than one,
-the names of objects will be used as a plot legend (see example).}
+a comparison will be plotted and  names of objects
+will be used as a plot legend (see examples).}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
 (this is commonly used when calling \code{group_effects} from other

@@ -178,14 +178,23 @@ test_that("Test data can be used in the Rubin model", {
 sa <- schools
 sa$a <- rnorm(8)
 sa$b <- rnorm(8)
+sa$f <- as.factor(c(rep("Yes", 4), rep("No", 4)))
+
 sb <- sa
 sb$b <- NULL
-bg_cov <- baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0)
-bg_cov_test <- baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0)
-bg_cov_prior1 <- baggr(sa, covariates = c("a", "b"),
-                       iter = 200, refresh = 0, prior_beta = normal(0, 3))
-bg_cov_prior2 <- baggr(sa, covariates = c("a", "b"),
-                       iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5)))
+bg_cov <- expect_warning(
+  baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0))
+bg_cov_factor <- expect_warning(
+  baggr(sa, covariates = c("f"), iter = 200, refresh = 0))
+expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fNo", "fYes"))
+bg_cov_test <- expect_warning(
+  baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0))
+bg_cov_prior1 <- expect_warning(
+  baggr(sa, covariates = c("a", "b"),
+        iter = 200, refresh = 0, prior_beta = normal(0, 3)))
+bg_cov_prior2 <- expect_warning(
+  baggr(sa, covariates = c("a", "b"),
+        iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5))))
 
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")
@@ -233,6 +242,11 @@ test_that("Extracting treatment/study effects works", {
   expect_is(effect_draw(bg5_p), "numeric")
   expect_length(effect_draw(bg5_p), 200)
   expect_length(effect_draw(bg5_p,7), 7)
+  eds1 <- effect_draw(bg5_p, summary = T)
+  eds2 <- effect_draw(bg5_p, summary = T, interval = .5)
+  expect_length(eds1, 5)
+  expect_gt(eds2[1], eds1[1]) #narrower interval
+  expect_warning(effect_draw(bg5_p, 1e05), "more effect draws than there are available samples")
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")
@@ -271,7 +285,7 @@ test_that("baggr_compare basic cases work with Rubin", {
 
 test_that("loocv", {
   # Rubbish model
-  expect_error(loocv(schools, model = "rubbish"))
+  expect_error(loocv(schools, model = "rubbish"), "Inference failed")
   # Can't do pooling none
   expect_error(loocv(schools, pooling = "none"))
 
@@ -307,9 +321,9 @@ bg_bd <- baggr(dt_bd, group = "study", model = "rubin", iter = 4000,
 test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
   expect_equal(mean(treatment_effect(bg_bd)$tau), 0.22, tolerance = .01)
   expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .025)),
-               0.13, tolerance = .015)
+               0.13, tolerance = .02)
   expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .975)),
-               0.31, tolerance = .015)
+               0.31, tolerance = .02)
 })
 
 
@@ -332,20 +346,30 @@ test_that("baggr comparison method works for Rubin model", {
   expect_gt(length(comp_rbpl), 0)
   expect_gt(length(comp_rbpr), 0)
 
-  expect_is(plot(comp_rbpl), "plot_list")
-  expect_is(plot(comp_rbpl)[[1]], "ggplot")
+  expect_is(plot(comp_rbpl), "gg")
 
-  expect_is(plot(comp_rbpr), "ggplot")
+  expect_is(plot(comp_rbpr), "gg")
 
-  expect_is(plot(comp_rbpl, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_rbpl, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_rbpl, grid_models = TRUE), "gtable")
 
-  expect_is(plot(comp_rbpr, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_rbpr, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_rbpr, grid_models = TRUE), "gtable")
 })
-
-
 
 test_that("Plot quantiles", {
   expect_error(plot_quantiles(bg5_p))
+})
+
+test_that("You can run Rubin model with mutau type inputs", {
+  df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                         "se.tau" = rep(1, 8),
+                         "mu" = rnorm(8),
+                         "se.mu" = rep(1, 8),
+                         "state" = datasets::state.name[1:8])
+  bg <- expect_warning(baggr(df_mutau, model = "rubin", iter = 20, refresh = 0))
+  expect_is(bg, "baggr")
+  expect_equal(bg$model, "rubin")
+  bg <- expect_warning(baggr(df_mutau[1:6,], test_data = df_mutau[7:8,],
+                             model = "rubin", iter = 20, refresh = 0))
+  expect_is(bg, "baggr")
+  expect_gt(bg$mean_lpd, 0)
 })

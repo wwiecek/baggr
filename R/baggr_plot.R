@@ -37,17 +37,12 @@ baggr_plot <- function(bg, hyper=FALSE,
                        style = "intervals",
                        transform = NULL,
                        prob = 0.5, prob_outer = 0.95,
-                       vline = TRUE, order = TRUE, ...) {
+                       vline = FALSE, order = TRUE, ...) {
   if(attr(bg, "ppd")){
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))
   }
   m <- group_effects(bg, transform = transform)
-  if(hyper){
-    te <- treatment_effect(bg)$tau
-    if(!is.null(transform))
-      te <- do.call(transform, list(te))
-  }
   effect_labels <- bg$effects
 
   if(!(style %in% c("areas", "intervals")))
@@ -60,13 +55,19 @@ baggr_plot <- function(bg, hyper=FALSE,
 
   ret_list <- lapply(as.list(1:dim(m)[3]), function(i) {
     if(order)
-      mat_to_plot <- m[,order(apply(m[,,i], 2, mean)),i] #assigning to m[,,i] wouldn't reorder dimnames
+      #assigning to m[,,i] wouldn't reorder dimnames
+      mat_to_plot <- m[,order(apply(m[,,i], 2, mean)),i]
     else
       mat_to_plot <- m[,,i]
-    if(hyper){
-      mat_to_plot <- cbind(mat_to_plot, te)
-      colnames(mat_to_plot)[ncol(mat_to_plot)] <- effect_labels[i]
+    if(hyper && bg$pooling != "none"){
+      ate <- treatment_effect(bg, transform = transform)$tau
+      if(length(bg$effects) > 1) #ATE is a matrix
+        mat_to_plot <- cbind(mat_to_plot, ate[,i])
+      else #ATE is a vector
+        mat_to_plot <- cbind(mat_to_plot, ate)
+      colnames(mat_to_plot)[ncol(mat_to_plot)] <- "Hypermean"
     }
+
     p <- switch(style,
                 "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob, prob_outer = prob_outer, ...),
                 "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob, prob_outer = prob_outer, ...))

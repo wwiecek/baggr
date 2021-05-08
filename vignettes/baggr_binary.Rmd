@@ -1,12 +1,12 @@
 ---
-title: "Meta-analysis of binary data with baggr: a case study"
+title: "Meta-analysis of binary data with baggr"
 author: "Witold Wiecek"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{baggr_binary}
+  %\VignetteIndexEntry{Meta-analysis of binary data with baggr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: baggr.bib
@@ -362,7 +362,7 @@ bgc <- baggr_compare(
   "Individual data" = bg_rare_ind
 )
 bgc
-plot(bgc)[[1]] + theme(legend.position = "right")
+plot(bgc) + theme(legend.position = "right")
 ```
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. 
 
@@ -454,7 +454,7 @@ bgc
 ```
 
 ```{r}
-plot(bgc)[[1]] + theme(legend.position = "right")
+plot(bgc) + theme(legend.position = "right")
 ```
 
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
