@@ -40,7 +40,7 @@
 #' To see sampling progress, please set e.g. `loocv(data, refresh = 500)`.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # even simple examples may take a while
 #' cv <- loocv(schools, pooling = "partial")
 #' print(cv)      # returns the lpd value
@@ -189,8 +189,8 @@ is.baggr_cv <- function(x) {
 #' @param ... Additional objects of class "baggr_cv"
 #' @export loo_compare
 #' @examples
-#' \donttest{
-#' # 2 models with more/less informative priors
+#' \dontrun{
+#' # 2 models with more/less informative priors -- this will take a while to run
 #' cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
 #' cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
 #'               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))

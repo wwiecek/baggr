@@ -15,8 +15,8 @@ loo_compare(x, ...)
 Compare fitted models on loo
 }
 \examples{
-\donttest{
-# 2 models with more/less informative priors
+\dontrun{
+# 2 models with more/less informative priors -- this will take a while to run
 cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
 cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
