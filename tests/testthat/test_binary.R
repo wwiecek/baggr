@@ -248,22 +248,23 @@ test_that("baggr comparison method works for Full model", {
 
 # Setting control pooling, control priors -----
 
-
-bg1 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
-                            pooling_control = "partial",
-                              iter = 150, chains = 2, refresh = 0,
-                              show_messages = F))
-bg2 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
-                            pooling_control = "partial", prior_control = normal(0, 5),
-                              iter = 150, chains = 2, refresh = 0,
-                              show_messages = F))
-bg3 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
-                            pooling_control = "partial", prior_control = normal(0, 5), prior_control_sd = uniform(0, 1),
-                              iter = 150, chains = 2, refresh = 0,
-                              show_messages = F))
-
-
 test_that("Prior specifications for baselines work", {
+
+  skip_on_cran()
+
+  bg1 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
+                              pooling_control = "partial",
+                              iter = 150, chains = 2, refresh = 0,
+                              show_messages = F))
+  bg2 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
+                              pooling_control = "partial", prior_control = normal(0, 5),
+                              iter = 150, chains = 2, refresh = 0,
+                              show_messages = F))
+  bg3 <- expect_warning(baggr(df_binary, "logit", pooling = "none",
+                              pooling_control = "partial", prior_control = normal(0, 5), prior_control_sd = uniform(0, 1),
+                              iter = 150, chains = 2, refresh = 0,
+                              show_messages = F))
+
   expect_is(bg1, "baggr")
   expect_is(bg2, "baggr")
   expect_is(bg3, "baggr")

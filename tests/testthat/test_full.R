@@ -1,5 +1,8 @@
 context("baggr() calls with IPD version of Rubin model")
 library(baggr)
+
+skip_on_cran()
+
 set.seed(1990)
 
 # Generate 8 schools like IPD data
@@ -21,6 +24,7 @@ for(i in 1:8){
                        # This is just so that we don't trip off prepare_ma:
                        data.frame(group = schools$group[i], outcome = bsl + y, treatment = 0))
 }
+
 
 
 bg_n <- expect_warning(baggr(schools_ipd, pooling = "none", iter = 150, refresh=0))
@@ -112,7 +116,7 @@ test_that("rubin_full cross-validation works", {
 
   # Now repeat without bsl data
   bg <- expect_warning(baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-          test_data = subset(schools_ipd, group == "School A" & treatment == 1)))
+                             test_data = subset(schools_ipd, group == "School A" & treatment == 1)))
   expect_is(bg, "baggr")
   expect_gt(bg$mean_lpd, 0)
 })

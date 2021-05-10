@@ -1,5 +1,4 @@
 context("test loo in baggr")
-
 # brms testing script
 # library(brms)
 library(baggr)

@@ -47,7 +47,7 @@ setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
 \references{
 Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 "Interpretation of Random Effects Meta-Analyses".
-\emph{BMJ 342 (10 February 2011).} \doi{10.1136/bmj.d549}.
+\emph{BMJ 342 (10 February 2011).}.
 }
 \seealso{
 \link{treatment_effect} returns samples of hypermean and hyper-SD
