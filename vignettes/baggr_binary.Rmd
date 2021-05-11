@@ -90,7 +90,7 @@ bg_model_agg <- baggr(df_ma, iter = 2000, effect = "logarithm of odds ratio")
 bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
 ```
 
-The argument we speficied, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
+The argument we specified, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
 
 As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
 
@@ -143,7 +143,7 @@ for(es in c(1, .9, .8, .5, .25, .1)){
 title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
 ```
 
-A very good discussion of these choices and intuituve plots are provided by @deeks_issues_2002 (see especially Figures 1-3). 
+A very good discussion of these choices and intuitive plots are provided by @deeks_issues_2002 (see especially Figures 1-3). 
 
 
 
@@ -369,7 +369,7 @@ plot(bgc) + theme(legend.position = "right")
 Note in the result above that:
 
 1. The heterogeneity estimate ("SD for treatment effects") is impacted by the corrections
-2. Mean treatment effect estimates are less prone to the correction, but there is a sizable difference between the logistic model and the aggregate data models
+2. Mean treatment effect estimates are less prone to the correction, but there is a sizeable difference between the logistic model and the aggregate data models
 3. As corrections tend to 0, the estimates of $\log(OR)$ for Study A are more diffuse, but there is still a big difference between the logistic model and the aggregate data model with correction of 0.1.
 
 We will explore the last point in more detail soon. First, however, let us note that the issue with modelling rare events is not limited to zero-events. As mentioned, $\log(OR)$ is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore, treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if the events are rare. With our low counts in our example it will definitely be the case. 
@@ -413,7 +413,7 @@ The results are still a bit different.
 
 ## Logistic models vs rare events: priors for baseline event rate
 
-So far we've been using the logistic model with default priors. Our justification was that the priors on treatment effects are the same for both invididual-level and aggregate-level data models. However, recall the logistic model includes additional $K$ parameters, log odds of event in the control arms. (For simplicity we refer to them as baselines.) There are different ways in which we can assign them priors:
+So far we've been using the logistic model with default priors. Our justification was that the priors on treatment effects are the same for both individual-level and aggregate-level data models. However, recall the logistic model includes additional $K$ parameters, log odds of event in the control arms. (For simplicity we refer to them as baselines.) There are different ways in which we can assign them priors:
 
 1. The default is independent prior for each baseline with $\mathcal{N}(0, 10^2)$
 2. The prior above can be modified by using `prior_control` argument and specifying the prior distributions using the same syntax as for other priors.
