@@ -1,4 +1,8 @@
-## cran-comments for baggr v0.6.3
+## cran-comments for baggr v0.6.4
+
+Previous submission was rejected due to checktime being over 10 minutes.
+We removed some of the compiled code and checked again with winbuilder before submission, 
+checks completed in 540 seconds.
 
 Run times have for vignettes and examples have been shortened by a factor of 3-4
 compared to the previous submission to CRAN.
@@ -26,3 +30,5 @@ I checked manually, multiple times, that the URLs work:
 
 * https://doi.org/10.1136/bmj.d549
 * https://doi.org/10.1214/11-STS361
+
+
