@@ -11,9 +11,10 @@
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' bg <- baggr(microcredit_simplified, model = "quantiles",
-#'             quantiles = c(0.25, 0.50, 0.75), iter = 1000,
+#'             quantiles = c(0.25, 0.50, 0.75),
+#'             iter = 1000, refresh = 0,
 #'             outcome = "consumption")
 #' #vanilla plot
 #' plot_quantiles(bg)[[1]]

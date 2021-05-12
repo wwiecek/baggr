@@ -186,6 +186,7 @@
 #' ms <- microcredit_simplified
 #' microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
 #' baggr(microcredit_summary_data, model = "mutau",
+#'       iter = 500, #this is just for illustration -- don't set it this low normally!
 #'       pooling = "partial", prior_hypercor = lkj(1),
 #'       prior_hypersd = normal(0,10),
 #'       prior_hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))

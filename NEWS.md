@@ -1,8 +1,9 @@
-# baggr 0.6.3 (May 2021)
+# baggr 0.6.3-0.6.4 (May 2021)
 
-* A few documentation fixes for re-submission iof v0.6 to CRAN (first one since v0.4).
+* Various documentation fixes for re-submission of v0.6 to CRAN (first one since v0.4).
 * Added `summary` option for `effect_draw`.
-* Factor covariates will work now.
+* Factor covariates will work (better) now.
+* Removed some non-essential code for faster compilation on CRAN.
 
 
 # baggr 0.6.2 (April 2021)

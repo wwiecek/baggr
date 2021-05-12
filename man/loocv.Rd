@@ -51,7 +51,7 @@ As a default, rstan runs "silently" (\code{refresh=0}).
 To see sampling progress, please set e.g. \code{loocv(data, refresh = 500)}.
 }
 \examples{
-\donttest{
+\dontrun{
 # even simple examples may take a while
 cv <- loocv(schools, pooling = "partial")
 print(cv)      # returns the lpd value

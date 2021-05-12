@@ -354,7 +354,9 @@ This function automatically runs $K$ baggr models, leaving out one group at a ti
 Therefore, if you have $K$ groups, using the `loocv()` will run your model of choice $K$ times. Be aware that this may take a while even for simple models. (You should see a progress bar in your terminal window.) The `loocv()` function takes in the same arguments as `baggr()`, plus an option (`return_models`) for whether to return all the models or just the summary statistics. For the 8 schools example we can do
 
 ```{r loocv, echo = T, results = 'hide', warning = F, message = F}
-loocv_res <- loocv(schools, return_models = FALSE, "rubin", pooling = "partial")
+loocv_res <- loocv(schools, return_models = FALSE, 
+                   iter = 1000, #just to make it a bit faster -- don't try it at home!
+                   model = "rubin", pooling = "partial")
 ```
 
 ```{r}
