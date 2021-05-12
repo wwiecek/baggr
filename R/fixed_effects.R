@@ -25,7 +25,8 @@ fixed_effects <- function(bg, summary = FALSE,
     return(array(0, dim = c(0,0,1)))
 
   beta <- rstan::extract(bg$fit, pars="beta")[[1]]
-  colnames(beta) <- bg$covariates
+  # colnames(beta) <- bg$covariates
+  colnames(beta) <- attr(bg$inputs, "covariate_coding")
 
   if(!is.null(transform))
     beta <- do.call(transform, list(beta))

@@ -12,7 +12,7 @@
 #' @param data data frame with summary or individual level data to meta-analyse
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
-#'              \code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+#'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
 #'              (see Details).
 #' @param pooling Type of pooling;
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
@@ -48,11 +48,11 @@
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
-#' @param ppd       logical; use prior predictive distribution? (_p.p.d._) Default is no.
+#' @param ppd       logical; use prior predictive distribution? (_p.p.d._)
 #'                  If `ppd=TRUE`, Stan model will sample from the prior distribution(s)
 #'                  and ignore `data` in inference. However, `data` argument might still
 #'                  be used to infer the correct model (if `model=NULL`) and to set the
-#'                  default priors.
+#'                  default priors, therefore you must specify it.
 #' @param outcome   character; column name in (individual-level)
 #'                  \code{data} with outcome variable values
 #' @param group     character; column name in \code{data} with grouping factor;
@@ -62,7 +62,7 @@
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
-#'                  with the same columns as `data` argument
+#'                  with the same columns as `data` argument. See "Cross-validation" section below.
 #' @param silent Whether to silence messages about prior settings and about other automatic behaviour.
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
@@ -94,11 +94,12 @@
 #' __Models.__ Available models are:
 #'
 #' * for the __continuous variable__ means:
-#'   `"rubin"` model for average treatment effect, `"mutau"`
-#'   version which takes into account means of control groups, `"full"`,
-#'   which works with individual-level data
+#'   `"rubin"` model for average treatment effect (using summary data), `"mutau"`
+#'   version which takes into account means of control groups (also using summary data),
+#'   `"rubin_full"`,  which is the same model as `"rubin"` but works with individual-level data
 #' * for __continuous variable quantiles__: `"quantiles"`` model
 #'   (see Meager, 2019 in references)
+#' * for _mixture data_: `"sslab"` (experimental)
 #' * for __binary data__: `"logit"` model can be used on individual-level data;
 #'   you can also analyse continuous statistics such as
 #'   log odds ratios and logs risk ratios using the models listed above;
@@ -122,7 +123,7 @@
 #'   for the group covariates is a
 #'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
 #'   model. It can be modelled on summary-level data.
-#' * In `"logit"` and `"full"` models, covariates that __change according to individual unit__.
+#' * In `"logit"` and `"rubin_full"` models, covariates that __change according to individual unit__.
 #'   Then, such a model is commonly referred to as a
 #'   [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888)
 #'   . It has to be fitted to individual-level data. Note that meta-regression is a special
@@ -134,7 +135,23 @@
 #' prior for the input data if you do not pass a `prior` argument.
 #' To set the priors yourself, use `prior_` arguments. For specifying many priors at once
 #' (or re-using between models), a single `prior = list(...)` argument can be used instead.
-#' Appropriate examples are given in `vignette("baggr")`.
+#' Meaning of the prior parameters may slightly change from model to model.
+#' Details and examples are given in `vignette("baggr")`.
+#' Setting `ppd=TRUE` can be used to obtain prior predictive distributions,
+#' which is useful for understanding the prior assumptions,
+#' especially useful in conjunction with [effect_plot]. You can also [baggr_compare]
+#' different priors by setting `baggr_compare(..., compare="prior")`.
+#'
+#' __Cross-validation.__ When `test_data` are specified, an extra parameter, the
+#' log predictive density, will be returned by the model.
+#' (The fitted model itself is the same regardless of whether there are `test_data`.)
+#' To understand this parameter, see documentation of [loocv], a function that
+#' can be used to assess out of sample prediction of the model using all available data.
+#' If using individual-level data model, `test_data` should only include treatment arms
+#' of the groups of interest. (This is because in cross-validation we are not typically
+#' interested in the model's ability to fit heterogeneity in control arms, but
+#' only heterogeneity in treatment arms.)
+#' For using aggregate level data, there is no such restriction.
 #'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
@@ -159,7 +176,8 @@
 #' # same model, but with correct labels,
 #' # different pooling & passing some options to Stan
 #' baggr(df_pooled, group = "state", pooling = "full", iter = 500)
-#' # model with different (very informative) priors
+#' # model with non-default (and very informative) priors
+#'
 #' baggr(df_pooled, prior_hypersd = normal(0, 2))
 #'
 #' \donttest{
@@ -168,6 +186,7 @@
 #' ms <- microcredit_simplified
 #' microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
 #' baggr(microcredit_summary_data, model = "mutau",
+#'       iter = 500, #this is just for illustration -- don't set it this low normally!
 #'       pooling = "partial", prior_hypercor = lkj(1),
 #'       prior_hypersd = normal(0,10),
 #'       prior_hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
@@ -201,10 +220,11 @@ baggr <- function(data, model = NULL, pooling = "partial",
   #                    summarise = FALSE, cfb = cfb,
   #                    treatment=treatment, group=group,
   #                    outcome=outcome, baseline=baseline)
-  attr(data, "outcome") <- outcome
-  attr(data, "group") <- group
-  attr(data, "treatment") <- treatment
 
+  if(!is.null(model) && (model == "full")){
+    message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
+    model <- "rubin_full"
+  }
   stan_data <- convert_inputs(data,
                               model,
                               covariates = covariates,
@@ -217,6 +237,12 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
+  # data might also change if Rubin model requested but mutau
+  # type inputs supplied
+  data <- attr(stan_data, "data")
+  attr(data, "outcome") <- outcome
+  attr(data, "group") <- group
+  attr(data, "treatment") <- treatment
 
   # remember number of groups:
   n_groups <- attr(stan_data, "n_groups")
@@ -230,51 +256,75 @@ baggr <- function(data, model = NULL, pooling = "partial",
     else if(length(effect) == 1)
       effect <- paste0(100*quantiles, "% quantile on ", effect)
     else if(length(length(effect) != length(quantiles)))
-      stop("'effect' must be of length 1 or same as number of quantiles")
-  }
-  if(model == "logit"){
+      stop("For quantile models, 'effect' must be of length 1",
+           "or same as number of quantiles")
+  } else if(model == "logit"){
     if(is.null(effect))
       effect <- "logOR"
+  } else if(model == "sslab") {
+    if(is.null(effect))
+      effect <- c("Location of negative tail",
+                  "Location of positive tail",
+                  "Scale of negative tail",
+                  "Scale of positive tail",
+                  "LogOR on being negative",
+                  "LogOR on being equal to 0")
+    else if(length(effect) != 6)
+      stop("For spike & slab models, 'effect' must be of length 6")
   }
   # In all other cases we set it to mean
   if(is.null(effect))
     effect <- "mean"
 
-  # pooling type
+  # Number of TE parameters
+  # (in the future this can be built into the models):
+  n_parameters <- length(effect)
+
+
+  # Pooling type:
   if(pooling %in% c("none", "partial", "full")) {
     stan_data[["pooling_type"]] <- switch(pooling,
                                           "none" = 0,
                                           "partial" = 1,
                                           "full" = 2)
-    # FOR NOW WE DO NOT ENABLE POOLING OF CONTROLS
-    if(model == "logit")
+    if(model %in% c("logit", "rubin_full", "mutau_full"))
       stan_data[["pooling_baseline"]] <- switch(pooling_control,
                                                 "none" = 0,
                                                 "partial" = 1)
+    if(model == "mutau_full"){
+      # For now this model only used for joint prior
+      stan_data[["joint_prior_mean"]] <- 1
+      stan_data[["joint_prior_variance"]] <- 1
+    }
     if(!(pooling_control %in% c("none", "partial")))
       stop('Wrong pooling_control parameter; choose from c("none", "partial")')
   } else {
     stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
   }
 
+
+
   # Prior settings:
-  if(is.null(prior))
+  if(is.null(prior)){
     prior <- list(hypermean = prior_hypermean,
                   hypercor  = prior_hypercor,
                   hypersd   = prior_hypersd,
                   beta      = prior_beta,
                   control   = prior_control,
                   control_sd= prior_control_sd)
-  else {
+  } else {
     if(!is.null(prior_hypermean) || !is.null(prior_beta) ||
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
     if(class(prior) != "list" ||
-       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'beta', 'control', 'control_sd')))
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd',
+                                'beta', 'control', 'control_sd')))
       warning(paste("Only names used in the prior argument are:",
-                    "'hypermean', 'hypercor', 'hypersd', 'beta', 'control', 'control_sd'"))
+                    "'hypermean', 'hypercor', 'hypersd',
+                    'beta', 'control', 'control_sd'"))
   }
+
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){
@@ -285,6 +335,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                                      pooling, covariates, quantiles = quantiles,
                                      silent = silent)
   }
+
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]
 
@@ -296,7 +347,13 @@ baggr <- function(data, model = NULL, pooling = "partial",
     stan_data <- remove_data_for_prior_pred(stan_data)
   }
   stan_args$data <- stan_data
+
+
+
+  # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
+
+
 
   result <- list(
     "data" = data,
@@ -304,7 +361,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     "user_prior" = prior,
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
-    "n_parameters" = ifelse(model == "quantiles", length(quantiles), 1),
+    "n_parameters" = n_parameters,
     "effects" = effect,
     "covariates" = covariates,
     "pooling" = pooling,
@@ -353,12 +410,20 @@ check_if_baggr <- function(bg) {
 }
 
 remove_data_for_prior_pred <- function(data) {
-  scalars_to0 <- c("K", "N", "Nc")
+  scalars_to0 <- c("K", "N", "Nc",
+                   # specific to sslab (generalise this)
+                   "N_neg", "N_pos")
   vectors_to_remove <- c("theta_hat_k", "se_theta_k",
-                         "y", "treatment", "site")
+                         "y", "treatment", "site",
+                         # specific to sslab
+                         "treatment_neg", "treatment_pos", "cat",
+                         "site_neg", "site_pos", "y_neg", "y_pos")
   matrices_to_remove <- c("X")
+  # Specific to quantiles:
   matrices_to_rescale <- c("y_0", "y_1")
   arrays_to_rescale <- c("Sigma_y_k_0", "Sigma_y_k_1")
+  matrices_remove_rows <- c("x")
+
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
@@ -370,6 +435,10 @@ remove_data_for_prior_pred <- function(data) {
   for(nm in matrices_to_remove)
     if(!is.null(data[[nm]]))
       data[[nm]] <- array(0, dim = c(0,0))
+
+  for(nm in matrices_remove_rows)
+    if(!is.null(data[[nm]]))
+      data[[nm]] <- array(0, dim = c(0,ncol(data[[nm]])))
 
   # This is for quantiles model where you have K x Nq inputs
   # i.e. sites x Nquantiles

@@ -1,15 +1,16 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# baggr
+# baggr, v0.6.3 (May 2021)
 
 <!-- badges: start -->
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version-last-release/baggr?color=green)](http://cran.r-project.org/package=baggr)
 [![Travis build
 status](https://travis-ci.org/wwiecek/baggr.svg?branch=cran)](https://travis-ci.org/wwiecek/baggr)
-[![codecov](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr)
 [![](https://cranlogs.r-pkg.org/badges/baggr)](https://cran.rstudio.com/web/packages/baggr/index.html)
+[![Codecov test
+coverage](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr?branch=master)
 <!-- badges: end -->
 
 This is *baggr*, an [R package](https://www.r-project.org/) for Bayesian
@@ -27,15 +28,15 @@ with weakly informative priors by calling [Stan](https://mc-stan.org/)
 to carry out Bayesian inference. Modelling of variances or quantiles,
 standardisation and transformation of data is also possible.
 
-The current version (v0.5, June 2020) is a stable version of a tool
-that’s in active development so we are counting on your feedback.
+The current version is a stable version of a tool that’s in active
+development so we are counting on your feedback.
 
 ## Installation
 
-Before starting, *baggr* will not work if you don’t have RStan, which is
-responsible for Bayesian inference in *baggr*. In that case, please
-follow [the installation instructions for
-RStan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
+Before starting, please follow [the installation instructions for
+RStan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started),
+which is responsible for Bayesian inference in *baggr*. If you don’t
+have Stan, it’s worth following the instructions step-by-step.
 
 The package itself is available on CRAN:
 
@@ -44,14 +45,20 @@ install.packages("baggr")
 ```
 
 You can also install the most up-to-date version of `baggr` directly
-from GitHub; for this, you will need the `devtools` package.
+from GitHub; this is what we recommend, but to do that you will need the
+`remotes` package:
 
 ``` r
-# compilation of models should take 5-10 minutes
-devtools::install_github("wwiecek/baggr", 
-                         build_vignettes = TRUE,
-                         build_opts = c("--no-resave-data", "--no-manual"))
+#installation this way may take 5-15 minutes
+remotes::install_github("wwiecek/baggr", 
+                        ref = "devel", #if problems try changing to ref = "master"
+                        build_vignettes = TRUE,
+                        build_opts = c("--no-resave-data", "--no-manual"))
 ```
+
+Most common issue in installing *baggr* is with updating other packages.
+Try updating your packages (and ensure R is at least version 4) before
+trying the `remotes` command.
 
 ## Basic use case
 
@@ -92,7 +99,7 @@ data, try `vignette("baggr_binary")`. Compiled vignettes are available
 
 ## Current and future releases
 
-Included in baggr v0.5 (June 2020):
+Included in baggr v0.6 (2021):
 
   - Meta-analysis and hierarchical models for continuous and binary
     outcomes
@@ -106,10 +113,4 @@ Included in baggr v0.5 (June 2020):
   - Cross-validation (including leave-one-group-out)
   - Prior and posterior predictive distributions
 
-In the coming months (summer 2020) we will be including more models and
-more features such as:
-
-  - Modelling of quantiles and of variances
-  - Better modelling of log-normal data
-  - Automatic standardisation of variables
-  - More model diagnostics
+Check \[NEWS.md\] for more information on recent changes to the package.

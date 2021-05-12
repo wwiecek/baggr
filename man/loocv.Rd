@@ -51,7 +51,7 @@ As a default, rstan runs "silently" (\code{refresh=0}).
 To see sampling progress, please set e.g. \code{loocv(data, refresh = 500)}.
 }
 \examples{
-\donttest{
+\dontrun{
 # even simple examples may take a while
 cv <- loocv(schools, pooling = "partial")
 print(cv)      # returns the lpd value
@@ -62,7 +62,7 @@ attributes(cv) # more information is included in the object
 \references{
 Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
 “Understanding Predictive Information Criteria for Bayesian Models.”
-Statistics and Computing 24, no. 6 (November 2014): 997–1016. https://doi.org/10.1007/s11222-013-9416-2.
+Statistics and Computing 24, no. 6 (November 2014): 997–1016.
 }
 \author{
 Witold Wiecek

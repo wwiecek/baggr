@@ -11,6 +11,7 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                        "mu" = rnorm(8),
                        "se.mu" = rep(1, 8),
                        "state" = datasets::state.name[1:8])
+
 #
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
@@ -35,11 +36,6 @@ test_that("Error messages for wrong inputs are in place", {
   expect_identical(names(convert_inputs(df_mutau, "mutau")),
                    c("K", "P", "theta_hat_k", "se_theta_k",
                      "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
-})
-
-
-test_that("We can't run Rubin model with mutau outputs", {
-  expect_error(baggr(df_mutau, model = "rubin", iter = 200, refresh = 0))
 })
 
 bg5_n <- expect_warning(baggr(df_mutau, pooling = "none", group = "state",
@@ -158,11 +154,8 @@ test_that("baggr comparison method works for mu-tau models", {
   expect_output(print(comp_mt))
   expect_gt(length(comp_mt), 0)
 
-  expect_is(plot(comp_mt), "plot_list")
-  expect_is(plot(comp_mt)[[1]], "ggplot")
-
-  expect_is(plot(comp_mt, arrange = "grid"), "plot_list")
-  expect_is(plot(comp_mt, arrange = "grid")[[1]], "ggplot")
+  expect_is(plot(comp_mt), "gg")
+  expect_is(plot(comp_mt, grid_models = TRUE), "gtable")
 
 })
 

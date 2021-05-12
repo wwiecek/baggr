@@ -4,7 +4,13 @@
 \alias{baggr_compare}
 \title{(Run and) compare multiple baggr models}
 \usage{
-baggr_compare(..., what = "pooling", compare = "groups", transform = NULL)
+baggr_compare(
+  ...,
+  what = "pooling",
+  compare = "groups",
+  transform = NULL,
+  plot = FALSE
+)
 }
 \arguments{
 \item{...}{Either some (at least 1) objects of class \code{baggr}
@@ -28,6 +34,8 @@ effects that are on log scale,
 exponent transform is used automatically,
 you can plot on log scale by setting
 transform = identity}
+
+\item{plot}{logical; calls \link{plot.baggr_compare} when running \code{baggr_compare}}
 }
 \value{
 an object of class \code{baggr_compare}
@@ -54,6 +62,7 @@ details see \link{baggr}, specifically the PPD argument.
 prior_comparison <-
   baggr_compare(schools,
                 model = 'rubin',
+                iter = 500, #this is just for illustration -- don't set it this low normally!
                 prior_hypermean = normal(0, 3),
                 prior_hypersd = normal(0,2),
                 prior_hypercor = lkj(2),
@@ -66,12 +75,13 @@ plot(prior_comparison)
 pooling_comparison <-
   baggr_compare(schools,
                 model = 'rubin',
+                iter = 500, #this is just for illustration -- don't set it this low normally!
                 prior_hypermean = normal(0, 3),
                 prior_hypersd = normal(0,2),
                 prior_hypercor = lkj(2),
-                what = "pooling")
-# plot this comparison
-plot(pooling_comparison)
+                what = "pooling",
+                # You can automatically plot:
+                plot = TRUE)
 # Compare existing models:
 bg1 <- baggr(schools, pooling = "partial")
 bg2 <- baggr(schools, pooling = "full")
@@ -87,17 +97,19 @@ baggr_compare("Prior A, p.p.d."=bg1,
 # Compare posterior effects as a function of priors (note ppd=FALSE)
 bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
 bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
-plot(baggr_compare("Uniform prior on SD"=bg1,
+baggr_compare("Uniform prior on SD"=bg1,
                    "Normal prior on SD"=bg2,
-                   compare = "effects"))
+                   compare = "effects", plot = TRUE)
 
 # You can also compare different subsets of input data
 bg1_small <- baggr(schools[1:6,], pooling = "partial")
-plot(baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small))
+baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small,
+              plot = TRUE)
 }
 }
 \seealso{
-\link{plot.baggr_compare} and \link{print.baggr_compare} for working with results of this function
+\link{plot.baggr_compare} and \link{print.baggr_compare}
+for working with results of this function
 }
 \author{
 Witold Wiecek, Brice Green

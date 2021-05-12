@@ -34,7 +34,7 @@ baggr(
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from
-\code{"rubin"}, \code{"mutau"}, \code{"individual"}, \code{"quantiles"}
+\code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
 (see Details).}
 
 \item{pooling}{Type of pooling;
@@ -79,17 +79,17 @@ this can only be used if \code{pooling_control = "partial"}}
 \code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
 e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
 
-\item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.}) Default is no.
+\item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.})
 If \code{ppd=TRUE}, Stan model will sample from the prior distribution(s)
 and ignore \code{data} in inference. However, \code{data} argument might still
 be used to infer the correct model (if \code{model=NULL}) and to set the
-default priors.}
+default priors, therefore you must specify it.}
 
 \item{pooling_control}{Pooling for group-specific control mean terms (currently only in \code{logit}).
 Either \code{"none"} or \code{"partial"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
-with the same columns as \code{data} argument}
+with the same columns as \code{data} argument. See "Cross-validation" section below.}
 
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}
@@ -141,11 +141,12 @@ Using it will automatically format data inputs to work with \code{baggr()}.
 \strong{Models.} Available models are:
 \itemize{
 \item for the \strong{continuous variable} means:
-\code{"rubin"} model for average treatment effect, \code{"mutau"}
-version which takes into account means of control groups, \code{"full"},
-which works with individual-level data
+\code{"rubin"} model for average treatment effect (using summary data), \code{"mutau"}
+version which takes into account means of control groups (also using summary data),
+\code{"rubin_full"},  which is the same model as \code{"rubin"} but works with individual-level data
 \item for \strong{continuous variable quantiles}: `"quantiles"`` model
 (see Meager, 2019 in references)
+\item for \emph{mixture data}: \code{"sslab"} (experimental)
 \item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
 you can also analyse continuous statistics such as
 log odds ratios and logs risk ratios using the models listed above;
@@ -169,7 +170,7 @@ In that case, the model accounting
 for the group covariates is a
 \href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
 model. It can be modelled on summary-level data.
-\item In \code{"logit"} and \code{"full"} models, covariates that \strong{change according to individual unit}.
+\item In \code{"logit"} and \code{"rubin_full"} models, covariates that \strong{change according to individual unit}.
 Then, such a model is commonly referred to as a
 \href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888}{mixed model}
 . It has to be fitted to individual-level data. Note that meta-regression is a special
@@ -181,7 +182,23 @@ as the package will try propose an appropriate
 prior for the input data if you do not pass a \code{prior} argument.
 To set the priors yourself, use \code{prior_} arguments. For specifying many priors at once
 (or re-using between models), a single \code{prior = list(...)} argument can be used instead.
-Appropriate examples are given in \code{vignette("baggr")}.
+Meaning of the prior parameters may slightly change from model to model.
+Details and examples are given in \code{vignette("baggr")}.
+Setting \code{ppd=TRUE} can be used to obtain prior predictive distributions,
+which is useful for understanding the prior assumptions,
+especially useful in conjunction with \link{effect_plot}. You can also \link{baggr_compare}
+different priors by setting \code{baggr_compare(..., compare="prior")}.
+
+\strong{Cross-validation.} When \code{test_data} are specified, an extra parameter, the
+log predictive density, will be returned by the model.
+(The fitted model itself is the same regardless of whether there are \code{test_data}.)
+To understand this parameter, see documentation of \link{loocv}, a function that
+can be used to assess out of sample prediction of the model using all available data.
+If using individual-level data model, \code{test_data} should only include treatment arms
+of the groups of interest. (This is because in cross-validation we are not typically
+interested in the model's ability to fit heterogeneity in control arms, but
+only heterogeneity in treatment arms.)
+For using aggregate level data, there is no such restriction.
 
 \strong{Outputs.} By default, some outputs are printed. There is also a
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).
@@ -204,7 +221,8 @@ baggr(df_pooled) #baggr automatically detects the input data
 # same model, but with correct labels,
 # different pooling & passing some options to Stan
 baggr(df_pooled, group = "state", pooling = "full", iter = 500)
-# model with different (very informative) priors
+# model with non-default (and very informative) priors
+
 baggr(df_pooled, prior_hypersd = normal(0, 2))
 
 \donttest{
@@ -213,6 +231,7 @@ baggr(df_pooled, prior_hypersd = normal(0, 2))
 ms <- microcredit_simplified
 microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
 baggr(microcredit_summary_data, model = "mutau",
+      iter = 500, #this is just for illustration -- don't set it this low normally!
       pooling = "partial", prior_hypercor = lkj(1),
       prior_hypersd = normal(0,10),
       prior_hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))

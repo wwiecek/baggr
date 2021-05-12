@@ -46,16 +46,6 @@ convert_inputs <- function(data,
                            silent = FALSE) {
 
   # check what kind of data is required for the model & what's available
-  model_data_types <- c("rubin" = "pool_noctrl_narrow",
-                        "mutau" = "pool_wide",
-                        "logit" = "individual_binary",
-                        "full" = "individual",
-                        #for now no quantiles model from summary level data
-                        "quantiles" = "individual")
-  data_type_names <- c("pool_noctrl_narrow" = "Aggregate (effects only)",
-                       "pool_wide" = "Aggregate (control and effects)",
-                       "individual" = "Individual-level with continuous outcome",
-                       "individual_binary" = "Individual-level with binary outcome")
 
   available_data <- detect_input_type(data, group, treatment, outcome)
 
@@ -90,13 +80,13 @@ convert_inputs <- function(data,
   }
 
   # Convert mutau data to Rubin model data if requested
-  # (For now disabled as it won't work with functions that then
-  #  re-use the input data)
-  # if(model == "rubin" && available_data == "pool_wide"){
-  #   data$se <- data$se.tau
-  #   data$se.tau <- data$se.mu <- data$mu <- NULL
-  #   available_data <- "pool_noctrl_narrow"
-  # }
+  if(model == "rubin" && available_data == "pool_wide"){
+    test_data$se <- test_data$se.tau
+    test_data$se.tau <- test_data$se.mu <- test_data$mu <- NULL
+    data$se <- data$se.tau
+    data$se.tau <- data$se.mu <- data$mu <- NULL
+    available_data <- "pool_noctrl_narrow"
+  }
 
   required_data <- model_data_types[[model]]
 
@@ -128,11 +118,11 @@ convert_inputs <- function(data,
           "For cross-validation they will be treated as 'new' groups.")
       if((!all(group_label_test %in% group_label) && model == "logit") || !all(test_data[[treatment]] == 1))
         message(
-          "Test data for logit model should include treated units only.",
+          "Test data for ", model, " model should include treated units only. ",
           "Baselines for all these groups should be included in data argument.")
     }
 
-    if(model %in% c("full", "logit")){
+    if(model %in% c("rubin_full", "mutau_full", "logit")){
       out <- list(
         K = max(group_numeric),
         N = nrow(data),
@@ -149,7 +139,7 @@ convert_inputs <- function(data,
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
         out$test_treatment <- array(0, dim = 0)
-        if(model == "full")
+        if(model %in% c("rubin_full", "mutau_full"))
           out$test_sigma_y_k <- array(0, dim = 0)
 
       } else {
@@ -159,7 +149,7 @@ convert_inputs <- function(data,
         out$test_treatment <- test_data[[treatment]]
         out$test_site <- group_numeric_test
         # calculate SEs in each test group
-        if(model == "full"){
+        if(model %in% c("rubin_full", "mutau_full")){
           se_in_each_group <- sapply(
             1:max(group_numeric_test), function(i) {
               n <- sum(group_numeric_test == i)
@@ -208,6 +198,38 @@ convert_inputs <- function(data,
         out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
         out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
       }
+    }
+
+    if(model == "sslab") {
+      # Generic code for dividing observations into positive, negative and == 0 components
+      cat <- ifelse(data[[outcome]] < 0, 1, ifelse(data[[outcome]] == 0, 2, 3))
+      out <- list(
+        K = max(group_numeric),
+        N = nrow(data),
+        M = 3,
+        P = 2, #covariates are taken care of later in this function
+        x = array(cbind(1, data[[treatment]]), c(nrow(data), 2)),
+        N_neg = sum(cat == 1),
+        N_pos = sum(cat == 3),
+        y_neg = -1*data[[outcome]][cat == 1],
+        site_neg = group_numeric[cat == 1],
+        y_pos = data[[outcome]][cat == 3],
+        site_pos = group_numeric[cat == 3],
+        cat = cat,
+        treatment_pos = data[[treatment]][cat == 3],
+        treatment_neg = data[[treatment]][cat == 1],
+        site = group_numeric
+      )
+
+      if(is.null(test_data)){
+        # This will have to be done for v0.8 release
+        out_test <- list()
+      } else {
+        out_test <- list()
+      }
+
+      for(nm in names(out_test))
+        out[[nm]] <- out_test[[nm]]
     }
   }
 
@@ -293,22 +315,28 @@ convert_inputs <- function(data,
         stop("Cannot bind data and test_data. Ensure that all ",
              "covariates are present and same levels are used.")
       data_bind$tau <- 0
-
       out$X_test <- model.matrix(as.formula(
         paste("tau ~", paste(covariates, collapse="+"), "-1")),
         data=data_bind[(nrow(data)+1):nrow(data_bind),])
     } else {
       data_bind <- data[,covariates, drop = FALSE]
       data_bind$tau <- 0
-      out$X_test <- array(0, dim=c(0, length(covariates)))
+
     }
 
+    # Covariates matrix preparation (based on checks done in test data)
     out$X <- model.matrix(as.formula(
       paste("tau ~", paste(covariates, collapse="+"), "-1")),
       data=data_bind[1:nrow(data),])
-    out$Nc <- length(covariates)
+    out$Nc <- ncol(out$X)
+
+    if(is.null(test_data))
+      out$X_test <- array(0, dim=c(0, out$Nc))
+
+    covariate_coding <- colnames(out$X)
 
   } else {
+    covariate_coding <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -327,6 +355,8 @@ convert_inputs <- function(data,
   return(structure(
     out,
     data_type = available_data,
+    data = data,
+    covariate_coding = covariate_coding,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))

@@ -16,8 +16,10 @@
 #'                  plotting or printing functions)
 #' @param random_only logical; for meta-regression models, should [fixed_effects] be included in the
 #'                    returned group effect?
-#' @return Either a matrix with MCMC samples (if `summary = FALSE`)
+#' @return Either an array with MCMC samples (if `summary = FALSE`)
 #'         or a summary of these samples (if `summary = TRUE`).
+#'         For arrays the three dimensions are: N samples, N groups and N effects
+#'         (equal to 1 for the basic models).
 #' @examples
 #' fit1 <- baggr(schools)
 #' group_effects(fit1, summary = TRUE, interval = 0.5)
@@ -38,6 +40,17 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
                           random_only = FALSE) {
   check_if_baggr(bg)
 
+  # Grab group labels
+  if(is.null(attr(bg$inputs, "group_label")))
+    par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
+  else
+    par_names <- attr(bg$inputs, "group_label")
+
+  # Grab effect names
+  effect_names <- bg$effects
+
+
+
   # m <- as.matrix(bg$fit)
   if(attr(bg , "ppd"))
     stop("There are no group effects in prior predictive distribution baggr objects.")
@@ -51,13 +64,13 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
 
   } else {
     # choose correct columns for the given models:
-    if(bg$model %in% c("rubin", "mutau", "logit", "full")) {
+    if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
       #replace by extract:
       # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
       # drop mu if model has mu (baseline/control value)
-      if(bg$model == "mutau")
-        m <- m[,,2]
+      if(bg$model %in% c("mutau", "mutau_full"))
+        m <- m[,1,2,]
 
       # If dealing with a meta-regression model, we automatically add effect of covariates
       # unless user requests random_only
@@ -69,18 +82,22 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
     } else if(bg$model == "quantiles") {
       # In this case we have 3D array, last dim is quantiles
       m <- rstan::extract(bg$fit, pars = "beta_1_k")[[1]]
+    } else if(bg$model == "sslab") {
+      m1 <- rstan::extract(bg$fit, "tau_k")[[1]]
+      m2 <- rstan::extract(bg$fit, "sigma_TE_k")[[1]]
+      m3 <- rstan::extract(bg$fit, "kappa_k")[[1]][,,1:2,2]
+      m <- array(c(m1, m2, m3), c(nrow(m1), ncol(m1), length(effect_names)))
+    } else {
+      stop("Can't calculate treatment effect for this model.")
     }
   }
   # for consistency with quantiles, except we have 1 parameter only
   if(length(dim(m)) == 2)
     m <- array(m, dim = c(dim(m), 1))
 
-  par_names <- attr(bg$inputs, "group_label")
-
-  if(!is.null(par_names))
-    dimnames(m)[[2]] <- par_names
-  else
-    dimnames(m)[[2]] <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
+  # Assing correct dimnames
+  dimnames(m)[[2]] <- par_names
+  dimnames(m)[[3]] <- effect_names
 
   # will summarise if requested:
   if(summary) {

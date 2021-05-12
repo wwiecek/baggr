@@ -1,12 +1,12 @@
 ---
-title: "Meta-analysis of binary data with baggr: a case study"
+title: "Meta-analysis of binary data with baggr"
 author: "Witold Wiecek"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{baggr_binary}
+  %\VignetteIndexEntry{Meta-analysis of binary data with baggr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: baggr.bib
@@ -75,22 +75,22 @@ In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calcu
 # df$se <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
 
 # But prepare_ma() automates these operations:
-df <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
-df
+df_ma <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
+df_ma
 ```
 
 We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for logOR is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
 
 
 ```{r, include = F}
-bg_model_agg <- baggr(df, iter = 5000, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, iter = 2000, effect = "logarithm of odds ratio")
 ```
 
 ```{r, eval = F, echo = T}
-bg_model_agg <- baggr(df, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
 ```
 
-The argument we speficied, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
+The argument we specified, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
 
 As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
 
@@ -103,7 +103,7 @@ We summarised our data as log(OR). Alternatively, we could work with log(RR). Ri
 The basic tool that can help us choose is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
 
 ```{r}
-labbe(df, plot_model = TRUE, shade_se = "or")
+labbe(df_ma, plot_model = TRUE, shade_se = "or")
 ```
 
 When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
@@ -143,7 +143,7 @@ for(es in c(1, .9, .8, .5, .25, .1)){
 title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
 ```
 
-A very good discussion of these choices and intuituve plots are provided by @deeks_issues_2002 (see especially Figures 1-3). 
+A very good discussion of these choices and intuitive plots are provided by @deeks_issues_2002 (see especially Figures 1-3). 
 
 
 
@@ -182,16 +182,16 @@ We can compare with no pooling and full pooling models using `baggr_compare`
 
 ```{r, echo=T, eval = F}
 # Instead of writing...
-# bg1 <- baggr(df, pooling = "none")
-# bg2 <- baggr(df, pooling = "partial")
-# bg3 <- baggr(df, pooling = "full")
+# bg1 <- baggr(df_ma, pooling = "none")
+# bg2 <- baggr(df_ma, pooling = "partial")
+# bg3 <- baggr(df_ma, pooling = "full")
 
 # ...we use this one-liner
-bg_c <- baggr_compare(df, effect = "logarithm of odds ratio")
+bg_c <- baggr_compare(df_ma, effect = "logarithm of odds ratio")
 ```
 
 ```{r, include = FALSE}
-bg_c <- baggr_compare(df, what = "pooling", effect = "logarithm of odds ratio")
+bg_c <- baggr_compare(df_ma, what = "pooling", effect = "logarithm of odds ratio")
 ```
 
 ```{r}
@@ -211,15 +211,15 @@ effect_plot(
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
 
 ```{r, include = F, warning = F}
-a <- loocv(df, pooling = "partial")
-b <- loocv(df, pooling = "full")
+a <- loocv(df_ma, pooling = "partial", iter = 500, chains = 2)
+b <- loocv(df_ma, pooling = "full", iter = 500, chains = 2)
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```
 
 ```{r, echo = T, eval = F}
-a <- loocv(df, pooling = "partial")
-b <- loocv(df, pooling = "full")
+a <- loocv(df_ma, pooling = "partial")
+b <- loocv(df_ma, pooling = "full")
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```
@@ -238,14 +238,16 @@ head(df_ind)
 We can now use a logistic regression model
 
 ```{r logit model, include = F}
-bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", iter = 5000)
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", chains = 2, iter = 500)
 ```
 
 ```{r, echo = T, eval = F}
-bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", iter = 5000)
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
 ```
 
 > Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` . Alternatively, if we wrote `baggr(df_yusuf, model = "logit")`, the conversion to individual-level data would be done automatically behind the scenes.
+
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. 
 
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
@@ -339,10 +341,10 @@ pma01
 It is important to compare different models with different `rare_event_correction` values:
 
 ```{r rare event comparison, include=F}
-bg_correction01 <- baggr(pma01, effect = "logOR")
-bg_correction025 <- baggr(df_rare_logor, effect = "logOR")
-bg_correction1 <- baggr(pma1, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit")
+bg_correction01 <- baggr(pma01, effect = "logOR", iter = 500)
+bg_correction025 <- baggr(df_rare_logor, effect = "logOR", iter = 500)
+bg_correction1 <- baggr(pma1, effect = "logOR", iter = 500)
+bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit", iter = 500, chains = 2)
 ```
 
 ```{r, echo=T, eval=F}
@@ -360,13 +362,14 @@ bgc <- baggr_compare(
   "Individual data" = bg_rare_ind
 )
 bgc
-plot(bgc)[[1]] + theme(legend.position = "right")
+plot(bgc) + theme(legend.position = "right")
 ```
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. 
 
 Note in the result above that:
 
 1. The heterogeneity estimate ("SD for treatment effects") is impacted by the corrections
-2. Mean treatment effect estimates are less prone to the correction, but there is a sizable difference between the logistic model and the aggregate data models
+2. Mean treatment effect estimates are less prone to the correction, but there is a sizeable difference between the logistic model and the aggregate data models
 3. As corrections tend to 0, the estimates of $\log(OR)$ for Study A are more diffuse, but there is still a big difference between the logistic model and the aggregate data model with correction of 0.1.
 
 We will explore the last point in more detail soon. First, however, let us note that the issue with modelling rare events is not limited to zero-events. As mentioned, $\log(OR)$ is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore, treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if the events are rare. With our low counts in our example it will definitely be the case. 
@@ -385,7 +388,7 @@ df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
 
 ```{r, include=F}
 bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit")
+bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit", iter = 500, chains = 2)
 ```
 
 ```{r, eval=F, echo=T}
@@ -410,7 +413,7 @@ The results are still a bit different.
 
 ## Logistic models vs rare events: priors for baseline event rate
 
-So far we've been using the logistic model with default priors. Our justification was that the priors on treatment effects are the same for both invididual-level and aggregate-level data models. However, recall the logistic model includes additional $K$ parameters, log odds of event in the control arms. (For simplicity we refer to them as baselines.) There are different ways in which we can assign them priors:
+So far we've been using the logistic model with default priors. Our justification was that the priors on treatment effects are the same for both individual-level and aggregate-level data models. However, recall the logistic model includes additional $K$ parameters, log odds of event in the control arms. (For simplicity we refer to them as baselines.) There are different ways in which we can assign them priors:
 
 1. The default is independent prior for each baseline with $\mathcal{N}(0, 10^2)$
 2. The prior above can be modified by using `prior_control` argument and specifying the prior distributions using the same syntax as for other priors.
@@ -423,8 +426,10 @@ Choosing between the three is especially important in the case of rare events, a
 #                         prior_control = normal(-4.59, 2))
 bg_rare_prior3 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
                         pooling_control = "partial",
+                        chains = 2, iter = 500,
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
 bg_rare_prior4 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
+                        chains = 2, iter = 500,
                         prior_control = normal(-4.59, 10))
 ```
 
@@ -449,9 +454,10 @@ bgc
 ```
 
 ```{r}
-plot(bgc)[[1]] + theme(legend.position = "right")
+plot(bgc) + theme(legend.position = "right")
 ```
 
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
 
 We can see that 
 
@@ -476,16 +482,16 @@ In both cases we only need to name one extra argument to `baggr`: `covariates=`,
 
 ```{r, include = FALSE, echo = FALSE}
 #let's use the data.frame we created from Yusuf et al earlier
-df$study_grouping      <- c(1,1,1,0,0,0,0)
-df$different_contrasts <- c(1,1,1,0,0,0,0) - .5
-bg_cov1 <- baggr(df, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
+df_ma$study_grouping      <- c(1,1,1,0,0,0,0)
+df_ma$different_contrasts <- c(1,1,1,0,0,0,0) - .5
+bg_cov1 <- baggr(df_ma, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
 ```
 
 ```{r, echo = TRUE, eval = FALSE}
 #let's use the data.frame we created from Yusuf et al earlier
-df$study_grouping      <- c(1,1,1,0,0,0,0)
-df$different_contrasts <- c(1,1,1,0,0,0,0) - .5
-bg_cov1 <- baggr(df, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
+df_ma$study_grouping      <- c(1,1,1,0,0,0,0)
+df_ma$different_contrasts <- c(1,1,1,0,0,0,0) - .5
+bg_cov1 <- baggr(df_ma, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
 ```
 
 ```{r}

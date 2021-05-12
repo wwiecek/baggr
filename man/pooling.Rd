@@ -14,7 +14,7 @@ heterogeneity(bg, summary = TRUE)
 
 \item{type}{In \code{pooling} calculation is done for each of the \code{"groups"}
 (default) or for \code{"total"} hypereffect(s).
-See Details section for how calculation is done.}
+See \emph{Details} section for how calculation is done.}
 
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
@@ -31,42 +31,58 @@ complement, the \emph{I-squared} statistic.
 }
 \details{
 Pooling statistic describes the extent to which group-level estimates of treatment
-effect are "pooled" (or pulled!) toward average treatment effect in the meta-analysis model.
-If \code{pooling = "none"} or "full" in \link{baggr}, then the returned values are always 0 or 1, respectively.
+effect are "pooled" (or pulled!) closer to average treatment effect in the meta-analysis model.
+If \code{pooling = "none"} or "full" in \link{baggr}, then the values are always 0 or 1, respectively.
 If \code{pooling = "partial"}, the value is somewhere between 0 and 1.
 
-\strong{Formulae for the calculations below are provided in main package vignette.} See \verb{vignette("baggr").}
+\strong{Formulae for the calculations below are provided in main package vignette.}
+}
+\section{Group pooling}{
 
-#' \strong{Estimate of pooling in a group}: this is the calculation done by \code{pooling()}
-if \code{type = "groups"} (default).
 
-In a partial pooling model (see \link{baggr}), group \emph{k} (e.g. study) has a treatment effect
-estimate, with some SE around the real treatment effect (TE).
-Each TE itself is distributed with mean and variance.
+This is the calculation done by \code{pooling()} if \code{type = "groups"} (default).
+See \code{vignette("baggr")} for more details on pooling calculations.
 
-The quantity of interest is ratio of variability in \eqn{\tau} to total variability.
+In a partial pooling model (see \link{baggr}), group \emph{k} (e.g. study) has
+standard error of treatment effect estimate, \eqn{se_k}.
+The treatment effect (across \emph{k} groups) is variable across groups, with
+hyper-SD parameter \eqn{\sigma_(\tau)}.
+
+The quantity of interest is ratio of variation in treatment effects to the
+total variation.
 By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{p}.
 
-\deqn{p = 1 - (\sigma(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
+\deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
 \itemize{
-\item If \eqn{p < 0.5}, that means the variation across studies is higher than variation within studies.
+\item If \eqn{p < 0.5}, the variation across studies is higher than variation within studies.
 \item Values close to 1 indicate nearly full pooling. Variation across studies dominates.
-\item Values close to 0 -- no pooling. Variation within studies dominates.
+\item Values close to 0 indicate no pooling. Variation within studies dominates.
 }
 
-Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a single fixed value)
+Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a single fixed value),
 \emph{p} is also a parameter. It is typical for \emph{p} to have very high dispersion, as in many cases we
 cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution of_p_
 (rather than summarised values), set \code{summary=FALSE}.
+}
 
-\strong{Overall pooling (in the model)}
+\section{Overall pooling in the model}{
 
-Typically it is a single measure of heterogeneity that is of interest to researchers.
-This is calculated by setting \code{type = "total"} or simply writing \code{heterogeneity(mymodel)}
+
+Typically researchers want to report a single measure from the model,
+relating to heterogeneity across groups.
+This is calculated by either \code{pooling(mymodel, type = "total")} or simply \code{heterogeneity(mymodel)}
 
 In many contexts, i.e. medical statistics, it is typical to report \emph{1-P}, called \eqn{I^2}
-(see Higgins \emph{et al}, 2003). Higher values of \emph{I-squared} indicate higher heterogeneity.
+(see Higgins and Thompson, 2002; sometimes another statistic, \eqn{H^2 = 1 / P},
+is used).
+Higher values of \emph{I-squared} indicate higher heterogeneity;
 Von Hippel (2015) provides useful details for \emph{I-squared} calculations.
+
+To obtain such single estimate we need to substitute average variability of group-specific
+treatment effects and then calculate the same way we would calculate \eqn{p}.
+By default we use the mean across \emph{k} \eqn{se_k^2} values. Typically, implementations of
+\eqn{I^2} in statistical packages use a different calculation for this quantity,
+which may make \emph{I}'s not comparable when different studies have different SE's.
 
 Same as for group-specific estimates, \emph{P} is a Bayesian parameter and its dispersion can be high.
 
@@ -75,15 +91,16 @@ Same as for group-specific estimates, \emph{P} is a Bayesian parameter and its d
 See Gelman & Pardoe (2006) Section 1.1 for a short explanation of how \eqn{R^2}
 statistic relates to the pooling metric.
 }
+
 \references{
 Gelman, Andrew, and Iain Pardoe.
 "Bayesian Measures of Explained Variance and Pooling in Multilevel (Hierarchical) Models."
-\emph{Technometrics 48, no. 2 (May 2006): 241-51}. \url{https://doi.org/10.1198/004017005000000517}.
+\emph{Technometrics 48, no. 2 (May 2006): 241-51}.
 
-Higgins, Julian P T, Simon G Thompson, Jonathan J Deeks, and Douglas G Altman.
-"Measuring Inconsistency in Meta-Analyses."
-\emph{British Medical Journal 327, no. 7414 (September 6, 2003): 557-60.}
+Higgins, Julian P. T., and Simon G. Thompson.
+“Quantifying Heterogeneity in a Meta-Analysis.”
+\emph{Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58}.
 
 Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
-\emph{BMC Medical Research Methodology 15 (April 14, 2015).} \url{https://doi.org/10.1186/s12874-015-0024-z}.
+\emph{BMC Medical Research Methodology 15 (April 14, 2015).}
 }

@@ -7,22 +7,29 @@
 \method{plot}{baggr_compare}(
   x,
   style = "areas",
-  arrange = "single",
+  grid_models = FALSE,
+  grid_parameters = TRUE,
   interval = 0.95,
   hyper = TRUE,
   transform = NULL,
   order = F,
+  vline = FALSE,
   ...
 )
 }
 \arguments{
 \item{x}{baggr_compare model to plot}
 
-\item{style}{What kind of plot to display (if \code{arrange = "grid"}),
+\item{style}{What kind of plot to display (if \code{grid_models = TRUE}),
 passed to the \code{style} argument in \link{baggr_plot}.}
 
-\item{arrange}{If \code{"single"} (default), generate a single comparison plot;
-if \code{"grid"}, display multiple plots side-by-side.}
+\item{grid_models}{If \code{FALSE} (default), generate a single comparison plot;
+if \code{TRUE}, display each model (using individual \link{baggr_plot}'s)
+side-by-side.}
+
+\item{grid_parameters}{if \code{TRUE}, uses \code{ggplot}-style facetting when plotting models
+with many parameters (especially \code{"quantiles"}, \code{"sslab"});
+if \code{FALSE}, returns separate plot for each parameter}
 
 \item{interval}{probability level used for display of posterior interval}
 
@@ -31,11 +38,16 @@ in addition to group treatment effects}
 
 \item{transform}{a function (e.g. exp(), log())
 to apply to the values of group (and hyper, if hyper=TRUE)
-effects before plotting; when working with effects that are on log scale, exponent transform is used automatically,
+effects before plotting; when working with effects that are on
+log scale, exponent transform is used automatically,
 you can plot on log scale by setting transform = identity}
 
-\item{order}{Whether to order by median treatment effect by group. If not, this
-sorts group alphabetically. The pooled estimate is always listed first, when applicable.}
+\item{order}{Whether to sort by median treatment effect by group.
+If yes, medians from the model with largest range of estimates
+are used for sorting.
+If not, groups are shown alphabetically.}
+
+\item{vline}{logical; show vertical line through 0 in the plot?}
 
 \item{...}{ignored for now, may be used in the future}
 }

@@ -2,25 +2,35 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_plot}
 \alias{effect_plot}
-\title{Plot posterior distribution for treatment effect}
+\title{Plot predictive draws from baggr model}
 \usage{
 effect_plot(..., transform = NULL)
 }
 \arguments{
-\item{...}{Object(s) of class \code{baggr}. If there is more than one,
-the names of objects will be used as a plot legend (see example).}
+\item{...}{Object(s) of class \link{baggr}. If there is more than one,
+a comparison will be plotted and  names of objects
+will be used as a plot legend (see examples).}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
 (this is commonly used when calling \code{group_effects} from other
 plotting or printing functions)}
 }
 \value{
-A ggplot.
+A \code{ggplot} object.
 }
 \description{
-This function plots the \link{effect_draw} for one or more baggr objects.
+This function plots values from \link{effect_draw}, the predictive distribution
+(under default settings, \emph{posterior} predictive),
+for one or more \code{baggr} objects.
+}
+\details{
+Under default settings in \link{baggr} posterior predictive is obtained. But
+\code{effect_plot} can also be used for \emph{prior} predictive distributions when
+setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same, but
+labels will change to indicate this difference.
 }
 \examples{
+
 
 # A single effects plot
 bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
@@ -39,6 +49,7 @@ effect_plot("Uniform prior on SD"=bg1_ppd,
 
 }
 \seealso{
+\link{effect_draw} documents the process of drawing values;
 \link{baggr_compare} can be used as a shortcut for \code{effect_plot} with argument
 \code{compare = "effects"}
 }

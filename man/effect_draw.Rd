@@ -2,28 +2,31 @@
 % Please edit documentation in R/trt_effects.R
 \name{effect_draw}
 \alias{effect_draw}
-\title{Make predictive draws for treatment effect}
+\title{Make predictive draws from baggr model}
 \usage{
-effect_draw(x, n, transform = NULL)
+effect_draw(x, n, transform = NULL, summary = FALSE, interval = 0.95)
 }
 \arguments{
 \item{x}{A \code{baggr} class object.}
 
-\item{n}{How many values to draw? The default is the same
-as number of samples in the model (default is as long as the number of samples
-in \link{baggr} object, i.e. related to number of iterations of the Monte Carlo algorithm)}
+\item{n}{How many values to draw? The default is as long as the number of samples
+in the \code{baggr} object (see \emph{Details}).}
 
-\item{transform}{a transformation to apply to the result, should be an R function;
-(this is commonly used when calling \code{group_effects} from other
-plotting or printing functions)}
+\item{transform}{a transformation (an R function) to apply to the result of a draw.}
+
+\item{summary}{logical; if TRUE returns summary statistics rather than samples from the distribution;}
+
+\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
 }
 \value{
-A vector of possible values of the treatment effect.
+A vector (with \code{n} values) for models with one treatment effect parameter,
+a matrix (\code{n} rows and same number of columns as number of parameters) otherwise.
 }
 \description{
-This function takes the samples of hyperparameters of a \link{baggr} model
-(commonly hypermean \code{tau} and hyper-SD \code{sigma_tau}) and draws values of
+This function takes the samples of hyperparameters from a \link{baggr} model
+(typically hypermean and hyper-SD, which you can see using \link{treatment_effect}) and draws values of
 new realisations of treatment effect, i.e. an additional draw from the "population of studies".
+This can be used for both prior and posterior draws, depending on \link{baggr} model.
 }
 \details{
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
@@ -31,8 +34,22 @@ uncertainty in the mean treatment effect. This is useful both in understanding i
 heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.
 as priors in analysis of future data (since the draws can be seen as an expected treatment effect
 in a hypothetical study).
+
+The default number of samples is the same as what is returned by Stan model implemented in \link{baggr},
+(depending on such options as \code{iter}, \code{chains}, \code{thin}). If \code{n} is larger than what is available
+in Stan model, we draw values with replacement. This is not recommended and warning is printed in
+these cases.
+
+Under default settings in \link{baggr}, a \emph{posterior} predictive distribution is obtained. But
+\code{effect_draw} can also be used for \emph{prior} predictive distributions when
+setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
 }
 \references{
-Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks. "Interpretation of Random Effects Meta-Analyses".
-\emph{BMJ 342 (10 February 2011).} \url{https://doi.org/10.1136/bmj.d549}.
+Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
+"Interpretation of Random Effects Meta-Analyses".
+\emph{BMJ 342 (10 February 2011).}.
+}
+\seealso{
+\link{treatment_effect} returns samples of hypermean and hyper-SD
+which are used by this function
 }
