@@ -203,7 +203,9 @@ bg_cov_prior2 <- expect_warning(
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")
   expect_equal(bg_cov$formatted_prior$prior_beta_fam, 1)
-  expect_equal(round(bg_cov$formatted_prior$prior_beta_val, 2), c(0,10.97,0))
+  expect_equal(bg_cov$formatted_prior$prior_beta_val[1], 0)
+  expect_gt(bg_cov$formatted_prior$prior_beta_val[2], 0)
+  expect_equal(bg_cov$formatted_prior$prior_beta_val[3], 0)
   expect_error(baggr(sa, covariates = c("made_up_covariates")))
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
   expect_length(bg5_p$covariates, 0)
