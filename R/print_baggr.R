@@ -137,7 +137,7 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
   }
 
   if(fixed && length(x$covariates) > 0) {
-    fe <- fixed_effects(x, summary = TRUE)
+    # fe <- fixed_effects(x, summary = TRUE)
 
     if(exponent)
       fixed_eff_tab <- fixed_effects(x, summary = TRUE, transform=exp)

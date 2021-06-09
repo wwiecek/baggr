@@ -218,9 +218,11 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   # Setting covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){
-      val <- max(10*sd(data$mu), 10*sd(data$tau))
-      prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, 10))
-      message(paste0("Set beta prior (on covariates in regression) to N(0, 10^2)",
+      val <- max(10*unlist(lapply(data[, covariates, drop = FALSE], function(x) sd(as.numeric(x)))))
+      prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, val))
+      message(paste0("Setting prior for covariates in regression to normal, with SD equal to 10*(highest SD among covariates):\n",
+                     "* beta ~ ", print_dist(normal(0, val)),
+                     # Normal(0, ", format(val, digits = 2), "^2)",
                      " -- purely experimental, use with caution"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
