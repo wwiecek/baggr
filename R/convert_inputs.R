@@ -315,9 +315,10 @@ convert_inputs <- function(data,
         stop("Cannot bind data and test_data. Ensure that all ",
              "covariates are present and same levels are used.")
       data_bind$tau <- 0
-      out$X_test <- model.matrix(as.formula(
-        paste("tau ~", paste(covariates, collapse="+"), "-1")),
+      temp <- model.matrix(as.formula(
+        paste("tau ~", paste(covariates, collapse="+"))),
         data=data_bind[(nrow(data)+1):nrow(data_bind),])
+      out$X_test <- temp[, 2:ncol(temp), drop = FALSE]
     } else {
       data_bind <- data[,covariates, drop = FALSE]
       data_bind$tau <- 0
@@ -325,9 +326,10 @@ convert_inputs <- function(data,
     }
 
     # Covariates matrix preparation (based on checks done in test data)
-    out$X <- model.matrix(as.formula(
-      paste("tau ~", paste(covariates, collapse="+"), "-1")),
+    temp <- model.matrix(as.formula(
+      paste("tau ~", paste(covariates, collapse="+"))),
       data=data_bind[1:nrow(data),])
+    out$X <- temp[, 2:ncol(temp), drop = FALSE]
     out$Nc <- ncol(out$X)
 
     if(is.null(test_data))

@@ -179,6 +179,7 @@ sa <- schools
 sa$a <- rnorm(8)
 sa$b <- rnorm(8)
 sa$f <- as.factor(c(rep("Yes", 4), rep("No", 4)))
+sa$f2 <- as.factor(c(rep("Yes", 3), rep("No", 2), rep("Maybe", 3)))
 
 sb <- sa
 sb$b <- NULL
@@ -186,7 +187,10 @@ bg_cov <- expect_warning(
   baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0))
 bg_cov_factor <- expect_warning(
   baggr(sa, covariates = c("f"), iter = 200, refresh = 0))
-expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fNo", "fYes"))
+bg_cov_factor2 <- expect_warning(
+  baggr(sa, covariates = c("f2"), iter = 200, refresh = 0))
+expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fYes"))
+expect_identical(attr(bg_cov_factor2$inputs, "covariate_coding"), c("f2No", "f2Yes"))
 bg_cov_test <- expect_warning(
   baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0))
 bg_cov_prior1 <- expect_warning(
@@ -302,9 +306,10 @@ test_that("loocv", {
 
 # 8 schools correctness test -----
 
-bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
 
 test_that("The default 8 schools result is close to the result in BDA", {
+  skip_on_cran()
+  bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
   expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
   expect_equal(mean(treatment_effect(bg_s)$sigma_tau), 7, tolerance = .25)
 })
