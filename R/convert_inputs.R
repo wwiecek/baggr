@@ -308,31 +308,25 @@ convert_inputs <- function(data,
                   " are not columns in input data"))
 
     # Test_data preparation
+    cov_bind <- data[,covariates, drop = FALSE]
     if(!is.null(test_data)){
-      data_bind <- try(rbind(data[,covariates, drop = FALSE],
-                             test_data[,covariates, drop = FALSE]))
-      if(class(data_bind) == "try-error")
+      cov_bind <- try(rbind(
+        cov_bind,
+        test_data[,covariates, drop = FALSE]))
+      if(inherits(cov_bind, "try-error"))
         stop("Cannot bind data and test_data. Ensure that all ",
              "covariates are present and same levels are used.")
-      data_bind$tau <- 0
-      temp <- model.matrix(as.formula(
-        paste("tau ~", paste(covariates, collapse="+"))),
-        data=data_bind[(nrow(data)+1):nrow(data_bind),])
-      out$X_test <- temp[, 2:ncol(temp), drop = FALSE]
-    } else {
-      data_bind <- data[,covariates, drop = FALSE]
-      data_bind$tau <- 0
-
     }
-
-    # Covariates matrix preparation (based on checks done in test data)
-    temp <- model.matrix(as.formula(
+    cov_bind$tau <- 0
+    cov_bind[] <- lapply(cov_bind, function(x) if(is.character(x)) factor(x) else x)
+    cov_mm <- model.matrix(as.formula(
       paste("tau ~", paste(covariates, collapse="+"))),
-      data=data_bind[1:nrow(data),])
-    out$X <- temp[, 2:ncol(temp), drop = FALSE]
+      data=cov_bind)
+    out$X <- cov_mm[1:nrow(data), 2:ncol(cov_mm), drop = FALSE]
     out$Nc <- ncol(out$X)
-
-    if(is.null(test_data))
+    if(!is.null(test_data))
+      out$X_test <- cov_mm[(nrow(data)+1):nrow(cov_mm), 2:ncol(cov_mm), drop = FALSE]
+    else
       out$X_test <- array(0, dim=c(0, out$Nc))
 
     covariate_coding <- colnames(out$X)
