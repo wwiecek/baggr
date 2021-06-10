@@ -1,3 +1,8 @@
+# baggr 0.6.5 (June 2021)
+
+* Fixed errors that could happen when using multiple factor covariates, or
+  various covariate models with `loocv()`
+
 # baggr 0.6.3-0.6.4 (May 2021)
 
 * Various documentation fixes for re-submission of v0.6 to CRAN (first one since v0.4).
