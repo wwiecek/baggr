@@ -40,8 +40,8 @@ This is akin to fixing the baseline risk and only trying to infer the odds ratio
 The main output is the cross-validation
 information criterion, or -2 times the ELPD averaged over \emph{K} models.
 This is related to, and often approximated by, the Watanabe-Akaike
-Information Criterion. A value closer to zero (i.e. a smaller number in magnitude)
-means a better fit. For more information on cross-validation see
+Information Criterion. When comparing models, smaller values mean
+a better fit. For more information on cross-validation see
 \href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
 
 For running more computation-intensive models, consider setting the
@@ -63,6 +63,9 @@ attributes(cv) # more information is included in the object
 Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
 “Understanding Predictive Information Criteria for Bayesian Models.”
 Statistics and Computing 24, no. 6 (November 2014): 997–1016.
+}
+\seealso{
+\link{loocv_compare} for comparison of many LOO CV results
 }
 \author{
 Witold Wiecek
