@@ -31,11 +31,12 @@ treatment_effect <- function(bg, summary = FALSE,
       tau <- tau[,1,2]
 
     if(bg$pooling == "partial"){
-      sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
+      if(bg$model %in% c("mutau", "mutau_full"))
+        sigma_tau <- rstan::extract(bg$fit, pars="hypersd[1,2]")[[1]]
+      else
+        sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
       if(bg$model %in% c("rubin", "logit"))
         sigma_tau <- c(sigma_tau)
-      if(bg$model %in% c("mutau", "mutau_full"))
-        sigma_tau <- sqrt(sigma_tau[,1,2,2])
     }
     if(bg$pooling == "full")
       sigma_tau <- 0 #same dim as tau, but by convention set to 0

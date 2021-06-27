@@ -132,8 +132,8 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
       cat("\n")
     }
   } else if(group_warning_flag) { #No printing of groups
-    cat("Group effects omitted, as number of groups is > 20.\n",
-        "Use print.baggr() with group = TRUE to print them.\n")
+    cat("Group effects omitted, as number of groups is > 20.",
+        "\nUse print.baggr() with group = TRUE to print them.\n")
   }
 
   if(fixed && length(x$covariates) > 0) {

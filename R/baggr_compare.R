@@ -104,6 +104,8 @@ baggr_compare <- function(...,
     # return_models_flag <- 0
     if(is.null(names(l)))
       names(l) <- paste("Model", 1:length(l))
+    if(length(unique(names(l))) != length(names(l)))
+      stop("You must use unique model names")
     models <- l
   } else {
     # return_models_flag <- 1

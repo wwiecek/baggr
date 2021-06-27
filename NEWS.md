@@ -1,7 +1,8 @@
-# baggr 0.6.5 (June 2021)
+# baggr 0.6.5-0.6.6 (June 2021)
 
 * Fixed errors that could happen when using multiple factor covariates, or
   various covariate models with `loocv()`
+* Fixed a bug with reporting wrong SD's for effect in the v0.6 `mutau` model
 
 # baggr 0.6.3-0.6.4 (May 2021)
 

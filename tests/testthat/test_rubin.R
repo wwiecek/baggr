@@ -285,6 +285,8 @@ test_that("baggr_compare basic cases work with Rubin", {
                                          what = "prior", refresh = 0))
   expect_is(bgcomp, "baggr_compare")
   # Compare existing models:
+  expect_error(baggr_compare("Name" = bg5_p, "Name" = bg5_n), "unique model names")
+
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f)
   expect_is(bgcomp2, "baggr_compare")
 })
