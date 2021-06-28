@@ -166,6 +166,33 @@ effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
 
 
 
+#' Correlation between mu and tau in a baggr model
+#'
+#' @param bg  a [baggr] model where `model = "mutau"`
+#' @param summary logical; if TRUE returns summary statistics as explained below.
+#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
+#' @return a vector of values
+#' @export
+mutau_cor <- function(bg,
+                      summary = FALSE,
+                      interval = 0.95) {
+  # m <- matrix(apply(as.matrix(bg$fit, "L_Omega"), 2, mean), 2, 2)
+  # h <- apply(as.matrix(bg$fit, "hypersd"), 2, mean)
+  # (m %*% t(m))[2,1]
+  # diag(h) %*% (m %*% t(m)) %*% diag(h)
+
+  m <- as.matrix(bg$fit, "L_Omega")
+  # we want entry (2,1) in LL^T which is simply (1,1)*(2,1)
+  # in a lower-triangular matrix; and (1,1) should be == 1 everywhere
+  if(!all(m[,1] == 1))
+    warning("Error with correlation matrix in the mu&tau model. Inspect L_Omega parameters.")
+  if(summary)
+    return(mint(m[,2], int=interval, median=TRUE, sd = TRUE))
+  else
+    return(m[,2])
+
+}
+
 #' Plot predictive draws from baggr model
 #'
 #' This function plots values from [effect_draw], the predictive distribution

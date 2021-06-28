@@ -10,7 +10,7 @@
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
 #' These can be examined by using `attributes()` function.
-#' @seealso [loocv_compare] for comparison of many LOO CV results
+#' @seealso [loo_compare] for comparison of many LOO CV results
 #' @details
 #'
 #' The values returned by `loocv()` can be used to understand how excluding

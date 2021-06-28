@@ -65,7 +65,7 @@ Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
 Statistics and Computing 24, no. 6 (November 2014): 997–1016.
 }
 \seealso{
-\link{loocv_compare} for comparison of many LOO CV results
+\link{loo_compare} for comparison of many LOO CV results
 }
 \author{
 Witold Wiecek

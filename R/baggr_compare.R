@@ -217,6 +217,9 @@ print.baggr_compare <- function(x, digits, ...){
 #' that were passed for comparison purposes to baggr compare or
 #' run automatically by baggr_compare
 #' @param x baggr_compare model to plot
+#' @param compare When plotting, choose between comparison of `"groups"`
+#'                (default) or (hyper-) `"effects"`. The former is not available
+#'                when `what = "prior"`.
 #' @param grid_models If `FALSE` (default), generate a single comparison plot;
 #'                if `TRUE`, display each model (using individual [baggr_plot]'s)
 #'                side-by-side.
@@ -241,6 +244,7 @@ print.baggr_compare <- function(x, digits, ...){
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
+                               compare = x$compare,
                                style   = "areas",
                                grid_models = FALSE,
                                grid_parameters = TRUE,
@@ -260,7 +264,6 @@ plot.baggr_compare <- function(x,
     transform <- x$transform
 
   models <- x$models
-  compare <- x$compare
   effect_names <- x$effect_names
 
   if(grid_models) {

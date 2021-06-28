@@ -1,7 +1,7 @@
 
 #' S3 print method for objects of class `baggr` (model fits)
 #'
-#' This \code{print} method for a very concise summary of main model features.
+#' This prints a concise summary of the main [baggr] model features.
 #' More info is included in the summary of the model and its attributes.
 #'
 #' @param x object of class `baggr`
@@ -87,6 +87,11 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
       if(!exponent && x$pooling == "partial"){
         cat(crayon::bold("\nSD of treatement effects:"))
         print(sigma_tau, digits = digits)
+
+        if(x$model == "mutau") {
+          print("\nCorrelation of treatment effect and baseline:")
+          print(mutau_cor(x, summary = TRUE), digits = digits)
+        }
       }
     }
   }

@@ -23,6 +23,6 @@ less than 20 groups are present}
 to or from other methods (\code{print}  requirement)}
 }
 \description{
-This \code{print} method for a very concise summary of main model features.
+This prints a concise summary of the main \link{baggr} model features.
 More info is included in the summary of the model and its attributes.
 }

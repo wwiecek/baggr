@@ -1,5 +1,7 @@
-# baggr 0.6.5-0.6.6 (June 2021)
+# baggr 0.6.5-0.6.6 (June-July 2021)
 
+* Mu & tau models now also print correlations between effects, via a new
+  function `mutau_cor`
 * Fixed errors that could happen when using multiple factor covariates, or
   various covariate models with `loocv()`
 * Fixed a bug with reporting wrong SD's for effect in the v0.6 `mutau` model
