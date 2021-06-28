@@ -5,6 +5,10 @@
 * Fixed errors that could happen when using multiple factor covariates, or
   various covariate models with `loocv()`
 * Fixed a bug with reporting wrong SD's for effect in the v0.6 `mutau` model
+* You can now change type of visual comparison on the fly (`"effects"` and `"groups"`) 
+  when using `plot.baggr_compare`
+
+Various small changes to reduce amount of persistent messages triggered by normal user behaviour.
 
 # baggr 0.6.3-0.6.4 (May 2021)
 

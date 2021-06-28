@@ -165,7 +165,8 @@ baggr_compare <- function(...,
   # Return treatment effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform, summary = TRUE)$tau
+      est <- treatment_effect(x, transform = transform,
+                              summary = TRUE, message = FALSE)$tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
@@ -173,7 +174,8 @@ baggr_compare <- function(...,
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform, summary = TRUE)$sigma_tau
+      est <- treatment_effect(x, transform = transform,
+                              summary = TRUE, message = FALSE)$sigma_tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
@@ -303,9 +305,13 @@ plot.baggr_compare <- function(x,
 
         if(cmodel$pooling != "none" && hyper) {
           if(length(effect_names) == 1)
-            hyper_treat <- treatment_effect(cmodel, transform = transform)$tau
+            hyper_treat <- treatment_effect(cmodel,
+                                            transform = transform,
+                                            message=FALSE)$tau
           if(length(effect_names) > 1)
-            hyper_treat <- treatment_effect(cmodel, transform = transform)$tau[,i]
+            hyper_treat <- treatment_effect(cmodel,
+                                            transform = transform,
+                                            message=FALSE)$tau[,i]
           hyper_effects <- data.frame(
             lci = quantile(hyper_treat, (1 - interval)/2),
             median = quantile(hyper_treat, 0.5),

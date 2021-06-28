@@ -7,6 +7,7 @@
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `treatment_effect` from other
 #'                  plotting or printing functions)
+#' @param warn logical; use to disable repeat messages
 #' @return A list with 2 vectors (corresponding to MCMC samples)
 #'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
 #'         both vectors are summarised as mean and lower/upper bounds according to
@@ -16,11 +17,13 @@
 
 
 treatment_effect <- function(bg, summary = FALSE,
-                             transform = NULL, interval = .95) {
+                             transform = NULL, interval = .95,
+                             message = TRUE) {
   check_if_baggr(bg)
 
   if(bg$pooling == "none"){
-    message("There is no treatment effect estimated when pooling = 'none'.")
+    if(message)
+      message("There is no treatment effect estimated when pooling = 'none'.")
     return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
   if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
