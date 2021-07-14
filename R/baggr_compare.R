@@ -336,11 +336,11 @@ plot.baggr_compare <- function(x,
       if(order == T) {
         ord <- get_order(df_groups, hyper)
       } else if(hyper) {
-        ord <- c(setdiff(sort(unique(df_groups$group)),
+        ord <- c(setdiff(unique(df_groups$group),
                          "Pooled Estimate"),
                  "Pooled Estimate")
       } else {
-        ord <- sort(unique(df_groups$group))
+        ord <- unique(df_groups$group)
       }
 
       # Rearrange ordering of groups/hypereffects

@@ -138,7 +138,10 @@ effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
                 "Consider running baggr() with higher iter= setting")
       rows <- sample(nrow(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows,]
-      te$sigma_tau <- te$sigma_tau[rows,]
+      if(x$pooling != "full")
+        te$sigma_tau <- te$sigma_tau[rows,]
+      else
+        te$sigma_tau <- te$tau*0
     }
     if(neffects == 1){
       if(n > length(te$tau))
@@ -146,7 +149,10 @@ effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
                 "Consider running baggr() with higher iter= setting")
       rows <- sample(length(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows]
-      te$sigma_tau <- te$sigma_tau[rows]
+      if(x$pooling != "full")
+        te$sigma_tau <- te$sigma_tau[rows,]
+      else
+        te$sigma_tau <- te$tau*0
     }
   }
 
