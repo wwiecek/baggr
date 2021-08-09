@@ -162,6 +162,38 @@ baggr_compare <- function(...,
 
   effect_names <- effect_names[[1]]
 
+
+
+  # Check if, for group comparisons, covariates are the same
+  cov_effects <- NULL
+  covs <- lapply(models, function(x) x$covariates)
+  if(length(unique(covs)) > 1)
+    message("Compared models use different covariates. ",
+            "Hyperparameters are not directly comparable.")
+  else if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
+    cov_effects <- lapply(models, function(x) {
+      est <- fixed_effects(x, transform = transform,
+                           summary = TRUE)
+      if(dim(est)[1] == 0)
+        # return(c(NA, NA))
+        return(NULL)
+      else
+        return(
+          data.frame(
+            var = x$covariates,
+            mean = est[, "mean", 1],
+            sd = est[, "sd", 1])
+        )
+    })
+    cov_effects <- cov_effects[!unlist(lapply(cov_effects, is.null))]
+    for(i in 1:length(cov_effects)){
+      cov_effects[[i]]$model <- names(models)[i]
+      rownames(cov_effects[[i]]) <- NULL
+    }
+    cov_effects <- do.call(rbind, cov_effects)
+  }
+
+
   # Return treatment effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
@@ -182,11 +214,14 @@ baggr_compare <- function(...,
       est
     })))
 
+
+
   bgc <- structure(
     list(
       models = models,
       mean_trt = mean_trt_effects,
       sd_trt = sd_trt_effects,
+      covariates = cov_effects,
       compare = compare,
       effect_names = effect_names,
       transform = transform

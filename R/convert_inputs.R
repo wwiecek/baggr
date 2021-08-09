@@ -347,7 +347,6 @@ convert_inputs <- function(data,
     stop(paste0("baggr() does not allow NA values in inputs (see vectors ",
                 paste(names(out)[na_cols], collapse = ", "), ")"))
 
-
   return(structure(
     out,
     data_type = available_data,
