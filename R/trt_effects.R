@@ -150,7 +150,7 @@ effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
       rows <- sample(length(te$tau), n, replace = TRUE)
       te$tau   <- te$tau[rows]
       if(x$pooling != "full")
-        te$sigma_tau <- te$sigma_tau[rows,]
+        te$sigma_tau <- te$sigma_tau[rows]
       else
         te$sigma_tau <- te$tau*0
     }

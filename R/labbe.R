@@ -72,7 +72,8 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
     coord_cartesian(xlim = c(lim_min, lim_max), ylim = c(lim_min, lim_max)) +
     geom_abline(slope = 1, intercept = 0) +
     {if(shade_se != "none") scale_size_continuous(range = c(1,20))} +
-    theme(legend.position = "bottom") + guides(size = FALSE) +
+    theme(legend.position = "bottom") +
+    guides(size = "none") +
     labs(y = "Proportion of events in treatment arm",
          x = "Proportion of events in control arm") +
     {if(shade_se != "none")

@@ -1,18 +1,24 @@
-# baggr 0.6.5-0.6.6 (June-July 2021)
+# baggr 0.6.5-0.6.7 (June-July 2021)
 
 * Mu & tau models now also print correlations between effects, via a new
   function `mutau_cor`
+* You can now change type of visual comparison on the fly 
+  (`"effects"` and `"groups"`) 
+
+Minor bug fixes:
+
 * Fixed errors that could happen when using multiple factor covariates, or
   various covariate models with `loocv()`
 * Fixed a bug with reporting wrong SD's for effect in the v0.6 `mutau` model
-* You can now change type of visual comparison on the fly (`"effects"` and `"groups"`) 
   when using `plot.baggr_compare`
-
-Various small changes to reduce amount of persistent messages triggered by normal user behaviour.
+* Fixed ordering of groups in `baggr_compare()`
+* Various small changes to reduce amount of persistent messages 
+  triggered by normal user behaviour.
 
 # baggr 0.6.3-0.6.4 (May 2021)
 
-* Various documentation fixes for re-submission of v0.6 to CRAN (first one since v0.4).
+* Various documentation fixes for re-submission of v0.6 to CRAN 
+  (first one since v0.4).
 * Added `summary` option for `effect_draw`.
 * Factor covariates will work (better) now.
 * Removed some non-essential code for faster compilation on CRAN.

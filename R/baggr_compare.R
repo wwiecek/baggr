@@ -287,15 +287,15 @@ plot.baggr_compare <- function(x,
     return(gridExtra::grid.arrange(grobs = plots, ncol = grid_width))
   }
 
-  # This is not-grid, baggr_compare specific code:
+  # This is non-grid, baggr_compare-specific code:
 
   if(compare == "groups") {
 
     # Create input data frames for ggplots
     plot_dfs <- lapply(as.list(1:(length(effect_names))), function(i) {
 
-      # Note: pipe operators are dplyr not used here to reduce dependencies
-
+      # Note: pipe operators or dplyr not used here anymore
+      # to reduce dependencies
       effects_list <- lapply(models, function(cmodel) {
         m <- as.data.frame(group_effects(cmodel,
                                          interval = interval,
@@ -353,26 +353,6 @@ plot.baggr_compare <- function(x,
 
     names(plot_dfs) <- effect_names
 
-    single_comp_plot <- function(df, title="", legend = "top", grid = F) {
-      ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
-                                       ymin = lci, ymax = uci,
-                                       group = interaction(model),
-                                       color = model)) +
-        {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
-        ggplot2::geom_errorbar(size = 1.2, width = 0,
-                               position = ggplot2::position_dodge(width = 0.5)
-                               ) +
-        ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
-                            position = ggplot2::position_dodge(width=0.5),
-                            pch = 21) +
-        ggplot2::coord_flip() +
-        ggplot2::labs(x = "",
-                      y = paste0("Treatment effect (", round(100*interval), "% interval)")) +
-        {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
-        baggr_theme_get() +
-        ggplot2::theme(legend.position=legend)
-    }
-
     # This is an unpleasant way of doing map2...
     # Sorry to everyone.
     if(grid_parameters){
@@ -381,10 +361,12 @@ plot.baggr_compare <- function(x,
         big_df <- rbind(big_df,
                         data.frame(parameter = effect_names[i], plot_dfs[[i]]))
 
-      plots <- single_comp_plot(big_df, "", grid = T)
+      plots <- single_comp_plot(big_df, "", grid = T,
+                                ylab = paste0("Treatment effect (", round(100*interval), "% interval)"))
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
-        single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F)
+        single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
+                         ylab = paste0("Treatment effect (", round(100*interval), "% interval)"))
       })
     }
   } else if(compare == "effects"){
@@ -401,12 +383,46 @@ plot.baggr_compare <- function(x,
 
 
 
-# Separate out ordering so we can test directly
-# @param df_groups data.frame of group effects used in [plot.baggr_compare]
-# @param hyper show parameter estimate? same as in [plot.baggr_compare]
-# @details Given a set of effects measured by models, identifies the
-# model which has the biggest range of estimates and ranks groups
-# by those estimates, returning the order
+#' Plot single comparison plot in baggr_compare style
+#'
+#' @param df data.frame with columns 'group', 'median', 'lci', 'uci', 'model' and
+#'           optionally 'parameter'
+#' @param title 'ggtitle'
+#' @param legend 'legend.position'
+#' @param ylab Y axis label
+#' @param grid logical; if TRUE, facets by 'parameter' column
+#'
+#' @return
+#' @export
+#'
+#' @examples
+single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) {
+  ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
+                                   ymin = lci, ymax = uci,
+                                   group = interaction(model),
+                                   color = model)) +
+    {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
+    ggplot2::geom_errorbar(size = 1.2, width = 0,
+                           position = ggplot2::position_dodge(width = 0.5)
+    ) +
+    ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
+                        position = ggplot2::position_dodge(width=0.5),
+                        pch = 21) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(x = "",
+                  y = ylab) +
+    {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
+    baggr_theme_get() +
+    ggplot2::theme(legend.position=legend)
+}
+
+
+#' Separate out ordering so we can test directly
+#' @param df_groups data.frame of group effects used in [plot.baggr_compare]
+#' @param hyper show parameter estimate? same as in [plot.baggr_compare]
+#' @details Given a set of effects measured by models, identifies the
+#' model which has the biggest range of estimates and ranks groups
+#' by those estimates, returning the order
 
 get_order <- function(df_groups, hyper) {
   model_spread <- sapply(
