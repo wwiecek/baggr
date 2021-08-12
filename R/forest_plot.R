@@ -7,7 +7,8 @@
 #' group estimates.
 #'
 #' @param bg a [baggr] class object
-#' @param show if `"inputs"`, then plotted points and lines correspond to raw inputs for each group;
+#' @param show if `"inputs"`, then plotted points and lines
+#'             correspond to raw inputs for each group;
 #'             if `"posterior"` -- to posterior distribution;
 #'             you can also plot `"both"` inputs and posteriors;
 #'             if `"covariates"`, then fixed effect coefficients are plotted
@@ -19,7 +20,7 @@
 #'        in the plot
 #' @param ... other arguments passed to [forestplot]
 #'
-#' @seealso [forestplot] function and its associated vignette for examples;
+#' @seealso [forestplot] function and its vignette for examples;
 #'          [effect_plot] and [baggr_plot] for non-forest plots of baggr results
 #'
 #' @examples
@@ -30,11 +31,12 @@
 #' @export
 #' @import forestplot
 
-forest_plot <- function(bg, show = c("inputs", "posterior", "both", "covariates"),
+forest_plot <- function(bg,
+                        show = c("inputs", "posterior", "both", "covariates"),
                         print = show,
                         prob = .95,
                         digits = 3,
-                        ...) {bg
+                        ...) {
   if(!inherits(bg, "baggr"))
     stop("forest_plot can only be used with baggr objects")
   if(length(bg$effects) > 1)
@@ -108,6 +110,15 @@ forest_plot <- function(bg, show = c("inputs", "posterior", "both", "covariates"
     l[["is.summary"]] <- c(TRUE, rep(FALSE, nrow(ge_raw)), FALSE, FALSE)
   if(!("labeltext" %in% names(l)))
     l[["labeltext"]] <- fp_text
+
+  # Fix to make X ticks bigger
+  # (solving the world hunger this ain't)
+  custom_xticks <- pretty(c(ge$lci, ge$uci), n = 8)
+  # custom_xticks[which.min(abs(custom_xticks))] <- 0
+  if(!("xticks" %in% names(l)))
+    l[["xticks"]] <- round(sort(c(0, custom_xticks)))
+  l[["txt_gp"]]  <- fpTxtGp(ticks = grid::gpar(cex = 0.85))
+
   l[["mean"]]  <- rbind(NA, as.matrix(ge$mean),NA, mint(te)[2])
   l[["lower"]] <- rbind(NA, as.matrix(ge$lci), NA, mint(te)[1])
   l[["upper"]] <- rbind(NA, as.matrix(ge$uci), NA, mint(te)[3])

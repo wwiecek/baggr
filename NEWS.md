@@ -1,9 +1,12 @@
-# baggr 0.6.5-0.6.7 (June-July 2021)
+
+# baggr 0.6.5-0.6.8 (June-August 2021)
 
 * Mu & tau models now also print correlations between effects, via a new
   function `mutau_cor`
 * You can now change type of visual comparison on the fly 
   (`"effects"` and `"groups"`) 
+* Upgraded forest plots to work with `forestplot` 2.0
+
 
 Minor bug fixes:
 
