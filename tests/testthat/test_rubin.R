@@ -143,12 +143,12 @@ test_that("printing works", {
 })
 
 test_that("Forest plots for Rubin model", {
-  expect_is(forest_plot(bg5_n), "vpPath")
-  expect_is(forest_plot(bg5_p), "vpPath")
-  expect_is(forest_plot(bg5_p, show = "posterior"), "vpPath")
-  expect_is(forest_plot(bg5_p, show = "both"), "vpPath")
-  expect_is(forest_plot(bg5_f), "vpPath")
-  expect_is(forest_plot(bg5_f, graph.pos = 1), "vpPath")
+  expect_is(forest_plot(bg5_n), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p, show = "posterior"), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p, show = "both"), "gforge_forestplot")
+  expect_is(forest_plot(bg5_f), "gforge_forestplot")
+  expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "should be one of")
 })

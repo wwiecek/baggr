@@ -104,10 +104,11 @@ test_that("Plotting and printing works", {
   expect_is(plot(bg5_p, hyper = TRUE), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
-  expect_is(forest_plot(bg5_n), "vpPath")
-  expect_is(forest_plot(bg5_p), "vpPath")
-  expect_is(forest_plot(bg5_f), "vpPath")
-  expect_is(forest_plot(bg5_f, graph.pos = 1), "vpPath")
+  # This has been changed in forestplot 2.0:
+  expect_is(forest_plot(bg5_n), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p), "gforge_forestplot")
+  expect_is(forest_plot(bg5_f), "gforge_forestplot")
+  expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 
