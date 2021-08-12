@@ -170,7 +170,9 @@ baggr_compare <- function(...,
   if(length(unique(covs)) > 1)
     message("Compared models use different covariates. ",
             "Hyperparameters are not directly comparable.")
-  else if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
+  # else if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
+  if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
+    # Grab covariates, if there are any:
     cov_effects <- lapply(models, function(x) {
       est <- fixed_effects(x, transform = transform,
                            summary = TRUE)
@@ -180,19 +182,23 @@ baggr_compare <- function(...,
       else
         return(
           data.frame(
-            var = x$covariates,
+            model = "",
+            covariate = x$covariates,
             mean = est[, "mean", 1],
-            sd = est[, "sd", 1])
+            sd = est[, "sd", 1],
+            lci = est[, "lci", 1],
+            uci = est[, "uci", 1]
+          )
         )
     })
     cov_effects <- cov_effects[!unlist(lapply(cov_effects, is.null))]
     for(i in 1:length(cov_effects)){
       cov_effects[[i]]$model <- names(models)[i]
-      rownames(cov_effects[[i]]) <- NULL
+      # rownames(cov_effects[[i]]) <- NULL
     }
     cov_effects <- do.call(rbind, cov_effects)
+    rownames(cov_effects) <- NULL
   }
-
 
   # Return treatment effects
   mean_trt_effects <- do.call(rbind, (
@@ -245,6 +251,20 @@ print.baggr_compare <- function(x, digits, ...){
   cat("\n")
   cat("SD for treatment effects:\n")
   print(signif(x$sd_trt, digits = digits))
+
+  if(!is.null(x$covariates)){
+    cat("\nMean (SD) for covariates:\n")
+    mcov <- x$covariates
+    d <- 3
+    mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
+                       signif(mcov$sd, digits = digits), ")",
+                       sep = "")
+    mcov <- mcov[, c("model", "covariate", "meansd")]
+    ycov <- reshape(mcov, idvar = "model", timevar = "covariate", direction = "wide")
+    colnames(ycov) <- gsub("meansd.", "", colnames(ycov))
+    print(ycov, row.names = FALSE)
+  }
+
   if(!is.null(x$transform))
     cat(paste0("\nTransform: ", deparse(x$transform)))
 }
