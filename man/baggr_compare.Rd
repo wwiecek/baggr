@@ -62,7 +62,8 @@ details see \link{baggr}, specifically the \code{ppd} argument.
 prior_comparison <-
   baggr_compare(schools,
                 model = 'rubin',
-                iter = 500, #this is just for illustration -- don't set it this low normally!
+                #this is just for illustration -- don't set it this low normally!
+                iter = 500,
                 prior_hypermean = normal(0, 3),
                 prior_hypersd = normal(0,2),
                 prior_hypercor = lkj(2),
@@ -75,7 +76,8 @@ plot(prior_comparison)
 pooling_comparison <-
   baggr_compare(schools,
                 model = 'rubin',
-                iter = 500, #this is just for illustration -- don't set it this low normally!
+                #this is just for illustration -- don't set it this low normally!
+                iter = 500,
                 prior_hypermean = normal(0, 3),
                 prior_hypersd = normal(0,2),
                 prior_hypercor = lkj(2),

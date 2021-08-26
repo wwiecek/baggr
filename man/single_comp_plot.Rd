@@ -19,7 +19,7 @@ optionally 'parameter'}
 \item{grid}{logical; if TRUE, facets by 'parameter' column}
 }
 \value{
-
+a \code{ggplot2} object
 }
 \description{
 Plot single comparison plot in baggr_compare style

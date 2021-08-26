@@ -44,7 +44,8 @@
 #' prior_comparison <-
 #'   baggr_compare(schools,
 #'                 model = 'rubin',
-#'                 iter = 500, #this is just for illustration -- don't set it this low normally!
+#'                 #this is just for illustration -- don't set it this low normally!
+#'                 iter = 500,
 #'                 prior_hypermean = normal(0, 3),
 #'                 prior_hypersd = normal(0,2),
 #'                 prior_hypercor = lkj(2),
@@ -57,7 +58,8 @@
 #' pooling_comparison <-
 #'   baggr_compare(schools,
 #'                 model = 'rubin',
-#'                 iter = 500, #this is just for illustration -- don't set it this low normally!
+#'                 #this is just for illustration -- don't set it this low normally!
+#'                 iter = 500,
 #'                 prior_hypermean = normal(0, 3),
 #'                 prior_hypersd = normal(0,2),
 #'                 prior_hypercor = lkj(2),
@@ -428,11 +430,13 @@ plot.baggr_compare <- function(x,
                         data.frame(parameter = effect_names[i], plot_dfs[[i]]))
 
       plots <- single_comp_plot(big_df, "", grid = T,
-                                ylab = paste0("Treatment effect (", round(100*interval), "% interval)"))
+                                ylab = paste0("Treatment effect (",
+                                              round(100*interval), "% interval)"))
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
-                         ylab = paste0("Treatment effect (", round(100*interval), "% interval)"))
+                         ylab = paste0("Treatment effect (",
+                                       round(100*interval), "% interval)"))
       })
     }
   } else if(compare == "effects"){
@@ -457,10 +461,10 @@ plot.baggr_compare <- function(x,
 #' @param legend 'legend.position'
 #' @param ylab Y axis label
 #' @param grid logical; if TRUE, facets by 'parameter' column
-#'
-#' @return
+#' @return a `ggplot2` object
 #' @export
 single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) {
+  group <- median <- lci <- uci <- model <- NULL
   ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
                                    ymin = lci, ymax = uci,
                                    group = interaction(model),
