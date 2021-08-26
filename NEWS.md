@@ -1,5 +1,5 @@
 
-# baggr 0.6.5-0.6.8 (June-August 2021)
+# baggr 0.6.5-0.6.9 (June-August 2021)
 
 * Mu & tau models now also print correlations between effects, via a new
   function `mutau_cor`
@@ -17,6 +17,8 @@ Minor bug fixes:
 * Fixed ordering of groups in `baggr_compare()`
 * Various small changes to reduce amount of persistent messages 
   triggered by normal user behaviour.
+* Fixed a bug where priors for meta-regressions were set even though there were
+  no covariates.
 
 # baggr 0.6.3-0.6.4 (May 2021)
 

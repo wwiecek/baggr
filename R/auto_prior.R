@@ -234,7 +234,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
     }
   } else {
-    prior_list <- set_prior_val(prior_list, "prior_beta", uniform(0,0))
+    prior_list <- set_prior_val(prior_list, "prior_beta", uniform(0, 1))
   }
 
   return(prior_list)

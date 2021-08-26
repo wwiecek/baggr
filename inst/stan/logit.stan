@@ -101,7 +101,8 @@ model {
     target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
 
   //fixed effect coefficients
-  target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+  if(Nc > 0)
+    target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
 
   if(pooling_type == 1)
     eta ~ normal(0,1);
