@@ -23,7 +23,8 @@ plotting or printing functions)}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
 
-\item{warn}{logical; use to disable repeat messages}
+\item{message}{logical; use to disable messages prompted by using with
+no pooling models}
 }
 \value{
 A list with 2 vectors (corresponding to MCMC samples)

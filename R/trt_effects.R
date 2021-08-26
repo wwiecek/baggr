@@ -7,7 +7,8 @@
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `treatment_effect` from other
 #'                  plotting or printing functions)
-#' @param warn logical; use to disable repeat messages
+#' @param message logical; use to disable messages prompted by using with
+#'                no pooling models
 #' @return A list with 2 vectors (corresponding to MCMC samples)
 #'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
 #'         both vectors are summarised as mean and lower/upper bounds according to
@@ -95,7 +96,8 @@ treatment_effect <- function(bg, summary = FALSE,
 #' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
 #' @param n How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
-#'
+#' @param message logical; use to disable messages prompted by using with
+#'                no pooling models
 #' @return A vector (with `n` values) for models with one treatment effect parameter,
 #'         a matrix (`n` rows and same number of columns as number of parameters) otherwise.
 #' @export
@@ -124,40 +126,48 @@ treatment_effect <- function(bg, summary = FALSE,
 #' "Interpretation of Random Effects Meta-Analyses".
 #' _BMJ 342 (10 February 2011)._.
 #'
-effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
+effect_draw <- function(x, n, transform=NULL,
+                        summary = FALSE, message = TRUE, interval = .95) {
   check_if_baggr(x)
-
-  te <- treatment_effect(x)
 
   # Resize trt effects to the demanded size by making extra draws
   neffects <- length(x$effects)
-  if(!missing(n)){
-    if(neffects > 1){
-      if(n > nrow(te$tau))
-        warning("Making more effect draws than there are available samples in Stan object.",
-                "Consider running baggr() with higher iter= setting")
-      rows <- sample(nrow(te$tau), n, replace = TRUE)
-      te$tau   <- te$tau[rows,]
-      if(x$pooling != "full")
-        te$sigma_tau <- te$sigma_tau[rows,]
-      else
-        te$sigma_tau <- te$tau*0
-    }
-    if(neffects == 1){
-      if(n > length(te$tau))
-        warning("Making more effect draws than there are available samples in Stan object.",
-                "Consider running baggr() with higher iter= setting")
-      rows <- sample(length(te$tau), n, replace = TRUE)
-      te$tau   <- te$tau[rows]
-      if(x$pooling != "full")
-        te$sigma_tau <- te$sigma_tau[rows]
-      else
-        te$sigma_tau <- te$tau*0
-    }
-  }
 
-  # Make draws using normal distribution (for now it's the only option)
-  new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+  te <- treatment_effect(x, message = FALSE)
+  if(x$pooling == "none"){
+
+    if(message)
+      message("There is no predicted effect when pooling = 'none'.")
+    new_tau <- as.numeric(c(NA))
+
+  } else {
+    if(!missing(n)){
+      if(neffects > 1){
+        if(n > nrow(te$tau))
+          warning("Making more effect draws than there are available samples in Stan object.",
+                  "Consider running baggr() with higher iter= setting")
+        rows <- sample(nrow(te$tau), n, replace = TRUE)
+        te$tau   <- te$tau[rows,]
+        if(x$pooling != "full")
+          te$sigma_tau <- te$sigma_tau[rows,]
+        else
+          te$sigma_tau <- te$tau*0
+      }
+      if(neffects == 1){
+        if(n > length(te$tau))
+          warning("Making more effect draws than there are available samples in Stan object.",
+                  "Consider running baggr() with higher iter= setting")
+        rows <- sample(length(te$tau), n, replace = TRUE)
+        te$tau   <- te$tau[rows]
+        if(x$pooling != "full")
+          te$sigma_tau <- te$sigma_tau[rows]
+        else
+          te$sigma_tau <- te$tau*0
+      }
+    }
+    # Make draws using normal distribution (for now it's the only option)
+    new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+  }
 
   if(neffects > 1){
     new_tau <- matrix(new_tau, nrow(te$tau), ncol(te$tau))

@@ -3,8 +3,9 @@
 
 * Mu & tau models now also print correlations between effects, via a new
   function `mutau_cor`
-* You can now change type of visual comparison on the fly 
-  (`"effects"` and `"groups"`) 
+* You can now change type of visual comparison (`baggr_compare`) on the fly 
+  (between `"effects"` and `"groups"`). Printing comparisons also returns posterior
+  predictive draws.
 * Upgraded forest plots to work with `forestplot` 2.0
 
 

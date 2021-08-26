@@ -4,7 +4,14 @@
 \alias{effect_draw}
 \title{Make predictive draws from baggr model}
 \usage{
-effect_draw(x, n, transform = NULL, summary = FALSE, interval = 0.95)
+effect_draw(
+  x,
+  n,
+  transform = NULL,
+  summary = FALSE,
+  message = TRUE,
+  interval = 0.95
+)
 }
 \arguments{
 \item{x}{A \code{baggr} class object.}
@@ -15,6 +22,9 @@ in the \code{baggr} object (see \emph{Details}).}
 \item{transform}{a transformation (an R function) to apply to the result of a draw.}
 
 \item{summary}{logical; if TRUE returns summary statistics rather than samples from the distribution;}
+
+\item{message}{logical; use to disable messages prompted by using with
+no pooling models}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
 }

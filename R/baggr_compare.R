@@ -200,7 +200,7 @@ baggr_compare <- function(...,
     rownames(cov_effects) <- NULL
   }
 
-  # Return treatment effects
+  # Return treatment effects, hyperSDs, predicted effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
@@ -219,6 +219,15 @@ baggr_compare <- function(...,
       }
       est
     })))
+  posteriorpd_trt <- do.call(rbind, (
+    lapply(models, function(x) {
+      est <- effect_draw(x, transform = transform,
+                              summary = TRUE)
+      if(is.matrix(est)) {
+        if(nrow(est) == 1) est <- est[1,]
+      }
+      est
+    })))
 
 
 
@@ -227,6 +236,7 @@ baggr_compare <- function(...,
       models = models,
       mean_trt = mean_trt_effects,
       sd_trt = sd_trt_effects,
+      posteriorpd_trt = posteriorpd_trt,
       covariates = cov_effects,
       compare = compare,
       effect_names = effect_names,
@@ -246,11 +256,12 @@ baggr_compare <- function(...,
 #' @param ... other parameters passed to print
 #' @export
 print.baggr_compare <- function(x, digits, ...){
-  cat("Mean treatment effects:\n")
+  cat("\nMean treatment effects:\n")
   print(signif(x$mean_trt, digits = digits))
-  cat("\n")
-  cat("SD for treatment effects:\n")
+  cat("\nSD for treatment effects:\n")
   print(signif(x$sd_trt, digits = digits))
+  cat("\nPosterior predictive effects:\n")
+  print(signif(x$posteriorpd_trt, digits = digits))
 
   if(!is.null(x$covariates)){
     cat("\nMean (SD) for covariates:\n")
@@ -449,8 +460,6 @@ plot.baggr_compare <- function(x,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) {
   ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
                                    ymin = lci, ymax = uci,
