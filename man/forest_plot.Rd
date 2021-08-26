@@ -16,7 +16,8 @@ forest_plot(
 \arguments{
 \item{bg}{a \link{baggr} class object}
 
-\item{show}{if \code{"inputs"}, then plotted points and lines correspond to raw inputs for each group;
+\item{show}{if \code{"inputs"}, then plotted points and lines
+correspond to raw inputs for each group;
 if \code{"posterior"} -- to posterior distribution;
 you can also plot \code{"both"} inputs and posteriors;
 if \code{"covariates"}, then fixed effect coefficients are plotted}
@@ -46,6 +47,6 @@ forest_plot(bg, show = "posterior", print = "inputs", digits = 2)
 
 }
 \seealso{
-\link{forestplot} function and its associated vignette for examples;
+\link{forestplot} function and its vignette for examples;
 \link{effect_plot} and \link{baggr_plot} for non-forest plots of baggr results
 }

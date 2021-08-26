@@ -77,12 +77,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                    "kappa_sd"  = "positive_real")
     )
 
-    # "mutau" = list("hypermean"        = list(allowed = c("multinormal"),
-    #                                          default = function(data) normal(0, 10*max(abs(data$tau)))),
-    #                "hypersd"          = list(allowed = c("cauchy", "normal", "uniform"),
-    #                                          default = function(data) normal(0, 10*max(abs(data$tau)))),
-    #                "hypercor"         = list(allowed = c("lkj"),
-    #                                          default = function(data) normal(0, 10*max(abs(data$tau))))
+    # "mutau" = list("hypermean" = list(allowed = c("multinormal"),
+    #                                   default = function(data) normal(0, 10*max(abs(data$tau)))),
+    #                "hypersd"   = list(allowed = c("cauchy", "normal", "uniform"),
+    #                                   default = function(data) normal(0, 10*max(abs(data$tau)))),
+    #                "hypercor"  = list(allowed = c("lkj"),
+    #                                   default = function(data) normal(0, 10*max(abs(data$tau))))
 
     for(current_prior in names(priors_spec[[model]])) {
       if(is.null(prior[[current_prior]])) {
@@ -92,7 +92,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                                          normal(0, 10*max(abs(data$tau)))
                                        else
                                          multinormal(c(0,0),
-                                                     c(100*max(abs(data$mu)), 100*max(abs(data$tau)))*diag(2)),
+                                                     c(100*max(abs(data$mu)),
+                                                       100*max(abs(data$tau)))*diag(2)),
                                        "hypersd"    = uniform(0, 10*sd(data$tau)),
                                        "hypercor"   = lkj(3),
                                        "control"    = normal(0, 10*max(abs(data$mu))),
@@ -102,10 +103,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
         if(model == "sslab") {
           data_pos <- prepare_ma(data.frame(outcome = stan_data$y_pos,
                                             group = stan_data$site_pos,
-                                            treatment = stan_data$treatment_pos), effect = "mean")
+                                            treatment = stan_data$treatment_pos),
+                                 effect = "mean")
           data_neg <- prepare_ma(data.frame(outcome = stan_data$y_neg,
                                             group = stan_data$site_neg,
-                                            treatment = stan_data$treatment_neg), effect = "mean")
+                                            treatment = stan_data$treatment_neg),
+                                 effect = "mean")
           max_hypermean <- max(c(abs(data_pos$tau), abs(data_neg$tau)))
           max_control   <- max(c(abs(data_pos$mu),  abs(data_neg$mu)))
           sd_hypermean  <- 10*max(c(sd(data_pos$mu),  sd(data_neg$mu)))
@@ -221,10 +224,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       val <- max(10*unlist(lapply(data[, covariates, drop = FALSE], function(x)
         sd(as.numeric(as.factor(x))))))
       prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, val))
-      message(paste0("Setting prior for covariates in regression to normal, with SD equal to 10*(highest SD among covariates):\n",
-                     "* beta ~ ", print_dist(normal(0, val)),
-                     # Normal(0, ", format(val, digits = 2), "^2)",
-                     " -- purely experimental, use with caution"))
+      message(
+        paste0("Setting prior for covariates in regression to normal,",
+               " with SD equal to 10*(highest SD among covariates):\n",
+               "* beta ~ ", print_dist(normal(0, val)),
+               # Normal(0, ", format(val, digits = 2), "^2)",
+               " -- purely experimental, use with caution"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
     }
@@ -245,7 +250,8 @@ check_eligible_priors <- function(prior, spec) {
     allowed_dist <- available_priors[[spec[[nm]]]]
 
     if(!any(prior_dist_fam[allowed_dist] == prior[[paste0("prior_", nm, "_fam")]]))
-      stop("Prior for ", nm, " must be one of the following: ", paste(allowed_dist, collapse = ", "))
+      stop("Prior for ", nm, " must be one of the following: ",
+           paste(allowed_dist, collapse = ", "))
 
     if(spec[[nm]] == "real_2"){
       if(length(prior[[paste0("prior_", nm, "_mean")]]) != 2)
