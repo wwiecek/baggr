@@ -15,6 +15,9 @@
   transform = NULL,
   order = F,
   vline = FALSE,
+  add_values = FALSE,
+  values_digits = 2,
+  values_size = 2,
   ...
 )
 }
@@ -53,6 +56,13 @@ are used for sorting.
 If not, groups are shown alphabetically.}
 
 \item{vline}{logical; show vertical line through 0 in the plot?}
+
+\item{add_values}{logical; if TRUE, values will be printed next to the plot,
+in a style that's similar to what is done for forest plots}
+
+\item{values_digits}{number of significant digits to use when printing values,}
+
+\item{values_size}{size of font for the values, if \code{add_values == TRUE}}
 
 \item{...}{ignored for now, may be used in the future}
 }

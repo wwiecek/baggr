@@ -1,3 +1,6 @@
+# baggr 0.6.10 (September 2021)
+
+* You can add values to `baggr_compare` and `baggr_plot`
 
 # baggr 0.6.5-0.6.9 (June-August 2021)
 

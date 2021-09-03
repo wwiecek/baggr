@@ -310,6 +310,10 @@ print.baggr_compare <- function(x, digits, ...){
 #'              If yes, medians from the model with largest range of estimates
 #'              are used for sorting.
 #'              If not, groups are shown alphabetically.
+#' @param add_values logical; if TRUE, values will be printed next to the plot,
+#'                   in a style that's similar to what is done for forest plots
+#' @param values_digits number of significant digits to use when printing values,
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param ... ignored for now, may be used in the future
 #' @export
@@ -323,12 +327,17 @@ plot.baggr_compare <- function(x,
                                transform = NULL,
                                order = F,
                                vline = FALSE,
+                               add_values = FALSE,
+                               values_digits = 2,
+                               values_size = 2,
                                ...) {
 
   # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
   # https://stackoverflow.com/questions/9439256/
   #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
   lci <- uci <- model <- group <- NULL
+
+  compare <- match.arg(compare, c("effects", "groups"))
 
   if(is.null(transform))
     transform <- x$transform
@@ -431,20 +440,26 @@ plot.baggr_compare <- function(x,
 
       plots <- single_comp_plot(big_df, "", grid = T,
                                 ylab = paste0("Treatment effect (",
-                                              round(100*interval), "% interval)"))
+                                              round(100*interval), "% interval)"),
+                                add_values = add_values,
+                                values_digits = values_digits,
+                                values_size = values_size)
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
                          ylab = paste0("Treatment effect (",
-                                       round(100*interval), "% interval)"))
+                                       round(100*interval), "% interval)"),
+                         add_values = add_values,
+                         values_digits = values_digits,
+                         values_size = values_size)
       })
     }
-  } else if(compare == "effects"){
+  }
+
+
+  if(compare == "effects"){
     plots <- do.call(effect_plot, models) +
       ggplot2::labs(fill = NULL)
-
-  } else {
-    stop("Argument compare = must be 'effects' or 'groups'.")
   }
 
   # return the plots
@@ -453,19 +468,30 @@ plot.baggr_compare <- function(x,
 
 
 
-#' Plot single comparison plot in baggr_compare style
+#' Plot single comparison ggplot in `baggr_compare` style
 #'
-#' @param df data.frame with columns 'group', 'median', 'lci', 'uci', 'model' and
-#'           optionally 'parameter'
-#' @param title 'ggtitle'
-#' @param legend 'legend.position'
+#' @param df data.frame with columns `group`, `median`, `lci`, `uci`, `model` and,
+#'           optionally, `parameter`
+#' @param title `ggtitle` argument passed to ggplot
+#' @param legend `legend.position`  argument passed to ggplot
 #' @param ylab Y axis label
 #' @param grid logical; if TRUE, facets by 'parameter' column
+#' @param add_values logical; if TRUE, values will be printed next to the plot,
+#'                   in a style that's similar to what is done for forest plots
+#' @param values_digits number of significant digits to use when printing values,
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @return a `ggplot2` object
 #' @export
-single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) {
+single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
+                             add_values = FALSE, values_digits = 2, values_size = 2.5) {
+
   group <- median <- lci <- uci <- model <- NULL
-  ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
+
+  fmti <- function(x, digits = values_digits) {
+    format(round(x, digits), nsmall = digits)
+  }
+
+  pl <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
                                    ymin = lci, ymax = uci,
                                    group = interaction(model),
                                    color = model)) +
@@ -476,12 +502,38 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) 
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
                         position = ggplot2::position_dodge(width=0.5),
                         pch = 21) +
-    ggplot2::coord_flip() +
+    { if(!add_values) ggplot2::coord_flip() } +
     ggplot2::labs(x = "",
                   y = ylab) +
     {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
     baggr_theme_get() +
     ggplot2::theme(legend.position=legend)
+
+  if(add_values) {
+    pl <- pl +
+      ggplot2::geom_text(
+        aes(label = fmti(lci, values_digits),
+            hjust = 1,
+            y = 1.1*max(uci)),
+        position = ggplot2::position_dodge(width = .5),
+        size = values_size) +
+      ggplot2::geom_text(
+        aes(label = fmti(mean, values_digits),
+            hjust = 1,
+            y = 1.2*max(uci)),
+        position = ggplot2::position_dodge(width = .5),
+        size = values_size) +
+      ggplot2::geom_text(
+        aes(label = fmti(uci, values_digits),
+            hjust = 1,
+            y = 1.3*max(uci)),
+        position = ggplot2::position_dodge(width = .5),
+        size = values_size) +
+      ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
+      ggplot2::coord_flip(clip = "off")
+  }
+
+  pl
 }
 
 
