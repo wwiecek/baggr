@@ -2,7 +2,7 @@
 % Please edit documentation in R/loocv.R
 \name{loo_compare}
 \alias{loo_compare}
-\title{Compare fitted models on loo}
+\title{Compare LOO CV models}
 \usage{
 loo_compare(x, ...)
 }
@@ -12,7 +12,8 @@ loo_compare(x, ...)
 \item{...}{Additional objects of class "baggr_cv"}
 }
 \description{
-Compare fitted models on loo
+Given multiple \link{loocv} outputs, calculate differences in their expected log
+predictive density.
 }
 \examples{
 \dontrun{
@@ -22,4 +23,7 @@ cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
 loo_compare(cv_1, cv_2)
 }
+}
+\seealso{
+\link{loocv} for fitting LOO CV objects and explanation of the procedure
 }

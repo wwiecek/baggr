@@ -5,7 +5,7 @@
 #'
 #' @param bg object of class \code{baggr}
 #' @param hyper logical; show hypereffect as the last row of the plot?
-#' @param style one of \code{areas}, \code{intervals}
+#' @param style either `"intervals"` or `"areas"`
 #' @param transform a function (e.g. `exp()`, `log()`) to apply to the
 #'                  values of group (and hyper, if `hyper=TRUE`) effects
 #'                  before plotting; when working with effects that are on
@@ -28,7 +28,7 @@
 #' @import ggplot2
 #' @import bayesplot
 #'
-#' @author Witold Wiecek, Rachael Meager
+#' @author Witold Wiecek; the visual style is based on _bayesplot_ package
 #' @seealso [bayesplot::MCMC-intervals] for more information about _bayesplot_ functionality;
 #'          [forest_plot] for a typical meta-analysis alternative; [effect_plot] for plotting
 #'          treatment effects for a new group

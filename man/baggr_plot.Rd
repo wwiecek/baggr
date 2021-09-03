@@ -21,7 +21,7 @@ baggr_plot(
 
 \item{hyper}{logical; show hypereffect as the last row of the plot?}
 
-\item{style}{one of \code{areas}, \code{intervals}}
+\item{style}{either \code{"intervals"} or \code{"areas"}}
 
 \item{transform}{a function (e.g. \code{exp()}, \code{log()}) to apply to the
 values of group (and hyper, if \code{hyper=TRUE}) effects
@@ -58,5 +58,5 @@ plot(fit, style = "areas", order = FALSE)
 treatment effects for a new group
 }
 \author{
-Witold Wiecek, Rachael Meager
+Witold Wiecek; the visual style is based on \emph{bayesplot} package
 }

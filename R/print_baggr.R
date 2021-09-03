@@ -1,7 +1,7 @@
 
 #' S3 print method for objects of class `baggr` (model fits)
 #'
-#' This \code{print} method for a very concise summary of main model features.
+#' This prints a concise summary of the main [baggr] model features.
 #' More info is included in the summary of the model and its attributes.
 #'
 #' @param x object of class `baggr`
@@ -87,6 +87,11 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
       if(!exponent && x$pooling == "partial"){
         cat(crayon::bold("\nSD of treatement effects:"))
         print(sigma_tau, digits = digits)
+
+        if(x$model == "mutau") {
+          print("\nCorrelation of treatment effect and baseline:")
+          print(mutau_cor(x, summary = TRUE), digits = digits)
+        }
       }
     }
   }
@@ -132,12 +137,12 @@ print.baggr <- function(x, exponent=FALSE, digits = 2, group, fixed = TRUE, ...)
       cat("\n")
     }
   } else if(group_warning_flag) { #No printing of groups
-    cat("Group effects omitted, as number of groups is > 20.\n",
-        "Use print.baggr() with group = TRUE to print them.\n")
+    cat("Group effects omitted, as number of groups is > 20.",
+        "\nUse print.baggr() with group = TRUE to print them.\n")
   }
 
   if(fixed && length(x$covariates) > 0) {
-    fe <- fixed_effects(x, summary = TRUE)
+    # fe <- fixed_effects(x, summary = TRUE)
 
     if(exponent)
       fixed_eff_tab <- fixed_effects(x, summary = TRUE, transform=exp)

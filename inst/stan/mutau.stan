@@ -47,6 +47,11 @@ transformed parameters {
   if(pooling_type == 0)
     theta_k[1] = eta[1];
   if(pooling_type == 1){
+    // We use Cholesky decomposition per Stan manual recommendation
+    // diag_pre_multiply is diag(hypersd) %*% L_Omega in R code
+    // L %*% t(L) is correlation matrix C,
+    // diag(hypersd) %*% C %*% diag(hypersd) is var-covariance
+    // it follows that pre-multiplying gives a Cholesky factor of variance-cov.
     tau[1] = diag_pre_multiply(hypersd[1], L_Omega[1]);
     theta_k[1] = rep_matrix(mu[1], K) + tau[1] * eta[1];
   }
@@ -71,7 +76,7 @@ model {
     to_vector(eta[1]) ~ std_normal();
 
     for(p in 1:P)
-      target += prior_increment_real(prior_hypersd_fam,    hypersd[1][p], prior_hypersd_val);
+      target += prior_increment_real(prior_hypersd_fam, hypersd[1][p], prior_hypersd_val);
 
     //for Omega only LKJ allowed for now
     L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);

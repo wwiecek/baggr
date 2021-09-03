@@ -4,7 +4,13 @@
 \alias{treatment_effect}
 \title{Average treatment effect in a baggr model}
 \usage{
-treatment_effect(bg, summary = FALSE, transform = NULL, interval = 0.95)
+treatment_effect(
+  bg,
+  summary = FALSE,
+  transform = NULL,
+  interval = 0.95,
+  message = TRUE
+)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
@@ -16,6 +22,9 @@ treatment_effect(bg, summary = FALSE, transform = NULL, interval = 0.95)
 plotting or printing functions)}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+
+\item{message}{logical; use to disable messages prompted by using with
+no pooling models}
 }
 \value{
 A list with 2 vectors (corresponding to MCMC samples)

@@ -225,6 +225,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
     message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
     model <- "rubin_full"
   }
+
   stan_data <- convert_inputs(data,
                               model,
                               covariates = covariates,

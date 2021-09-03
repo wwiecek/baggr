@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{baggr_compare}(
   x,
+  compare = x$compare,
   style = "areas",
   grid_models = FALSE,
   grid_parameters = TRUE,
@@ -19,6 +20,10 @@
 }
 \arguments{
 \item{x}{baggr_compare model to plot}
+
+\item{compare}{When plotting, choose between comparison of \code{"groups"}
+(default) or (hyper-) \code{"effects"}. The former is not available
+when \code{what = "prior"}.}
 
 \item{style}{What kind of plot to display (if \code{grid_models = TRUE}),
 passed to the \code{style} argument in \link{baggr_plot}.}

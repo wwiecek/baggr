@@ -7,6 +7,8 @@
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `treatment_effect` from other
 #'                  plotting or printing functions)
+#' @param message logical; use to disable messages prompted by using with
+#'                no pooling models
 #' @return A list with 2 vectors (corresponding to MCMC samples)
 #'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
 #'         both vectors are summarised as mean and lower/upper bounds according to
@@ -16,11 +18,13 @@
 
 
 treatment_effect <- function(bg, summary = FALSE,
-                             transform = NULL, interval = .95) {
+                             transform = NULL, interval = .95,
+                             message = TRUE) {
   check_if_baggr(bg)
 
   if(bg$pooling == "none"){
-    message("There is no treatment effect estimated when pooling = 'none'.")
+    if(message)
+      message("There is no treatment effect estimated when pooling = 'none'.")
     return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
   if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
@@ -31,11 +35,12 @@ treatment_effect <- function(bg, summary = FALSE,
       tau <- tau[,1,2]
 
     if(bg$pooling == "partial"){
-      sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
+      if(bg$model %in% c("mutau", "mutau_full"))
+        sigma_tau <- rstan::extract(bg$fit, pars="hypersd[1,2]")[[1]]
+      else
+        sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
       if(bg$model %in% c("rubin", "logit"))
         sigma_tau <- c(sigma_tau)
-      if(bg$model %in% c("mutau", "mutau_full"))
-        sigma_tau <- sqrt(sigma_tau[,1,2,2])
     }
     if(bg$pooling == "full")
       sigma_tau <- 0 #same dim as tau, but by convention set to 0
@@ -91,7 +96,8 @@ treatment_effect <- function(bg, summary = FALSE,
 #' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
 #' @param n How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
-#'
+#' @param message logical; use to disable messages prompted by using with
+#'                no pooling models
 #' @return A vector (with `n` values) for models with one treatment effect parameter,
 #'         a matrix (`n` rows and same number of columns as number of parameters) otherwise.
 #' @export
@@ -120,34 +126,48 @@ treatment_effect <- function(bg, summary = FALSE,
 #' "Interpretation of Random Effects Meta-Analyses".
 #' _BMJ 342 (10 February 2011)._.
 #'
-effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
+effect_draw <- function(x, n, transform=NULL,
+                        summary = FALSE, message = TRUE, interval = .95) {
   check_if_baggr(x)
-
-  te <- treatment_effect(x)
 
   # Resize trt effects to the demanded size by making extra draws
   neffects <- length(x$effects)
-  if(!missing(n)){
-    if(neffects > 1){
-      if(n > nrow(te$tau))
-        warning("Making more effect draws than there are available samples in Stan object.",
-                "Consider running baggr() with higher iter= setting")
-      rows <- sample(nrow(te$tau), n, replace = TRUE)
-      te$tau   <- te$tau[rows,]
-      te$sigma_tau <- te$sigma_tau[rows,]
-    }
-    if(neffects == 1){
-      if(n > length(te$tau))
-        warning("Making more effect draws than there are available samples in Stan object.",
-                "Consider running baggr() with higher iter= setting")
-      rows <- sample(length(te$tau), n, replace = TRUE)
-      te$tau   <- te$tau[rows]
-      te$sigma_tau <- te$sigma_tau[rows]
-    }
-  }
 
-  # Make draws using normal distribution (for now it's the only option)
-  new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+  te <- treatment_effect(x, message = FALSE)
+  if(x$pooling == "none"){
+
+    if(message)
+      message("There is no predicted effect when pooling = 'none'.")
+    new_tau <- as.numeric(c(NA))
+
+  } else {
+    if(!missing(n)){
+      if(neffects > 1){
+        if(n > nrow(te$tau))
+          warning("Making more effect draws than there are available samples in Stan object.",
+                  "Consider running baggr() with higher iter= setting")
+        rows <- sample(nrow(te$tau), n, replace = TRUE)
+        te$tau   <- te$tau[rows,]
+        if(x$pooling != "full")
+          te$sigma_tau <- te$sigma_tau[rows,]
+        else
+          te$sigma_tau <- te$tau*0
+      }
+      if(neffects == 1){
+        if(n > length(te$tau))
+          warning("Making more effect draws than there are available samples in Stan object.",
+                  "Consider running baggr() with higher iter= setting")
+        rows <- sample(length(te$tau), n, replace = TRUE)
+        te$tau   <- te$tau[rows]
+        if(x$pooling != "full")
+          te$sigma_tau <- te$sigma_tau[rows]
+        else
+          te$sigma_tau <- te$tau*0
+      }
+    }
+    # Make draws using normal distribution (for now it's the only option)
+    new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+  }
 
   if(neffects > 1){
     new_tau <- matrix(new_tau, nrow(te$tau), ncol(te$tau))
@@ -164,6 +184,33 @@ effect_draw <- function(x, n, transform=NULL, summary = FALSE, interval = .95) {
 }
 
 
+
+#' Correlation between mu and tau in a baggr model
+#'
+#' @param bg  a [baggr] model where `model = "mutau"`
+#' @param summary logical; if TRUE returns summary statistics as explained below.
+#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
+#' @return a vector of values
+#' @export
+mutau_cor <- function(bg,
+                      summary = FALSE,
+                      interval = 0.95) {
+  # m <- matrix(apply(as.matrix(bg$fit, "L_Omega"), 2, mean), 2, 2)
+  # h <- apply(as.matrix(bg$fit, "hypersd"), 2, mean)
+  # (m %*% t(m))[2,1]
+  # diag(h) %*% (m %*% t(m)) %*% diag(h)
+
+  m <- as.matrix(bg$fit, "L_Omega")
+  # we want entry (2,1) in LL^T which is simply (1,1)*(2,1)
+  # in a lower-triangular matrix; and (1,1) should be == 1 everywhere
+  if(!all(m[,1] == 1))
+    warning("Error with correlation matrix in the mu&tau model. Inspect L_Omega parameters.")
+  if(summary)
+    return(mint(m[,2], int=interval, median=TRUE, sd = TRUE))
+  else
+    return(m[,2])
+
+}
 
 #' Plot predictive draws from baggr model
 #'

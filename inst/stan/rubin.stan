@@ -78,7 +78,8 @@ model {
 
   //fixed effect coefficients
   // beta ~ normal(0, 10);
-  target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+  if(Nc > 0)
+    target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
 
   //likelihood (block evaluated only if there are data, i.e. K>0)
   if(K > 0) {

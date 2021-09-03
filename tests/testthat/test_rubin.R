@@ -143,12 +143,12 @@ test_that("printing works", {
 })
 
 test_that("Forest plots for Rubin model", {
-  expect_is(forest_plot(bg5_n), "vpPath")
-  expect_is(forest_plot(bg5_p), "vpPath")
-  expect_is(forest_plot(bg5_p, show = "posterior"), "vpPath")
-  expect_is(forest_plot(bg5_p, show = "both"), "vpPath")
-  expect_is(forest_plot(bg5_f), "vpPath")
-  expect_is(forest_plot(bg5_f, graph.pos = 1), "vpPath")
+  expect_is(forest_plot(bg5_n), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p, show = "posterior"), "gforge_forestplot")
+  expect_is(forest_plot(bg5_p, show = "both"), "gforge_forestplot")
+  expect_is(forest_plot(bg5_f), "gforge_forestplot")
+  expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "should be one of")
 })
@@ -179,6 +179,7 @@ sa <- schools
 sa$a <- rnorm(8)
 sa$b <- rnorm(8)
 sa$f <- as.factor(c(rep("Yes", 4), rep("No", 4)))
+sa$f2 <- as.factor(c(rep("Yes", 3), rep("No", 2), rep("Maybe", 3)))
 
 sb <- sa
 sb$b <- NULL
@@ -186,7 +187,10 @@ bg_cov <- expect_warning(
   baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0))
 bg_cov_factor <- expect_warning(
   baggr(sa, covariates = c("f"), iter = 200, refresh = 0))
-expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fNo", "fYes"))
+bg_cov_factor2 <- expect_warning(
+  baggr(sa, covariates = c("f2"), iter = 200, refresh = 0))
+expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fYes"))
+expect_identical(attr(bg_cov_factor2$inputs, "covariate_coding"), c("f2No", "f2Yes"))
 bg_cov_test <- expect_warning(
   baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0))
 bg_cov_prior1 <- expect_warning(
@@ -199,7 +203,9 @@ bg_cov_prior2 <- expect_warning(
 test_that("Model with covariates works fine", {
   expect_is(bg_cov, "baggr")
   expect_equal(bg_cov$formatted_prior$prior_beta_fam, 1)
-  expect_equal(bg_cov$formatted_prior$prior_beta_val, c(0,10,0))
+  expect_equal(bg_cov$formatted_prior$prior_beta_val[1], 0)
+  expect_gt(bg_cov$formatted_prior$prior_beta_val[2], 0)
+  expect_equal(bg_cov$formatted_prior$prior_beta_val[3], 0)
   expect_error(baggr(sa, covariates = c("made_up_covariates")))
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
   expect_length(bg5_p$covariates, 0)
@@ -279,6 +285,8 @@ test_that("baggr_compare basic cases work with Rubin", {
                                          what = "prior", refresh = 0))
   expect_is(bgcomp, "baggr_compare")
   # Compare existing models:
+  expect_error(baggr_compare("Name" = bg5_p, "Name" = bg5_n), "unique model names")
+
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f)
   expect_is(bgcomp2, "baggr_compare")
 })
@@ -302,9 +310,10 @@ test_that("loocv", {
 
 # 8 schools correctness test -----
 
-bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
 
 test_that("The default 8 schools result is close to the result in BDA", {
+  skip_on_cran()
+  bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
   expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
   expect_equal(mean(treatment_effect(bg_s)$sigma_tau), 7, tolerance = .25)
 })

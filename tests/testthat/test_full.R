@@ -43,7 +43,7 @@ test_that("Basic operations on rubin_full model", {
   expect_is(pooling(bg_p)[,,1], "matrix")
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
-  expect_is(forest_plot(bg_p), "vpPath")
+  expect_is(forest_plot(bg_p), "gforge_forestplot")
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
   expect_is(bgc, "baggr_compare")
 })

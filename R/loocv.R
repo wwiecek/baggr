@@ -10,7 +10,7 @@
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
 #' These can be examined by using `attributes()` function.
-#'
+#' @seealso [loo_compare] for comparison of many LOO CV results
 #' @details
 #'
 #' The values returned by `loocv()` can be used to understand how excluding
@@ -29,8 +29,8 @@
 #' The main output is the cross-validation
 #' information criterion, or -2 times the ELPD averaged over _K_ models.
 #' This is related to, and often approximated by, the Watanabe-Akaike
-#' Information Criterion. A value closer to zero (i.e. a smaller number in magnitude)
-#' means a better fit. For more information on cross-validation see
+#' Information Criterion. When comparing models, smaller values mean
+#' a better fit. For more information on cross-validation see
 #' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
 #'
 #' For running more computation-intensive models, consider setting the
@@ -184,10 +184,15 @@ is.baggr_cv <- function(x) {
   inherits(x, "baggr_cv")
 }
 
-#' Compare fitted models on loo
+#' Compare LOO CV models
+#'
+#' Given multiple [loocv] outputs, calculate differences in their expected log
+#' predictive density.
+#'
 #' @param x An object of class `baggr_cv` or a list of such objects.
 #' @param ... Additional objects of class "baggr_cv"
 #' @export loo_compare
+#' @seealso [loocv] for fitting LOO CV objects and explanation of the procedure
 #' @examples
 #' \dontrun{
 #' # 2 models with more/less informative priors -- this will take a while to run

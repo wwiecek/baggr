@@ -31,11 +31,11 @@
 #' @import ggplot2
 #' @export
 #' @details If you pass parameters to the function you must specify
-#' what kind of comparison you want, either "pooling" which
-#' will run fully/partially/un-pooled models and compare them
-#' or "prior" which will generate estimates without the data
+#' what kind of comparison you want, either `"pooling"`, which
+#' will run fully/partially/un-pooled models and then compare them,
+#' or `"prior"` which will generate estimates without the data
 #' and compare them to the model with the full data. For more
-#' details see [baggr], specifically the PPD argument.
+#' details see [baggr], specifically the `ppd` argument.
 #' @examples \donttest{
 #' # Most basic comparison between no, partial and full pooling
 #' # (This will run the models)
@@ -44,7 +44,8 @@
 #' prior_comparison <-
 #'   baggr_compare(schools,
 #'                 model = 'rubin',
-#'                 iter = 500, #this is just for illustration -- don't set it this low normally!
+#'                 #this is just for illustration -- don't set it this low normally!
+#'                 iter = 500,
 #'                 prior_hypermean = normal(0, 3),
 #'                 prior_hypersd = normal(0,2),
 #'                 prior_hypercor = lkj(2),
@@ -57,33 +58,34 @@
 #' pooling_comparison <-
 #'   baggr_compare(schools,
 #'                 model = 'rubin',
-#'                 iter = 500, #this is just for illustration -- don't set it this low normally!
+#'                 #this is just for illustration -- don't set it this low normally!
+#'                 iter = 500,
 #'                 prior_hypermean = normal(0, 3),
 #'                 prior_hypersd = normal(0,2),
 #'                 prior_hypercor = lkj(2),
 #'                 what = "pooling",
 #'                 # You can automatically plot:
 #'                 plot = TRUE)
-#' # Compare existing models:
+#' # Compare existing models (you don't have to, but best to name them):
 #' bg1 <- baggr(schools, pooling = "partial")
 #' bg2 <- baggr(schools, pooling = "full")
 #' baggr_compare("Partial pooling model" = bg1, "Full pooling" = bg2)
 #'
-#' #' ...or simply draw prior predictive dist (note ppd=T)
+#' #' ...or simply draw from prior predictive dist (note ppd=T)
 #' bg1 <- baggr(schools, ppd=TRUE)
 #' bg2 <- baggr(schools, prior_hypermean = normal(0, 5), ppd=TRUE)
 #' baggr_compare("Prior A, p.p.d."=bg1,
 #'               "Prior B p.p.d."=bg2,
 #'               compare = "effects")
 #'
-#' # Compare posterior effects as a function of priors (note ppd=FALSE)
+#' # Compare how posterior predictive effect varies with e.g. choice of prior
 #' bg1 <- baggr(schools, prior_hypersd = uniform(0, 20))
 #' bg2 <- baggr(schools, prior_hypersd = normal(0, 5))
 #' baggr_compare("Uniform prior on SD"=bg1,
 #'                    "Normal prior on SD"=bg2,
 #'                    compare = "effects", plot = TRUE)
 #'
-#' # You can also compare different subsets of input data
+#' # Models don't have to be identical. Compare different subsets of input data:
 #' bg1_small <- baggr(schools[1:6,], pooling = "partial")
 #' baggr_compare("8 schools model" = bg1, "First 6 schools" = bg1_small,
 #'               plot = TRUE)
@@ -104,6 +106,8 @@ baggr_compare <- function(...,
     # return_models_flag <- 0
     if(is.null(names(l)))
       names(l) <- paste("Model", 1:length(l))
+    if(length(unique(names(l))) != length(names(l)))
+      stop("You must use unique model names")
     models <- l
   } else {
     # return_models_flag <- 1
@@ -160,10 +164,49 @@ baggr_compare <- function(...,
 
   effect_names <- effect_names[[1]]
 
-  # Return treatment effects
+
+
+  # Check if, for group comparisons, covariates are the same
+  cov_effects <- NULL
+  covs <- lapply(models, function(x) x$covariates)
+  if(length(unique(covs)) > 1)
+    message("Compared models use different covariates. ",
+            "Hyperparameters are not directly comparable.")
+  # else if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
+  if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
+    # Grab covariates, if there are any:
+    cov_effects <- lapply(models, function(x) {
+      est <- fixed_effects(x, transform = transform,
+                           summary = TRUE)
+      if(dim(est)[1] == 0)
+        # return(c(NA, NA))
+        return(NULL)
+      else
+        return(
+          data.frame(
+            model = "",
+            covariate = x$covariates,
+            mean = est[, "mean", 1],
+            sd = est[, "sd", 1],
+            lci = est[, "lci", 1],
+            uci = est[, "uci", 1]
+          )
+        )
+    })
+    cov_effects <- cov_effects[!unlist(lapply(cov_effects, is.null))]
+    for(i in 1:length(cov_effects)){
+      cov_effects[[i]]$model <- names(models)[i]
+      # rownames(cov_effects[[i]]) <- NULL
+    }
+    cov_effects <- do.call(rbind, cov_effects)
+    rownames(cov_effects) <- NULL
+  }
+
+  # Return treatment effects, hyperSDs, predicted effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform, summary = TRUE)$tau
+      est <- treatment_effect(x, transform = transform,
+                              summary = TRUE, message = FALSE)$tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
@@ -171,18 +214,32 @@ baggr_compare <- function(...,
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform, summary = TRUE)$sigma_tau
+      est <- treatment_effect(x, transform = transform,
+                              summary = TRUE, message = FALSE)$sigma_tau
+      if(is.matrix(est)) {
+        if(nrow(est) == 1) est <- est[1,]
+      }
+      est
+    })))
+  posteriorpd_trt <- do.call(rbind, (
+    lapply(models, function(x) {
+      est <- effect_draw(x, transform = transform,
+                              summary = TRUE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
       est
     })))
 
+
+
   bgc <- structure(
     list(
       models = models,
       mean_trt = mean_trt_effects,
       sd_trt = sd_trt_effects,
+      posteriorpd_trt = posteriorpd_trt,
+      covariates = cov_effects,
       compare = compare,
       effect_names = effect_names,
       transform = transform
@@ -201,11 +258,26 @@ baggr_compare <- function(...,
 #' @param ... other parameters passed to print
 #' @export
 print.baggr_compare <- function(x, digits, ...){
-  cat("Mean treatment effects:\n")
+  cat("\nMean treatment effects:\n")
   print(signif(x$mean_trt, digits = digits))
-  cat("\n")
-  cat("SD for treatment effects:\n")
+  cat("\nSD for treatment effects:\n")
   print(signif(x$sd_trt, digits = digits))
+  cat("\nPosterior predictive effects:\n")
+  print(signif(x$posteriorpd_trt, digits = digits))
+
+  if(!is.null(x$covariates)){
+    cat("\nMean (SD) for covariates:\n")
+    mcov <- x$covariates
+    d <- 3
+    mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
+                       signif(mcov$sd, digits = digits), ")",
+                       sep = "")
+    mcov <- mcov[, c("model", "covariate", "meansd")]
+    ycov <- reshape(mcov, idvar = "model", timevar = "covariate", direction = "wide")
+    colnames(ycov) <- gsub("meansd.", "", colnames(ycov))
+    print(ycov, row.names = FALSE)
+  }
+
   if(!is.null(x$transform))
     cat(paste0("\nTransform: ", deparse(x$transform)))
 }
@@ -215,6 +287,9 @@ print.baggr_compare <- function(x, digits, ...){
 #' that were passed for comparison purposes to baggr compare or
 #' run automatically by baggr_compare
 #' @param x baggr_compare model to plot
+#' @param compare When plotting, choose between comparison of `"groups"`
+#'                (default) or (hyper-) `"effects"`. The former is not available
+#'                when `what = "prior"`.
 #' @param grid_models If `FALSE` (default), generate a single comparison plot;
 #'                if `TRUE`, display each model (using individual [baggr_plot]'s)
 #'                side-by-side.
@@ -239,6 +314,7 @@ print.baggr_compare <- function(x, digits, ...){
 #' @param ... ignored for now, may be used in the future
 #' @export
 plot.baggr_compare <- function(x,
+                               compare = x$compare,
                                style   = "areas",
                                grid_models = FALSE,
                                grid_parameters = TRUE,
@@ -258,7 +334,6 @@ plot.baggr_compare <- function(x,
     transform <- x$transform
 
   models <- x$models
-  compare <- x$compare
   effect_names <- x$effect_names
 
   if(grid_models) {
@@ -280,15 +355,15 @@ plot.baggr_compare <- function(x,
     return(gridExtra::grid.arrange(grobs = plots, ncol = grid_width))
   }
 
-  # This is not-grid, baggr_compare specific code:
+  # This is non-grid, baggr_compare-specific code:
 
   if(compare == "groups") {
 
     # Create input data frames for ggplots
     plot_dfs <- lapply(as.list(1:(length(effect_names))), function(i) {
 
-      # Note: pipe operators are dplyr not used here to reduce dependencies
-
+      # Note: pipe operators or dplyr not used here anymore
+      # to reduce dependencies
       effects_list <- lapply(models, function(cmodel) {
         m <- as.data.frame(group_effects(cmodel,
                                          interval = interval,
@@ -298,9 +373,13 @@ plot.baggr_compare <- function(x,
 
         if(cmodel$pooling != "none" && hyper) {
           if(length(effect_names) == 1)
-            hyper_treat <- treatment_effect(cmodel, transform = transform)$tau
+            hyper_treat <- treatment_effect(cmodel,
+                                            transform = transform,
+                                            message=FALSE)$tau
           if(length(effect_names) > 1)
-            hyper_treat <- treatment_effect(cmodel, transform = transform)$tau[,i]
+            hyper_treat <- treatment_effect(cmodel,
+                                            transform = transform,
+                                            message=FALSE)$tau[,i]
           hyper_effects <- data.frame(
             lci = quantile(hyper_treat, (1 - interval)/2),
             median = quantile(hyper_treat, 0.5),
@@ -325,11 +404,11 @@ plot.baggr_compare <- function(x,
       if(order == T) {
         ord <- get_order(df_groups, hyper)
       } else if(hyper) {
-        ord <- c(setdiff(sort(unique(df_groups$group)),
+        ord <- c(setdiff(unique(df_groups$group),
                          "Pooled Estimate"),
                  "Pooled Estimate")
       } else {
-        ord <- sort(unique(df_groups$group))
+        ord <- unique(df_groups$group)
       }
 
       # Rearrange ordering of groups/hypereffects
@@ -342,26 +421,6 @@ plot.baggr_compare <- function(x,
 
     names(plot_dfs) <- effect_names
 
-    single_comp_plot <- function(df, title="", legend = "top", grid = F) {
-      ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
-                                       ymin = lci, ymax = uci,
-                                       group = interaction(model),
-                                       color = model)) +
-        {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
-        ggplot2::geom_errorbar(size = 1.2, width = 0,
-                               position = ggplot2::position_dodge(width = 0.5)
-                               ) +
-        ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
-                            position = ggplot2::position_dodge(width=0.5),
-                            pch = 21) +
-        ggplot2::coord_flip() +
-        ggplot2::labs(x = "",
-                      y = paste0("Treatment effect (", round(100*interval), "% interval)")) +
-        {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
-        baggr_theme_get() +
-        ggplot2::theme(legend.position=legend)
-    }
-
     # This is an unpleasant way of doing map2...
     # Sorry to everyone.
     if(grid_parameters){
@@ -370,10 +429,14 @@ plot.baggr_compare <- function(x,
         big_df <- rbind(big_df,
                         data.frame(parameter = effect_names[i], plot_dfs[[i]]))
 
-      plots <- single_comp_plot(big_df, "", grid = T)
+      plots <- single_comp_plot(big_df, "", grid = T,
+                                ylab = paste0("Treatment effect (",
+                                              round(100*interval), "% interval)"))
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
-        single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F)
+        single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
+                         ylab = paste0("Treatment effect (",
+                                       round(100*interval), "% interval)"))
       })
     }
   } else if(compare == "effects"){
@@ -390,12 +453,44 @@ plot.baggr_compare <- function(x,
 
 
 
-# Separate out ordering so we can test directly
-# @param df_groups data.frame of group effects used in [plot.baggr_compare]
-# @param hyper show parameter estimate? same as in [plot.baggr_compare]
-# @details Given a set of effects measured by models, identifies the
-# model which has the biggest range of estimates and ranks groups
-# by those estimates, returning the order
+#' Plot single comparison plot in baggr_compare style
+#'
+#' @param df data.frame with columns 'group', 'median', 'lci', 'uci', 'model' and
+#'           optionally 'parameter'
+#' @param title 'ggtitle'
+#' @param legend 'legend.position'
+#' @param ylab Y axis label
+#' @param grid logical; if TRUE, facets by 'parameter' column
+#' @return a `ggplot2` object
+#' @export
+single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) {
+  group <- median <- lci <- uci <- model <- NULL
+  ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
+                                   ymin = lci, ymax = uci,
+                                   group = interaction(model),
+                                   color = model)) +
+    {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
+    ggplot2::geom_errorbar(size = 1.2, width = 0,
+                           position = ggplot2::position_dodge(width = 0.5)
+    ) +
+    ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
+                        position = ggplot2::position_dodge(width=0.5),
+                        pch = 21) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(x = "",
+                  y = ylab) +
+    {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
+    baggr_theme_get() +
+    ggplot2::theme(legend.position=legend)
+}
+
+
+#' Separate out ordering so we can test directly
+#' @param df_groups data.frame of group effects used in [plot.baggr_compare]
+#' @param hyper show parameter estimate? same as in [plot.baggr_compare]
+#' @details Given a set of effects measured by models, identifies the
+#' model which has the biggest range of estimates and ranks groups
+#' by those estimates, returning the order
 
 get_order <- function(df_groups, hyper) {
   model_spread <- sapply(

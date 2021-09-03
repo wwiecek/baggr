@@ -308,29 +308,25 @@ convert_inputs <- function(data,
                   " are not columns in input data"))
 
     # Test_data preparation
+    cov_bind <- data[,covariates, drop = FALSE]
     if(!is.null(test_data)){
-      data_bind <- try(rbind(data[,covariates, drop = FALSE],
-                             test_data[,covariates, drop = FALSE]))
-      if(class(data_bind) == "try-error")
+      cov_bind <- try(rbind(
+        cov_bind,
+        test_data[,covariates, drop = FALSE]))
+      if(inherits(cov_bind, "try-error"))
         stop("Cannot bind data and test_data. Ensure that all ",
              "covariates are present and same levels are used.")
-      data_bind$tau <- 0
-      out$X_test <- model.matrix(as.formula(
-        paste("tau ~", paste(covariates, collapse="+"), "-1")),
-        data=data_bind[(nrow(data)+1):nrow(data_bind),])
-    } else {
-      data_bind <- data[,covariates, drop = FALSE]
-      data_bind$tau <- 0
-
     }
-
-    # Covariates matrix preparation (based on checks done in test data)
-    out$X <- model.matrix(as.formula(
-      paste("tau ~", paste(covariates, collapse="+"), "-1")),
-      data=data_bind[1:nrow(data),])
+    cov_bind$tau <- 0
+    cov_bind[] <- lapply(cov_bind, function(x) if(is.character(x)) factor(x) else x)
+    cov_mm <- model.matrix(as.formula(
+      paste("tau ~", paste(covariates, collapse="+"))),
+      data=cov_bind)
+    out$X <- cov_mm[1:nrow(data), 2:ncol(cov_mm), drop = FALSE]
     out$Nc <- ncol(out$X)
-
-    if(is.null(test_data))
+    if(!is.null(test_data))
+      out$X_test <- cov_mm[(nrow(data)+1):nrow(cov_mm), 2:ncol(cov_mm), drop = FALSE]
+    else
       out$X_test <- array(0, dim=c(0, out$Nc))
 
     covariate_coding <- colnames(out$X)
@@ -350,7 +346,6 @@ convert_inputs <- function(data,
   if(any(na_cols))
     stop(paste0("baggr() does not allow NA values in inputs (see vectors ",
                 paste(names(out)[na_cols], collapse = ", "), ")"))
-
 
   return(structure(
     out,
