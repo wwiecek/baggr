@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# baggr: Bayesian aggregation package for R, v0.6.4 (May 2021)
+# baggr: Bayesian aggregation package for R, v0.6.9 (September 2021)
 
 <!-- badges: start -->
 
