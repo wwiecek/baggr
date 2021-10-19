@@ -152,7 +152,7 @@ pooling <- function(bg,
     sigma_tau <- aperm(sigma_tau, c(1, 3, 2))
 
     # now we can just do the operation on arrays and preserve dimensions:
-    ret <- sigma_k / (sigma_k + sigma_tau)
+    ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
 
     if(type == "total"){
       warning("Total pooling not implemented for quantiles model")
@@ -169,7 +169,7 @@ pooling <- function(bg,
     ge <- group_effects(bg, summary = T)[,"sd",]
     sigma_tau <- aperm(replicate(5, te), c(1,3,2))
     sigma_k   <- aperm(replicate(dim(sigma_tau)[1], ge), c(3,1,2))
-    ret <- sigma_k / (sigma_k + sigma_tau)
+    ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
 
   } else {
     stop("Cannot calculate pooling metrics.")
