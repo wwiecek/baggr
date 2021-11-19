@@ -83,7 +83,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   args[["data"]] <- data
   args[["model"]] <- full_fit$model
   # if(full_fit$model == "rubin_full")
-    # stop("LOO CV is not implemented for full data models yet.")
+  # stop("LOO CV is not implemented for full data models yet.")
   if(!("prior" %in% names(args))) {
     message("(Prior distributions taken from the model with all data. See $prior.)")
     args[["formatted_prior"]] <- full_fit$formatted_prior
@@ -173,7 +173,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   class(out) <- "baggr_cv"
 
   # if(temp_cores)
-    # options(mc.cores = NULL)
+  # options(mc.cores = NULL)
 
   return(out)
 }
@@ -240,8 +240,8 @@ loo_compare.baggr_cv <- function(x, ...) {
     diffs[[i-1]] <-
       matrix(nrow = 1, ncol = 2,
              c(sum(rawdiffs),
-                     sqrt(length(rawdiffs))*sd(rawdiffs)),
-               dimnames = list(diffname, c("ELPD", "ELPD SE")))
+               sqrt(length(rawdiffs))*sd(rawdiffs)),
+             dimnames = list(diffname, c("ELPD", "ELPD SE")))
   }
 
   diffs <- Reduce(rbind, diffs)
@@ -259,11 +259,8 @@ loo_compare.baggr_cv <- function(x, ...) {
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
   mat <- as.matrix(x)
   class(mat) <- "matrix"
-  cat(
-    crayon::bold(paste0("Comparison of cross-validation\n")),
-    "\n",
-    testthat::capture_output(print(signif(mat, digits = digits)))
-  )
+  cat(crayon::bold(paste0("Comparison of cross-validation\n\n")))
+  print(signif(mat, digits = digits))
 }
 
 #' Print baggr cv objects nicely
@@ -283,10 +280,8 @@ print.baggr_cv <- function(x, digits = 3, ...) {
   colnames(mat) <- c("Estimate", "Standard Error")
   rownames(mat) <- c("elpd", "looic")
 
-  cat(
-    crayon::bold(paste0("Based on ", x$K, "-fold cross-validation\n")),
-    "\n",
-    testthat::capture_output(print(signif(mat, digits = digits)))
-  )
+  cat("LOO estimate based on", crayon::bold(paste0(x$K, "-fold cross-validation\n")))
+  cat("\n")
+  print(signif(mat, digits = digits))
 
 }

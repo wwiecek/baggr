@@ -174,7 +174,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
           } else if(current_prior == "control" && model == "logit") {
             prop_ctrl <- data$c / (data$c + data$d)
             if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
-              message("Baseline proportion of events is very low or very common.",
+              message("Baseline proportion of events is very close to 0 or 1.",
                       "Consider manually setting prior_control.")
             special_name <- "log odds of event rate in untreated: mean"
           } else if(current_prior == "control_sd" && model == "logit") {
