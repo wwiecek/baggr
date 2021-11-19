@@ -30,7 +30,8 @@ baggr(
 )
 }
 \arguments{
-\item{data}{data frame with summary or individual level data to meta-analyse}
+\item{data}{data frame with summary or individual level data to meta-analyse;
+see Details section for how to format your data}
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from
@@ -122,11 +123,11 @@ individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 (For overall package help file see \link{baggr-package})
 }
 \details{
-Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-All three are discussed in depth in the package vignette (\code{vignette("baggr")}).
+Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of priors.
+All three are discussed in more depth in the package vignette, \code{vignette("baggr")}.
 
 \strong{Data.} For aggregate data models you need a data frame with columns
-\code{tau} and \code{se} or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu}.
+\code{tau} and \code{se} (Rubin model) or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu} ("mu & tau" model).
 An additional column can be used to provide labels for each group
 (by default column \code{group} is used if available, but this can be
 customised -- see the example below).
