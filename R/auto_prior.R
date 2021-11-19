@@ -208,8 +208,6 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     check_eligible_priors(prior_list, priors_spec[[model]])
   }
 
-
-
   if(model == "quantiles") {
     prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
     prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$Nq)
@@ -221,15 +219,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
   # Setting covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){
-      val <- max(10*unlist(lapply(data[, covariates, drop = FALSE], function(x)
-        sd(as.numeric(as.factor(x))))))
+      val <- 10*max(apply(stan_data$X, 2, sd))
       prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, val))
       message(
         paste0("Setting prior for covariates in regression to normal,",
                " with SD equal to 10*(highest SD among covariates):\n",
                "* beta ~ ", print_dist(normal(0, val)),
-               # Normal(0, ", format(val, digits = 2), "^2)",
-               " -- purely experimental, use with caution"))
+               "---purely experimental, we recommend you set this manually"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
     }

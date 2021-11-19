@@ -1,6 +1,15 @@
-# baggr 0.6.10 (September 2021)
+# baggr 0.6.10-0.6.11 (Sept-Nov 2021)
 
 * You can add values to `baggr_compare` and `baggr_plot`
+
+Bug fixes:
+
+* LOO CV printing errors fixed
+* Individual-level Rubin  model with covariates was broken in recent 0.6 
+  releases, now fixed 
+* Fixed a calculation of default beta prior
+
+
 
 # baggr 0.6.5-0.6.9 (June-August 2021)
 

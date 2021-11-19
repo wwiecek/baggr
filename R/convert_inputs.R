@@ -339,8 +339,6 @@ convert_inputs <- function(data,
       out$X_test <- array(0, dim=c(ifelse(is.null(test_data), 0, nrow(test_data)), 0))
     }
   }
-  # }
-
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))
@@ -355,5 +353,4 @@ convert_inputs <- function(data,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))
-
 }

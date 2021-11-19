@@ -121,3 +121,33 @@ test_that("rubin_full cross-validation works", {
   expect_gt(bg$mean_lpd, 0)
 })
 
+
+
+# covariates ------
+sa <- schools_ipd
+sa$a <- rnorm(nrow(schools_ipd))
+sa$b <- rnorm(nrow(schools_ipd))
+sa$c <- sample(c("A", "B", "C"), nrow(schools_ipd), replace = T)
+
+sb <- sa
+sb$b <- NULL
+
+
+test_that("Model with covariates works fine", {
+  bg_cov <- expect_warning(
+    baggr(sa, covariates = c("a", "b", "c"), iter = 150, chains = 1, refresh = 0))
+
+  expect_is(bg_cov, "baggr")
+  expect_error(baggr(sa, covariates = c("made_up_covariates")), "are not columns")
+  expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")), "are not columns")
+  expect_length(bg_p$covariates, 0)
+  expect_length(bg_cov$covariates, 3)
+  expect_null(bg_cov$mean_lpd)
+
+  # Fixed effects extraction
+  expect_is(fixed_effects(bg_cov), "matrix")
+  expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
+})
+
