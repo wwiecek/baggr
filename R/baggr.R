@@ -223,8 +223,15 @@ baggr <- function(data, model = NULL, pooling = "partial",
   #                    outcome=outcome, baseline=baseline)
 
   if(!is.null(model) && (model == "full")){
-    message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
+    message("From v0.6 model 'full' is named 'rubin_full'. Please update your code in the future.")
     model <- "rubin_full"
+  }
+  if(!is.null(model) && model == "mutau_sum") {
+    message("Experimental: using mu & tau model with sum specification (tau = mu + theta)")
+    model <- "mutau"
+    cumsum_mutau <- 1
+  } else {
+    cumsum_mutau <- 0
   }
 
   stan_data <- convert_inputs(data,
@@ -298,6 +305,8 @@ baggr <- function(data, model = NULL, pooling = "partial",
       stan_data[["joint_prior_mean"]] <- 1
       stan_data[["joint_prior_variance"]] <- 1
     }
+    if(model == "mutau")
+      stan_data[["cumsum"]] <- cumsum_mutau
     if(!(pooling_control %in% c("none", "partial")))
       stop('Wrong pooling_control parameter; choose from c("none", "partial")')
   } else {
