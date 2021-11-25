@@ -1,0 +1,118 @@
+---
+title: "Meta-analysis of control and treatment with baggr"
+author: "Witold Wiecek"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Meta-analysis of binary data with baggr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: baggr.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, fig.width=7, 
+  fig.height = 5, comment = "#>")
+library(baggr)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+# Generic experiment with control and treatment arm measurements 
+
+Consider a generic set-up with many experiments where $k$ studies of some intervention are carried out and in each case an average outcome is measured in control, $y_{0k}$ and treatment $y_{1k}$ arms.
+Let us assume that it is appropriate to assume the measured outcome is normally distributed, with some known sampling variation and independence between measurements, thus:
+
+$$
+\hat{y_{0k}} \sim \mathcal{N}(y_{0k}, \hat{se_{0k}}^2) \\
+\hat{y_{1k}} \sim \mathcal{N}(y_{1k}, \hat{se_{1k}}^2)
+$$
+
+It is often most plausible to assume that the average effect of treatment is in some way dependent on average effect in the control group---in particular, that the average outcome in treated is equal to outcome in control _plus_ some treatment effect, $\tau$, which itself may vary across experiments, i.e.
+
+$$
+\tau_k = y_{1k} - y_{0k}
+$$
+and using "hat" to denote its estimator based on trials, i.e.  
+
+$$
+\hat{\tau_k} \sim \mathcal{N}(\tau_k, \ \hat{se_{0k}}^2 + \hat{se_{1k}}^2)
+$$
+For related experiments we want to assume a hierarchical structure, i.e. a typical "Rubin" model used by _baggr_:
+
+$$
+\tau_k \sim \mathcal{N}(\tau, \sigma_{\tau}^2)
+$$
+
+This is easy to analyse in _baggr_ using the default settings in the package. Let's construct a simple example with synthetic data. Note the construction and paramters for `y1`, but also how `y0` is generated; we will discuss the latter below:
+
+```{r gen-data}
+k <- 100 #number of sites: let's make it large for more precise estimation
+
+# Synthetic dataset 
+simdf <- data.frame(
+  se.y0 = runif(k, 0.5, 1.5),#control SE
+  y0 = rnorm(k, 0, 4),      #control arm mean
+  se.y1 = runif(k, 0.5, 1.5) #trt SE
+)
+simdf$y1 <- simdf$y0 + rnorm(k, 10, 4) #trt mean
+
+```
+
+We can calculate tau as follows:
+
+```{r}
+attach_tau <- function(df) {
+  df$tau  <-  df$y1 - df$y0
+  df$se <- sqrt(df$se.y1^2 + df$se.y0^2)
+  df
+}
+head(attach_tau(simdf))
+```
+
+We can estimate a simple "Rubin" model of $\tau$ using default baggr syntax:
+
+```{r}
+bg_rubin <- baggr(attach_tau(simdf), refresh = 0)
+bg_rubin
+```
+
+```{r}
+bg_rubin2 <- dplyr::rename(simdf, tau = y1, se = se.y1) %>% baggr(refresh = 0)
+bg_rubin2
+```
+
+We can see empirically that both the hypermean and hyperSD estimates are unbiased (it was perhaps also easy to predict this without a numerical example). If the treatment is known to act in additive manner, the scientist should proceed with a "Rubin" model.
+
+However, in many cases the researcher cannot claim with confidence that the outcome in the control arm (e.g. a "sham" intervention) is related in any way to the outcome in treatment arm. If $\tau$ is independent of $y_0$, then adjusting for $y_0$ will only increase noise in estimates of $\tau$. 
+
+
+
+# Model with control and treatment
+
+As described in the core vignette for _baggr_ package, users can also choose to model 
+control data alongside treatment effects. To stay consistent with _baggr_ notation, 
+let's use $\mu$ to denote $y_0$ from the previous section.
+
+```{r}
+simdf_mutau <- dplyr::rename(attach_tau(simdf), se.tau = se, se.mu = se.y0, mu = y0)
+```
+
+Since $\mu$ and $\tau$ in our synthetic example come from independent Gaussian distributions,
+using a `"mutau"` model will lead to almost identical inferences:
+
+```{r}
+bg_mutau <- baggr(simdf_mutau, model = "mutau", refresh = 0)
+bg_mutau
+
+# we could also do this:
+# baggr_compare(bg_rubin, bg_mutau)
+```
+
+
+
+# References
