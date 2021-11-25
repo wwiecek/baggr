@@ -229,9 +229,9 @@ baggr <- function(data, model = NULL, pooling = "partial",
   if(!is.null(model) && model == "mutau_sum") {
     message("Experimental: using mu & tau model with sum specification (tau = mu + theta)")
     model <- "mutau"
-    cumsum_mutau <- 1
-  } else {
     cumsum_mutau <- 0
+  } else {
+    cumsum_mutau <- 1
   }
 
   stan_data <- convert_inputs(data,
