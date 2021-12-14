@@ -1,6 +1,7 @@
 # baggr 0.6.10-0.6.11 (Sept-Nov 2021)
 
-* You can add values to `baggr_compare` and `baggr_plot`
+* You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
+  (a la forest plot)
 
 Bug fixes:
 
@@ -8,6 +9,7 @@ Bug fixes:
 * Individual-level Rubin  model with covariates was broken in recent 0.6 
   releases, now fixed 
 * Fixed a calculation of default beta prior
+* No more confusing warning about setting prior_control for `"logit"` model
 
 
 

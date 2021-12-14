@@ -197,9 +197,9 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
             message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
           if(current_prior == "control_sd" &&
              model == "logit" &&
-             stan_data$pooling_baseline != 0)
+             stan_data$pooling_baseline == 0)
             message("SD hyperparameter for control groups defined,",
-                    "but there is no pooling. Ignoring.")
+                    "but there is no pooling. Ignoring it.")
         }
       }
     }
