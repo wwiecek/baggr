@@ -27,7 +27,6 @@ Imports:
     utils,
     stats,
     testthat,
-    quantreg,
     methods
 LinkingTo: 
     StanHeaders (>= 2.18.1), 

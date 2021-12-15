@@ -8,7 +8,8 @@ Misc:
 * You can plot only hyperparameter values (without group-specific estimates) in
   baggr_compare now
 * More pooling metrics (and better documentation)
-  
+* Removed an unnecessary dependency on quantreg
+
 Bug fixes:
 
 * LOO CV printing errors fixed
