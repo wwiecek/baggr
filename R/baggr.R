@@ -9,7 +9,8 @@
 #' @importFrom rstan summary
 #' @importFrom rstan sampling
 #'
-#' @param data data frame with summary or individual level data to meta-analyse
+#' @param data data frame with summary or individual level data to meta-analyse;
+#'             see Details section for how to format your data
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
 #'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
@@ -74,11 +75,11 @@
 #'
 #' @details
 #'
-#' Running `baggr` requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-#' All three are discussed in depth in the package vignette (`vignette("baggr")`).
+#' Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of priors.
+#' All three are discussed in more depth in the package vignette, `vignette("baggr")`.
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
-#' `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
+#' `tau` and `se` (Rubin model) or `tau`, `mu`, `se.tau`, `se.mu` ("mu & tau" model).
 #' An additional column can be used to provide labels for each group
 #' (by default column `group` is used if available, but this can be
 #' customised -- see the example below).
@@ -222,8 +223,15 @@ baggr <- function(data, model = NULL, pooling = "partial",
   #                    outcome=outcome, baseline=baseline)
 
   if(!is.null(model) && (model == "full")){
-    message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
+    message("From v0.6 model 'full' is named 'rubin_full'. Please update your code in the future.")
     model <- "rubin_full"
+  }
+  if(!is.null(model) && model == "mutau_sum") {
+    message("Experimental: using mu & tau model with sum specification (tau = mu + theta)")
+    model <- "mutau"
+    cumsum_mutau <- 0
+  } else {
+    cumsum_mutau <- 1
   }
 
   stan_data <- convert_inputs(data,
@@ -297,6 +305,8 @@ baggr <- function(data, model = NULL, pooling = "partial",
       stan_data[["joint_prior_mean"]] <- 1
       stan_data[["joint_prior_variance"]] <- 1
     }
+    if(model == "mutau")
+      stan_data[["cumsum"]] <- cumsum_mutau
     if(!(pooling_control %in% c("none", "partial")))
       stop('Wrong pooling_control parameter; choose from c("none", "partial")')
   } else {
