@@ -5,27 +5,40 @@
 #' The statistics are the pooling metric by Gelman & Pardoe (2006) or its
 #' complement, the _I-squared_ statistic.
 #'
-#' @param bg output of a baggr() function
+#' @param bg a [baggr] model
+#' @param metric `"pooling"` for Gelman & Pardoe statistic _P_,
+#'               `"isq"` for I-squared statistic (_1-P_, Higgins & Thompson, 2002)
+#'               `"hsq"` for H squared statistic (_1/P_, ibid.);
+#'               also see _Details_
 #' @param type In `pooling` calculation is done for each of the `"groups"`
 #'            (default) or for `"total"` hypereffect(s).
-#'             See _Details_ section for how calculation is done.
 #' @param summary logical; if `FALSE` a whole vector of pooling values is returned,
 #'                otherwise only the means and intervals
 #'
 #' @details
-#' Pooling statistic describes the extent to which group-level estimates of treatment
-#' effect are "pooled" (or pulled!) closer to average treatment effect in the meta-analysis model.
-#' If `pooling = "none"` or "full" in [baggr], then the values are always 0 or 1, respectively.
-#' If `pooling = "partial"`, the value is somewhere between 0 and 1.
 #'
-#' **Formulae for the calculations below are provided in main package vignette.**
+#' Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
+#' group-level estimates of treatment
+#' effect are "pooled" toward average treatment effect in the meta-analysis model.
+#' If `pooling = "none"` or `"full"` (which you specify when calling [baggr]),
+#' then the values are always 0 or 1, respectively.
+#' If `pooling = "partial"`, the value is somewhere between 0 and 1.
+#' We can distinguish between pooling of individual groups and overall pooling in
+#' the model.
+#'
+#' In many contexts, i.e. medical statistics, it is typical to report _1-P_, called \eqn{I^2}
+#' (see Higgins and Thompson, 2002; sometimes another statistic, \eqn{H^2 = 1 / P},
+#' is used).
+#' Higher values of _I-squared_ indicate higher heterogeneity;
+#' Von Hippel (2015) provides useful details for _I-squared_ calculations (and some
+#' issues related to it, especially in frequentist models).
+#' See Gelman & Pardoe (2006) Section 1.1 for a short explanation of how \eqn{R^2}
+#' statistic relates to the pooling metric.
 #'
 #' @section Group pooling:
 #'
 #' This is the calculation done by `pooling()` if `type = "groups"` (default).
-#' See `vignette("baggr")` for more details on pooling calculations.
-#'
-#' In a partial pooling model (see [baggr]), group _k_ (e.g. study) has
+#' In a partial pooling model (see [baggr] and above), group _k_ (e.g. study) has
 #' standard error of treatment effect estimate, \eqn{se_k}.
 #' The treatment effect (across _k_ groups) is variable across groups, with
 #' hyper-SD parameter \eqn{\sigma_(\tau)}.
@@ -40,10 +53,12 @@
 #' * Values close to 1 indicate nearly full pooling. Variation across studies dominates.
 #' * Values close to 0 indicate no pooling. Variation within studies dominates.
 #'
-#' Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a single fixed value),
-#' _p_ is also a parameter. It is typical for _p_ to have very high dispersion, as in many cases we
-#' cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution of_p_
-#' (rather than summarised values), set `summary=FALSE`.
+#' Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
+#' single fixed value),
+#' _p_ is also a parameter. It is typical for _p_ to have very high dispersion,
+#' as in many cases we
+#' cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution
+#' of_p_ (rather than summarised values), set `summary=FALSE`.
 #'
 #'
 #'
@@ -51,13 +66,13 @@
 #'
 #' Typically researchers want to report a single measure from the model,
 #' relating to heterogeneity across groups.
-#' This is calculated by either `pooling(mymodel, type = "total")` or simply `heterogeneity(mymodel)`
+#' This is calculated by either `pooling(mymodel, type = "total")` or simply
+#' `heterogeneity(mymodel)`
 #'
-#' In many contexts, i.e. medical statistics, it is typical to report _1-P_, called \eqn{I^2}
-#' (see Higgins and Thompson, 2002; sometimes another statistic, \eqn{H^2 = 1 / P},
-#' is used).
-#' Higher values of _I-squared_ indicate higher heterogeneity;
-#' Von Hippel (2015) provides useful details for _I-squared_ calculations.
+#' Formulae for the calculations below are provided in main package vignette and
+#' almost analogous to the group calculation above, but using mean variance across
+#' all studies. In other words, pooling _P_ is simply ratio of the expected within-study
+#' variance term to total variance.
 #'
 #' To obtain such single estimate we need to substitute average variability of group-specific
 #' treatment effects and then calculate the same way we would calculate \eqn{p}.
@@ -65,14 +80,14 @@
 #' \eqn{I^2} in statistical packages use a different calculation for this quantity,
 #' which may make _I_'s not comparable when different studies have different SE's.
 #'
-#' Same as for group-specific estimates, _P_ is a Bayesian parameter and its dispersion can be high.
+#' Same as for group-specific estimates, _P_ is a Bayesian parameter and its
+#' dispersion can be high.
 #'
 #'
-#' **Relationship to R-squared statistic**
+#' @section Value:
 #'
-#' See Gelman & Pardoe (2006) Section 1.1 for a short explanation of how \eqn{R^2}
-#' statistic relates to the pooling metric.
-#'
+#' Matrix with mean and intervals for chosen pooling metric,
+#' each row corresponding to one meta-analysis group.
 #'
 #' @references
 #' Gelman, Andrew, and Iain Pardoe.
@@ -80,21 +95,22 @@
 #' _Technometrics 48, no. 2 (May 2006): 241-51_.
 #'
 #' Higgins, Julian P. T., and Simon G. Thompson.
-#' “Quantifying Heterogeneity in a Meta-Analysis.”
-#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58_.
+#' "Quantifying Heterogeneity in a Meta-Analysis."
+#' _Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539-58_.
 #'
 #' Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
 #' _BMC Medical Research Methodology 15 (April 14, 2015)._
 #'
-#' @return Matrix with mean and intervals for chosen pooling metric,
-#'         each row corresponding to one meta-analysis group.
+#'
 #' @export
 #'
 
 pooling <- function(bg,
+                    metric = c("pooling", "isq", "hsq"),
                     type = c("groups", "total"),
                     summary = TRUE) {
   type <- match.arg(type, c("groups", "total"))
+  metric <- match.arg(metric, c("pooling", "isq", "hsq"))
 
   # we have to rig it for no pooling cases
   # because sigma_tau parameter might be meaningless then
@@ -175,8 +191,16 @@ pooling <- function(bg,
     stop("Cannot calculate pooling metrics.")
   }
 
+  if(metric == "isq") ret <- 1-ret
+  if(metric == "hsq") ret <- 1/ret
+  if(metric == "h")   ret <- sqrt(1/ret)
+
+
   if(summary)
     ret <- apply(ret, c(2,3), mint)
+
+  # if(bg$n_parameters == 1)
+  #   ret <- ret[1,,]
 
   return(ret)
 
