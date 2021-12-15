@@ -22,14 +22,14 @@ such as when running \code{model="logit"} in \link{baggr}, when summary-level da
 }
 \examples{
 df_yusuf <- read.table(text="
-  trial  a n1i  c n2i
-  Balcon 14  56 15  58
-  Clausen 18  66 19  64
+  trial        a n1i  c n2i
+  Balcon      14  56 15  58
+  Clausen     18  66 19  64
   Multicentre 15 100 12  95
-  Barber 10  52 12  47
-  Norris 21 226 24 228
-  Kahler  3  38  6  31
-  Ledwich  2  20  3  20
+  Barber      10  52 12  47
+  Norris      21 226 24 228
+  Kahler       3  38  6  31
+  Ledwich      2  20  3  20
   ", header=TRUE)
 bti <- binary_to_individual(df_yusuf, group = "trial")
 head(bti)

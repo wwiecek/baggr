@@ -275,7 +275,7 @@ test_that("baggr_compare basic cases work with Rubin", {
   expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # try to make nonexistant comparison:
   expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"),
-               "argument must be set")
+               "should be one of")
   # Run models from baggr_compare:
   bgcomp <- expect_warning(baggr_compare(schools,
                                          iter = 200, refresh = 0))

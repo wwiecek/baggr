@@ -16,7 +16,8 @@ Bug fixes:
   releases, now fixed 
 * Fixed a calculation of default beta prior
 * No more confusing warning about setting prior_control for `"logit"` model
-
+* `binary_to_individual` with non-integer number of events warns user and throws 
+  error now
 
 
 # baggr 0.6.5-0.6.9 (June-August 2021)
