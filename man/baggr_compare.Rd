@@ -7,7 +7,7 @@
 baggr_compare(
   ...,
   what = "pooling",
-  compare = "groups",
+  compare = c("groups", "hyperpars", "effects"),
   transform = NULL,
   plot = FALSE
 )
@@ -24,8 +24,9 @@ posterior predictive). If pre-existing baggr models are
 passed to \code{...}, this argument is ignored.}
 
 \item{compare}{When plotting, choose between comparison of \code{"groups"}
-(default) or (hyper-) \code{"effects"}. The former is not available
-when \code{what = "prior"}.}
+(default), \code{"hyperpars"} (to omit group-specific estimates)
+or (predicted) \code{"effects"}.
+The \code{"groups"} option is not available when \code{what = "prior"}.}
 
 \item{transform}{a function (e.g. exp(), log()) to apply to
 the values of group (and hyper, if hyper=TRUE)

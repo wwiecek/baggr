@@ -1,8 +1,14 @@
-# baggr 0.6.10-0.6.11 (Sept-Nov 2021)
+# baggr 0.6.10-0.6.12 (Sept-Dec 2021)
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
 
+Misc:
+
+* You can plot only hyperparameter values (without group-specific estimates) in
+  baggr_compare now
+* More pooling metrics (and better documentation)
+  
 Bug fixes:
 
 * LOO CV printing errors fixed
@@ -22,7 +28,6 @@ Bug fixes:
   predictive draws.
 * Upgraded forest plots to work with `forestplot` 2.0
 
-
 Minor bug fixes:
 
 * Fixed errors that could happen when using multiple factor covariates, or
@@ -34,6 +39,8 @@ Minor bug fixes:
   triggered by normal user behaviour.
 * Fixed a bug where priors for meta-regressions were set even though there were
   no covariates.
+
+
 
 # baggr 0.6.3-0.6.4 (May 2021)
 

@@ -25,8 +25,9 @@
 \item{x}{baggr_compare model to plot}
 
 \item{compare}{When plotting, choose between comparison of \code{"groups"}
-(default) or (hyper-) \code{"effects"}. The former is not available
-when \code{what = "prior"}.}
+(default), \code{"hyperpars"} (to omit group-specific estimates)
+or (predicted) \code{"effects"}.
+The \code{"groups"} option is not available when \code{what = "prior"}.}
 
 \item{style}{What kind of plot to display (if \code{grid_models = TRUE}),
 passed to the \code{style} argument in \link{baggr_plot}.}
@@ -42,7 +43,7 @@ if \code{FALSE}, returns separate plot for each parameter}
 \item{interval}{probability level used for display of posterior interval}
 
 \item{hyper}{Whether to plot pooled treatment effect
-in addition to group treatment effects}
+in addition to group treatment effects when \code{compare = "groups"}}
 
 \item{transform}{a function (e.g. exp(), log())
 to apply to the values of group (and hyper, if hyper=TRUE)

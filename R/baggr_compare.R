@@ -13,8 +13,9 @@
 #'              posterior predictive). If pre-existing baggr models are
 #'              passed to `...`, this argument is ignored.
 #' @param compare When plotting, choose between comparison of `"groups"`
-#'                (default) or (hyper-) `"effects"`. The former is not available
-#'                when `what = "prior"`.
+#'                (default), `"hyperpars"` (to omit group-specific estimates)
+#'                or (predicted) `"effects"`.
+#'                The `"groups"` option is not available when `what = "prior"`.
 #' @param transform a function (e.g. exp(), log()) to apply to
 #'                  the values of group (and hyper, if hyper=TRUE)
 #'                  effects before plotting; when working with
@@ -93,15 +94,14 @@
 
 baggr_compare <- function(...,
                           what    = "pooling",
-                          compare = "groups",
+                          compare = c("groups", "hyperpars", "effects"),
                           transform = NULL,
                           plot = FALSE) {
   l <- list(...)
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
-  if(!compare %in% c("groups","effects")){
-    stop("'compare' argument must be set to either 'groups' or 'effects'.")
-  }
+  compare <- match.arg(compare, c("groups", "hyperpars", "effects"))
+
   if(all(unlist(lapply(l, class)) == "baggr")) {
     # return_models_flag <- 0
     if(is.null(names(l)))
@@ -288,8 +288,9 @@ print.baggr_compare <- function(x, digits, ...){
 #' run automatically by baggr_compare
 #' @param x baggr_compare model to plot
 #' @param compare When plotting, choose between comparison of `"groups"`
-#'                (default) or (hyper-) `"effects"`. The former is not available
-#'                when `what = "prior"`.
+#'                (default), `"hyperpars"` (to omit group-specific estimates)
+#'                or (predicted) `"effects"`.
+#'                The `"groups"` option is not available when `what = "prior"`.
 #' @param grid_models If `FALSE` (default), generate a single comparison plot;
 #'                if `TRUE`, display each model (using individual [baggr_plot]'s)
 #'                side-by-side.
@@ -300,7 +301,7 @@ print.baggr_compare <- function(x, digits, ...){
 #'              passed to the `style` argument in [baggr_plot].
 #' @param interval probability level used for display of posterior interval
 #' @param hyper Whether to plot pooled treatment effect
-#'              in addition to group treatment effects
+#'              in addition to group treatment effects when `compare = "groups"`
 #' @param transform a function (e.g. exp(), log())
 #'                  to apply to the values of group (and hyper, if hyper=TRUE)
 #'                  effects before plotting; when working with effects that are on
@@ -337,7 +338,7 @@ plot.baggr_compare <- function(x,
   #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
   lci <- uci <- model <- group <- NULL
 
-  compare <- match.arg(compare, c("effects", "groups"))
+  compare <- match.arg(compare, c("groups", "hyperpars", "effects"))
 
   if(is.null(transform))
     transform <- x$transform
@@ -366,7 +367,7 @@ plot.baggr_compare <- function(x,
 
   # This is non-grid, baggr_compare-specific code:
 
-  if(compare == "groups") {
+  if(compare %in% c("groups", "hyperpars")) {
 
     # Create input data frames for ggplots
     plot_dfs <- lapply(as.list(1:(length(effect_names))), function(i) {
@@ -397,7 +398,10 @@ plot.baggr_compare <- function(x,
             sd = sd(hyper_treat),
             group = "Pooled Estimate"
           )
-          m <- rbind(hyper_effects, m)
+          if(compare == "hyperpars")
+            m <- hyper_effects
+          if(compare == "groups")
+            m <- rbind(hyper_effects, m)
         }
         return(m)
       })
