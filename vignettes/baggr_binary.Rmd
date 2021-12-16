@@ -412,7 +412,7 @@ So far we've been using the logistic model with default priors (that are zero-ce
 2. Custom independent prior for baseline event rates, specified by using `prior_control` argument when callin `baggr`, using the same syntax as for other priors, e.g. `normal(0, 5)`.
 3. Assuming hierarchical structure on baselines and specifying a prior using `prior_control` (which is now interpreted as hypermean, rather than $K$ independent priors) and `prior_control_sd` (hyper-SD for baseline parameters). To enable the hierarchical structure of baselines we need to specify `pooling_control = "partial"` (analogously to specifying `pooling` argument for treatment effects).
 
-Choosing between the three is especially important in the case of rare events, as this will have a potentially large impact on the results. Let us consider three models: 
+Choosing between the three is especially important in the case of rare events, as this will have a potentially large impact on the results. Let's continue with the example from previous section and  consider three models: 
 
 * default settings (already fitted above, `bg_rare_ind`), 
 * strongly informative independent prior on baselines: centered on 1% event rate, $\mathcal{N}(-4.59, 2^2)$, which translates 95% confidence that baseline event rate is between about 0.02% and 55%
@@ -423,30 +423,30 @@ We exagerrate our prior choices on purpose, to best illustrate the differences.
 ```{r rare events with bsl priors, include = F}
 # bg_rare_prior2 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
 #                         prior_control = normal(-4.59, 2))
-bg_rare_prior3 <- baggr(df_rare, effect = "logOR", model = "logit",
+bg_rare_pool_bsl <- baggr(df_rare, effect = "logOR", model = "logit",
                         pooling_control = "partial",
                         chains = 2, iter = 500,
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
-bg_rare_prior4 <- baggr(df_rare, effect = "logOR", model = "logit",
+bg_rare_strong_prior <- baggr(df_rare, effect = "logOR", model = "logit",
                         chains = 2, iter = 500,
                         prior_control = normal(-4.59, 10))
 ```
 
 ```{r, eval = FALSE, echo = TRUE}
-bg_rare_prior3 <- baggr(df_rare, effect = "logOR", model = "logit",
+bg_rare_pool_bsl <- baggr(df_rare, effect = "logOR", model = "logit",
                         pooling_control = "partial",
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
-bg_rare_prior4 <- baggr(df_rare, effect = "logOR", model = "logit",
+bg_rare_strong_prior <- baggr(df_rare, effect = "logOR", model = "logit",
                         prior_control = normal(-4.59, 10))
 ```
 
 ```{r}
 bgc <- baggr_compare(
-  "Aggregate, 0.1 correction" = bg_correction01, 
+  "Rubin model" = bg_rare_agg, 
   "Independent N(0,10^2)" = bg_rare_ind, 
   # "Prior N(-4.59, 2^2)" = bg_rare_prior2, 
-  "Hierarchical prior" = bg_rare_prior3,
-  "Independent N(-4.59, 10^2)" = bg_rare_prior4
+  "Hierarchical prior" = bg_rare_pool_bsl,
+  "Independent N(-4.59, 10^2)" = bg_rare_strong_prior
 )
 
 bgc

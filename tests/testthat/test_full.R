@@ -46,6 +46,30 @@ test_that("Basic operations on rubin_full model", {
   expect_is(forest_plot(bg_p), "gforge_forestplot")
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
   expect_is(bgc, "baggr_compare")
+
+
+})
+
+test_that("extra pooling stats work", {
+  # Extra pooling checks
+  # Calculation of I^2 and H^2
+  i2 <- pooling(bg_p, metric = "isq")
+  expect_is(i2, "array")
+  expect_gte(min(i2), 0)
+  expect_lte(max(i2), 1)
+  h2 <- pooling(bg_p, metric = "hsq")
+  expect_is(h2, "array")
+  expect_gte(min(h2), 1)
+  # Calculation of weights makes sense
+  wt <- weights(bg_p)
+  expect_is(wt, "array")
+  expect_equal(dim(wt), c(3,8,1))
+  expect_equal(sum(wt[2,,1]), 1)
+  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[1,,1]), 0)
+  wt2 <- pooling(bg_p, metric = "weights")
+  expect_identical(wt, wt2)
 })
 
 test_that("rubin_full model crashes with nonsense inputs", {

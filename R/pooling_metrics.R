@@ -1,15 +1,17 @@
 #' Pooling metrics for baggr
 #'
 #' Compute statistics relating to
-#' `pooling` in a given [baggr] meta-analysis model (`heterogeneity` is a shorthand
-#' for pooling in entire model, while `pooling` can calculate in each study or across all).
-#' The statistics are the pooling metric by Gelman & Pardoe (2006) or its
-#' complement, the _I-squared_ statistic.
+#' `pooling` in a given [baggr] meta-analysis model returns statistics, for
+#' either the entire model or individual groups, such as
+#' pooling statistic by Gelman & Pardoe (2006), _I-squared_, _H-squared_, or study weights;
+#' `heterogeneity` is a shorthand for `pooling(type = "total")`
+#' `weights` is shorthand for `pooling(metric = "weights")`
 #'
 #' @param bg a [baggr] model
 #' @param metric `"pooling"` for Gelman & Pardoe statistic _P_,
 #'               `"isq"` for I-squared statistic (_1-P_, Higgins & Thompson, 2002)
 #'               `"hsq"` for H squared statistic (_1/P_, ibid.);
+#'               `"weights"` for study weights;
 #'               also see _Details_
 #' @param type In `pooling` calculation is done for each of the `"groups"`
 #'            (default) or for `"total"` hypereffect(s).
@@ -46,7 +48,7 @@
 #'
 #' The quantity of interest is ratio of variation in treatment effects to the
 #' total variation.
-#' By convention, we subtract it from 1, to obtain a _pooling metric_ _p_.
+#' By convention, we subtract it from 1, to obtain a _pooling metric_ _P_.
 #'
 #' \deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
 #'
@@ -56,10 +58,25 @@
 #'
 #' Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
 #' single fixed value),
-#' _p_ is also a parameter. It is typical for _p_ to have very high dispersion,
+#' _P_ is also a parameter. It is typical for _P_ to have very high dispersion,
 #' as in many cases we
-#' cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution
-#' of_p_ (rather than summarised values), set `summary=FALSE`.
+#' cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain samples from the distribution
+#' of _P_ (rather than summarised values), set `summary=FALSE`.
+#'
+#'
+#' @section Study weights:
+#'
+#' Contributions of each group (e.g. each study) to the mean meta-analysis estimate
+#' can be calculated by calculating for each study *w_k* the inverse of sum of group-specific
+#' SE squared and between-study variation.
+#' To obtain weights, this vector (across all studies) has to be normalised to 1, i.e.
+#' *w_k/sum(w_k)* for each _k_.
+#'
+#' SE is typically treated as a fixed quantity
+#' (and usually reported on the reported point estimate),
+#' but between-study variance is a model parameter,
+#' hence the weights themselves are also random variables.
+#'
 #'
 #'
 #'
@@ -128,19 +145,23 @@ pooling <- function(bg,
 
     # Grab the appropriate SE (k values)
     sigma_k <- switch(bg$model,
-                      "mutau" = bg$data$se.tau,
-                      "rubin" = bg$data$se,
-                      "logit" = bg$summary_data$se,
-                      "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
-                      "mutau_full"  = group_effects(bg, summary = TRUE)[, "sd", 1]
+                      "mutau"       = bg$data$se.tau,
+                      "rubin"       = bg$data$se,
+                      "logit"       = bg$summary_data$se,
+                      # These are SDs after pooling, don't use this (here for tests)
+                      # "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
+                      "rubin_full"  = bg$summary_data$se.tau,
+                      "mutau_full"  = bg$summary_data$se.tau
                       )
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
     if(type == "total")
       ret <- replicate(1, mean(sigma_k^2) / (mean(sigma_k^2) + sigma_tau^2))
-    if(metric == "weights" && type == "groups")
-      ret <- sapply()
+    if(metric == "weights" && type == "groups"){
+      precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma_tau^2))
+      ret <- t(apply(precisions, 1, function(x) x/sum(x)))
+    }
     if(metric == "weights" && type == "total")
       stop("Weights can be calculated only for type = 'groups'")
 
@@ -218,4 +239,11 @@ heterogeneity <- function(
   metric = c("pooling", "isq", "hsq", "weights"),
   summary = TRUE)
   pooling(bg, metric, type = "total", summary = summary)
+
+#' @rdname pooling
+#' @export
+weights <- function(
+  bg,
+  summary = TRUE)
+  pooling(bg, metric = "weights", type = "groups", summary = summary)
 

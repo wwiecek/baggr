@@ -3,6 +3,7 @@
 \name{pooling}
 \alias{pooling}
 \alias{heterogeneity}
+\alias{weights}
 \title{Pooling metrics for baggr}
 \usage{
 pooling(
@@ -17,6 +18,8 @@ heterogeneity(
   metric = c("pooling", "isq", "hsq", "weights"),
   summary = TRUE
 )
+
+weights(bg, summary = TRUE)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
@@ -24,6 +27,7 @@ heterogeneity(
 \item{metric}{\code{"pooling"} for Gelman & Pardoe statistic \emph{P},
 \code{"isq"} for I-squared statistic (\emph{1-P}, Higgins & Thompson, 2002)
 \code{"hsq"} for H squared statistic (\emph{1/P}, ibid.);
+\code{"weights"} for study weights;
 also see \emph{Details}}
 
 \item{type}{In \code{pooling} calculation is done for each of the \code{"groups"}
@@ -34,10 +38,11 @@ otherwise only the means and intervals}
 }
 \description{
 Compute statistics relating to
-\code{pooling} in a given \link{baggr} meta-analysis model (\code{heterogeneity} is a shorthand
-for pooling in entire model, while \code{pooling} can calculate in each study or across all).
-The statistics are the pooling metric by Gelman & Pardoe (2006) or its
-complement, the \emph{I-squared} statistic.
+\code{pooling} in a given \link{baggr} meta-analysis model returns statistics, for
+either the entire model or individual groups, such as
+pooling statistic by Gelman & Pardoe (2006), \emph{I-squared}, \emph{H-squared}, or study weights;
+\code{heterogeneity} is a shorthand for \code{pooling(type = "total")}
+\code{weights} is shorthand for \code{pooling(metric = "weights")}
 }
 \details{
 Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
@@ -69,7 +74,7 @@ hyper-SD parameter \eqn{\sigma_(\tau)}.
 
 The quantity of interest is ratio of variation in treatment effects to the
 total variation.
-By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{p}.
+By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{P}.
 
 \deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
 \itemize{
@@ -80,10 +85,25 @@ By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{p}
 
 Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
 single fixed value),
-\emph{p} is also a parameter. It is typical for \emph{p} to have very high dispersion,
+\emph{P} is also a parameter. It is typical for \emph{P} to have very high dispersion,
 as in many cases we
-cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution
-of_p_ (rather than summarised values), set \code{summary=FALSE}.
+cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain samples from the distribution
+of \emph{P} (rather than summarised values), set \code{summary=FALSE}.
+}
+
+\section{Study weights}{
+
+
+Contributions of each group (e.g. each study) to the mean meta-analysis estimate
+can be calculated by calculating for each study \emph{w_k} the inverse of sum of group-specific
+SE squared and between-study variation.
+To obtain weights, this vector (across all studies) has to be normalised to 1, i.e.
+\emph{w_k/sum(w_k)} for each \emph{k}.
+
+SE is typically treated as a fixed quantity
+(and usually reported on the reported point estimate),
+but between-study variance is a model parameter,
+hence the weights themselves are also random variables.
 }
 
 \section{Overall pooling in the model}{

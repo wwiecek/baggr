@@ -47,7 +47,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 150) #right dimension means right iter
-  expect_error(baggr(df_binary, rubbish = 41))
+  expect_error(baggr(df_binary, rubbish = 41), "unknown arguments")
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -93,6 +93,27 @@ test_that("Pooling metrics", {
   # expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
 })
 
+test_that("extra pooling stats work", {
+  # Extra pooling checks
+  # Calculation of I^2 and H^2
+  i2 <- pooling(bg5_p, metric = "isq")
+  expect_is(i2, "array")
+  expect_gte(min(i2), 0)
+  expect_lte(max(i2), 1)
+  h2 <- pooling(bg5_p, metric = "hsq")
+  expect_is(h2, "array")
+  expect_gte(min(h2), 1)
+  # Calculation of weights makes sense
+  wt <- weights(bg5_p)
+  expect_is(wt, "array")
+  expect_equal(dim(wt), c(3,5,1))
+  expect_equal(sum(wt[2,,1]), 1)
+  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[1,,1]), 0)
+  wt2 <- pooling(bg5_p, metric = "weights")
+  expect_identical(wt, wt2)
+})
 
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")

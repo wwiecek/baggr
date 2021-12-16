@@ -86,8 +86,8 @@ and ignore \code{data} in inference. However, \code{data} argument might still
 be used to infer the correct model (if \code{model=NULL}) and to set the
 default priors, therefore you must specify it.}
 
-\item{pooling_control}{Pooling for group-specific control mean terms (currently only in \code{logit}).
-Either \code{"none"} or \code{"partial"}.}
+\item{pooling_control}{Pooling for group-specific control mean terms in models using
+individual-level data. Either \code{"none"} or \code{"partial"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument. See "Cross-validation" section below.}

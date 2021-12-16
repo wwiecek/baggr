@@ -1,18 +1,21 @@
-# baggr 0.6.10-0.6.12 (Sept-Dec 2021)
+# baggr 0.6.10-0.6.13 (Sept-Dec 2021)
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
 * You don't need to convert summary data to individual-level data before running
   `model="logit"`, call to `baggr()` should detect it automatically now
+* `pooling()` includes extra metrics, including study weights calculation
+  (and better documentation)
 
 Misc:
 
 * You can plot only hyperparameter values (without group-specific estimates) in
   baggr_compare now
-* More pooling metrics (and better documentation)
 * Removed an unnecessary dependency on quantreg
 * Rare event corrections (`prepare_ma()`) can now be applied either to particular 
   studies or all data
+* Clearer prompts about priors and pooling in control arms when working with
+  individual-level data models.
 
 Bug fixes:
 
@@ -20,9 +23,10 @@ Bug fixes:
 * Individual-level Rubin  model with covariates was broken in recent 0.6 
   releases, now fixed 
 * Fixed a calculation of default beta prior
-* No more confusing warnings about setting `prior_control` for `"logit"` model
+* No more confusing warnings about setting `prior_control` for `"logit"` model.
 * `binary_to_individual` with non-integer number of events warns user and throws 
   an error now
+* Confusing results in `baggr_binary` vignette (rare events section)
 
 
 # baggr 0.6.5-0.6.9 (June-August 2021)

@@ -19,8 +19,8 @@
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
 #'                "partial" can be understood as random effects and "full" as fixed effects
-#' @param pooling_control Pooling for group-specific control mean terms (currently only in `logit`).
-#'                        Either `"none"` or `"partial"`.
+#' @param pooling_control Pooling for group-specific control mean terms in models using
+#'                        individual-level data. Either `"none"` or `"partial"`.
 #' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
