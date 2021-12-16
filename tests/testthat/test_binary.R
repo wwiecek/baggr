@@ -9,12 +9,12 @@ set.seed(1990)
 df_binary <- data.frame(treatment = rbinom(400, 1, .5),
                       group = rep(paste("Trial", LETTERS[1:5]), each = 80))
 df_binary$outcome <- ifelse(df_binary$treatment, rbinom(400, 1, .3), rbinom(400, 1, .15))
-
+df_summ <- prepare_ma(df_binary, "logOR")
 
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
   expect_error(baggr(df_binary, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_binary, pooling = "nune"), "Wrong pooling")
+  expect_error(baggr(df_binary, pooling = "nune"), "should be one of")
 
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_binary, "logit")),
@@ -34,11 +34,15 @@ bg5_f <- expect_warning(baggr(df_binary, "logit", pooling = "full",
 bg5_ppd <- expect_warning(baggr(df_binary, "logit", ppd = TRUE,
                                 iter = 150, chains = 2, refresh = 0,
                                 show_messages = F))
+bg5_summarydt <- expect_warning(baggr(df_summ,
+                                      iter = 150, chains = 2, refresh = 0,
+                                      show_messages = F))
 
 test_that("Different pooling methods work for Rubin model", {
   expect_is(bg5_n, "baggr")
   expect_is(bg5_p, "baggr")
   expect_is(bg5_f, "baggr")
+  expect_is(bg5_summarydt, "baggr")
 })
 
 test_that("Extra args to Stan passed via ... work well", {
@@ -54,13 +58,20 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_p$n_groups, 5)
   expect_equal(bg5_p$effects, "logOR")
   expect_equal(bg5_p$model, "logit")
+  expect_equal(bg5_summarydt$model, "rubin")
+  expect_equal(bg5_summarydt$pooling, "partial")
   expect_is(bg5_p$fit, "stanfit")
+  expect_is(bg5_summarydt$fit, "stanfit")
 })
 
 test_that("Data are available in baggr object", {
   expect_is(bg5_n$data, "data.frame")
   expect_is(bg5_p$data, "data.frame")
   expect_is(bg5_f$data, "data.frame")
+  expect_is(bg5_n$summary_data, "data.frame")
+  expect_is(bg5_p$summary_data, "data.frame")
+  expect_is(bg5_f$summary_data, "data.frame")
+  expect_null(bg5_summarydt$summary_data)
 })
 
 test_that("Pooling metrics", {

@@ -96,7 +96,7 @@ As with continuous quantities, the prior is chosen automatically. However, it is
 
 
 
-# Choice of summary statistic for meta-analysis
+# Choice of summary statistic
 
 We summarised our data as log(OR). Alternatively, we could work with log(RR). Risk difference is also a simple model that could be useful in some cases. Each model makes different assumptions on how the treatment of interest works. How do we choose the appropriate model for our data? 
 
@@ -279,7 +279,7 @@ To sum up:
 > Note: as shown above, you can only create input data for the logistic model from `a`, `b`/`n1`, `c`, `d`/`n2` columns. You cannot do it from OR data only, as the probability in the untreated is then unknown.
 
 
-# Summarising individual-level data
+## How to summarise individual-level data
 
 In the previous example we analysed individual-level data and suggested that typically it is sufficient to work with summarised data, e.g. to speed up modelling. Summarising is also essential as it allows us to better understand the inputs and use diagnostics such as L'Abbe plot.
 
@@ -296,7 +296,7 @@ For already summarised data, you can use the same function to move between diffe
 
 
 
-# Rare events vs summarised data
+# Rare events
 
 Consider data on four fictional studies:
 
@@ -311,14 +311,7 @@ df_rare
 
 In Study A you can see that no events occurred in `a` column. 
 
-```{r}
-labbe(df_rare)
-```
-
-
-
-
-We shown before that the function `prepare_ma()` can be used to summarise the rates (if we work with individual-level data) and calculate/convert between log OR's and log RR's. It can also be used to apply corrections to event rates, which it does automatically:
+We have shown above how `prepare_ma()` can be used to summarise the rates (if we work with individual-level data) and calculate/convert between log OR's and log RR's. It can also be used to apply corrections to event rates, which it does automatically:
 
 ```{r}
 df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
@@ -328,7 +321,7 @@ df_rare_logor
 
 
 
-Note that the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. It is typical to [correct for rare events](https://handbook-5-1.cochrane.org/chapter_16/16_9_rare_events_including_zero_frequencies.htm) when analysing summary level data. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting the `rare_event_correction` argument. 
+Note how the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. It is typical to [correct for rare events](https://handbook-5-1.cochrane.org/chapter_16/16_9_rare_events_including_zero_frequencies.htm) when analysing summary level data. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting the `rare_event_correction` argument. 
 
 ```{r}
 pma01 <- prepare_ma(df_rare, effect = "logOR", 
@@ -344,14 +337,14 @@ It is important to compare different models with different `rare_event_correctio
 bg_correction01 <- baggr(pma01, effect = "logOR", iter = 500)
 bg_correction025 <- baggr(df_rare_logor, effect = "logOR", iter = 500)
 bg_correction1 <- baggr(pma1, effect = "logOR", iter = 500)
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit", iter = 500, chains = 2)
+bg_rare_ind <- baggr(df_rare, model = "logit", effect = "logOR")
 ```
 
 ```{r, echo=T, eval=F}
 bg_correction01 <- baggr(pma01, effect = "logOR")
 bg_correction025 <- baggr(df_rare_logor, effect = "logOR")
 bg_correction1 <- baggr(pma1, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR")
+bg_rare_ind <- baggr(df_rare, model = "logit", effect = "logOR")
 ```
 
 ```{r}
@@ -372,9 +365,9 @@ Note in the result above that:
 2. Mean treatment effect estimates are less prone to the correction, but there is a sizeable difference between the logistic model and the aggregate data models
 3. As corrections tend to 0, the estimates of $\log(OR)$ for Study A are more diffuse, but there is still a big difference between the logistic model and the aggregate data model with correction of 0.1.
 
-We will explore the last point in more detail soon. First, however, let us note that the issue with modelling rare events is not limited to zero-events. As mentioned, $\log(OR)$ is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore, treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if the events are rare. With our low counts in our example it will definitely be the case. 
+We will explore the last point in more detail soon. First, however, let us note that the issue with modelling rare events is not limited to zero-events. As mentioned, $\log(OR)$ is approximately Gaussian. The quality of the approximation will depend on probabilities in all cells of the contingency table (which we estimate through `a`, `b`, `c`, `d`). Therefore, treating $\log(OR)$ as Gaussian might lead to different results in the individual-level vs summary-level models if the events are rare. With low counts in our example it will definitely be the case. 
 
-Let us generate new data without 0's, so that you can see how 0's are not the issue:
+Let us generate similar data as above but now without the 0 cell:
 
 ```{r}
 df_rare <- data.frame(group = paste("Study", LETTERS[1:5]),
@@ -388,12 +381,12 @@ df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
 
 ```{r, include=F}
 bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit", iter = 500, chains = 2)
+bg_rare_ind <- baggr(df_rare, effect = "logOR", model = "logit", iter = 500, chains = 2)
 ```
 
 ```{r, eval=F, echo=T}
 bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
-bg_rare_ind <- baggr(df_rare_logor, effect = "logOR", model = "logit")
+bg_rare_ind <- baggr(df_rare, effect = "logOR", model = "logit")
 ```
 
 Let's compare again, both on group level but also in terms of hypothetical treatment effect:
@@ -411,43 +404,49 @@ The results are still a bit different.
 
 
 
-## Logistic models vs rare events: priors for baseline event rate
+# Pooling baseline event rates
 
-So far we've been using the logistic model with default priors. Our justification was that the priors on treatment effects are the same for both individual-level and aggregate-level data models. However, recall the logistic model includes additional $K$ parameters, log odds of event in the control arms. (For simplicity we refer to them as baselines.) There are different ways in which we can assign them priors:
+So far we've been using the logistic model with default priors (that are zero-centered and scaled to data). Our justification was that the priors on treatment effects are the same for both individual-level and aggregate-level data models. However, recall the logistic model includes additional $K$ parameters, log odds of event in the control arms. (For simplicity we refer to them as baselines.) There are different ways in which we can assign them priors:
 
-1. The default is independent prior for each baseline with $\mathcal{N}(0, 10^2)$
-2. The prior above can be modified by using `prior_control` argument and specifying the prior distributions using the same syntax as for other priors.
+1. Default independent prior for each baseline, which is scaled to input data
+2. Custom independent prior for baseline event rates, specified by using `prior_control` argument when callin `baggr`, using the same syntax as for other priors, e.g. `normal(0, 5)`.
 3. Assuming hierarchical structure on baselines and specifying a prior using `prior_control` (which is now interpreted as hypermean, rather than $K$ independent priors) and `prior_control_sd` (hyper-SD for baseline parameters). To enable the hierarchical structure of baselines we need to specify `pooling_control = "partial"` (analogously to specifying `pooling` argument for treatment effects).
 
-Choosing between the three is especially important in the case of rare events, as this will have a potentially large impact on the results. Let us consider three models: a model with default setting (already fitted above, `bg_rare_ind`), a model with strongly informative independent prior on baselines (centered on 1% event rate, $\mathcal{N}(-4.59, 2^2)$), and a model with hierarchical prior on baselines (mean $\mathcal{N}(-4.59, 1)$, SD $\mathcal{N}(0, 2^2)$). We exagerrate our prior choices on purpose, to best illustrate the differences.
+Choosing between the three is especially important in the case of rare events, as this will have a potentially large impact on the results. Let us consider three models: 
+
+* default settings (already fitted above, `bg_rare_ind`), 
+* strongly informative independent prior on baselines: centered on 1% event rate, $\mathcal{N}(-4.59, 2^2)$, which translates 95% confidence that baseline event rate is between about 0.02% and 55%
+* hierarchical prior on baselines (mean $\mathcal{N}(-4.59, 1)$, SD $\mathcal{N}(0, 2^2)$). 
+
+We exagerrate our prior choices on purpose, to best illustrate the differences.
 
 ```{r rare events with bsl priors, include = F}
 # bg_rare_prior2 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
 #                         prior_control = normal(-4.59, 2))
-bg_rare_prior3 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
+bg_rare_prior3 <- baggr(df_rare, effect = "logOR", model = "logit",
                         pooling_control = "partial",
                         chains = 2, iter = 500,
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
-bg_rare_prior4 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
+bg_rare_prior4 <- baggr(df_rare, effect = "logOR", model = "logit",
                         chains = 2, iter = 500,
                         prior_control = normal(-4.59, 10))
 ```
 
 ```{r, eval = FALSE, echo = TRUE}
-bg_rare_prior3 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
+bg_rare_prior3 <- baggr(df_rare, effect = "logOR", model = "logit",
                         pooling_control = "partial",
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
-bg_rare_prior4 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
+bg_rare_prior4 <- baggr(df_rare, effect = "logOR", model = "logit",
                         prior_control = normal(-4.59, 10))
 ```
 
 ```{r}
 bgc <- baggr_compare(
   "Aggregate, 0.1 correction" = bg_correction01, 
-  "Default prior N(0,10^2)" = bg_rare_ind, 
+  "Independent N(0,10^2)" = bg_rare_ind, 
   # "Prior N(-4.59, 2^2)" = bg_rare_prior2, 
   "Hierarchical prior" = bg_rare_prior3,
-  "Prior N(-4.59, 10^2)" = bg_rare_prior4
+  "Independent N(-4.59, 10^2)" = bg_rare_prior4
 )
 
 bgc

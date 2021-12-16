@@ -180,6 +180,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
           } else if(current_prior == "control_sd" && model == "logit") {
             if(stan_data$pooling_baseline != 0)
               special_name <- "log odds of event rate in untreated: sd"
+            else
+              special_name <- "DNP" #do not print, this is not used!
           }
 
           # 2) Print the prior:
@@ -187,7 +189,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
           if(special_name == "")
             message(paste0("* ", current_prior, " ~ ",
                            print_dist(default_prior_dist)))
-          else
+          else if(special_name != "DNP")
             message(paste0("* ", current_prior, " [", special_name, "] ~ ",
                            print_dist(default_prior_dist)))
 

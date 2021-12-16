@@ -72,7 +72,7 @@ baggr_plot <- function(bg, hyper=FALSE,
                 "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob, prob_outer = prob_outer, ...),
                 "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob, prob_outer = prob_outer, ...))
     p +
-      ggplot2::labs(x = paste("Effect size:", bg$effects[i])) +
+      ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
       baggr_theme_get() +
       {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
       {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}

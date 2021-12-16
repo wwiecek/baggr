@@ -17,7 +17,7 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 test_that("Error messages for wrong inputs are in place", {
   # model, data or pooling mismatch
   expect_error(baggr(df_mutau, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_mutau, pooling = "nune"), "Wrong pooling")
+  expect_error(baggr(df_mutau, pooling = "nune"), "should be one of")
 
   # NA or NULL inputs
   df_na <- df_mutau; df_na$mu[1] <- NA

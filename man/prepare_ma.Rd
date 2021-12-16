@@ -8,6 +8,7 @@ prepare_ma(
   data,
   effect = c("mean", "logOR", "logRR"),
   rare_event_correction = 0.25,
+  correction_type = c("single", "all"),
   log = FALSE,
   cfb = FALSE,
   summarise = TRUE,
@@ -26,12 +27,15 @@ group (numeric, character or factor); \strong{or}, a data frame with binary data
 \item{effect}{what effect to calculate? a \code{mean} (and SE) of outcome in groups or
 (for binary data) \code{logOR} (odds ratio), \code{logRR} (risk ratio);}
 
-\item{rare_event_correction}{If effect is \code{logOR} or \code{logRR}, this correction
-is used when working with
-binary data only. The value of correction is added to all arms
-in trials where some arms had 0 events.
+\item{rare_event_correction}{This correction is used when working with
+binary data (effect \code{logOR} or \code{logRR})
+The value of correction is added to all cells in
+either some or all rows (groups), depending on \code{correction_type}.
 Using corrections may bias results but is the only alternative to
 avoid infinite values.}
+
+\item{correction_type}{If \code{"single"} then rare event correction is only applied to the
+particular rows that have 0 cells, if \code{"all"}, then to all studies}
 
 \item{log}{logical; log-transform the outcome variable?}
 
@@ -78,9 +82,26 @@ If multiple operations are performed, they are taken in this order:
 \item summarising data (using appropriate \code{effect})
 }
 }
+\examples{
+
+# Example of working with binary outcomes data
+# Make up some individual-level data first:
+df_rare <- data.frame(group = paste("Study", LETTERS[1:5]),
+                      a = c(0, 2, 1, 3, 1), c = c(2, 2, 3, 3, 5),
+                      n1i = c(120, 300, 110, 250, 95),
+                      n2i = c(120, 300, 110, 250, 95))
+df_rare_ind <- binary_to_individual(df_rare)
+# Calculate ORs; default rare event correction will be applied
+prepare_ma(df_rare_ind, effect = "logOR")
+# Add 0.5 to all rows
+prepare_ma(df_rare_ind, effect = "logOR",
+           correction_type = "all",
+           rare_event_correction = 0.5)
+}
 \seealso{
 \link{convert_inputs} for how any type of data is (internally) converted into
-a list of Stan inputs;
+a list of Stan inputs; vignette \code{baggr_binary} for more details about
+rare event corrections
 }
 \author{
 Witold Wiecek

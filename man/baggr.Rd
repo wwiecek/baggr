@@ -7,7 +7,7 @@
 baggr(
   data,
   model = NULL,
-  pooling = "partial",
+  pooling = c("partial", "none", "full"),
   effect = NULL,
   covariates = c(),
   prior_hypermean = NULL,
@@ -18,7 +18,7 @@ baggr(
   prior_control_sd = NULL,
   prior = NULL,
   ppd = FALSE,
-  pooling_control = "none",
+  pooling_control = c("none", "partial"),
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome",

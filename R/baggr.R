@@ -198,7 +198,9 @@
 #' @importFrom rstan sampling
 #' @export
 
-baggr <- function(data, model = NULL, pooling = "partial",
+baggr <- function(data,
+                  model = NULL,
+                  pooling = c("partial", "none", "full"),
                   effect = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
@@ -206,7 +208,7 @@ baggr <- function(data, model = NULL, pooling = "partial",
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
-                  pooling_control = "none",
+                  pooling_control = c("none", "partial"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   silent = FALSE, warn = TRUE, ...) {
@@ -214,6 +216,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # check that it is data.frame of at least 1 row
   if(!inherits(data, "data.frame") || nrow(data) == 1)
     stop("data argument must be a data.frame of >1 rows")
+
+  # Match arguments
+  pooling <- match.arg(pooling)
+  pooling_control <- match.arg(pooling_control)
 
   # For now we recommend that users format their data before passing to baggr()
   # data <- prepare_ma(data,
@@ -291,27 +297,21 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
 
   # Pooling type:
-  if(pooling %in% c("none", "partial", "full")) {
-    stan_data[["pooling_type"]] <- switch(pooling,
-                                          "none" = 0,
-                                          "partial" = 1,
-                                          "full" = 2)
-    if(model %in% c("logit", "rubin_full", "mutau_full"))
-      stan_data[["pooling_baseline"]] <- switch(pooling_control,
-                                                "none" = 0,
-                                                "partial" = 1)
-    if(model == "mutau_full"){
-      # For now this model only used for joint prior
-      stan_data[["joint_prior_mean"]] <- 1
-      stan_data[["joint_prior_variance"]] <- 1
-    }
-    if(model == "mutau")
-      stan_data[["cumsum"]] <- cumsum_mutau
-    if(!(pooling_control %in% c("none", "partial")))
-      stop('Wrong pooling_control parameter; choose from c("none", "partial")')
-  } else {
-    stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
+  stan_data[["pooling_type"]] <- switch(pooling,
+                                        "none" = 0,
+                                        "partial" = 1,
+                                        "full" = 2)
+  if(model %in% c("logit", "rubin_full", "mutau_full"))
+    stan_data[["pooling_baseline"]] <- switch(pooling_control,
+                                              "none" = 0,
+                                              "partial" = 1)
+  if(model == "mutau_full"){
+    # For now this model only used for joint prior
+    stan_data[["joint_prior_mean"]] <- 1
+    stan_data[["joint_prior_variance"]] <- 1
   }
+  if(model == "mutau")
+    stan_data[["cumsum"]] <- cumsum_mutau
 
 
 

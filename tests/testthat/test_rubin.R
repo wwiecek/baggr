@@ -19,7 +19,7 @@ test_that("Error messages for wrong inputs are in place", {
 
   # model or pooling type doesn't exist
   expect_error(baggr(df_pooled, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_pooled, pooling = "nune"), "Wrong pooling")
+  expect_error(baggr(df_pooled, pooling = "nune"), "should be one of")
 
   # NA or NULL inputs
   df_na <- df_pooled; df_na$tau[1] <- NA

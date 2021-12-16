@@ -11,6 +11,8 @@ Misc:
   baggr_compare now
 * More pooling metrics (and better documentation)
 * Removed an unnecessary dependency on quantreg
+* Rare event corrections (`prepare_ma()`) can now be applied either to particular 
+  studies or all data
 
 Bug fixes:
 
@@ -18,9 +20,9 @@ Bug fixes:
 * Individual-level Rubin  model with covariates was broken in recent 0.6 
   releases, now fixed 
 * Fixed a calculation of default beta prior
-* No more confusing warning about setting prior_control for `"logit"` model
+* No more confusing warnings about setting `prior_control` for `"logit"` model
 * `binary_to_individual` with non-integer number of events warns user and throws 
-  error now
+  an error now
 
 
 # baggr 0.6.5-0.6.9 (June-August 2021)
