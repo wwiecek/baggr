@@ -1,16 +1,11 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# baggr: Bayesian aggregation package for R, v0.6.4 (May 2021)
+# baggr: Bayesian aggregation package for R, v0.6.13 (December 2021)
 
 <!-- badges: start -->
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version-last-release/baggr?color=green)](http://cran.r-project.org/package=baggr)
-[![Travis build
-status](https://travis-ci.org/wwiecek/baggr.svg?branch=cran)](https://travis-ci.org/wwiecek/baggr)
 [![](https://cranlogs.r-pkg.org/badges/baggr)](https://cran.rstudio.com/web/packages/baggr/index.html)
-[![Codecov test
-coverage](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr?branch=master)
+[![Codecov\_test\_coverage](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr?branch=master)
 <!-- badges: end -->
 
 This is *baggr*, an [R package](https://www.r-project.org/) for Bayesian
