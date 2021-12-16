@@ -4,7 +4,7 @@
 \alias{binary_to_individual}
 \title{Generate individual-level binary outcome data from an aggregate statistics}
 \usage{
-binary_to_individual(data, group = "group")
+binary_to_individual(data, group = "group", rename_group = TRUE)
 }
 \arguments{
 \item{data}{A data frame with columns \code{a}, \code{c} and \code{b}/\code{n1}, \code{d}/\code{n2}.
@@ -12,6 +12,9 @@ binary_to_individual(data, group = "group")
 See \code{vignette("baggr_binary")} for an example of use and notation details.}
 
 \item{group}{Column name storing group}
+
+\item{rename_group}{If \code{TRUE} (default), this will rename the grouping variable
+to \code{"group"}, making it easier to work with \link{baggr}}
 }
 \value{
 A data frame with columns \code{group}, \code{outcome} and \code{treatment}.

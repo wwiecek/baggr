@@ -7,6 +7,8 @@
 #'
 #' See `vignette("baggr_binary")` for an example of use and notation details.
 #' @param group Column name storing group
+#' @param rename_group If `TRUE` (default), this will rename the grouping variable
+#'                     to `"group"`, making it easier to work with [baggr]
 #'
 #' @return A data frame with columns `group`, `outcome` and `treatment`.
 #' @export
@@ -30,8 +32,15 @@
 #' # the last operation is equivalent to simply doing
 #' prepare_ma(df_yusuf, group="trial", effect="logOR")
 #'
-binary_to_individual <- function(data, group = "group") {
+binary_to_individual <- function(data, group = "group",
+                                 rename_group = TRUE) {
   df_ind <- data.frame()
+
+  if(rename_group)
+    group_name <- "group"
+  else
+    group_name <- group
+
   if(is.null(data[[group]]))
     stop("Missing group column")
 
@@ -49,11 +58,15 @@ binary_to_individual <- function(data, group = "group") {
   for(i in 1:nrow(data)) {
     df_ind <-
       rbind(df_ind,
-            data.frame(
-              group     = data[[group]][i],
-              treatment = c(rep(1, data$n1[i]), rep(0, data$n2[i])),
-              outcome   = c(rep(1, data$a[i]),  rep(0, data$n1[i] - data$a[i]),
-                            rep(1, data$c[i]),  rep(0, data$n2[i] - data$c[i]))))
+            setNames(
+              data.frame(
+                data[[group]][i],
+                c(rep(1, data$n1[i]), rep(0, data$n2[i])),
+                c(rep(1, data$a[i]),  rep(0, data$n1[i] - data$a[i]),
+                  rep(1, data$c[i]),  rep(0, data$n2[i] - data$c[i]))),
+              c(group_name, "treatment", "outcome")
+            )
+      )
   }
   df_ind
 }

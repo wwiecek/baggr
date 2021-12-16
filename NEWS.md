@@ -2,6 +2,8 @@
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
+* You don't need to convert summary data to individual-level data before running
+  `model="logit"`, call to `baggr()` should detect it automatically now
 
 Misc:
 

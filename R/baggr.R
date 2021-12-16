@@ -406,9 +406,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
   rhat <- rstan::summary(fit)$summary[,"Rhat"]
   rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters
   if(warn && any(rhat > 1.05))
-    warning(paste0("Rhat statistic for ", sum(rhat > 1.05),
+    warning(paste0("\nRhat statistic for ", sum(rhat > 1.05),
                    " parameters exceeded 1.05, with maximum equal to ",
-                   round(max(rhat),2), ". This suggests lack of convergence.",
+                   round(max(rhat),2),
+                   ".\n This suggests lack of convergence.",
                    "\n No further warning will be issued.",
                    "\n Stan model saved as $fit in the returned object. \n"))
 

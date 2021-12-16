@@ -107,11 +107,11 @@
 #'
 
 pooling <- function(bg,
-                    metric = c("pooling", "isq", "hsq"),
+                    metric = c("pooling", "isq", "hsq", "weights"),
                     type = c("groups", "total"),
                     summary = TRUE) {
   type <- match.arg(type, c("groups", "total"))
-  metric <- match.arg(metric, c("pooling", "isq", "hsq"))
+  metric <- match.arg(metric, c("pooling", "isq", "hsq", "weights"))
 
   # we have to rig it for no pooling cases
   # because sigma_tau parameter might be meaningless then
@@ -130,7 +130,7 @@ pooling <- function(bg,
     sigma_k <- switch(bg$model,
                       "mutau" = bg$data$se.tau,
                       "rubin" = bg$data$se,
-                      "logit" = suppressMessages(prepare_ma(bg$data, effect = "logOR")$se),
+                      "logit" = bg$summary_data$se,
                       "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
                       "mutau_full"  = group_effects(bg, summary = TRUE)[, "sd", 1]
                       )
@@ -139,6 +139,10 @@ pooling <- function(bg,
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
     if(type == "total")
       ret <- replicate(1, mean(sigma_k^2) / (mean(sigma_k^2) + sigma_tau^2))
+    if(metric == "weights" && type == "groups")
+      ret <- sapply()
+    if(metric == "weights" && type == "total")
+      stop("Weights can be calculated only for type = 'groups'")
 
     ret <- replicate(1, ret) #third dim is always N parameters, by convention,
                              #so we set it to 1 here
@@ -211,7 +215,7 @@ pooling <- function(bg,
 #' @export
 heterogeneity <- function(
   bg,
-  metric = c("pooling", "isq", "hsq"),
+  metric = c("pooling", "isq", "hsq", "weights"),
   summary = TRUE)
   pooling(bg, metric, type = "total", summary = summary)
 

@@ -7,12 +7,16 @@
 \usage{
 pooling(
   bg,
-  metric = c("pooling", "isq", "hsq"),
+  metric = c("pooling", "isq", "hsq", "weights"),
   type = c("groups", "total"),
   summary = TRUE
 )
 
-heterogeneity(bg, metric = c("pooling", "isq", "hsq"), summary = TRUE)
+heterogeneity(
+  bg,
+  metric = c("pooling", "isq", "hsq", "weights"),
+  summary = TRUE
+)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
