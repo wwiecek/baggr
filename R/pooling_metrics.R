@@ -242,8 +242,7 @@ heterogeneity <- function(
 
 #' @rdname pooling
 #' @export
-weights <- function(
-  bg,
-  summary = TRUE)
-  pooling(bg, metric = "weights", type = "groups", summary = summary)
+#' @importFrom stats weights
+weights.baggr <- function(object, ...)
+  pooling(bg, metric = "weights", type = "groups", ...)
 

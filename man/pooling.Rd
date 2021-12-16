@@ -3,7 +3,7 @@
 \name{pooling}
 \alias{pooling}
 \alias{heterogeneity}
-\alias{weights}
+\alias{weights.baggr}
 \title{Pooling metrics for baggr}
 \usage{
 pooling(
@@ -19,7 +19,7 @@ heterogeneity(
   summary = TRUE
 )
 
-weights(bg, summary = TRUE)
+\method{weights}{baggr}(bg, summary = TRUE)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
