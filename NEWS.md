@@ -1,4 +1,4 @@
-# baggr 0.6.10-0.6.13 (Sept-Dec 2021)
+# baggr 0.6.10-0.6.14 (Sept-Dec 2021)
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
@@ -27,6 +27,8 @@ Bug fixes:
 * `binary_to_individual` with non-integer number of events warns user and throws 
   an error now
 * Confusing results in `baggr_binary` vignette (rare events section)
+* Fixes crashes for elpd calculations with unusual binary input data
+
 
 
 # baggr 0.6.5-0.6.9 (June-August 2021)

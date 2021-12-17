@@ -7,7 +7,7 @@ check_columns_numeric <- function(data) {
 }
 
 is_binary <- function(v) {
-  if(identical(as.numeric(sort(unique(v))), c(0,1)))
+  if(is.numeric(v) && all(v %in% c(0,1)))
     return(TRUE)
   else
     return(FALSE)

@@ -44,7 +44,7 @@ binary_to_individual <- function(data, group = "group",
   if(is.null(data[[group]]))
     stop("Missing group column")
 
-  if(is.null(data$n1) || is.null(data$n2)){
+  if(is.null(data[["n1"]]) || is.null(data[["n2"]])){
     data <- data[,c(group, "a", "b", "c", "d")]
     data$n1 <- data$a + data$b
     data$n2 <- data$c + data$d

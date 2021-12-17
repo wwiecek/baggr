@@ -19,7 +19,7 @@ heterogeneity(
   summary = TRUE
 )
 
-\method{weights}{baggr}(bg, summary = TRUE)
+\method{weights}{baggr}(object, ...)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
