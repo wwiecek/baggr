@@ -386,7 +386,7 @@ baggr <- function(data,
 
   if(grepl("individual", attr(stan_data, "data_type")))
     result$summary_data <- prepare_ma(data,
-                                      rare_event_correction = 0,
+                                      # rare_event_correction = 0.5,
                                       effect = ifelse(model == "logit", "logOR", "mean"),
                                       group = attr(data, "group"),
                                       treatment = attr(data, "treatment"),

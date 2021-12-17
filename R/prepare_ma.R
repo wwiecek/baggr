@@ -203,7 +203,7 @@ prepare_ma <- function(data, #standardise = NULL,
     # Prepare event counts for binary data models
     # (including rare event corrections)
     if(effect %in% c("logOR", "logRR")) {
-      v <- rare_event_correction
+
       binary_data_table <-
         do.call(rbind, by(data, list(data$group), function(x) {
           with(x,
@@ -217,37 +217,10 @@ prepare_ma <- function(data, #standardise = NULL,
                  d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
         }))
 
-      rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
-
-      if(sum(rare) == 1 && rare_event_correction == 0.25)
-        message("Applied default rare event correction (0.25) in 1 study")
-      if(sum(rare) > 1 && rare_event_correction == 0.25)
-        message("Applied default rare event corrections (0.25) in ", sum(rare), " studies")
-
-      if(correction_type == "single")
-        cc_value <- v*rare
-      if(correction_type == "all")
-        cc_value <- rare_event_correction
-
-      binary_data_table$a  <- cc_value + binary_data_table$a
-      binary_data_table$b  <- cc_value + binary_data_table$b
-      binary_data_table$c  <- cc_value + binary_data_table$c
-      binary_data_table$d  <- cc_value + binary_data_table$d
-      binary_data_table$n1 <- cc_value + binary_data_table$n1
-      binary_data_table$n2 <- cc_value + binary_data_table$n2
-
-
-      out <- binary_data_table
+      out <- apply_cont_corr(binary_data_table, rare_event_correction, correction_type)
       rownames(out) <- NULL
-
-      if(effect == "logRR") {
-        out$tau <- with(out, log((a/(a+b))/(c/(c+d))))
-        out$se  <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
-      }
-      if(effect == "logOR") {
-        out$tau <- with(out, log((a*d)/(b*c)))
-        out$se  <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
-      }
+      # Add OR or RR estimate
+      out <- calc_or_rr(out, effect)
 
     }
   } else {
@@ -255,5 +228,51 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   out
+}
+
+# see prepare_ma()
+calc_or_rr <- function(out, effect) {
+  if(effect == "logRR") {
+    out$tau <- with(out, log((a/(a+b))/(c/(c+d))))
+    out$se  <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
+  }
+  if(effect == "logOR") {
+    out$tau <- with(out, log((a*d)/(b*c)))
+    out$se  <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
+  }
+  out
+}
+
+# see prepare_ma()
+apply_cont_corr <- function(binary_data_table, v, correction_type,
+                            add_or = FALSE,
+                            pooling = FALSE #indicates that this was called to calc pooling
+                            ) {
+  rare_event_correction <- v
+  rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
+
+  if(sum(rare) == 1 && rare_event_correction == 0.25)
+    message("Applied default rare event correction (0.25) in 1 study")
+  if(sum(rare) > 1 && rare_event_correction == 0.25)
+    message("Applied default rare event corrections (0.25) in ", sum(rare), " studies")
+  if(sum(rare) > 0 && pooling == 1)
+    message("Pooling values calculated using rare event corrections.")
+
+  if(correction_type == "single")
+    cc_value <- v*rare
+  if(correction_type == "all")
+    cc_value <- rare_event_correction
+
+  binary_data_table$a  <- cc_value + binary_data_table$a
+  binary_data_table$b  <- cc_value + binary_data_table$b
+  binary_data_table$c  <- cc_value + binary_data_table$c
+  binary_data_table$d  <- cc_value + binary_data_table$d
+  binary_data_table$n1 <- cc_value + binary_data_table$n1
+  binary_data_table$n2 <- cc_value + binary_data_table$n2
+
+  if(!add_or)
+    return(binary_data_table)
+  else
+    return(calc_or_rr(binary_data_table, "logOR"))
 }
 

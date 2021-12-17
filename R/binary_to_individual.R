@@ -4,11 +4,12 @@
 #' such as when running `model="logit"` in [baggr], when summary-level data are supplied.
 #'
 #' @param data A data frame with columns `a`, `c` and `b`/`n1`, `d`/`n2`.
-#'
-#' See `vignette("baggr_binary")` for an example of use and notation details.
+#'             (You can also use `ai`, `ci`, `n1i`, `n2i` instead.)
 #' @param group Column name storing group
 #' @param rename_group If `TRUE` (default), this will rename the grouping variable
 #'                     to `"group"`, making it easier to work with [baggr]
+#'
+#' See `vignette("baggr_binary")` for an example of use and notation details.
 #'
 #' @return A data frame with columns `group`, `outcome` and `treatment`.
 #' @export
@@ -43,6 +44,12 @@ binary_to_individual <- function(data, group = "group",
 
   if(is.null(data[[group]]))
     stop("Missing group column")
+
+  if(!is.null(data[["n1i"]]) && is.null(data[["n1"]])) data[["n1"]] <- data[["n1i"]]
+  if(!is.null(data[["n2i"]]) && is.null(data[["n2"]])) data[["n2"]] <- data[["n2i"]]
+  if(!is.null(data[["ai"]])  && is.null(data[["a"]]))  data[["a"]] <- data[["ai"]]
+  if(!is.null(data[["ci"]])  && is.null(data[["c"]]))  data[["c"]] <- data[["ci"]]
+
 
   if(is.null(data[["n1"]]) || is.null(data[["n2"]])){
     data <- data[,c(group, "a", "b", "c", "d")]

@@ -147,12 +147,16 @@ pooling <- function(bg,
     sigma_k <- switch(bg$model,
                       "mutau"       = bg$data$se.tau,
                       "rubin"       = bg$data$se,
-                      "logit"       = bg$summary_data$se,
+                      # May need to apply rare event correction for
+                      # the pooling models to work correctly
+                      "logit"       = apply_cont_corr(bg$summary_data, 0.25, "single",
+                                                      add_or = TRUE, pooling = TRUE)$se,
                       # These are SDs after pooling, don't use this (here for tests)
                       # "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
                       "rubin_full"  = bg$summary_data$se.tau,
                       "mutau_full"  = bg$summary_data$se.tau
                       )
+
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))

@@ -8,13 +8,14 @@ binary_to_individual(data, group = "group", rename_group = TRUE)
 }
 \arguments{
 \item{data}{A data frame with columns \code{a}, \code{c} and \code{b}/\code{n1}, \code{d}/\code{n2}.
-
-See \code{vignette("baggr_binary")} for an example of use and notation details.}
+(You can also use \code{ai}, \code{ci}, \code{n1i}, \code{n2i} instead.)}
 
 \item{group}{Column name storing group}
 
 \item{rename_group}{If \code{TRUE} (default), this will rename the grouping variable
-to \code{"group"}, making it easier to work with \link{baggr}}
+to \code{"group"}, making it easier to work with \link{baggr}
+
+See \code{vignette("baggr_binary")} for an example of use and notation details.}
 }
 \value{
 A data frame with columns \code{group}, \code{outcome} and \code{treatment}.
