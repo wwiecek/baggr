@@ -390,7 +390,8 @@ baggr <- function(data,
                                       effect = ifelse(model == "logit", "logOR", "mean"),
                                       group = attr(data, "group"),
                                       treatment = attr(data, "treatment"),
-                                      outcome = attr(data, "outcome"))
+                                      outcome = attr(data, "outcome"),
+                                      pooling = TRUE)
 
   if(model == "quantiles")
     result[["quantiles"]]    <- quantiles

@@ -20,6 +20,7 @@ Misc:
 Bug fixes:
 
 * LOO CV printing errors fixed
+* LOO CV with full pooling and binary outcomes now works again after being broken in 0.6
 * Individual-level Rubin  model with covariates was broken in recent 0.6 
   releases, now fixed 
 * Fixed a calculation of default beta prior

@@ -15,7 +15,8 @@ prepare_ma(
   treatment = "treatment",
   baseline = NULL,
   group = "group",
-  outcome = "outcome"
+  outcome = "outcome",
+  pooling = FALSE
 )
 }
 \arguments{
@@ -53,6 +54,8 @@ converted (e.g. logged) data with columns renamed}
 \item{group}{name of the column with grouping variable}
 
 \item{outcome}{name of column with outcome variable}
+
+\item{pooling}{Internal use only, please ignore}
 }
 \value{
 \itemize{

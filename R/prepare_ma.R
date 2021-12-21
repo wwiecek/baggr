@@ -27,6 +27,7 @@
 #' @param outcome name of column with outcome variable
 #' @param treatment name of column with treatment variable
 #' @param baseline name of column with baseline variable
+#' @param pooling Internal use only, please ignore
 #'
 #' @return
 #' * If you `summarise`: a data.frame with columns for `group`, `tau` and `se.tau`
@@ -79,7 +80,8 @@ prepare_ma <- function(data, #standardise = NULL,
                        treatment="treatment",
                        baseline = NULL,
                        group="group",
-                       outcome="outcome") {
+                       outcome="outcome",
+                       pooling=FALSE) {
 
   effect <- match.arg(effect)
   correction_type <- match.arg(correction_type)
@@ -217,7 +219,10 @@ prepare_ma <- function(data, #standardise = NULL,
                  d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
         }))
 
-      out <- apply_cont_corr(binary_data_table, rare_event_correction, correction_type)
+      out <- apply_cont_corr(binary_data_table,
+                             rare_event_correction,
+                             correction_type,
+                             pooling=pooling)
       rownames(out) <- NULL
       # Add OR or RR estimate
       out <- calc_or_rr(out, effect)
@@ -251,12 +256,12 @@ apply_cont_corr <- function(binary_data_table, v, correction_type,
   rare_event_correction <- v
   rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
 
-  if(sum(rare) == 1 && rare_event_correction == 0.25)
+  if(sum(rare) == 1 && rare_event_correction == 0.25 && pooling == 0)
     message("Applied default rare event correction (0.25) in 1 study")
-  if(sum(rare) > 1 && rare_event_correction == 0.25)
+  if(sum(rare) > 1 && rare_event_correction == 0.25  && pooling == 0)
     message("Applied default rare event corrections (0.25) in ", sum(rare), " studies")
-  if(sum(rare) > 0 && pooling == 1)
-    message("Pooling values calculated using rare event corrections.")
+  # if(sum(rare) > 0 && pooling == 1)
+  #   message("Some pooling values calculated using rare event corrections.")
 
   if(correction_type == "single")
     cc_value <- v*rare

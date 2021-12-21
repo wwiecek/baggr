@@ -242,6 +242,11 @@ test_that("loocv", {
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_model, "baggr_cv")
   capture_output(print(loo_model))
+
+  loo_full <- expect_warning(loocv(df_binary, model = "logit", pooling = "full",
+                                    return_models = TRUE, iter = 150, chains = 1, refresh = 0))
+  expect_is(loo_full, "baggr_cv")
+  capture_output(print(loo_full))
 })
 
 comp_pl <- expect_warning(baggr_compare(
