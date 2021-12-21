@@ -7,6 +7,7 @@
 * `pooling()` includes extra metrics, including study weights calculation
   (and better documentation)
 
+
 Misc:
 
 * You can plot only hyperparameter values (without group-specific estimates) in
@@ -16,13 +17,14 @@ Misc:
   studies or all data
 * Clearer prompts about priors and pooling in control arms when working with
   individual-level data models.
+* Can now set priors for error terms in linear regression models (`prior_sigma`)
 
 Bug fixes:
 
-* LOO CV printing errors fixed
-* LOO CV with full pooling and binary outcomes now works again after being broken in 0.6
-* Individual-level Rubin  model with covariates was broken in recent 0.6 
-  releases, now fixed 
+* Print errors when examining LOO CV results
+* LOO CV with full pooling and binary outcomes now works again after being broken in 0.6.
+  Some of the results in 0.5 and 0.6 releases may have been wrong
+* Individual-level Rubin  model with covariates was also broken in 0.6
 * Fixed a calculation of default beta prior
 * No more confusing warnings about setting `prior_control` for `"logit"` model.
 * `binary_to_individual` with non-integer number of events warns user and throws 

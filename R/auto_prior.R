@@ -57,7 +57,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     priors_spec <- list(
       "rubin" = c("hypermean" = "real", "hypersd" = "positive_real"),
       "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real",
-                        "control" = "real", "control_sd" = "positive_real"),
+                        "control" = "real", "control_sd" = "positive_real",
+                        "sigma" = "positive_real"),
       "mutau" = c("hypermean" = "real_2",
                   "hypercor" = "corr",
                   "hypersd" = "positive_real"),
@@ -94,6 +95,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                                          multinormal(c(0,0),
                                                      c(100*max(abs(data$mu)),
                                                        100*max(abs(data$tau)))*diag(2)),
+                                       "sigma"      = uniform(0, 10*max(c(sqrt(data$n.mu)*data$se.mu,
+                                                                          sqrt(data$n.tau*data$se.tau)))),
                                        "hypersd"    = uniform(0, 10*sd(data$tau)),
                                        "hypercor"   = lkj(3),
                                        "control"    = normal(0, 10*max(abs(data$mu))),
@@ -194,6 +197,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
               }
             }else
               special_name <- "DNP" #do not print, this is not used!
+          } else if(current_prior == "sigma") {
+              special_name <- "error term in linear regresion"
           }
 
           # 2) Print the prior:

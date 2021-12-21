@@ -195,11 +195,17 @@ prepare_ma <- function(data, #standardise = NULL,
                                idvar = "group", direction = "wide")
       sewide <- stats::reshape(data = seagg, timevar = "treatment",
                                idvar = "group", direction = "wide")
+      nagg  <- stats::aggregate(outcome ~ treatment + group, length, data = data)
+      nwide  <- stats::reshape(data = nagg, timevar = "treatment",
+                           idvar = "group", direction = "wide")
+
       out <- data.frame(group = mwide$group,
                         mu = mwide$outcome.0,
                         tau = mwide$outcome.1 - mwide$outcome.0,
                         se.mu = sewide$outcome.0,
-                        se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2))
+                        se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
+                        n.mu = nwide$outcome.0,
+                        n.tau = nwide$outcome.1)
     }
 
     # Prepare event counts for binary data models

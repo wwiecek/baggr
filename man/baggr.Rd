@@ -16,6 +16,7 @@ baggr(
   prior_beta = NULL,
   prior_control = NULL,
   prior_control_sd = NULL,
+  prior_sigma = NULL,
   prior = NULL,
   ppd = FALSE,
   pooling_control = c("none", "partial"),
@@ -69,12 +70,17 @@ same rules apply as for \verb{_hypermean};}
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
 
-\item{prior_control}{prior for the mean in the control arm (baseline), currently used in \code{"logit"} model only;
-if \code{pooling_control = "partial"}, the prior is hyperprior for all baselines, if \code{"none"},
+\item{prior_control}{prior for the mean in the control arm (baseline), currently
+used in \code{"logit"} model only;
+if \code{pooling_control = "partial"}, the prior is hyperprior
+for all baselines, if \code{"none"},
 then it is an independent prior for all baselines}
 
-\item{prior_control_sd}{prior for the SD in the control arm (baseline), currently used in \code{"logit"} model only;
+\item{prior_control_sd}{prior for the SD in the control arm (baseline), currently
+used in \code{"logit"} model only;
 this can only be used if \code{pooling_control = "partial"}}
+
+\item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"mutau_full"})}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
