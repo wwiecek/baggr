@@ -9,12 +9,12 @@
 \arguments{
 \item{x}{output from \link{loocv} that has \code{return_models = TRUE}}
 
-\item{y}{ignore}
+\item{y}{Unused, ignore}
 
-\item{...}{}
+\item{...}{Unused, ignore}
 }
 \value{
-
+\code{ggplot2} plot in similar style to \link{baggr_compare} default plots
 }
 \description{
 Plot LOO CV results for baggr models

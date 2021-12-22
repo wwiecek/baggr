@@ -17,8 +17,9 @@ single_comp_plot(
 )
 }
 \arguments{
-\item{df}{data.frame with columns \code{group}, \code{median}, \code{lci}, \code{uci}, \code{model} and,
-optionally, \code{parameter}}
+\item{df}{data.frame with columns \code{group}, \code{median}, \code{lci}, \code{uci},
+\code{model} (character or factor listing compared models) and,
+optionally, \code{parameter} (character or factor with name of parameter)}
 
 \item{title}{\code{ggtitle} argument passed to ggplot}
 
@@ -26,12 +27,12 @@ optionally, \code{parameter}}
 
 \item{ylab}{Y axis label}
 
-\item{grid}{logical; if TRUE, facets by 'parameter' column}
+\item{grid}{logical; if \code{TRUE}, facets the plot by values in the \code{parameter} column}
 
 \item{points}{you can optionally specify a (\code{numeric}) column that has values of points
 to be plotted next to intervals}
 
-\item{add_values}{logical; if TRUE, values will be printed next to the plot,
+\item{add_values}{logical; if \code{TRUE}, values will be printed next to the plot,
 in a style that's similar to what is done for forest plots}
 
 \item{values_digits}{number of significant digits to use when printing values,}

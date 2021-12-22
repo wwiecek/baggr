@@ -1,4 +1,4 @@
-#' Pooling metrics for baggr
+#' Pooling metrics and related statistics for baggr
 #'
 #' Compute statistics relating to
 #' `pooling` in a given [baggr] meta-analysis model returns statistics, for
@@ -245,6 +245,8 @@ heterogeneity <- function(
   pooling(bg, metric, type = "total", summary = summary)
 
 #' @rdname pooling
+#' @param object [baggr] model for which to calculate group (study) weights
+#' @param ... Unused, please ignore.
 #' @export
 #' @importFrom stats weights
 weights.baggr <- function(object, ...)

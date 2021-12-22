@@ -66,7 +66,8 @@ Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
 Statistics and Computing 24, no. 6 (November 2014): 997–1016.
 }
 \seealso{
-\link{loo_compare} for comparison of many LOO CV results
+\link{loo_compare} for comparison of many LOO CV results; you can print and plot
+output via \link{plot.baggr_cv} and \link{print.baggr_cv}
 }
 \author{
 Witold Wiecek

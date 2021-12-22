@@ -10,7 +10,8 @@
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
 #' These can be examined by using `attributes()` function.
-#' @seealso [loo_compare] for comparison of many LOO CV results
+#' @seealso [loo_compare] for comparison of many LOO CV results; you can print and plot
+#'          output via [plot.baggr_cv] and [print.baggr_cv]
 #' @details
 #'
 #' The values returned by `loocv()` can be used to understand how excluding
@@ -265,9 +266,9 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
 }
 
 #' Print baggr cv objects nicely
-#' @param x baggr_cv object to print
+#' @param x `baggr_cv` object obtained from [loocv] to print
 #' @param digits number of digits to print
-#' @param ... additional arguments for s3 consistency
+#' @param ... Unused, ignore
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
@@ -289,30 +290,61 @@ print.baggr_cv <- function(x, digits = 3, ...) {
 
 
 
-#' Plot LOO CV results for baggr models
+#' Plotting method for results of baggr LOO analyses
 #'
 #' @param x output from [loocv] that has `return_models = TRUE`
-#' @param y ignore
-#' @param ...
-#'
-#' @return
+#' @param y Unused, ignore
+#' @param ... Unused, ignore
+#' @param add_values logical; if `TRUE`, values of _elpd_ are printed next to each
+#'                   study
+#' @return `ggplot2` plot in similar style to [baggr_compare] default plots
 #' @export
 #'
-plot.baggr_cv <- function(x, y, ...){
+plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
   loo_model <- x
   input_data <- loo_model$full_model$summary_data
+  if(is.null(input_data))
+    input_data <- loo_model$full_model$data
+
+  if(is.null(loo_model$models))
+    stop("To plot, the loocv() output must include models (return_models = TRUE).")
 
   mm1 <- do.call(rbind,
                  lapply(loo_model$models, function(x) treatment_effect(x, summary = T)$tau))
   df1 <- data.frame(
     setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
     model = "LOOCV estimate",
+    elpd = loo_model$pointwise,
     group = input_data$group)
   df2 <- data.frame(lci = input_data$tau - 1.96*input_data$se,
                     median = input_data$tau,
                     uci = input_data$tau + 1.96*input_data$se,
                     group = input_data$group,
-                    model = "Group estimate")
+                    elpd = NA,
+                    model = "Test data (out-of-sample)")
   df <- rbind(df1, df2)
-  single_comp_plot(df)
+  pl <- single_comp_plot(df)
+
+  fmti <- function(x, digits = values_digits) {
+    format(round(x, digits), nsmall = digits)
+  }
+
+  # add_values
+  if(add_values){
+  group <- median <- lci <- uci <- model <- NULL
+  values_digits <- 2
+  values_size <- 2.5
+
+  pl <- pl +
+    ggplot2::geom_text(
+      aes(label = fmti(elpd, values_digits),
+          hjust = 1,
+          y = 1.1*max(uci)),
+      position = ggplot2::position_dodge(width = .5),
+      size = values_size) +
+    ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
+    ggplot2::coord_flip(clip = "off")
+  }
+
+  pl
 }

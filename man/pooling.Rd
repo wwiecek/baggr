@@ -4,7 +4,7 @@
 \alias{pooling}
 \alias{heterogeneity}
 \alias{weights.baggr}
-\title{Pooling metrics for baggr}
+\title{Pooling metrics and related statistics for baggr}
 \usage{
 pooling(
   bg,
@@ -35,6 +35,10 @@ also see \emph{Details}}
 
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
+
+\item{object}{\link{baggr} model for which to calculate group (study) weights}
+
+\item{...}{Unused, please ignore.}
 }
 \description{
 Compute statistics relating to
