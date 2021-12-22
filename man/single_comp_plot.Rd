@@ -10,6 +10,7 @@ single_comp_plot(
   legend = "top",
   ylab = "",
   grid = F,
+  points = FALSE,
   add_values = FALSE,
   values_digits = 2,
   values_size = 2.5
@@ -26,6 +27,9 @@ optionally, \code{parameter}}
 \item{ylab}{Y axis label}
 
 \item{grid}{logical; if TRUE, facets by 'parameter' column}
+
+\item{points}{you can optionally specify a (\code{numeric}) column that has values of points
+to be plotted next to intervals}
 
 \item{add_values}{logical; if TRUE, values will be printed next to the plot,
 in a style that's similar to what is done for forest plots}

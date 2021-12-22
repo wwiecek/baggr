@@ -480,6 +480,8 @@ plot.baggr_compare <- function(x,
 #' @param legend `legend.position`  argument passed to ggplot
 #' @param ylab Y axis label
 #' @param grid logical; if TRUE, facets by 'parameter' column
+#' @param points you can optionally specify a (`numeric`) column that has values of points
+#'               to be plotted next to intervals
 #' @param add_values logical; if TRUE, values will be printed next to the plot,
 #'                   in a style that's similar to what is done for forest plots
 #' @param values_digits number of significant digits to use when printing values,
@@ -487,9 +489,16 @@ plot.baggr_compare <- function(x,
 #' @return a `ggplot2` object
 #' @export
 single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
+                             points = FALSE,
                              add_values = FALSE, values_digits = 2, values_size = 2.5) {
 
   group <- median <- lci <- uci <- model <- NULL
+
+  # A bit of code to avoid printing pointless colour legend
+  if(is.null(df[["model"]])) df$model <- ""
+  if(length(unique(df[["model"]])) == 1)
+    legend <- "none"
+
 
   fmti <- function(x, digits = values_digits) {
     format(round(x, digits), nsmall = digits)
@@ -506,6 +515,8 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
                         position = ggplot2::position_dodge(width=0.5),
                         pch = 21) +
+    { if(points != 0 && !is.null(df[[points]]) && is.numeric(df[[points]]))
+      ggplot2::geom_point(aes(x = group, y = .data[[points]]), color = "black") } +
     { if(!add_values) ggplot2::coord_flip() } +
     ggplot2::labs(x = "",
                   y = ylab) +

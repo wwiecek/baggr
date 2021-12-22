@@ -27,7 +27,8 @@
 #' This is akin to fixing the baseline risk and only trying to infer the odds ratio.)
 #'
 #' The main output is the cross-validation
-#' information criterion, or -2 times the ELPD averaged over _K_ models.
+#' information criterion, or -2 times the ELPD summed over _K_ models.
+#' (We sum the terms as we are working with logarithms.)
 #' This is related to, and often approximated by, the Watanabe-Akaike
 #' Information Criterion. When comparing models, smaller values mean
 #' a better fit. For more information on cross-validation see
@@ -284,4 +285,34 @@ print.baggr_cv <- function(x, digits = 3, ...) {
   cat("\n")
   print(signif(mat, digits = digits))
 
+}
+
+
+
+#' Plot LOO CV results for baggr models
+#'
+#' @param x output from [loocv] that has `return_models = TRUE`
+#' @param y ignore
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+plot.baggr_cv <- function(x, y, ...){
+  loo_model <- x
+  input_data <- loo_model$full_model$summary_data
+
+  mm1 <- do.call(rbind,
+                 lapply(loo_model$models, function(x) treatment_effect(x, summary = T)$tau))
+  df1 <- data.frame(
+    setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
+    model = "LOOCV estimate",
+    group = input_data$group)
+  df2 <- data.frame(lci = input_data$tau - 1.96*input_data$se,
+                    median = input_data$tau,
+                    uci = input_data$tau + 1.96*input_data$se,
+                    group = input_data$group,
+                    model = "Group estimate")
+  df <- rbind(df1, df2)
+  single_comp_plot(df)
 }

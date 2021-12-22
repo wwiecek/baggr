@@ -1,4 +1,4 @@
-# baggr 0.6.10-0.6.14 (Sept-Dec 2021)
+# baggr 0.6.10-0.6.16 (Sept-Dec 2021)
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
@@ -6,7 +6,8 @@
   `model="logit"`, call to `baggr()` should detect it automatically now
 * `pooling()` includes extra metrics, including study weights calculation
   (and better documentation)
-
+* You can now plot the objects returned by `loocv()` to understand out-of-sample 
+  performance graphically
 
 Misc:
 

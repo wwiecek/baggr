@@ -69,8 +69,10 @@ baggr_plot <- function(bg, hyper=FALSE,
     }
 
     p <- switch(style,
-                "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob, prob_outer = prob_outer, ...),
-                "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob, prob_outer = prob_outer, ...))
+                "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob,
+                                                    prob_outer = prob_outer, ...),
+                "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob,
+                                                        prob_outer = prob_outer, ...))
     p +
       ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
       baggr_theme_get() +

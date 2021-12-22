@@ -38,7 +38,8 @@ treated units, which is not used for estimation but only for calculating predict
 This is akin to fixing the baseline risk and only trying to infer the odds ratio.)
 
 The main output is the cross-validation
-information criterion, or -2 times the ELPD averaged over \emph{K} models.
+information criterion, or -2 times the ELPD summed over \emph{K} models.
+(We sum the terms as we are working with logarithms.)
 This is related to, and often approximated by, the Watanabe-Akaike
 Information Criterion. When comparing models, smaller values mean
 a better fit. For more information on cross-validation see
