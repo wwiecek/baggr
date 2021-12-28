@@ -102,6 +102,12 @@ baggr_compare <- function(...,
     stop("Must provide baggr models or model specification.")
   compare <- match.arg(compare, c("groups", "hyperpars", "effects"))
 
+  if(all(unlist(lapply(l, class)) == "baggr_cv")) {
+    message("LOO CV models used instead of baggr models.",
+    "Using full models.")
+    l <- lapply(l, function(x) x$full_model)
+  }
+
   if(all(unlist(lapply(l, class)) == "baggr")) {
     # return_models_flag <- 0
     if(is.null(names(l)))

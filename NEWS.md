@@ -6,8 +6,10 @@
   `model="logit"`, call to `baggr()` should detect it automatically now
 * `pooling()` includes extra metrics, including study weights calculation
   (and better documentation)
-* You can now plot the objects returned by `loocv()` to understand out-of-sample 
+* You can now plot the objects returned by `loocv()` to understand out-of-sample
   performance graphically
+* Risk difference models are now easy to fit, you only need to transform your binary input data with `prepare_ma(..., effect = "RD")`
+
 
 Misc:
 

@@ -8,7 +8,8 @@
 #'             group (numeric, character or factor); __or__, a data frame with binary data
 #'             (must have columns `a`, `c`, `b`/`n1`, `d`/`n2`).
 #' @param effect what effect to calculate? a `mean` (and SE) of outcome in groups or
-#'               (for binary data) `logOR` (odds ratio), `logRR` (risk ratio);
+#'               (for binary data) `logOR` (odds ratio), `logRR` (risk ratio),
+#'               `RD` (risk difference);
 #' @param log logical; log-transform the outcome variable?
 #' @param rare_event_correction This correction is used when working with
 #'             binary data (effect `logOR` or `logRR`)
@@ -73,7 +74,7 @@
 #'            rare_event_correction = 0.5)
 
 prepare_ma <- function(data, #standardise = NULL,
-                       effect = c("mean", "logOR", "logRR"),
+                       effect = c("mean", "logOR", "logRR", "RD"),
                        rare_event_correction = 0.25,
                        correction_type = c("single", "all"),
                        log = FALSE, cfb = FALSE, summarise = TRUE,
@@ -87,12 +88,12 @@ prepare_ma <- function(data, #standardise = NULL,
   correction_type <- match.arg(correction_type)
 
   if(grepl("pool|unknown", detect_input_type(data, group, treatment, outcome))){
-    if(effect %in% c("logOR", "logRR")){
+    if(effect %in% c("logOR", "logRR", "RD")){
       check_columns_binary(data)
       data <- binary_to_individual(data, group)
       group <- "group"
     }else
-      stop("Data must be individual-level (if summarising) or binary data (if converting), see ?prepare_ma")
+      stop("Data must be individual-level (if summarising) or binary (if converting), see ?prepare_ma")
   }
 
   check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
@@ -112,7 +113,7 @@ prepare_ma <- function(data, #standardise = NULL,
       check_columns(data, outcome, group, treatment, stop.for.na = TRUE)
   }
 
-  if(effect %in% c("logOR", "logRR")) {
+  if(effect %in% c("logOR", "logRR", "RD")) {
     if(!is_binary(data$outcome))
       stop("Outcome column is not binary (only 0 and 1 values allowed).")
   }
@@ -197,7 +198,7 @@ prepare_ma <- function(data, #standardise = NULL,
                                idvar = "group", direction = "wide")
       nagg  <- stats::aggregate(outcome ~ treatment + group, length, data = data)
       nwide  <- stats::reshape(data = nagg, timevar = "treatment",
-                           idvar = "group", direction = "wide")
+                               idvar = "group", direction = "wide")
 
       out <- data.frame(group = mwide$group,
                         mu = mwide$outcome.0,
@@ -210,7 +211,7 @@ prepare_ma <- function(data, #standardise = NULL,
 
     # Prepare event counts for binary data models
     # (including rare event corrections)
-    if(effect %in% c("logOR", "logRR")) {
+    if(effect %in% c("logOR", "logRR", "RD")) {
 
       binary_data_table <-
         do.call(rbind, by(data, list(data$group), function(x) {
@@ -251,6 +252,16 @@ calc_or_rr <- function(out, effect) {
     out$tau <- with(out, log((a*d)/(b*c)))
     out$se  <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
   }
+  if(effect == "RD") {
+    out$tau <- with(out, (a/(a+b)) - (c/(c+d)))
+    out$se  <- with(out, {
+      p1 <- a/(a+b); p2 <- c/(c+d);
+      v1 <- p1*(1-p1)/(a+b)
+      v2 <- p2*(1-p2)/(c+d)
+      sqrt(v1 + v2)
+    })
+
+  }
   out
 }
 
@@ -258,7 +269,7 @@ calc_or_rr <- function(out, effect) {
 apply_cont_corr <- function(binary_data_table, v, correction_type,
                             add_or = FALSE,
                             pooling = FALSE #indicates that this was called to calc pooling
-                            ) {
+) {
   rare_event_correction <- v
   rare <- with(binary_data_table, (a == 0 | b == 0 | c == 0 | d == 0))
 

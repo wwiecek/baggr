@@ -6,7 +6,7 @@
 \usage{
 prepare_ma(
   data,
-  effect = c("mean", "logOR", "logRR"),
+  effect = c("mean", "logOR", "logRR", "RD"),
   rare_event_correction = 0.25,
   correction_type = c("single", "all"),
   log = FALSE,
@@ -26,7 +26,8 @@ group (numeric, character or factor); \strong{or}, a data frame with binary data
 (must have columns \code{a}, \code{c}, \code{b}/\code{n1}, \code{d}/\code{n2}).}
 
 \item{effect}{what effect to calculate? a \code{mean} (and SE) of outcome in groups or
-(for binary data) \code{logOR} (odds ratio), \code{logRR} (risk ratio);}
+(for binary data) \code{logOR} (odds ratio), \code{logRR} (risk ratio),
+\code{RD} (risk difference);}
 
 \item{rare_event_correction}{This correction is used when working with
 binary data (effect \code{logOR} or \code{logRR})

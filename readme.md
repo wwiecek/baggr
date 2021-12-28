@@ -47,7 +47,7 @@ from GitHub; this is what we recommend, but to do that you will need the
 #installation this way may take 5-15 minutes
 remotes::install_github("wwiecek/baggr", 
                         ref = "devel", #if problems try changing to ref = "master"
-                        build_vignettes = TRUE,
+                        build_vignettes = TRUE, quiet = TRUE,
                         build_opts = c("--no-resave-data", "--no-manual"))
 ```
 

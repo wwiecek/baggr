@@ -2,9 +2,9 @@
 % Please edit documentation in R/loocv.R
 \name{plot.baggr_cv}
 \alias{plot.baggr_cv}
-\title{Plot LOO CV results for baggr models}
+\title{Plotting method for results of baggr LOO analyses}
 \usage{
-\method{plot}{baggr_cv}(x, y, ...)
+\method{plot}{baggr_cv}(x, y, ..., add_values = TRUE)
 }
 \arguments{
 \item{x}{output from \link{loocv} that has \code{return_models = TRUE}}
@@ -12,10 +12,13 @@
 \item{y}{Unused, ignore}
 
 \item{...}{Unused, ignore}
+
+\item{add_values}{logical; if \code{TRUE}, values of \emph{elpd} are printed next to each
+study}
 }
 \value{
 \code{ggplot2} plot in similar style to \link{baggr_compare} default plots
 }
 \description{
-Plot LOO CV results for baggr models
+Plotting method for results of baggr LOO analyses
 }
