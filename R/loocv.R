@@ -331,7 +331,7 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
 
   # add_values
   if(add_values){
-  group <- median <- lci <- uci <- model <- NULL
+  group <- median <- lci <- uci <- model <- elpd <- NULL
   values_digits <- 2
   values_size <- 2.5
 
