@@ -5,7 +5,7 @@
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version-last-release/baggr?color=green)](http://cran.r-project.org/package=baggr)
 [![](https://cranlogs.r-pkg.org/badges/baggr)](https://cran.rstudio.com/web/packages/baggr/index.html)
-[![Codecov\_test\_coverage](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://codecov.io/gh/wwiecek/baggr?branch=master)
+[![Codecov\_test\_coverage](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/wwiecek/baggr?branch=master)
 <!-- badges: end -->
 
 This is *baggr*, an [R package](https://www.r-project.org/) for Bayesian
