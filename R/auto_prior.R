@@ -77,14 +77,6 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                    "kappa"  = "real",
                    "kappa_sd"  = "positive_real")
     )
-
-    # "mutau" = list("hypermean" = list(allowed = c("multinormal"),
-    #                                   default = function(data) normal(0, 10*max(abs(data$tau)))),
-    #                "hypersd"   = list(allowed = c("cauchy", "normal", "uniform"),
-    #                                   default = function(data) normal(0, 10*max(abs(data$tau)))),
-    #                "hypercor"  = list(allowed = c("lkj"),
-    #                                   default = function(data) normal(0, 10*max(abs(data$tau))))
-
     for(current_prior in names(priors_spec[[model]])) {
       if(is.null(prior[[current_prior]])) {
         if(model != "sslab")

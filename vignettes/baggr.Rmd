@@ -133,7 +133,7 @@ In the "Rubin" and "$\mu$ and $\tau$" models, the user can specify custom priors
 
 The possible prior distributions we allow for in the current version are: 
 
-* For `prior_hypermean` we allow `"normal"`, `"uniform"` and `"cauchy"` with any parameter values which are logically possible given support constraints (e.g. user cannot specify a negative variance on a normal distribution or a negative scale on a cauchy) When the model has a vector hypermean, "$\mu$ and $\tau$" model, baggr applies the given prior to all the elements of the vector independently. If the user wishes to specify a prior dependence between the components, one can supply prior_hypermean with a multinormal argument (see `?priors` for details).
+* For `prior_hypermean` we allow `"normal"`, `"uniform"`, `"cauchy"`, and `"lognormal"` with any parameter values which are logically possible given support constraints (e.g. user cannot specify a negative variance on a normal distribution or a negative scale on a cauchy) When the model has a vector hypermean, "$\mu$ and $\tau$" model, baggr applies the given prior to all the elements of the vector independently. If the user wishes to specify a prior dependence between the components, one can supply prior_hypermean with a multinormal argument (see `?priors` for details).
 * For `prior_hypersd` we allow `"normal"` and `"uniform"` with any parameter values which are logically possible given support constraints (as above). 
 * For `prior_hypercor`, which is only necessary when there is a multivariate shrinkage operation (as in the "$\mu$ and $\tau$" model) we allow an LKJ correlation prior (`"lkj"`) with any parameter values which are logically possible given support constraints. For further details of this strategy see Meager (2019).
 
