@@ -1,4 +1,4 @@
-## cran-comments for baggr v0.6.16
+## cran-comments for baggr v0.6.18
 
 One of previous submissions (v0.5) was rejected due to checktime being over 10 minutes.
 I fixed this starting with v0.6 and monitor checktimes in RHub builder, 

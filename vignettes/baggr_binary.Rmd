@@ -418,7 +418,7 @@ Choosing between the three is especially important in the case of rare events, a
 * strongly informative independent prior on baselines: centered on 1% event rate, $\mathcal{N}(-4.59, 2^2)$, which translates 95% confidence that baseline event rate is between about 0.02% and 55%
 * hierarchical prior on baselines (mean $\mathcal{N}(-4.59, 1)$, SD $\mathcal{N}(0, 2^2)$). 
 
-We exagerrate our prior choices on purpose, to best illustrate the differences.
+We exaggerate our prior choices on purpose, to best illustrate the differences.
 
 ```{r rare events with bsl priors, include = F}
 # bg_rare_prior2 <- baggr(df_rare_logor, effect = "logOR", model = "logit",
