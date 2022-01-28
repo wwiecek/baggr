@@ -1,8 +1,8 @@
-## cran-comments for baggr v0.6.9
+## cran-comments for baggr v0.6.16
 
 One of previous submissions (v0.5) was rejected due to checktime being over 10 minutes.
 I fixed this starting with v0.6 and monitor checktimes in RHub builder, 
-currently checks complete in 540 seconds.
+currently checks complete in under 600 seconds.
 Run times for vignettes and examples have also been shortened in recent versions.
 
 Test environments:

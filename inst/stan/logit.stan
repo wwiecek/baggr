@@ -119,7 +119,7 @@ model {
 }
 generated quantities {
   real logpd[K_test > 0? 1: 0];
-  real theta_k_test[K_test];
+  real theta_k_test[pooling_type == 1? K_test: 0];
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)
@@ -127,13 +127,18 @@ generated quantities {
     else
       fe_test = X_test*beta;
     logpd[1] = 0;
-    if(pooling_type != 0){
+    if(pooling_type == 1){
       for(k in 1:K_test)
         theta_k_test[k] = normal_rng(mu[1], tau[1]);
       // This will only work if we predict for baselines which are already estimated
       for(i in 1:N_test)
         logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
                                          theta_k_test[test_site[i]] * test_treatment[i] + fe_test[i]);
+    }
+    if(pooling_type == 2){
+      for(i in 1:N_test)
+        logpd[1] += bernoulli_logit_lpmf(test_y[i] | baseline_k[test_site[i]] +
+                                         mu[1] * test_treatment[i] + fe_test[i]);
     }
   }
 }

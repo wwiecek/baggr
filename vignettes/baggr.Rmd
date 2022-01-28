@@ -115,8 +115,9 @@ If you have only few groups, the priors on $V$ will need to be relatively strong
 | summary data "Rubin" (`"rubin"`)           | `tau` and `se`                 | $\hat{\tau_k} \sim N(\tau_k, \hat{se_k}^2)$     | $\tau_k \sim N(\tau, \sigma_{\tau}^2)$  | $\tau \sim \mathcal{N}(0, 100)$, $\sigma_{\tau} \sim \mathcal{U}(0, 10\tilde{\sigma})$  | 
 | "$\mu$ and $\tau$" (`"mutau"`) | `tau`, `mu`, `se.tau`, `se.mu` | $\hat{\tau_k} \sim N(\tau_k, \hat{se_{\tau,k}}^2)$, $\hat{\mu_k} \sim N(\mu_k, \hat{se_{\mu,k}}^2)$  | $\pmatrix{\mu_k \\ \tau_k} \sim N(\pmatrix{\mu \\ \tau}, V)$ | $V = \theta \Omega \theta'$ where $\theta \sim Cauchy(0,10)$, $\Omega \sim LKJ(3)$, $\pmatrix{\mu \\ \tau} \sim N(0,100^2Id_2 )$ |
 | full data "Rubin" (`"rubin_full"`)          | `outcome`, `treatment`, `group`  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" |
-| Quantiles (`"quantiles"`)         | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  |
 | Logit (`"logit"`)  | `outcome`, `treatment`, `group`  | See `vignette("baggr_binary")` | ... | ... |
+
+<!-- | Quantiles (`"quantiles"`)         | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  | -->
 
 Where inputs are individual-level data, i.e.  `outcome`, `treatment`, `group`, you can specify column names in as arguments to `baggr()` function. 
 

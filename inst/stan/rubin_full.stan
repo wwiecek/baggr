@@ -26,6 +26,9 @@ data {
   vector[3] prior_hypermean_val;
   vector[3] prior_hypersd_val;
   vector[3] prior_beta_val;
+  //priors for regression model:
+  int prior_sigma_fam;
+  vector[3] prior_sigma_val;
 
   //cross-validation variables:
   int<lower=0> N_test;
@@ -58,7 +61,7 @@ parameters {
   vector[Nc] beta;
 
   // NORMAL specific:
-  real<lower=0> sigma_y_k[K];
+  vector<lower=0>[K] sigma_y_k;
 }
 transformed parameters {
   vector[K_pooled] theta_k;
@@ -105,14 +108,19 @@ model {
   if(pooling_type == 1)
     target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
 
-  //fixed effect coefficients
+  //fixed effect coefficient priors
   if(Nc > 0)
     target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
 
+  //
   if(pooling_type == 1)
     eta ~ normal(0,1);
 
+
   // NORMAL specific:
+  // error term priors
+  target += prior_increment_vec(prior_sigma_fam, sigma_y_k, prior_sigma_val);
+  // likelihood
   for(i in 1:N){
     if(pooling_type < 2)
       y[i] ~ normal(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + fe[i], sigma_y_k[site[i]]);

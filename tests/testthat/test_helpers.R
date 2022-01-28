@@ -21,8 +21,8 @@ test_that("prepare_ma()", {
 
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption")
   expect_is(pm, "data.frame")
-  expect_equal(dim(pm), c(5,5))
-  expect_identical(names(pm), c("group", "mu", "tau", "se.mu", "se.tau"))
+  expect_equal(dim(pm), c(5,7))
+  expect_identical(names(pm), c("group", "mu", "tau", "se.mu", "se.tau", "n.mu", "n.tau"))
 
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption", summarise = FALSE)
   expect_identical(dim(pm), dim(microcredit_simplified))
@@ -79,6 +79,15 @@ test_that("binary_to_individual() and prepare_ma() with summary data", {
   expect_is(bti, "data.frame")
   expect_equal(nrow(bti), 1101)
   expect_equal(ncol(bti), 3)
+
+  # Non-integer number of events
+  df_yusuf2 <- read.table(text="
+  trial  a n1i  c n2i
+  Balcon 14  56.1 15  58
+  Clausen 18  66 19  64
+  Multicentre 15 100 12  95
+  ", header=TRUE)
+  expect_error(binary_to_individual(df_yusuf2, group = "trial"), "Non-integer number")
 })
 
 

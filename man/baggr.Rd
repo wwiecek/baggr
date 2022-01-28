@@ -7,7 +7,7 @@
 baggr(
   data,
   model = NULL,
-  pooling = "partial",
+  pooling = c("partial", "none", "full"),
   effect = NULL,
   covariates = c(),
   prior_hypermean = NULL,
@@ -16,9 +16,10 @@ baggr(
   prior_beta = NULL,
   prior_control = NULL,
   prior_control_sd = NULL,
+  prior_sigma = NULL,
   prior = NULL,
   ppd = FALSE,
-  pooling_control = "none",
+  pooling_control = c("none", "partial"),
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome",
@@ -30,7 +31,8 @@ baggr(
 )
 }
 \arguments{
-\item{data}{data frame with summary or individual level data to meta-analyse}
+\item{data}{data frame with summary or individual level data to meta-analyse;
+see Details section for how to format your data}
 
 \item{model}{if \code{NULL}, detected automatically from input data
 otherwise choose from
@@ -68,12 +70,17 @@ same rules apply as for \verb{_hypermean};}
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
 
-\item{prior_control}{prior for the mean in the control arm (baseline), currently used in \code{"logit"} model only;
-if \code{pooling_control = "partial"}, the prior is hyperprior for all baselines, if \code{"none"},
+\item{prior_control}{prior for the mean in the control arm (baseline), currently
+used in \code{"logit"} model only;
+if \code{pooling_control = "partial"}, the prior is hyperprior
+for all baselines, if \code{"none"},
 then it is an independent prior for all baselines}
 
-\item{prior_control_sd}{prior for the SD in the control arm (baseline), currently used in \code{"logit"} model only;
+\item{prior_control_sd}{prior for the SD in the control arm (baseline), currently
+used in \code{"logit"} model only;
 this can only be used if \code{pooling_control = "partial"}}
+
+\item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"mutau_full"})}
 
 \item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
 \code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
@@ -85,8 +92,8 @@ and ignore \code{data} in inference. However, \code{data} argument might still
 be used to infer the correct model (if \code{model=NULL}) and to set the
 default priors, therefore you must specify it.}
 
-\item{pooling_control}{Pooling for group-specific control mean terms (currently only in \code{logit}).
-Either \code{"none"} or \code{"partial"}.}
+\item{pooling_control}{Pooling for group-specific control mean terms in models using
+individual-level data. Either \code{"none"} or \code{"partial"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument. See "Cross-validation" section below.}
@@ -122,11 +129,11 @@ individual- or group-level data, using Hamiltonian Monte Carlo in Stan.
 (For overall package help file see \link{baggr-package})
 }
 \details{
-Running \code{baggr} requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-All three are discussed in depth in the package vignette (\code{vignette("baggr")}).
+Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of priors.
+All three are discussed in more depth in the package vignette, \code{vignette("baggr")}.
 
 \strong{Data.} For aggregate data models you need a data frame with columns
-\code{tau} and \code{se} or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu}.
+\code{tau} and \code{se} (Rubin model) or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu} ("mu & tau" model).
 An additional column can be used to provide labels for each group
 (by default column \code{group} is used if available, but this can be
 customised -- see the example below).

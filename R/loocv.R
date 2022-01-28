@@ -10,7 +10,8 @@
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
 #' These can be examined by using `attributes()` function.
-#' @seealso [loo_compare] for comparison of many LOO CV results
+#' @seealso [loo_compare] for comparison of many LOO CV results; you can print and plot
+#'          output via [plot.baggr_cv] and [print.baggr_cv]
 #' @details
 #'
 #' The values returned by `loocv()` can be used to understand how excluding
@@ -27,7 +28,8 @@
 #' This is akin to fixing the baseline risk and only trying to infer the odds ratio.)
 #'
 #' The main output is the cross-validation
-#' information criterion, or -2 times the ELPD averaged over _K_ models.
+#' information criterion, or -2 times the ELPD summed over _K_ models.
+#' (We sum the terms as we are working with logarithms.)
 #' This is related to, and often approximated by, the Watanabe-Akaike
 #' Information Criterion. When comparing models, smaller values mean
 #' a better fit. For more information on cross-validation see
@@ -83,7 +85,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   args[["data"]] <- data
   args[["model"]] <- full_fit$model
   # if(full_fit$model == "rubin_full")
-    # stop("LOO CV is not implemented for full data models yet.")
+  # stop("LOO CV is not implemented for full data models yet.")
   if(!("prior" %in% names(args))) {
     message("(Prior distributions taken from the model with all data. See $prior.)")
     args[["formatted_prior"]] <- full_fit$formatted_prior
@@ -173,7 +175,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   class(out) <- "baggr_cv"
 
   # if(temp_cores)
-    # options(mc.cores = NULL)
+  # options(mc.cores = NULL)
 
   return(out)
 }
@@ -240,8 +242,8 @@ loo_compare.baggr_cv <- function(x, ...) {
     diffs[[i-1]] <-
       matrix(nrow = 1, ncol = 2,
              c(sum(rawdiffs),
-                     sqrt(length(rawdiffs))*sd(rawdiffs)),
-               dimnames = list(diffname, c("ELPD", "ELPD SE")))
+               sqrt(length(rawdiffs))*sd(rawdiffs)),
+             dimnames = list(diffname, c("ELPD", "ELPD SE")))
   }
 
   diffs <- Reduce(rbind, diffs)
@@ -259,17 +261,14 @@ loo_compare.baggr_cv <- function(x, ...) {
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
   mat <- as.matrix(x)
   class(mat) <- "matrix"
-  cat(
-    crayon::bold(paste0("Comparison of cross-validation\n")),
-    "\n",
-    testthat::capture_output(print(signif(mat, digits = digits)))
-  )
+  cat(crayon::bold(paste0("Comparison of cross-validation\n\n")))
+  print(signif(mat, digits = digits))
 }
 
 #' Print baggr cv objects nicely
-#' @param x baggr_cv object to print
+#' @param x `baggr_cv` object obtained from [loocv] to print
 #' @param digits number of digits to print
-#' @param ... additional arguments for s3 consistency
+#' @param ... Unused, ignore
 #' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
@@ -283,10 +282,69 @@ print.baggr_cv <- function(x, digits = 3, ...) {
   colnames(mat) <- c("Estimate", "Standard Error")
   rownames(mat) <- c("elpd", "looic")
 
-  cat(
-    crayon::bold(paste0("Based on ", x$K, "-fold cross-validation\n")),
-    "\n",
-    testthat::capture_output(print(signif(mat, digits = digits)))
-  )
+  cat("LOO estimate based on", crayon::bold(paste0(x$K, "-fold cross-validation\n")))
+  cat("\n")
+  print(signif(mat, digits = digits))
 
+}
+
+
+
+#' Plotting method for results of baggr LOO analyses
+#'
+#' @param x output from [loocv] that has `return_models = TRUE`
+#' @param y Unused, ignore
+#' @param ... Unused, ignore
+#' @param add_values logical; if `TRUE`, values of _elpd_ are printed next to each
+#'                   study
+#' @return `ggplot2` plot in similar style to [baggr_compare] default plots
+#' @export
+#'
+plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
+  loo_model <- x
+  input_data <- loo_model$full_model$summary_data
+  if(is.null(input_data))
+    input_data <- loo_model$full_model$data
+
+  if(is.null(loo_model$models))
+    stop("To plot, the loocv() output must include models (return_models = TRUE).")
+
+  mm1 <- do.call(rbind,
+                 lapply(loo_model$models, function(x) treatment_effect(x, summary = T)$tau))
+  df1 <- data.frame(
+    setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
+    model = "LOOCV estimate",
+    elpd = loo_model$pointwise,
+    group = input_data$group)
+  df2 <- data.frame(lci = input_data$tau - 1.96*input_data$se,
+                    median = input_data$tau,
+                    uci = input_data$tau + 1.96*input_data$se,
+                    group = input_data$group,
+                    elpd = NA,
+                    model = "Test data (out-of-sample)")
+  df <- rbind(df1, df2)
+  pl <- single_comp_plot(df)
+
+  fmti <- function(x, digits = values_digits) {
+    format(round(x, digits), nsmall = digits)
+  }
+
+  # add_values
+  if(add_values){
+  group <- median <- lci <- uci <- model <- elpd <- NULL
+  values_digits <- 2
+  values_size <- 2.5
+
+  pl <- pl +
+    ggplot2::geom_text(
+      aes(label = fmti(elpd, values_digits),
+          hjust = 1,
+          y = 1.1*max(uci)),
+      position = ggplot2::position_dodge(width = .5),
+      size = values_size) +
+    ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
+    ggplot2::coord_flip(clip = "off")
+  }
+
+  pl
 }

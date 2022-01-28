@@ -9,7 +9,8 @@
 #' @importFrom rstan summary
 #' @importFrom rstan sampling
 #'
-#' @param data data frame with summary or individual level data to meta-analyse
+#' @param data data frame with summary or individual level data to meta-analyse;
+#'             see Details section for how to format your data
 #' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
 #'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
@@ -18,8 +19,8 @@
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
 #'                "partial" can be understood as random effects and "full" as fixed effects
-#' @param pooling_control Pooling for group-specific control mean terms (currently only in `logit`).
-#'                        Either `"none"` or `"partial"`.
+#' @param pooling_control Pooling for group-specific control mean terms in models using
+#'                        individual-level data. Either `"none"` or `"partial"`.
 #' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
@@ -40,11 +41,15 @@
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
 #'                       experimental normal(0, 10^2) distribution
-#' @param prior_control prior for the mean in the control arm (baseline), currently used in `"logit"` model only;
-#'                      if `pooling_control = "partial"`, the prior is hyperprior for all baselines, if `"none"`,
+#' @param prior_control prior for the mean in the control arm (baseline), currently
+#'                      used in `"logit"` model only;
+#'                      if `pooling_control = "partial"`, the prior is hyperprior
+#'                      for all baselines, if `"none"`,
 #'                      then it is an independent prior for all baselines
-#' @param prior_control_sd prior for the SD in the control arm (baseline), currently used in `"logit"` model only;
+#' @param prior_control_sd prior for the SD in the control arm (baseline), currently
+#'                         used in `"logit"` model only;
 #'                         this can only be used if `pooling_control = "partial"`
+#' @param prior_sigma prior for error terms in linear regression models (`"rubin_full"` or `"mutau_full"`)
 #' @param prior alternative way to specify all priors as a named list with `hypermean`,
 #'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
@@ -74,11 +79,11 @@
 #'
 #' @details
 #'
-#' Running `baggr` requires 1/ data preparation, 2/ choice of model, 3/ choice of priors.
-#' All three are discussed in depth in the package vignette (`vignette("baggr")`).
+#' Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of priors.
+#' All three are discussed in more depth in the package vignette, `vignette("baggr")`.
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
-#' `tau` and `se` or `tau`, `mu`, `se.tau`, `se.mu`.
+#' `tau` and `se` (Rubin model) or `tau`, `mu`, `se.tau`, `se.mu` ("mu & tau" model).
 #' An additional column can be used to provide labels for each group
 #' (by default column `group` is used if available, but this can be
 #' customised -- see the example below).
@@ -197,15 +202,18 @@
 #' @importFrom rstan sampling
 #' @export
 
-baggr <- function(data, model = NULL, pooling = "partial",
+baggr <- function(data,
+                  model = NULL,
+                  pooling = c("partial", "none", "full"),
                   effect = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
+                  prior_sigma = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
-                  pooling_control = "none",
+                  pooling_control = c("none", "partial"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   silent = FALSE, warn = TRUE, ...) {
@@ -213,6 +221,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
   # check that it is data.frame of at least 1 row
   if(!inherits(data, "data.frame") || nrow(data) == 1)
     stop("data argument must be a data.frame of >1 rows")
+
+  # Match arguments
+  pooling <- match.arg(pooling)
+  pooling_control <- match.arg(pooling_control)
 
   # For now we recommend that users format their data before passing to baggr()
   # data <- prepare_ma(data,
@@ -222,8 +234,15 @@ baggr <- function(data, model = NULL, pooling = "partial",
   #                    outcome=outcome, baseline=baseline)
 
   if(!is.null(model) && (model == "full")){
-    message("Model 'full' is now named 'rubin_full'. Please update your code in the future.")
+    message("From v0.6 model 'full' is named 'rubin_full'. Please update your code in the future.")
     model <- "rubin_full"
+  }
+  if(!is.null(model) && model == "mutau_sum") {
+    message("Experimental: using mu & tau model with sum specification (tau = mu + theta)")
+    model <- "mutau"
+    cumsum_mutau <- 0
+  } else {
+    cumsum_mutau <- 1
   }
 
   stan_data <- convert_inputs(data,
@@ -283,25 +302,21 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
 
   # Pooling type:
-  if(pooling %in% c("none", "partial", "full")) {
-    stan_data[["pooling_type"]] <- switch(pooling,
-                                          "none" = 0,
-                                          "partial" = 1,
-                                          "full" = 2)
-    if(model %in% c("logit", "rubin_full", "mutau_full"))
-      stan_data[["pooling_baseline"]] <- switch(pooling_control,
-                                                "none" = 0,
-                                                "partial" = 1)
-    if(model == "mutau_full"){
-      # For now this model only used for joint prior
-      stan_data[["joint_prior_mean"]] <- 1
-      stan_data[["joint_prior_variance"]] <- 1
-    }
-    if(!(pooling_control %in% c("none", "partial")))
-      stop('Wrong pooling_control parameter; choose from c("none", "partial")')
-  } else {
-    stop('Wrong pooling parameter; choose from c("none", "partial", "full")')
+  stan_data[["pooling_type"]] <- switch(pooling,
+                                        "none" = 0,
+                                        "partial" = 1,
+                                        "full" = 2)
+  if(model %in% c("logit", "rubin_full", "mutau_full"))
+    stan_data[["pooling_baseline"]] <- switch(pooling_control,
+                                              "none" = 0,
+                                              "partial" = 1)
+  if(model == "mutau_full"){
+    # For now this model only used for joint prior
+    stan_data[["joint_prior_mean"]] <- 1
+    stan_data[["joint_prior_variance"]] <- 1
   }
+  if(model == "mutau")
+    stan_data[["cumsum"]] <- cumsum_mutau
 
 
 
@@ -376,11 +391,12 @@ baggr <- function(data, model = NULL, pooling = "partial",
 
   if(grepl("individual", attr(stan_data, "data_type")))
     result$summary_data <- prepare_ma(data,
-                                      rare_event_correction = 0,
+                                      # rare_event_correction = 0.5,
                                       effect = ifelse(model == "logit", "logOR", "mean"),
                                       group = attr(data, "group"),
                                       treatment = attr(data, "treatment"),
-                                      outcome = attr(data, "outcome"))
+                                      outcome = attr(data, "outcome"),
+                                      pooling = TRUE)
 
   if(model == "quantiles")
     result[["quantiles"]]    <- quantiles
@@ -396,9 +412,10 @@ baggr <- function(data, model = NULL, pooling = "partial",
   rhat <- rstan::summary(fit)$summary[,"Rhat"]
   rhat <- rhat[!is.nan(rhat)] #drop some nonsensical parameters
   if(warn && any(rhat > 1.05))
-    warning(paste0("Rhat statistic for ", sum(rhat > 1.05),
+    warning(paste0("\nRhat statistic for ", sum(rhat > 1.05),
                    " parameters exceeded 1.05, with maximum equal to ",
-                   round(max(rhat),2), ". This suggests lack of convergence.",
+                   round(max(rhat),2),
+                   ".\n This suggests lack of convergence.",
                    "\n No further warning will be issued.",
                    "\n Stan model saved as $fit in the returned object. \n"))
 

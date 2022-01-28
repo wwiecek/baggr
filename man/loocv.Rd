@@ -38,7 +38,8 @@ treated units, which is not used for estimation but only for calculating predict
 This is akin to fixing the baseline risk and only trying to infer the odds ratio.)
 
 The main output is the cross-validation
-information criterion, or -2 times the ELPD averaged over \emph{K} models.
+information criterion, or -2 times the ELPD summed over \emph{K} models.
+(We sum the terms as we are working with logarithms.)
 This is related to, and often approximated by, the Watanabe-Akaike
 Information Criterion. When comparing models, smaller values mean
 a better fit. For more information on cross-validation see
@@ -65,7 +66,8 @@ Gelman, Andrew, Jessica Hwang, and Aki Vehtari.
 Statistics and Computing 24, no. 6 (November 2014): 997–1016.
 }
 \seealso{
-\link{loo_compare} for comparison of many LOO CV results
+\link{loo_compare} for comparison of many LOO CV results; you can print and plot
+output via \link{plot.baggr_cv} and \link{print.baggr_cv}
 }
 \author{
 Witold Wiecek

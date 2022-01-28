@@ -14,3 +14,5 @@ misc/*
 log
 src/RcppExports.cpp
 src/*.h
+/doc/
+/Meta/

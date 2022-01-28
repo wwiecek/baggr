@@ -3,54 +3,82 @@
 \name{pooling}
 \alias{pooling}
 \alias{heterogeneity}
-\title{Pooling metrics for baggr}
+\alias{weights.baggr}
+\title{Pooling metrics and related statistics for baggr}
 \usage{
-pooling(bg, type = c("groups", "total"), summary = TRUE)
+pooling(
+  bg,
+  metric = c("pooling", "isq", "hsq", "weights"),
+  type = c("groups", "total"),
+  summary = TRUE
+)
 
-heterogeneity(bg, summary = TRUE)
+heterogeneity(
+  bg,
+  metric = c("pooling", "isq", "hsq", "weights"),
+  summary = TRUE
+)
+
+\method{weights}{baggr}(object, ...)
 }
 \arguments{
-\item{bg}{output of a baggr() function}
+\item{bg}{a \link{baggr} model}
+
+\item{metric}{\code{"pooling"} for Gelman & Pardoe statistic \emph{P},
+\code{"isq"} for I-squared statistic (\emph{1-P}, Higgins & Thompson, 2002)
+\code{"hsq"} for H squared statistic (\emph{1/P}, ibid.);
+\code{"weights"} for study weights;
+also see \emph{Details}}
 
 \item{type}{In \code{pooling} calculation is done for each of the \code{"groups"}
-(default) or for \code{"total"} hypereffect(s).
-See \emph{Details} section for how calculation is done.}
+(default) or for \code{"total"} hypereffect(s).}
 
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
-}
-\value{
-Matrix with mean and intervals for chosen pooling metric,
-each row corresponding to one meta-analysis group.
+
+\item{object}{\link{baggr} model for which to calculate group (study) weights}
+
+\item{...}{Unused, please ignore.}
 }
 \description{
-Compute statistics relating to \code{heterogeneity} (whole model) and
-\code{pooling} (for each group) given a \link{baggr} meta-analysis model.
-The statistics are the pooling metric by Gelman & Pardoe (2006) or its
-complement, the \emph{I-squared} statistic.
+Compute statistics relating to
+\code{pooling} in a given \link{baggr} meta-analysis model returns statistics, for
+either the entire model or individual groups, such as
+pooling statistic by Gelman & Pardoe (2006), \emph{I-squared}, \emph{H-squared}, or study weights;
+\code{heterogeneity} is a shorthand for \code{pooling(type = "total")}
+\code{weights} is shorthand for \code{pooling(metric = "weights")}
 }
 \details{
-Pooling statistic describes the extent to which group-level estimates of treatment
-effect are "pooled" (or pulled!) closer to average treatment effect in the meta-analysis model.
-If \code{pooling = "none"} or "full" in \link{baggr}, then the values are always 0 or 1, respectively.
+Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
+group-level estimates of treatment
+effect are "pooled" toward average treatment effect in the meta-analysis model.
+If \code{pooling = "none"} or \code{"full"} (which you specify when calling \link{baggr}),
+then the values are always 0 or 1, respectively.
 If \code{pooling = "partial"}, the value is somewhere between 0 and 1.
+We can distinguish between pooling of individual groups and overall pooling in
+the model.
 
-\strong{Formulae for the calculations below are provided in main package vignette.}
+In many contexts, i.e. medical statistics, it is typical to report \emph{1-P}, called \eqn{I^2}
+(see Higgins and Thompson, 2002; sometimes another statistic, \eqn{H^2 = 1 / P},
+is used).
+Higher values of \emph{I-squared} indicate higher heterogeneity;
+Von Hippel (2015) provides useful details for \emph{I-squared} calculations (and some
+issues related to it, especially in frequentist models).
+See Gelman & Pardoe (2006) Section 1.1 for a short explanation of how \eqn{R^2}
+statistic relates to the pooling metric.
 }
 \section{Group pooling}{
 
 
 This is the calculation done by \code{pooling()} if \code{type = "groups"} (default).
-See \code{vignette("baggr")} for more details on pooling calculations.
-
-In a partial pooling model (see \link{baggr}), group \emph{k} (e.g. study) has
+In a partial pooling model (see \link{baggr} and above), group \emph{k} (e.g. study) has
 standard error of treatment effect estimate, \eqn{se_k}.
 The treatment effect (across \emph{k} groups) is variable across groups, with
 hyper-SD parameter \eqn{\sigma_(\tau)}.
 
 The quantity of interest is ratio of variation in treatment effects to the
 total variation.
-By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{p}.
+By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{P}.
 
 \deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
 \itemize{
@@ -59,10 +87,27 @@ By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{p}
 \item Values close to 0 indicate no pooling. Variation within studies dominates.
 }
 
-Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a single fixed value),
-\emph{p} is also a parameter. It is typical for \emph{p} to have very high dispersion, as in many cases we
-cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution of_p_
-(rather than summarised values), set \code{summary=FALSE}.
+Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
+single fixed value),
+\emph{P} is also a parameter. It is typical for \emph{P} to have very high dispersion,
+as in many cases we
+cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain samples from the distribution
+of \emph{P} (rather than summarised values), set \code{summary=FALSE}.
+}
+
+\section{Study weights}{
+
+
+Contributions of each group (e.g. each study) to the mean meta-analysis estimate
+can be calculated by calculating for each study \emph{w_k} the inverse of sum of group-specific
+SE squared and between-study variation.
+To obtain weights, this vector (across all studies) has to be normalised to 1, i.e.
+\emph{w_k/sum(w_k)} for each \emph{k}.
+
+SE is typically treated as a fixed quantity
+(and usually reported on the reported point estimate),
+but between-study variance is a model parameter,
+hence the weights themselves are also random variables.
 }
 
 \section{Overall pooling in the model}{
@@ -70,13 +115,13 @@ cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain the whole distribution 
 
 Typically researchers want to report a single measure from the model,
 relating to heterogeneity across groups.
-This is calculated by either \code{pooling(mymodel, type = "total")} or simply \code{heterogeneity(mymodel)}
+This is calculated by either \code{pooling(mymodel, type = "total")} or simply
+\code{heterogeneity(mymodel)}
 
-In many contexts, i.e. medical statistics, it is typical to report \emph{1-P}, called \eqn{I^2}
-(see Higgins and Thompson, 2002; sometimes another statistic, \eqn{H^2 = 1 / P},
-is used).
-Higher values of \emph{I-squared} indicate higher heterogeneity;
-Von Hippel (2015) provides useful details for \emph{I-squared} calculations.
+Formulae for the calculations below are provided in main package vignette and
+almost analogous to the group calculation above, but using mean variance across
+all studies. In other words, pooling \emph{P} is simply ratio of the expected within-study
+variance term to total variance.
 
 To obtain such single estimate we need to substitute average variability of group-specific
 treatment effects and then calculate the same way we would calculate \eqn{p}.
@@ -84,12 +129,15 @@ By default we use the mean across \emph{k} \eqn{se_k^2} values. Typically, imple
 \eqn{I^2} in statistical packages use a different calculation for this quantity,
 which may make \emph{I}'s not comparable when different studies have different SE's.
 
-Same as for group-specific estimates, \emph{P} is a Bayesian parameter and its dispersion can be high.
+Same as for group-specific estimates, \emph{P} is a Bayesian parameter and its
+dispersion can be high.
+}
 
-\strong{Relationship to R-squared statistic}
+\section{Value}{
 
-See Gelman & Pardoe (2006) Section 1.1 for a short explanation of how \eqn{R^2}
-statistic relates to the pooling metric.
+
+Matrix with mean and intervals for chosen pooling metric,
+each row corresponding to one meta-analysis group.
 }
 
 \references{
@@ -98,8 +146,8 @@ Gelman, Andrew, and Iain Pardoe.
 \emph{Technometrics 48, no. 2 (May 2006): 241-51}.
 
 Higgins, Julian P. T., and Simon G. Thompson.
-“Quantifying Heterogeneity in a Meta-Analysis.”
-\emph{Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539–58}.
+"Quantifying Heterogeneity in a Meta-Analysis."
+\emph{Statistics in Medicine, vol. 21, no. 11, June 2002, pp. 1539-58}.
 
 Hippel, Paul T von. "The Heterogeneity Statistic I2 Can Be Biased in Small Meta-Analyses."
 \emph{BMC Medical Research Methodology 15 (April 14, 2015).}

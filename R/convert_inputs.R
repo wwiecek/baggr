@@ -45,7 +45,7 @@ convert_inputs <- function(data,
                            test_data = NULL,
                            silent = FALSE) {
 
-  # check what kind of data is required for the model & what's available
+  # Step 1: check what data are available (with some conversions) -----
 
   available_data <- detect_input_type(data, group, treatment, outcome)
 
@@ -69,8 +69,8 @@ convert_inputs <- function(data,
       check_columns(data, outcome, group, treatment)
   }
   if(is.null(model)) {
-    # we take FIRST MODEL THAT SUITS OUR DATA!
-    model <- names(model_data_types)[which(model_data_types == available_data)[1]]
+    # model <- names(model_data_types)[which(model_data_types == available_data)[1]]
+    model <- data_type_default_model[[available_data]]
     if(!silent)
       message(paste0("Automatically set model to ", crayon::bold(model_names[model]),
                      " from data."))
@@ -88,11 +88,15 @@ convert_inputs <- function(data,
     available_data <- "pool_noctrl_narrow"
   }
 
+
+
+  # Step 2: check what data are required by the model and match -----
   required_data <- model_data_types[[model]]
 
-  if(required_data == "individual_binary" && grepl("pool", available_data)) {
-    data <- binary_to_individual(data, group = group)
+  if(required_data == "individual_binary" && available_data == "pool_binary") {
+    data <- binary_to_individual(data, group, FALSE)
     available_data <- "individual_binary"
+    message("Data were automatically converted from summary to individual-level.")
   }
 
   if(required_data != available_data)
@@ -101,7 +105,11 @@ convert_inputs <- function(data,
       "and the model requires", data_type_names[required_data]))
   #for now this means no automatic conversion of individual->pooled
 
-  # individual level data -----
+
+
+  # Step 3: conversions of data -----
+
+  # 3.1. individual level data
   if(grepl("individual", required_data)) {
 
     groups <- as.factor(as.character(data[[group]]))
@@ -163,41 +171,43 @@ convert_inputs <- function(data,
       }
     }
     if(model == "quantiles"){
-      if((any(quantiles < 0)) ||
-         (any(quantiles > 1)))
-        stop("quantiles must be between 0 and 1")
-      if(length(quantiles) < 2)
-        stop("cannot model less than 2 quantiles")
-      data[[group]] <- group_numeric
-      out <- summarise_quantiles_data(data, quantiles, outcome, group, treatment)
-      message("Data have been automatically summarised for quantiles model.")
+      # This is currently disabled, together with the quantiles model
 
-      # Fix for R 3.5.1. on Windows
-      # https://stackoverflow.com/questions/51343022/
-      out$temp <- out[["y_0"]]
-      # out$y_0 <- NULL
-      out[["y_0"]] <- out$temp
-      out$temp <- NULL
-
-      # Cross-validation:
-      if(is.null(test_data)){
-        out$K_test <- 0
-        out$test_theta_hat_k <- array(0, dim = 0)
-        out$test_se_theta_k <- array(0, dim = 0)
-        out$test_y_0 <- array(0, dim = c(0, ncol(out$y_0)))
-        out$test_y_1 <- array(0, dim = c(0, ncol(out$y_0)))
-        out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
-        out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
-      } else {
-        out_test <- summarise_quantiles_data(test_data, quantiles,
-                                             outcome, group, treatment)
-        out$K_test <- out_test$K #reminder: K is number of sites,
-        # N is number of quantiles
-        out$test_y_0 <- out_test$y_0
-        out$test_y_1 <- out_test$y_1
-        out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
-        out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
-      }
+      # if((any(quantiles < 0)) ||
+      #    (any(quantiles > 1)))
+      #   stop("quantiles must be between 0 and 1")
+      # if(length(quantiles) < 2)
+      #   stop("cannot model less than 2 quantiles")
+      # data[[group]] <- group_numeric
+      # out <- summarise_quantiles_data(data, quantiles, outcome, group, treatment)
+      # message("Data have been automatically summarised for quantiles model.")
+      #
+      # # Fix for R 3.5.1. on Windows
+      # # https://stackoverflow.com/questions/51343022/
+      # out$temp <- out[["y_0"]]
+      # # out$y_0 <- NULL
+      # out[["y_0"]] <- out$temp
+      # out$temp <- NULL
+      #
+      # # Cross-validation:
+      # if(is.null(test_data)){
+      #   out$K_test <- 0
+      #   out$test_theta_hat_k <- array(0, dim = 0)
+      #   out$test_se_theta_k <- array(0, dim = 0)
+      #   out$test_y_0 <- array(0, dim = c(0, ncol(out$y_0)))
+      #   out$test_y_1 <- array(0, dim = c(0, ncol(out$y_0)))
+      #   out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
+      #   out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
+      # } else {
+      #   out_test <- summarise_quantiles_data(test_data, quantiles,
+      #                                        outcome, group, treatment)
+      #   out$K_test <- out_test$K #reminder: K is number of sites,
+      #   # N is number of quantiles
+      #   out$test_y_0 <- out_test$y_0
+      #   out$test_y_1 <- out_test$y_1
+      #   out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
+      #   out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
+      # }
     }
 
     if(model == "sslab") {
@@ -233,7 +243,7 @@ convert_inputs <- function(data,
     }
   }
 
-  # summary data: treatment effect only -----
+  # 3.2. summary data: treatment effect only -----
   if(required_data == "pool_noctrl_narrow"){
     group_label <- data[[group]]
     if(is.null(data[[group]]) && (group != "group"))
@@ -261,7 +271,7 @@ convert_inputs <- function(data,
   }
 
 
-  # summary data: baseline & treatment effect -----
+  # 3.3. summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
     group_label <- data[[group]]
     group_label <- data[[group]]
@@ -296,7 +306,7 @@ convert_inputs <- function(data,
     }
   }
 
-  # Include covariates ------
+  # 4. Include covariates ------
   # if(required_data != "individual") {
   if(length(covariates) > 0) {
     if(model == "quantiles")
@@ -339,8 +349,6 @@ convert_inputs <- function(data,
       out$X_test <- array(0, dim=c(ifelse(is.null(test_data), 0, nrow(test_data)), 0))
     }
   }
-  # }
-
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))
@@ -355,5 +363,4 @@ convert_inputs <- function(data,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))
-
 }

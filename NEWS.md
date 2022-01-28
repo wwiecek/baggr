@@ -1,3 +1,41 @@
+# baggr 0.6.10-0.6.16 (Sept-Dec 2021)
+
+* You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
+  (a la forest plot)
+* You don't need to convert summary data to individual-level data before running
+  `model="logit"`, call to `baggr()` should detect it automatically now
+* `pooling()` includes extra metrics, including study weights calculation
+  (and better documentation)
+* You can now plot the objects returned by `loocv()` to understand out-of-sample
+  performance graphically
+* Risk difference models are now easy to fit, you only need to transform your binary input data with `prepare_ma(..., effect = "RD")`
+
+
+Misc:
+
+* You can plot only hyperparameter values (without group-specific estimates) in
+  baggr_compare now
+* Removed an unnecessary dependency on quantreg
+* Rare event corrections (`prepare_ma()`) can now be applied either to particular 
+  studies or all data
+* Clearer prompts about priors and pooling in control arms when working with
+  individual-level data models.
+* Can now set priors for error terms in linear regression models (`prior_sigma`)
+
+Bug fixes:
+
+* Print errors when examining LOO CV results
+* LOO CV with full pooling and binary outcomes now works again after being broken in 0.6.
+  Some of the results in 0.5 and 0.6 releases may have been wrong
+* Individual-level Rubin  model with covariates was also broken in 0.6
+* Fixed a calculation of default beta prior
+* No more confusing warnings about setting `prior_control` for `"logit"` model.
+* `binary_to_individual` with non-integer number of events warns user and throws 
+  an error now
+* Confusing results in `baggr_binary` vignette (rare events section)
+* Fixes crashes for elpd calculations with unusual binary input data
+
+
 
 # baggr 0.6.5-0.6.9 (June-August 2021)
 
@@ -7,7 +45,6 @@
   (between `"effects"` and `"groups"`). Printing comparisons also returns posterior
   predictive draws.
 * Upgraded forest plots to work with `forestplot` 2.0
-
 
 Minor bug fixes:
 
@@ -20,6 +57,8 @@ Minor bug fixes:
   triggered by normal user behaviour.
 * Fixed a bug where priors for meta-regressions were set even though there were
   no covariates.
+
+
 
 # baggr 0.6.3-0.6.4 (May 2021)
 

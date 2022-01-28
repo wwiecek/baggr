@@ -13,8 +13,9 @@
 #'              posterior predictive). If pre-existing baggr models are
 #'              passed to `...`, this argument is ignored.
 #' @param compare When plotting, choose between comparison of `"groups"`
-#'                (default) or (hyper-) `"effects"`. The former is not available
-#'                when `what = "prior"`.
+#'                (default), `"hyperpars"` (to omit group-specific estimates)
+#'                or (predicted) `"effects"`.
+#'                The `"groups"` option is not available when `what = "prior"`.
 #' @param transform a function (e.g. exp(), log()) to apply to
 #'                  the values of group (and hyper, if hyper=TRUE)
 #'                  effects before plotting; when working with
@@ -93,15 +94,20 @@
 
 baggr_compare <- function(...,
                           what    = "pooling",
-                          compare = "groups",
+                          compare = c("groups", "hyperpars", "effects"),
                           transform = NULL,
                           plot = FALSE) {
   l <- list(...)
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
-  if(!compare %in% c("groups","effects")){
-    stop("'compare' argument must be set to either 'groups' or 'effects'.")
+  compare <- match.arg(compare, c("groups", "hyperpars", "effects"))
+
+  if(all(unlist(lapply(l, class)) == "baggr_cv")) {
+    message("LOO CV models used instead of baggr models.",
+    "Using full models.")
+    l <- lapply(l, function(x) x$full_model)
   }
+
   if(all(unlist(lapply(l, class)) == "baggr")) {
     # return_models_flag <- 0
     if(is.null(names(l)))
@@ -224,7 +230,7 @@ baggr_compare <- function(...,
   posteriorpd_trt <- do.call(rbind, (
     lapply(models, function(x) {
       est <- effect_draw(x, transform = transform,
-                              summary = TRUE)
+                         summary = TRUE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
@@ -270,8 +276,8 @@ print.baggr_compare <- function(x, digits, ...){
     mcov <- x$covariates
     d <- 3
     mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
-                       signif(mcov$sd, digits = digits), ")",
-                       sep = "")
+                          signif(mcov$sd, digits = digits), ")",
+                          sep = "")
     mcov <- mcov[, c("model", "covariate", "meansd")]
     ycov <- reshape(mcov, idvar = "model", timevar = "covariate", direction = "wide")
     colnames(ycov) <- gsub("meansd.", "", colnames(ycov))
@@ -288,8 +294,9 @@ print.baggr_compare <- function(x, digits, ...){
 #' run automatically by baggr_compare
 #' @param x baggr_compare model to plot
 #' @param compare When plotting, choose between comparison of `"groups"`
-#'                (default) or (hyper-) `"effects"`. The former is not available
-#'                when `what = "prior"`.
+#'                (default), `"hyperpars"` (to omit group-specific estimates)
+#'                or (predicted) `"effects"`.
+#'                The `"groups"` option is not available when `what = "prior"`.
 #' @param grid_models If `FALSE` (default), generate a single comparison plot;
 #'                if `TRUE`, display each model (using individual [baggr_plot]'s)
 #'                side-by-side.
@@ -300,7 +307,7 @@ print.baggr_compare <- function(x, digits, ...){
 #'              passed to the `style` argument in [baggr_plot].
 #' @param interval probability level used for display of posterior interval
 #' @param hyper Whether to plot pooled treatment effect
-#'              in addition to group treatment effects
+#'              in addition to group treatment effects when `compare = "groups"`
 #' @param transform a function (e.g. exp(), log())
 #'                  to apply to the values of group (and hyper, if hyper=TRUE)
 #'                  effects before plotting; when working with effects that are on
@@ -310,6 +317,10 @@ print.baggr_compare <- function(x, digits, ...){
 #'              If yes, medians from the model with largest range of estimates
 #'              are used for sorting.
 #'              If not, groups are shown alphabetically.
+#' @param add_values logical; if TRUE, values will be printed next to the plot,
+#'                   in a style that's similar to what is done for forest plots
+#' @param values_digits number of significant digits to use when printing values,
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param ... ignored for now, may be used in the future
 #' @export
@@ -323,12 +334,17 @@ plot.baggr_compare <- function(x,
                                transform = NULL,
                                order = F,
                                vline = FALSE,
+                               add_values = FALSE,
+                               values_digits = 2,
+                               values_size = 2,
                                ...) {
 
   # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
   # https://stackoverflow.com/questions/9439256/
   #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
   lci <- uci <- model <- group <- NULL
+
+  compare <- match.arg(compare, c("groups", "hyperpars", "effects"))
 
   if(is.null(transform))
     transform <- x$transform
@@ -357,7 +373,7 @@ plot.baggr_compare <- function(x,
 
   # This is non-grid, baggr_compare-specific code:
 
-  if(compare == "groups") {
+  if(compare %in% c("groups", "hyperpars")) {
 
     # Create input data frames for ggplots
     plot_dfs <- lapply(as.list(1:(length(effect_names))), function(i) {
@@ -388,7 +404,10 @@ plot.baggr_compare <- function(x,
             sd = sd(hyper_treat),
             group = "Pooled Estimate"
           )
-          m <- rbind(hyper_effects, m)
+          if(compare == "hyperpars")
+            m <- hyper_effects
+          if(compare == "groups")
+            m <- rbind(hyper_effects, m)
         }
         return(m)
       })
@@ -431,20 +450,26 @@ plot.baggr_compare <- function(x,
 
       plots <- single_comp_plot(big_df, "", grid = T,
                                 ylab = paste0("Treatment effect (",
-                                              round(100*interval), "% interval)"))
+                                              round(100*interval), "% interval)"),
+                                add_values = add_values,
+                                values_digits = values_digits,
+                                values_size = values_size)
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
                          ylab = paste0("Treatment effect (",
-                                       round(100*interval), "% interval)"))
+                                       round(100*interval), "% interval)"),
+                         add_values = add_values,
+                         values_digits = values_digits,
+                         values_size = values_size)
       })
     }
-  } else if(compare == "effects"){
+  }
+
+
+  if(compare == "effects"){
     plots <- do.call(effect_plot, models) +
       ggplot2::labs(fill = NULL)
-
-  } else {
-    stop("Argument compare = must be 'effects' or 'groups'.")
   }
 
   # return the plots
@@ -453,22 +478,38 @@ plot.baggr_compare <- function(x,
 
 
 
-#' Plot single comparison plot in baggr_compare style
+#' Plot single comparison ggplot in `baggr_compare` style
 #'
-#' @param df data.frame with columns 'group', 'median', 'lci', 'uci', 'model' and
-#'           optionally 'parameter'
-#' @param title 'ggtitle'
-#' @param legend 'legend.position'
+#' @param df data.frame with columns `group`, `median`, `lci`, `uci`,
+#'           `model` (character or factor listing compared models) and,
+#'           optionally, `parameter` (character or factor with name of parameter)
+#' @param title `ggtitle` argument passed to ggplot
+#' @param legend `legend.position`  argument passed to ggplot
 #' @param ylab Y axis label
-#' @param grid logical; if TRUE, facets by 'parameter' column
+#' @param grid logical; if `TRUE`, facets the plot by values in the `parameter` column
+#' @param points you can optionally specify a (`numeric`) column that has values of points
+#'               to be plotted next to intervals
+#' @param add_values logical; if `TRUE`, values will be printed next to the plot,
+#'                   in a style that's similar to what is done for forest plots
+#' @param values_digits number of significant digits to use when printing values,
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @return a `ggplot2` object
 #' @export
-single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) {
+single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
+                             points = FALSE,
+                             add_values = FALSE, values_digits = 2, values_size = 2.5) {
+
   group <- median <- lci <- uci <- model <- NULL
-  ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
-                                   ymin = lci, ymax = uci,
-                                   group = interaction(model),
-                                   color = model)) +
+
+  # A bit of code to avoid printing pointless colour legend
+  if(is.null(df[["model"]])) df$model <- ""
+  if(length(unique(df[["model"]])) == 1)
+    legend <- "none"
+
+  pl <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
+                                         ymin = lci, ymax = uci,
+                                         group = interaction(model),
+                                         color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
     ggplot2::geom_errorbar(size = 1.2, width = 0,
                            position = ggplot2::position_dodge(width = 0.5)
@@ -476,13 +517,55 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F) 
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
                         position = ggplot2::position_dodge(width=0.5),
                         pch = 21) +
-    ggplot2::coord_flip() +
+    { if(points != 0 && !is.null(df[[points]]) && is.numeric(df[[points]]))
+      ggplot2::geom_point(aes(x = group, y = .data[[points]]), color = "black") } +
+    { if(!add_values) ggplot2::coord_flip() } +
     ggplot2::labs(x = "",
                   y = ylab) +
     {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
     baggr_theme_get() +
     ggplot2::theme(legend.position=legend)
+
+  if(add_values)
+    pl <- add_plot_values(pl, values_digits, values_size)
+
+  pl
 }
+
+
+add_plot_values <- function(pl, values_digits = 2, values_size = 2.5) {
+
+  fmti <- function(x, digits = values_digits) {
+    format(round(x, digits), nsmall = digits)
+  }
+
+  group <- median <- lci <- uci <- model <- NULL
+
+  pl <- pl +
+    ggplot2::geom_text(
+      aes(label = fmti(lci, values_digits),
+          hjust = 1,
+          y = 1.1*max(uci)),
+      position = ggplot2::position_dodge(width = .5),
+      size = values_size) +
+    ggplot2::geom_text(
+      aes(label = fmti(mean, values_digits),
+          hjust = 1,
+          y = 1.2*max(uci)),
+      position = ggplot2::position_dodge(width = .5),
+      size = values_size) +
+    ggplot2::geom_text(
+      aes(label = fmti(uci, values_digits),
+          hjust = 1,
+          y = 1.3*max(uci)),
+      position = ggplot2::position_dodge(width = .5),
+      size = values_size) +
+    ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
+    ggplot2::coord_flip(clip = "off")
+
+  pl
+}
+
 
 
 #' Separate out ordering so we can test directly

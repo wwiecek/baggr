@@ -2,25 +2,46 @@
 % Please edit documentation in R/baggr_compare.R
 \name{single_comp_plot}
 \alias{single_comp_plot}
-\title{Plot single comparison plot in baggr_compare style}
+\title{Plot single comparison ggplot in \code{baggr_compare} style}
 \usage{
-single_comp_plot(df, title = "", legend = "top", ylab = "", grid = F)
+single_comp_plot(
+  df,
+  title = "",
+  legend = "top",
+  ylab = "",
+  grid = F,
+  points = FALSE,
+  add_values = FALSE,
+  values_digits = 2,
+  values_size = 2.5
+)
 }
 \arguments{
-\item{df}{data.frame with columns 'group', 'median', 'lci', 'uci', 'model' and
-optionally 'parameter'}
+\item{df}{data.frame with columns \code{group}, \code{median}, \code{lci}, \code{uci},
+\code{model} (character or factor listing compared models) and,
+optionally, \code{parameter} (character or factor with name of parameter)}
 
-\item{title}{'ggtitle'}
+\item{title}{\code{ggtitle} argument passed to ggplot}
 
-\item{legend}{'legend.position'}
+\item{legend}{\code{legend.position}  argument passed to ggplot}
 
 \item{ylab}{Y axis label}
 
-\item{grid}{logical; if TRUE, facets by 'parameter' column}
+\item{grid}{logical; if \code{TRUE}, facets the plot by values in the \code{parameter} column}
+
+\item{points}{you can optionally specify a (\code{numeric}) column that has values of points
+to be plotted next to intervals}
+
+\item{add_values}{logical; if \code{TRUE}, values will be printed next to the plot,
+in a style that's similar to what is done for forest plots}
+
+\item{values_digits}{number of significant digits to use when printing values,}
+
+\item{values_size}{size of font for the values, if \code{add_values == TRUE}}
 }
 \value{
 a \code{ggplot2} object
 }
 \description{
-Plot single comparison plot in baggr_compare style
+Plot single comparison ggplot in \code{baggr_compare} style
 }

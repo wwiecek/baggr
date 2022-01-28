@@ -7,7 +7,7 @@ check_columns_numeric <- function(data) {
 }
 
 is_binary <- function(v) {
-  if(identical(as.numeric(sort(unique(v))), c(0,1)))
+  if(is.numeric(v) && all(v %in% c(0,1)))
     return(TRUE)
   else
     return(FALSE)
@@ -48,8 +48,12 @@ check_columns <- function(data, outcome, group, treatment, stop.for.na = TRUE)  
 
 }
 
-check_columns_binary <- function(data) {
+check_columns_binary <- function(data, stop=TRUE) {
   if(is.null(data$a) || is.null(data$c) ||
-     ((is.null(data$b) || is.null(data$d)) && (is.null(data$n1) || is.null(data$n2))))
-    stop("Binary data must have columns 'a', 'c' and 'b'/'n1', 'd'/'n2'")
+     ((is.null(data$b) || is.null(data$d)) && (is.null(data$n1) || is.null(data$n2)))){
+    if(stop)
+      stop("Binary data must have columns 'a', 'c' and 'b'/'n1', 'd'/'n2'")
+    return(0)
+  }
+  return(1)
 }

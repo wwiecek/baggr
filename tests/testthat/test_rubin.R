@@ -19,7 +19,7 @@ test_that("Error messages for wrong inputs are in place", {
 
   # model or pooling type doesn't exist
   expect_error(baggr(df_pooled, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_pooled, pooling = "nune"), "Wrong pooling")
+  expect_error(baggr(df_pooled, pooling = "nune"), "should be one of")
 
   # NA or NULL inputs
   df_na <- df_pooled; df_na$tau[1] <- NA
@@ -109,7 +109,30 @@ test_that("Pooling metrics", {
   # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
   expect_equal(length(unique(pp[2,,1])), 1)
   expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
+
+  # Calculation of I^2 and H^2
+  i2 <- pooling(bg5_p, metric = "isq")
+  expect_is(i2, "array")
+  expect_gte(min(i2), 0)
+  expect_lte(max(i2), 1)
+  h2 <- pooling(bg5_p, metric = "hsq")
+  expect_is(h2, "array")
+  expect_gt(min(h2), 1)
+
+  # Calculation of weights makes sense
+  wt <- weights(bg5_p)
+  expect_is(wt, "array")
+  expect_equal(dim(wt), c(3,8,1))
+  expect_equal(sum(wt[2,,1]), 1)
+  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[1,,1]), 0)
+  wt2 <- pooling(bg5_p, metric = "weights")
+  expect_identical(wt, wt2)
+
 })
+
+
 
 
 test_that("Calculation of effects works", {
@@ -275,7 +298,7 @@ test_that("baggr_compare basic cases work with Rubin", {
   expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # try to make nonexistant comparison:
   expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"),
-               "argument must be set")
+               "should be one of")
   # Run models from baggr_compare:
   bgcomp <- expect_warning(baggr_compare(schools,
                                          iter = 200, refresh = 0))

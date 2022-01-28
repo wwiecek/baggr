@@ -17,7 +17,7 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 test_that("Error messages for wrong inputs are in place", {
   # model, data or pooling mismatch
   expect_error(baggr(df_mutau, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_mutau, pooling = "nune"), "Wrong pooling")
+  expect_error(baggr(df_mutau, pooling = "nune"), "should be one of")
 
   # NA or NULL inputs
   df_na <- df_mutau; df_na$mu[1] <- NA
@@ -94,6 +94,27 @@ test_that("Pooling metrics", {
   expect_equal(as.numeric(pp[2,1,1]), .7, tolerance = .2)
 })
 
+test_that("extra pooling stats work", {
+  # Extra pooling checks
+  # Calculation of I^2 and H^2
+  i2 <- pooling(bg5_p, metric = "isq")
+  expect_is(i2, "array")
+  expect_gte(min(i2), 0)
+  expect_lte(max(i2), 1)
+  h2 <- pooling(bg5_p, metric = "hsq")
+  expect_is(h2, "array")
+  expect_gte(min(h2), 1)
+  # Calculation of weights makes sense
+  wt <- weights(bg5_p)
+  expect_is(wt, "array")
+  expect_equal(dim(wt), c(3,8,1))
+  expect_equal(sum(wt[2,,1]), 1)
+  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
+  expect_gte(sum(wt[1,,1]), 0)
+  wt2 <- pooling(bg5_p, metric = "weights")
+  expect_identical(wt, wt2)
+})
 
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")

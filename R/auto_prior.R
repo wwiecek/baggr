@@ -57,7 +57,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     priors_spec <- list(
       "rubin" = c("hypermean" = "real", "hypersd" = "positive_real"),
       "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real",
-                        "control" = "real", "control_sd" = "positive_real"),
+                        "control" = "real", "control_sd" = "positive_real",
+                        "sigma" = "positive_real"),
       "mutau" = c("hypermean" = "real_2",
                   "hypercor" = "corr",
                   "hypersd" = "positive_real"),
@@ -94,6 +95,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                                          multinormal(c(0,0),
                                                      c(100*max(abs(data$mu)),
                                                        100*max(abs(data$tau)))*diag(2)),
+                                       "sigma"      = uniform(0, 10*max(c(sqrt(data$n.mu)*data$se.mu,
+                                                                          sqrt(data$n.tau*data$se.tau)))),
                                        "hypersd"    = uniform(0, 10*sd(data$tau)),
                                        "hypercor"   = lkj(3),
                                        "control"    = normal(0, 10*max(abs(data$mu))),
@@ -171,15 +174,31 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
               message("Setting hyper-SD prior using 10 times the naive SD across sites")
               special_name <- "sigma_tau"
             }
-          } else if(current_prior == "control" && model == "logit") {
-            prop_ctrl <- data$c / (data$c + data$d)
-            if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
-              message("Baseline proportion of events is very low or very common.",
-                      "Consider manually setting prior_control.")
-            special_name <- "log odds of event rate in untreated: mean"
-          } else if(current_prior == "control_sd" && model == "logit") {
-            if(stan_data$pooling_baseline != 0)
-              special_name <- "log odds of event rate in untreated: sd"
+          } else if(current_prior == "control") {
+            if(model == "logit"){
+              prop_ctrl <- data$c / (data$c + data$d)
+              if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
+                message("Baseline proportion of events is very close to 0 or 1.",
+                        "Consider manually setting prior_control.")
+              special_name <- "log odds of event rate in untreated: mean"
+            }
+            if(model %in% c("rubin_full", "mutau_full")){
+              if(stan_data$pooling_baseline != 0)
+                special_name <- "mu (hyperparameter)"
+              else
+                special_name <- "independent prior on control means"
+            }
+          } else if(current_prior == "control_sd") {
+            if(stan_data$pooling_baseline != 0){
+              if(model == "logit")
+                special_name <- "log odds of event rate in untreated: sd"
+              if(model %in% c("rubin_full", "mutau_full")){
+                special_name <- "sigma_mu (hyperparameter)"
+              }
+            }else
+              special_name <- "DNP" #do not print, this is not used!
+          } else if(current_prior == "sigma") {
+              special_name <- "error term in linear regresion"
           }
 
           # 2) Print the prior:
@@ -187,7 +206,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
           if(special_name == "")
             message(paste0("* ", current_prior, " ~ ",
                            print_dist(default_prior_dist)))
-          else
+          else if(special_name != "DNP")
             message(paste0("* ", current_prior, " [", special_name, "] ~ ",
                            print_dist(default_prior_dist)))
 
@@ -196,10 +215,10 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
              pooling != "partial")
             message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
           if(current_prior == "control_sd" &&
-             model == "logit" &&
-             stan_data$pooling_baseline != 0)
+             model %in% c("logit", "rubin_full", "mutau_full") &&
+             stan_data$pooling_baseline == 0)
             message("SD hyperparameter for control groups defined,",
-                    "but there is no pooling. Ignoring.")
+                    "but there is no pooling. Ignoring it.")
         }
       }
     }
@@ -208,28 +227,24 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     check_eligible_priors(prior_list, priors_spec[[model]])
   }
 
-
-
   if(model == "quantiles") {
-    prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
-    prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$Nq)
-    if(!silent) {
-      message("Sigma (hypervariance-covariance) = 1000*I_{Nquantiles}")
-    }
+    # prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
+    # prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$Nq)
+    # if(!silent) {
+    #   message("Sigma (hypervariance-covariance) = 1000*I_{Nquantiles}")
+    # }
   }
 
   # Setting covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){
-      val <- max(10*unlist(lapply(data[, covariates, drop = FALSE], function(x)
-        sd(as.numeric(as.factor(x))))))
+      val <- 10*max(apply(stan_data$X, 2, sd))
       prior_list <- set_prior_val(prior_list, "prior_beta", normal(0, val))
       message(
         paste0("Setting prior for covariates in regression to normal,",
                " with SD equal to 10*(highest SD among covariates):\n",
                "* beta ~ ", print_dist(normal(0, val)),
-               # Normal(0, ", format(val, digits = 2), "^2)",
-               " -- purely experimental, use with caution"))
+               "---purely experimental, we recommend you set this manually"))
     } else {
       prior_list <- set_prior_val(prior_list, "prior_beta", prior$beta)
     }

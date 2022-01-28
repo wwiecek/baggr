@@ -7,11 +7,11 @@
 \method{print}{baggr_cv}(x, digits = 3, ...)
 }
 \arguments{
-\item{x}{baggr_cv object to print}
+\item{x}{\code{baggr_cv} object obtained from \link{loocv} to print}
 
 \item{digits}{number of digits to print}
 
-\item{...}{additional arguments for s3 consistency}
+\item{...}{Unused, ignore}
 }
 \description{
 Print baggr cv objects nicely

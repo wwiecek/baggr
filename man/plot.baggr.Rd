@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot.baggr}
 \alias{plot.baggr}
-\title{Generic plot for baggr package}
+\title{Plotting method for baggr outputs}
 \usage{
 \method{plot}{baggr}(x, ...)
 }

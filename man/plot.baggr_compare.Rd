@@ -15,6 +15,9 @@
   transform = NULL,
   order = F,
   vline = FALSE,
+  add_values = FALSE,
+  values_digits = 2,
+  values_size = 2,
   ...
 )
 }
@@ -22,8 +25,9 @@
 \item{x}{baggr_compare model to plot}
 
 \item{compare}{When plotting, choose between comparison of \code{"groups"}
-(default) or (hyper-) \code{"effects"}. The former is not available
-when \code{what = "prior"}.}
+(default), \code{"hyperpars"} (to omit group-specific estimates)
+or (predicted) \code{"effects"}.
+The \code{"groups"} option is not available when \code{what = "prior"}.}
 
 \item{style}{What kind of plot to display (if \code{grid_models = TRUE}),
 passed to the \code{style} argument in \link{baggr_plot}.}
@@ -39,7 +43,7 @@ if \code{FALSE}, returns separate plot for each parameter}
 \item{interval}{probability level used for display of posterior interval}
 
 \item{hyper}{Whether to plot pooled treatment effect
-in addition to group treatment effects}
+in addition to group treatment effects when \code{compare = "groups"}}
 
 \item{transform}{a function (e.g. exp(), log())
 to apply to the values of group (and hyper, if hyper=TRUE)
@@ -53,6 +57,13 @@ are used for sorting.
 If not, groups are shown alphabetically.}
 
 \item{vline}{logical; show vertical line through 0 in the plot?}
+
+\item{add_values}{logical; if TRUE, values will be printed next to the plot,
+in a style that's similar to what is done for forest plots}
+
+\item{values_digits}{number of significant digits to use when printing values,}
+
+\item{values_size}{size of font for the values, if \code{add_values == TRUE}}
 
 \item{...}{ignored for now, may be used in the future}
 }
