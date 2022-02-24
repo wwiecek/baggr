@@ -5,6 +5,7 @@
 \alias{multinormal}
 \alias{lkj}
 \alias{normal}
+\alias{lognormal}
 \alias{cauchy}
 \alias{uniform}
 \title{Prior distributions in baggr}
@@ -14,6 +15,8 @@ multinormal(location, Sigma)
 lkj(shape, order = NULL)
 
 normal(location, scale)
+
+lognormal(mu, sigma)
 
 cauchy(location, scale)
 
@@ -32,6 +35,10 @@ as it is inferred directly in the model)}
 
 \item{scale}{SD for Normal, scale for Cauchy}
 
+\item{mu}{mean of ln(X) for lognormal}
+
+\item{sigma}{SD of ln(X) for lognormal}
+
 \item{lower}{Lower bound for Uniform}
 
 \item{upper}{Upper bound for Uniform}
@@ -45,29 +52,26 @@ passing on the arguments, their only other role is to perform a rudimentary chec
 if the distribution is specified correctly.
 }
 \details{
-The prior choice in \link{baggr} is always done via 3 distinct arguments: \code{prior_hypermean},
-\code{prior_hypersd}, and \code{prior_hypercor}.
-
-These respectively refer to the priors on the average of the effects across
-the groups (hypermean), the standard deviation of the effects across the groups
-(hypersd), and the correlation in the distribution of parameters across groups
-when the model allows multivariate shrinkage (say on control group means and effects).
+The prior choice in \link{baggr} is done via distinct arguments for each type of prior,
+e.g. \code{prior_hypermean}, or a named list of several passed to \code{prior}.
+See the examples below.
 
 Notation for priors is "plain-text", in that you can write the distributions as
 \code{normal(5,10)}, \code{uniform(0,100)} etc.
-As with any other argument one has the option to simply input the prior directly,
-e.g. \code{prior_hypermean = normal(0,1)} , or by creating a named list of custom priors
-and then inputting the list to the argument \code{priors}.
-See the examples below for more.
 
-Different parameters admit different priors:
+Different parameters admit different priors (see \link{baggr} for explanations of
+what the different \code{prior_} arguments do):
 \itemize{
-\item \code{prior_hypermean} will take \code{"normal"}, \code{"uniform"} and \code{"cauchy"} input for a scalar mean.
-For a vector mean, it will take any of these arguments and apply them independently to
+\item \code{prior_hypermean}, \code{prior_control}, and \code{prior_beta}
+will take \code{"normal"}, \code{"uniform"}, \code{"lognormal"}, and
+\code{"cauchy"} input for scalars.
+For a vector hypermean (see \code{"mutau"} model), it will take any of these
+arguments and apply them independently to
 each component of the vector, or it can also take a \code{"multinormal"} argument
 (see the example below).
-\item \code{prior_hypersd} will take \code{"normal"} and \code{"uniform"}
-\item \code{prior_hypercor} allows \code{"lkj"} input
+\item \code{prior_hypersd}, \code{prior_control_sd}, and \code{prior_sigma} will take \code{"normal"}, \code{"uniform"}, and \code{"lognormal"}
+but negative parts of the distribution are truncated
+\item \code{prior_hypercor} allows \code{"lkj"} input (see Lewandowski \emph{et al.})
 }
 }
 \examples{

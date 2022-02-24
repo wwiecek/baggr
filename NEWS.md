@@ -10,17 +10,17 @@
   performance graphically
 * Risk difference models are now easy to fit, you only need to transform your binary input data with `prepare_ma(..., effect = "RD")`
 
-
 Misc:
 
-* You can plot only hyperparameter values (without group-specific estimates) in
-  baggr_compare now
-* Removed an unnecessary dependency on quantreg
+* You can plot hyperparameter values only (without group-specific estimates) in
+  `baggr_compare()` now
+* Removed an unnecessary dependency on the `quantreg` package
 * Rare event corrections (`prepare_ma()`) can now be applied either to particular 
-  studies or all data
+  studies or all data (the literature sometimes recommends the latter)
 * Clearer prompts about priors and pooling in control arms when working with
   individual-level data models.
 * Can now set priors for error terms in linear regression models (`prior_sigma`)
+* Added `lognormal()` prior and updated some prior documentation
 
 Bug fixes:
 
