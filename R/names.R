@@ -33,8 +33,8 @@ data_type_default_model <- c("pool_noctrl_narrow" = "rubin",
 
 # Allowed priors for different types of variables
 available_priors <- list(
-  "real" = c("normal", "uniform", "cauchy", "lognormal"),
-  "positive_real" = c("normal", "uniform", "cauchy", "lognormal"),
+  "real" = c("normal", "uniform", "cauchy", "lognormal", "student_t"),
+  "positive_real" = c("normal", "uniform", "cauchy", "lognormal", "student_t"),
   "real_2" = c("multinormal"),
   "corr" = c("lkj")
 )

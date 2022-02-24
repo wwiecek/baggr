@@ -14,8 +14,9 @@
 #' @param Sigma Variance-covariance matrix for multivariate normal.
 #' @param lower Lower bound for Uniform
 #' @param upper Upper bound for Uniform
-#' @param mu    mean of ln(X) for lognormal
-#' @param sigma SD of ln(X) for lognormal
+#' @param mu    mean of ln(X) for lognormal or location for Student's generalised T
+#' @param sigma SD of ln(X) for lognormal or scale for Student's generalised T
+#' @param nu    degrees of freedom for Student's generalised T
 #' @param shape Shape parameter for LKJ
 #' @param order Order of LKJ matrix (typically it does not need to be specified,
 #'        as it is inferred directly in the model)
@@ -120,8 +121,8 @@ set_prior_val <- function(target, name, prior, p = 1) {
     # For now we only allow dimension of 1 (for LKJ) or 3 (for uni, normal, cauchy, t)
     if(length(prior$values) == 2)
       prior$values <- c(prior$values, 0)
-    else if(length(prior$values) > 1)
-      stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
+    # else if(length(prior$values) > 1)
+      # stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
     target[[paste0(name, "_val")]] <- prior$values
 
     if(p > 1)
@@ -176,6 +177,18 @@ lognormal <- function(mu, sigma) {
   if(sigma <= 0)
     stop("sigma parameter must be positive")
   return(list(dist = "lognormal", values = c(mu, sigma), dimension = 1))
+}
+
+#' @rdname priors
+#' @export
+student_t <- function(nu, mu, sigma) {
+  check_scalar(mu)
+  check_scalar(sigma)
+  if(nu <= 0)
+    stop("degrees of freedom (nu) parameter must be positive")
+  if(sigma <= 0)
+    stop("sigma parameter must be positive")
+  return(list(dist = "student_t", values = c(nu, mu, sigma), dimension = 1))
 }
 
 #' @rdname priors

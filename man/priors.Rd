@@ -6,6 +6,7 @@
 \alias{lkj}
 \alias{normal}
 \alias{lognormal}
+\alias{student_t}
 \alias{cauchy}
 \alias{uniform}
 \title{Prior distributions in baggr}
@@ -17,6 +18,8 @@ lkj(shape, order = NULL)
 normal(location, scale)
 
 lognormal(mu, sigma)
+
+student_t(nu, mu, sigma)
 
 cauchy(location, scale)
 
@@ -35,9 +38,11 @@ as it is inferred directly in the model)}
 
 \item{scale}{SD for Normal, scale for Cauchy}
 
-\item{mu}{mean of ln(X) for lognormal}
+\item{mu}{mean of ln(X) for lognormal or location for Student's generalised T}
 
-\item{sigma}{SD of ln(X) for lognormal}
+\item{sigma}{SD of ln(X) for lognormal or scale for Student's generalised T}
+
+\item{nu}{degrees of freedom for Student's generalised T}
 
 \item{lower}{Lower bound for Uniform}
 
