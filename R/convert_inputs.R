@@ -107,7 +107,6 @@ convert_inputs <- function(data,
   #for now this means no automatic conversion of individual->pooled
 
 
-
   # Step 3: conversions of data -----
 
   # 3.1. individual level data
@@ -274,7 +273,6 @@ convert_inputs <- function(data,
 
   # 3.3. summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
-    group_label <- data[[group]]
     group_label <- data[[group]]
     if(is.null(data[[group]]) && (group != "group"))
       warning(paste0("Column '", group,
