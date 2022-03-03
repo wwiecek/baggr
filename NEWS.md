@@ -1,4 +1,12 @@
-# baggr 0.6.10-0.6.16 (Sept-Dec 2021)
+# baggr 0.6.20 (Feb 2022)
+
+Misc:
+* Added `student_t()` prior and updated some prior documentation
+* Removed some cases where input data would be reordered (previously this could 
+  happen to either individual-level continuous data or summary data of binary events)
+* More warning prompts
+
+# baggr 0.6.10-0.6.18 (Sept-Dec 2021)
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
