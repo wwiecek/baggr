@@ -16,6 +16,9 @@
 #'                  plotting or printing functions)
 #' @param random_only logical; for meta-regression models, should [fixed_effects] be included in the
 #'                    returned group effect?
+#' @param rename_int logical; if `TRUE` then rather than returning `median`, `lci` and `uci`
+#'                   columns they are renamed to e.g. `50%`, `2.5%`, `97.5%`; this only
+#'                   works if `summary=TRUE`
 #' @return Either an array with MCMC samples (if `summary = FALSE`)
 #'         or a summary of these samples (if `summary = TRUE`).
 #'         For arrays the three dimensions are: N samples, N groups and N effects
@@ -37,7 +40,8 @@
 #' @export
 
 group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
-                          random_only = FALSE) {
+                          random_only = FALSE,
+                          rename_int = FALSE) {
   check_if_baggr(bg)
 
   # Grab group labels
@@ -105,7 +109,10 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
     m <- apply(m, c(2,3), function(x) c(quantile(x, intval), mean(x), sd(x)))
     if(is.null(dimnames(m)[[2]]))
       dimnames(m)[[2]] <- 1:nrow(m)
-    dimnames(m)[[1]] <- c("lci", "median", "uci", "mean", "sd")
+    if(rename_int){
+      dimnames(m)[[1]] <- c(paste0(as.character(100*intval), "%"), "mean", "sd")
+    }else
+      dimnames(m)[[1]] <- c("lci", "median", "uci", "mean", "sd")
     m <- aperm(m, c(2,1,3))
   }
 

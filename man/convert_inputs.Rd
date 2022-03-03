@@ -47,9 +47,10 @@ R structure that's appropriate for use by \link{baggr} Stan models;
 and are necessary for \link{baggr} to work correctly
 }
 \description{
-Converts data to Stan inputs, checks integrity of data
-and suggests default model if needed. Typically all of this is
-done automatically by \link{baggr}, \strong{this function is only for debugging}
+Converts data to a list of inputs suitable for Stan models,
+checks integrity of data and suggests the appropriate default model
+if needed. Typically all of this is
+done automatically by \link{baggr}, so \strong{this function is only for debugging}
 or running models "by hand".
 }
 \details{

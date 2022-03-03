@@ -95,7 +95,6 @@ prepare_ma <- function(data, #standardise = NULL,
     }else
       stop("Data must be individual-level (if summarising) or binary (if converting), see ?prepare_ma")
   }
-
   check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
 
 
