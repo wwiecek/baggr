@@ -17,12 +17,13 @@
 #'                or (predicted) `"effects"`.
 #'                The `"groups"` option is not available when `what = "prior"`.
 #' @param transform a function (e.g. exp(), log()) to apply to
-#'                  the values of group (and hyper, if hyper=TRUE)
+#'                  the the sample of group (and hyper, if `hyper=TRUE`)
 #'                  effects before plotting; when working with
 #'                  effects that are on log scale,
 #'                  exponent transform is used automatically,
 #'                  you can plot on log scale by setting
 #'                  transform = identity
+#' @param prob  Width of uncertainty interval (defaults to 95%)
 #' @param plot logical; calls [plot.baggr_compare] when running `baggr_compare`
 #' @return an object of class `baggr_compare`
 #' @seealso [plot.baggr_compare] and [print.baggr_compare]
@@ -96,6 +97,7 @@ baggr_compare <- function(...,
                           what    = "pooling",
                           compare = c("groups", "hyperpars", "effects"),
                           transform = NULL,
+                          prob = 0.95,
                           plot = FALSE) {
   l <- list(...)
   if(length(l) == 0)
@@ -212,6 +214,7 @@ baggr_compare <- function(...,
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
+                              interval = prob,
                               summary = TRUE, message = FALSE)$tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -221,6 +224,7 @@ baggr_compare <- function(...,
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
+                              interval = prob,
                               summary = TRUE, message = FALSE)$sigma_tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -230,6 +234,7 @@ baggr_compare <- function(...,
   posteriorpd_trt <- do.call(rbind, (
     lapply(models, function(x) {
       est <- effect_draw(x, transform = transform,
+                         interval = prob,
                          summary = TRUE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -310,9 +315,7 @@ print.baggr_compare <- function(x, digits, ...){
 #'              in addition to group treatment effects when `compare = "groups"`
 #' @param transform a function (e.g. exp(), log())
 #'                  to apply to the values of group (and hyper, if hyper=TRUE)
-#'                  effects before plotting; when working with effects that are on
-#'                  log scale, exponent transform is used automatically,
-#'                  you can plot on log scale by setting transform = identity
+#'                  effects before plotting
 #' @param order Whether to sort by median treatment effect by group.
 #'              If yes, medians from the model with largest range of estimates
 #'              are used for sorting.

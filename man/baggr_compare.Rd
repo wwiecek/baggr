@@ -9,6 +9,7 @@ baggr_compare(
   what = "pooling",
   compare = c("groups", "hyperpars", "effects"),
   transform = NULL,
+  prob = 0.95,
   plot = FALSE
 )
 }
@@ -29,12 +30,14 @@ or (predicted) \code{"effects"}.
 The \code{"groups"} option is not available when \code{what = "prior"}.}
 
 \item{transform}{a function (e.g. exp(), log()) to apply to
-the values of group (and hyper, if hyper=TRUE)
+the the sample of group (and hyper, if \code{hyper=TRUE})
 effects before plotting; when working with
 effects that are on log scale,
 exponent transform is used automatically,
 you can plot on log scale by setting
 transform = identity}
+
+\item{prob}{Width of uncertainty interval (defaults to 95\%)}
 
 \item{plot}{logical; calls \link{plot.baggr_compare} when running \code{baggr_compare}}
 }

@@ -47,9 +47,7 @@ in addition to group treatment effects when \code{compare = "groups"}}
 
 \item{transform}{a function (e.g. exp(), log())
 to apply to the values of group (and hyper, if hyper=TRUE)
-effects before plotting; when working with effects that are on
-log scale, exponent transform is used automatically,
-you can plot on log scale by setting transform = identity}
+effects before plotting}
 
 \item{order}{Whether to sort by median treatment effect by group.
 If yes, medians from the model with largest range of estimates
