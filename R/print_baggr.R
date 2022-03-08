@@ -137,11 +137,11 @@ print.baggr <- function(x,
         cat(paste0("Treatment effects on ", x$effects[i]))
         if(exponent){
           cat(" (converted to exp scale):\n")
-          tab <- cbind(study_eff_tab[,c(5, 1, 2, 3),i],
+          tab <- cbind(study_eff_tab[,c(4, 1, 2, 3),i],
                        pooling = pooling_tab[2,,i])
         } else{
           cat(":\n")
-          tab <- cbind(study_eff_tab[,c(5, 4, 1, 2, 3),i],
+          tab <- cbind(study_eff_tab[,c(4, 5, 1, 2, 3),i],
                        pooling = pooling_tab[2,,i])
         }
         print(tab, digits = digits)
