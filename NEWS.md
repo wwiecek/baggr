@@ -1,12 +1,10 @@
 # baggr 0.6.20 (Feb 2022)
 
 Misc:
-* Printing `baggr` objects is now better at showing intervals and you can also 
-  change them in `print.baggr()`
-* Added `student_t()` prior and updated some prior documentation
-* Removed some cases where input data would be reordered (previously this could 
-  happen to either individual-level continuous data or summary data of binary events)
-* More warning prompts
+* Printing `baggr` objects is now better at showing intervals and you can also change them with arguments to `print.baggr()`
+* Added `student_t()` and `lognormal()` priors and updated some prior documentation
+* Removed some cases where input data would be reordered (previously this could happen to either individual-level continuous data or summary data of binary events)
+* More warning prompts at various stages of model fitting
 
 # baggr 0.6.10-0.6.18 (Sept-Dec 2021)
 
