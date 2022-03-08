@@ -10,7 +10,7 @@
   style = "areas",
   grid_models = FALSE,
   grid_parameters = TRUE,
-  interval = 0.95,
+  prob = x$prob,
   hyper = TRUE,
   transform = NULL,
   order = F,
@@ -40,7 +40,7 @@ side-by-side.}
 with many parameters (especially \code{"quantiles"}, \code{"sslab"});
 if \code{FALSE}, returns separate plot for each parameter}
 
-\item{interval}{probability level used for display of posterior interval}
+\item{prob}{Width of uncertainty interval (defaults to 95\%)}
 
 \item{hyper}{Whether to plot pooled treatment effect
 in addition to group treatment effects when \code{compare = "groups"}}
