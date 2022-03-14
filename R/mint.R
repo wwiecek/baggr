@@ -24,7 +24,7 @@ mint <- function(y, int=0.95, digits = NULL, median = FALSE, sd = FALSE){
   }
   if (is.matrix(y))
     t(apply(y, 2, mintv, int = int, digits = digits, median = median, sd = sd))
-  else if (class(y) == "numeric")
+  else if (inherits(y, "numeric"))
     mintv(y, int = int, digits = digits, median = median, sd = sd)
   else
     return(NULL)

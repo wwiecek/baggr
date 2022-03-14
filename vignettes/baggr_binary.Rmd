@@ -32,7 +32,7 @@ There are certain aspects of modelling binary data that are not yet covered by _
 
 * Directly modelling parameters relating to proportions (see "Model 3" in this [comprehensive tutorial with Stan](https://mc-stan.org/users/documentation/case-studies/pool-binary-trials.html))
 * [Understanding biases in reporting](https://handbook-5-1.cochrane.org/chapter_10/10_addressing_reporting_biases.htm)
-* Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided [here](http://nicedsu.org.uk/wp-content/uploads/2017/05/TSD2-General-meta-analysis-corrected-2Sep2016v2.pdf).
+* Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided by [NICE DSU at University of Sheffield](https://nicedsu.sites.sheffield.ac.uk/).
 
 
 # Basic meta-analysis of binary data
@@ -107,7 +107,7 @@ The basic tool that can help us choose is a `labbe` plot (introduced by @labbe_m
 
 ```r
 labbe(df_ma, plot_model = TRUE, shade_se = "or")
-#> Warning: There were 6 divergent transitions after warmup. See
+#> Warning: There were 5 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
@@ -118,7 +118,7 @@ labbe(df_ma, plot_model = TRUE, shade_se = "or")
 #> Warning: Removed 1 row(s) containing missing values (geom_path).
 ```
 
-![plot of chunk unnamed-chunk-5](fig/unnamed-chunk-5-1.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
 
@@ -164,7 +164,7 @@ for(es in c(1, .9, .8, .5, .25, .1)){
 title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
 ```
 
-![plot of chunk unnamed-chunk-8](fig/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 
 A very good discussion of these choices and intuitive plots are provided by @deeks_issues_2002 (see especially Figures 1-3).
 
@@ -181,19 +181,19 @@ bg_model_agg
 #> Pooling of effects: partial 
 #> 
 #> Aggregate treatment effect (on logarithm of odds ratio):
-#> Hypermean (tau) =  -0.17 with 95% interval -0.62 to 0.25 
-#> Hyper-SD (sigma_tau) = 0.2513 with 95% interval 0.0073 to 0.8693 
-#> Total pooling (1 - I^2) = 0.83 with 95% interval 0.31 to 1.00 
+#> Hypermean (tau) =  -0.16 with 95% interval -0.59 to 0.25 
+#> Hyper-SD (sigma_tau) = 0.24 with 95% interval 0.01 to 0.80 
+#> Total pooling (1 - I^2) = 0.84 with 95% interval 0.35 to 1.00 
 #> 
 #> Treatment effects on logarithm of odds ratio:
 #>               mean   sd  2.5%    50% 97.5% pooling
-#> Balcon      -0.129 0.27 -0.66 -0.131  0.43    0.76
-#> Clausen     -0.154 0.25 -0.67 -0.146  0.34    0.73
-#> Multicentre -0.073 0.27 -0.56 -0.091  0.53    0.75
-#> Barber      -0.201 0.28 -0.80 -0.187  0.32    0.79
-#> Norris      -0.152 0.22 -0.60 -0.152  0.28    0.67
-#> Kahler      -0.269 0.35 -1.13 -0.227  0.32    0.88
-#> Ledwich     -0.192 0.35 -0.97 -0.172  0.49    0.92
+#> Balcon      -0.130 0.25 -0.63 -0.135  0.40    0.77
+#> Clausen     -0.149 0.24 -0.63 -0.145  0.33    0.74
+#> Multicentre -0.068 0.26 -0.53 -0.084  0.50    0.76
+#> Barber      -0.201 0.27 -0.81 -0.187  0.29    0.80
+#> Norris      -0.148 0.22 -0.58 -0.147  0.30    0.68
+#> Kahler      -0.251 0.33 -1.10 -0.214  0.31    0.89
+#> Ledwich     -0.175 0.33 -0.90 -0.162  0.48    0.92
 ```
 
 Default plot (`plot(bg_model_agg)`) will show pooled group results. If you prefer a typical forest plot style, you can use `forest_plot`, which can also plot comparison with source data (via `print` argument):
@@ -203,7 +203,7 @@ Default plot (`plot(bg_model_agg)`) will show pooled group results. If you prefe
 forest_plot(bg_model_agg, show = "both", print = "inputs")
 ```
 
-![plot of chunk unnamed-chunk-10](fig/unnamed-chunk-10-1.png)
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
 
 Hypothetical treatment effect in a new trial is obtained through `effect_plot`.
 
@@ -212,7 +212,7 @@ Hypothetical treatment effect in a new trial is obtained through `effect_plot`.
 effect_plot(bg_model_agg)
 ```
 
-![plot of chunk unnamed-chunk-11](fig/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
 
 We can transform printed and plotted outputs to show exponents (or other transforms); for example:
 
@@ -224,7 +224,7 @@ gridExtra::grid.arrange(
   ncol = 2)
 ```
 
-![plot of chunk unnamed-chunk-12](fig/unnamed-chunk-12-1.png)
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 
 ## Model comparison
 
@@ -248,7 +248,7 @@ bg_c <- baggr_compare(df_ma, effect = "logarithm of odds ratio")
 plot(bg_c)
 ```
 
-![plot of chunk unnamed-chunk-15](fig/unnamed-chunk-15-1.png)
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png)
 
 We can also examine the compared models directly, by accessing them via `$models`. This is useful e.g. for `effect_plot`:
 
@@ -260,7 +260,7 @@ effect_plot(
   theme(legend.position = "bottom")
 ```
 
-![plot of chunk unnamed-chunk-16](fig/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 
 
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
@@ -325,18 +325,18 @@ baggr_compare(bg_model_agg, bg_model_ind)
 #> 
 #> Mean treatment effects:
 #>              2.5%      mean    97.5%    median       sd
-#> Model 1 -0.616408 -0.171539 0.245398 -0.167049 0.219643
-#> Model 2 -0.549238 -0.170723 0.255888 -0.179799 0.197878
+#> Model 1 -0.592475 -0.163363 0.252405 -0.159529 0.207259
+#> Model 2 -0.621807 -0.178877 0.244590 -0.163909 0.220379
 #> 
 #> SD for treatment effects:
-#>               2.5%     mean    97.5%   median       sd
-#> Model 1 0.00732784 0.251271 0.869261 0.189670 0.234176
-#> Model 2 0.01255340 0.230423 0.815892 0.173687 0.205480
+#>              2.5%     mean    97.5%   median       sd
+#> Model 1 0.0099659 0.241417 0.796619 0.180275 0.217139
+#> Model 2 0.0130397 0.270591 0.792229 0.205181 0.227678
 #> 
 #> Posterior predictive effects:
 #>              2.5%      mean    97.5%    median       sd
-#> Model 1 -1.096240 -0.178589 0.598104 -0.166257 0.429815
-#> Model 2 -0.811561 -0.152680 0.597076 -0.149268 0.345565
+#> Model 1 -0.970432 -0.161850 0.603902 -0.152583 0.370509
+#> Model 2 -1.070650 -0.192026 0.627206 -0.180501 0.403952
 ```
 
 There will be difference in speed -- in our example logistic model has to work with 1101 rows of data, while the summary level model only had 7 datapoints. Therefore in "standard" cases you are better off summarising your data and using the faster aggregate data model.
@@ -468,28 +468,28 @@ bgc1
 #> 
 #> Mean treatment effects:
 #>                     2.5%      mean    97.5%    median       sd
-#> Correct by .10  -2.38361 -0.663156 1.145630 -0.686197 0.841644
-#> Correct by .25  -2.47734 -0.766914 0.866540 -0.736229 0.797601
-#> Correct by 1.0  -1.95968 -0.691385 0.484702 -0.682442 0.631515
-#> Individual data -2.85052 -0.990628 0.574931 -0.928815 0.830757
+#> Correct by .10  -2.51203 -0.778586 0.559743 -0.722063 0.730008
+#> Correct by .25  -2.21778 -0.740446 0.735501 -0.700311 0.718989
+#> Correct by 1.0  -2.14776 -0.695989 0.501903 -0.665544 0.639930
+#> Individual data -3.42799 -1.051640 0.555629 -0.964462 0.932139
 #> 
 #> SD for treatment effects:
 #>                      2.5%     mean   97.5%   median       sd
-#> Correct by .10  0.0510918 1.180490 4.05458 0.878713 1.090710
-#> Correct by .25  0.0382085 1.016570 3.43991 0.755664 0.924168
-#> Correct by 1.0  0.0233703 0.844928 2.90125 0.636213 0.796236
-#> Individual data 0.0465336 1.331560 5.46021 0.917737 1.388550
+#> Correct by .10  0.0320293 1.038220 3.44729 0.751045 1.058990
+#> Correct by .25  0.0573392 0.979203 3.28069 0.747933 0.854921
+#> Correct by 1.0  0.0355791 0.817400 2.78088 0.626471 0.754252
+#> Individual data 0.0465321 1.439280 5.17476 1.007400 1.556050
 #> 
 #> Posterior predictive effects:
 #>                     2.5%      mean   97.5%    median      sd
-#> Correct by .10  -4.34286 -0.575129 3.74320 -0.596242 1.91805
-#> Correct by .25  -3.98362 -0.754431 2.15637 -0.718965 1.46218
-#> Correct by 1.0  -3.56204 -0.728547 1.99289 -0.737182 1.36762
-#> Individual data -5.55796 -0.976086 3.12347 -0.884666 2.13992
+#> Correct by .10  -4.33682 -0.782998 2.36306 -0.667824 1.68742
+#> Correct by .25  -4.01153 -0.787199 2.59755 -0.713487 1.55014
+#> Correct by 1.0  -3.47875 -0.663525 1.89645 -0.663352 1.29393
+#> Individual data -5.94063 -1.027490 2.97608 -0.923239 2.25331
 plot(bgc1) + theme(legend.position = "right")
 ```
 
-![plot of chunk bgc1](fig/bgc1-1.png)
+![plot of chunk bgc1](figure/bgc1-1.png)
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself.
 
 Note in the result above that:
@@ -533,22 +533,22 @@ bgc2
 #> 
 #> Mean treatment effects:
 #>                                          2.5%      mean    97.5%    median       sd
-#> Summary-level (Rubin model on logOR) -2.03071 -0.626539 0.613836 -0.609367 0.653131
-#> Individual-level (logistic model)    -2.90184 -0.817531 0.617720 -0.745934 0.822496
+#> Summary-level (Rubin model on logOR) -2.03322 -0.594534 0.757456 -0.580524 0.692283
+#> Individual-level (logistic model)    -2.10898 -0.640781 1.697050 -0.660518 0.771650
 #> 
 #> SD for treatment effects:
-#>                                           2.5%    mean   97.5%   median       sd
-#> Summary-level (Rubin model on logOR) 0.0245569 0.83125 3.14548 0.601729 0.824709
-#> Individual-level (logistic model)    0.0397210 1.18273 6.86841 0.679902 1.561840
+#>                                           2.5%     mean   97.5%   median       sd
+#> Summary-level (Rubin model on logOR) 0.0319960 0.821064 2.98571 0.592833 0.798774
+#> Individual-level (logistic model)    0.0397361 0.984583 3.65714 0.695107 0.995077
 #> 
 #> Posterior predictive effects:
 #>                                          2.5%      mean   97.5%    median      sd
-#> Summary-level (Rubin model on logOR) -3.47467 -0.614814 2.09539 -0.573335 1.35458
-#> Individual-level (logistic model)    -4.21039 -0.687989 2.63497 -0.637570 1.78476
+#> Summary-level (Rubin model on logOR) -3.26031 -0.571274 2.41385 -0.585260 1.36712
+#> Individual-level (logistic model)    -3.46293 -0.601783 2.44283 -0.654009 1.43838
 plot(bgc2)
 ```
 
-![plot of chunk bgc2](fig/bgc2-1.png)
+![plot of chunk bgc2](figure/bgc2-1.png)
 
 The results are still a bit different.
 
@@ -595,28 +595,28 @@ bgc3
 #> 
 #> Mean treatment effects:
 #>                                2.5%      mean    97.5%    median       sd
-#> Rubin model                -2.03071 -0.626539 0.613836 -0.609367 0.653131
-#> Independent N(0,10^2)      -2.90184 -0.817531 0.617720 -0.745934 0.822496
-#> Hierarchical prior         -1.99745 -0.733146 0.383845 -0.715414 0.588060
-#> Independent N(-4.59, 10^2) -1.78185 -0.663348 0.576564 -0.681483 0.614445
+#> Rubin model                -2.03322 -0.594534 0.757456 -0.580524 0.692283
+#> Independent N(0,10^2)      -2.10898 -0.640781 1.697050 -0.660518 0.771650
+#> Hierarchical prior         -3.40316 -0.906489 0.231484 -0.720164 0.843882
+#> Independent N(-4.59, 10^2) -2.10850 -0.710652 0.771733 -0.739816 0.693946
 #> 
 #> SD for treatment effects:
 #>                                 2.5%     mean   97.5%   median       sd
-#> Rubin model                0.0245569 0.831250 3.14548 0.601729 0.824709
-#> Independent N(0,10^2)      0.0397210 1.182730 6.86841 0.679902 1.561840
-#> Hierarchical prior         0.0193451 0.615662 1.94141 0.508539 0.577890
-#> Independent N(-4.59, 10^2) 0.0572526 0.894791 3.11353 0.714641 0.759276
+#> Rubin model                0.0319960 0.821064 2.98571 0.592833 0.798774
+#> Independent N(0,10^2)      0.0397361 0.984583 3.65714 0.695107 0.995077
+#> Hierarchical prior         0.0313130 0.759884 2.51616 0.536101 0.692717
+#> Independent N(-4.59, 10^2) 0.0487667 0.946172 3.89155 0.680980 0.968723
 #> 
 #> Posterior predictive effects:
 #>                                2.5%      mean   97.5%    median      sd
-#> Rubin model                -3.38700 -0.612342 2.00584 -0.566367 1.31282
-#> Independent N(0,10^2)      -4.88347 -0.731388 3.07576 -0.616124 2.41945
-#> Hierarchical prior         -2.84105 -0.719235 1.48264 -0.713638 1.08369
-#> Independent N(-4.59, 10^2) -3.35368 -0.742972 2.38737 -0.779822 1.33704
+#> Rubin model                -3.24154 -0.583101 2.15720 -0.572413 1.35052
+#> Independent N(0,10^2)      -3.64900 -0.682170 2.61133 -0.719023 1.52753
+#> Hierarchical prior         -4.11429 -0.892347 1.49875 -0.707084 1.42302
+#> Independent N(-4.59, 10^2) -3.31953 -0.741245 2.56536 -0.871970 1.59607
 plot(bgc3) + theme(legend.position = "right")
 ```
 
-![plot of chunk bgc3](fig/bgc3-1.png)
+![plot of chunk bgc3](figure/bgc3-1.png)
 
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
 
@@ -659,22 +659,22 @@ baggr_compare("No covariate" = bg_model_agg,
 #> 
 #> Mean treatment effects:
 #>                                  2.5%      mean    97.5%    median       sd
-#> No covariate                -0.616408 -0.171539 0.245398 -0.167049 0.219643
-#> With covariates, 0-1 coding -0.985707 -0.335936 0.250279 -0.332638 0.313067
+#> No covariate                -0.592475 -0.163363 0.252405 -0.159529 0.207259
+#> With covariates, 0-1 coding -1.051430 -0.352260 0.326648 -0.342322 0.340114
 #> 
 #> SD for treatment effects:
-#>                                   2.5%     mean    97.5%  median       sd
-#> No covariate                0.00732784 0.251271 0.869261 0.18967 0.234176
-#> With covariates, 0-1 coding 0.00830993 0.281869 0.991986 0.20941 0.264365
+#>                                  2.5%     mean    97.5%   median       sd
+#> No covariate                0.0099659 0.241417 0.796619 0.180275 0.217139
+#> With covariates, 0-1 coding 0.0101796 0.306131 1.048080 0.228047 0.306088
 #> 
 #> Posterior predictive effects:
-#>                                 2.5%      mean    97.5%    median       sd
-#> No covariate                -1.05050 -0.170425 0.653566 -0.157853 0.413332
-#> With covariates, 0-1 coding -1.35231 -0.342865 0.588221 -0.328496 0.484197
+#>                                  2.5%      mean    97.5%    median       sd
+#> No covariate                -0.971674 -0.159899 0.556726 -0.151191 0.383449
+#> With covariates, 0-1 coding -1.491100 -0.352570 0.724153 -0.347732 0.551297
 #> 
 #> Mean (SD) for covariates:
 #>         model      study_grouping
-#>  No covariate 0.338573 (0.428444)
+#>  No covariate 0.366148 (0.484953)
 ```
 
 To access the covariate estimates, see `fixed_effects()` function. They are also printed out by default:
@@ -686,24 +686,24 @@ bg_cov1
 #> Pooling of effects: partial 
 #> 
 #> Aggregate treatment effect (on logarithm of odds ratio):
-#> Hypermean (tau) =  -0.34 with 95% interval -0.99 to 0.25 
-#> Hyper-SD (sigma_tau) = 0.2819 with 95% interval 0.0083 to 0.9920 
-#> Total pooling (1 - I^2) = 0.80 with 95% interval 0.26 to 1.00 
+#> Hypermean (tau) =  -0.35 with 95% interval -1.05 to 0.33 
+#> Hyper-SD (sigma_tau) = 0.31 with 95% interval 0.01 to 1.05 
+#> Total pooling (1 - I^2) = 0.79 with 95% interval 0.23 to 1.00 
 #> 
 #> Treatment effects on logarithm of odds ratio:
 #>                mean   sd  2.5%     50% 97.5% pooling
-#> Balcon      -0.0052 0.29 -0.59 -0.0069  0.57    0.73
-#> Clausen     -0.0312 0.29 -0.65 -0.0282  0.55    0.70
-#> Multicentre  0.0601 0.30 -0.52  0.0555  0.69    0.72
-#> Barber      -0.3417 0.32 -0.98 -0.3457  0.28    0.76
-#> Norris      -0.2626 0.27 -0.77 -0.2704  0.27    0.64
-#> Kahler      -0.4188 0.40 -1.30 -0.3925  0.31    0.86
-#> Ledwich     -0.3397 0.40 -1.21 -0.3332  0.44    0.90
+#> Balcon      -0.0097 0.30 -0.62 -0.0091  0.58    0.71
+#> Clausen     -0.0302 0.29 -0.63 -0.0229  0.53    0.68
+#> Multicentre  0.0748 0.30 -0.51  0.0686  0.68    0.70
+#> Barber      -0.3514 0.33 -1.04 -0.3428  0.27    0.74
+#> Norris      -0.2564 0.27 -0.77 -0.2598  0.28    0.62
+#> Kahler      -0.4507 0.42 -1.43 -0.4055  0.28    0.84
+#> Ledwich     -0.3538 0.43 -1.27 -0.3380  0.48    0.89
 #> 
 #> Covariate (fixed) effects on logarithm of odds ratio:
 #>      [,1]
-#> mean 0.34
-#> sd   0.43
+#> mean 0.37
+#> sd   0.48
 ```
 
 > Note: in the example above we did not manually set priors for $\beta$ coefficients. Users can do it by passing argument `prior_beta` to `baggr()`.

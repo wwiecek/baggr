@@ -39,7 +39,7 @@ There are certain aspects of modelling binary data that are not yet covered by _
 
 * Directly modelling parameters relating to proportions (see "Model 3" in this [comprehensive tutorial with Stan](https://mc-stan.org/users/documentation/case-studies/pool-binary-trials.html))
 * [Understanding biases in reporting](https://handbook-5-1.cochrane.org/chapter_10/10_addressing_reporting_biases.htm)
-* Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided [here](http://nicedsu.org.uk/wp-content/uploads/2017/05/TSD2-General-meta-analysis-corrected-2Sep2016v2.pdf).
+* Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided by [NICE DSU at University of Sheffield](https://nicedsu.sites.sheffield.ac.uk/).
 
 
 # Basic meta-analysis of binary data

@@ -1,12 +1,11 @@
-# baggr 0.6.20 (Feb 2022)
+# baggr 0.6.21 (January-March 2022)
 
 Misc:
 * Printing `baggr` and `baggr_compare` objects is now better at showing intervals and you can also change their widths with arguments passed to `print.baggr()` or directly to `baggr_compare()`
 * Added `student_t()` and `lognormal()` priors and updated some prior documentation
 * Removed some cases where input data would be reordered (previously this could happen to either individual-level continuous data or summary data of binary events)
 * More warning prompts at various stages of model fitting
-
-
+* Faster installation and package checks.
 
 # baggr 0.6.10-0.6.18 (Sept-Dec 2021)
 

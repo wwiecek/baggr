@@ -78,7 +78,7 @@ loocv <- function(data, return_models = FALSE, ...) {
 
   # Model with all of data:
   full_fit <- try(baggr(data, refresh = 0, ...))
-  if(class(full_fit) == "try-error")
+  if(inherits(full_fit, "try-error"))
     stop("Inference failed for the model with all data, please try fitting outside of loocv()")
 
   # Prepare the arguments
