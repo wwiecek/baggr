@@ -10,7 +10,7 @@
   style = "areas",
   grid_models = FALSE,
   grid_parameters = TRUE,
-  interval = 0.95,
+  prob = x$prob,
   hyper = TRUE,
   transform = NULL,
   order = F,
@@ -40,16 +40,14 @@ side-by-side.}
 with many parameters (especially \code{"quantiles"}, \code{"sslab"});
 if \code{FALSE}, returns separate plot for each parameter}
 
-\item{interval}{probability level used for display of posterior interval}
+\item{prob}{Width of uncertainty interval (defaults to 95\%)}
 
 \item{hyper}{Whether to plot pooled treatment effect
 in addition to group treatment effects when \code{compare = "groups"}}
 
 \item{transform}{a function (e.g. exp(), log())
 to apply to the values of group (and hyper, if hyper=TRUE)
-effects before plotting; when working with effects that are on
-log scale, exponent transform is used automatically,
-you can plot on log scale by setting transform = identity}
+effects before plotting}
 
 \item{order}{Whether to sort by median treatment effect by group.
 If yes, medians from the model with largest range of estimates

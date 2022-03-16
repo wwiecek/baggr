@@ -43,8 +43,10 @@ check_columns <- function(data, outcome, group, treatment, stop.for.na = TRUE)  
   }
 
   # Treatment has to be dichotomous
-  if(!any((data[[treatment]] = 0) | (data[[treatment]] = 1)))
+  if(!any((data[[treatment]] == 0) | (data[[treatment]] == 1)))
     stop("Treatment column has to have values 0 or 1")
+  if(length(unique(data[[treatment]])) < 2)
+    stop("Treatment column has to have both 0's and 1's for baggr to work")
 
 }
 

@@ -4,7 +4,7 @@
 \alias{print.baggr}
 \title{S3 print method for objects of class \code{baggr} (model fits)}
 \usage{
-\method{print}{baggr}(x, exponent = FALSE, digits = 2, group, fixed = TRUE, ...)
+\method{print}{baggr}(x, exponent = FALSE, digits = 2, prob = 0.95, group, fixed = TRUE, ...)
 }
 \arguments{
 \item{x}{object of class \code{baggr}}
@@ -12,6 +12,8 @@
 \item{exponent}{if \code{TRUE}, results (for means) are converted to exp scale}
 
 \item{digits}{Number of significant digits to print.}
+
+\item{prob}{Width of uncertainty interval (defaults to 95\%)}
 
 \item{group}{logical; print group effects? If unspecified,
 they are printed only if

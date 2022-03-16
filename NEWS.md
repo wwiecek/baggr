@@ -1,4 +1,13 @@
-# baggr 0.6.10-0.6.16 (Sept-Dec 2021)
+# baggr 0.6.21 (January-March 2022)
+
+Misc:
+* Printing `baggr` and `baggr_compare` objects is now better at showing intervals and you can also change their widths with arguments passed to `print.baggr()` or directly to `baggr_compare()`
+* Added `student_t()` and `lognormal()` priors and updated some prior documentation
+* Removed some cases where input data would be reordered (previously this could happen to either individual-level continuous data or summary data of binary events)
+* More warning prompts at various stages of model fitting
+* Faster installation and package checks.
+
+# baggr 0.6.10-0.6.18 (Sept-Dec 2021)
 
 * You can add numerical values to `plot.baggr_compare` and `baggr_plot` graphics
   (a la forest plot)
@@ -10,17 +19,17 @@
   performance graphically
 * Risk difference models are now easy to fit, you only need to transform your binary input data with `prepare_ma(..., effect = "RD")`
 
-
 Misc:
 
-* You can plot only hyperparameter values (without group-specific estimates) in
-  baggr_compare now
-* Removed an unnecessary dependency on quantreg
+* You can plot hyperparameter values only (without group-specific estimates) in
+  `baggr_compare()` now
+* Removed an unnecessary dependency on the `quantreg` package
 * Rare event corrections (`prepare_ma()`) can now be applied either to particular 
-  studies or all data
+  studies or all data (the literature sometimes recommends the latter)
 * Clearer prompts about priors and pooling in control arms when working with
   individual-level data models.
 * Can now set priors for error terms in linear regression models (`prior_sigma`)
+* Added `lognormal()` prior and updated some prior documentation
 
 Bug fixes:
 

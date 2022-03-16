@@ -9,7 +9,8 @@ group_effects(
   summary = FALSE,
   transform = NULL,
   interval = 0.95,
-  random_only = FALSE
+  random_only = FALSE,
+  rename_int = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ plotting or printing functions)}
 
 \item{random_only}{logical; for meta-regression models, should \link{fixed_effects} be included in the
 returned group effect?}
+
+\item{rename_int}{logical; if \code{TRUE} then rather than returning \code{median}, \code{lci} and \code{uci}
+columns they are renamed to e.g. \verb{50\%}, \verb{2.5\%}, \verb{97.5\%}; this only
+works if \code{summary=TRUE}}
 }
 \value{
 Either an array with MCMC samples (if \code{summary = FALSE})

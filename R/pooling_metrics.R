@@ -212,6 +212,8 @@ pooling <- function(bg,
 
     # Must calculate pooling for each effect vector?
     te <- treatment_effect(bg)$sigma_tau
+    warning("In this version of baggr calculations of pooling for spike & slab may be wrong")
+    warning("Please contact package authors if youy are using this feature")
     ge <- group_effects(bg, summary = T)[,"sd",]
     sigma_tau <- aperm(replicate(5, te), c(1,3,2))
     sigma_k   <- aperm(replicate(dim(sigma_tau)[1], ge), c(3,1,2))

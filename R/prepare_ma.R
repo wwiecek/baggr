@@ -95,7 +95,6 @@ prepare_ma <- function(data, #standardise = NULL,
     }else
       stop("Data must be individual-level (if summarising) or binary (if converting), see ?prepare_ma")
   }
-
   check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
 
 
@@ -187,6 +186,7 @@ prepare_ma <- function(data, #standardise = NULL,
 
   # 4. Summarising
   if(summarise){
+    bdt_sort <- unique(data$group) #remember order in which names appear in data
     if(effect == "mean") {
       magg   <- stats::aggregate(outcome ~ treatment + group,
                                  mean, data = data)
@@ -207,25 +207,25 @@ prepare_ma <- function(data, #standardise = NULL,
                         se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
                         n.mu = nwide$outcome.0,
                         n.tau = nwide$outcome.1)
+      out <- out[order(factor(out$group, levels = bdt_sort)),]
+      rownames(out) <- NULL
     }
 
     # Prepare event counts for binary data models
     # (including rare event corrections)
     if(effect %in% c("logOR", "logRR", "RD")) {
-
-      binary_data_table <-
-        do.call(rbind, by(data, list(data$group), function(x) {
-          with(x,
-               data.frame(
-                 group = unique(as.character(group)),
-                 a     = sum(outcome[treatment == 1]),
-                 n1    = sum(treatment == 1),
-                 c     = sum(outcome[treatment == 0]),
-                 n2    = sum(treatment == 0),
-                 b     = sum(treatment == 1) - sum(outcome[treatment == 1]),
-                 d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
-        }))
-
+      bdt_by <- by(data, list(data$group), function(x) {
+        with(x,
+             data.frame(
+               group = unique(as.character(group)),
+               a     = sum(outcome[treatment == 1]),
+               n1    = sum(treatment == 1),
+               c     = sum(outcome[treatment == 0]),
+               n2    = sum(treatment == 0),
+               b     = sum(treatment == 1) - sum(outcome[treatment == 1]),
+               d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
+      })
+      binary_data_table <- do.call(rbind, bdt_by[bdt_sort])
       out <- apply_cont_corr(binary_data_table,
                              rare_event_correction,
                              correction_type,

@@ -14,35 +14,35 @@
 #' @param Sigma Variance-covariance matrix for multivariate normal.
 #' @param lower Lower bound for Uniform
 #' @param upper Upper bound for Uniform
+#' @param mu    mean of ln(X) for lognormal or location for Student's generalised T
+#' @param sigma SD of ln(X) for lognormal or scale for Student's generalised T
+#' @param nu    degrees of freedom for Student's generalised T
 #' @param shape Shape parameter for LKJ
 #' @param order Order of LKJ matrix (typically it does not need to be specified,
 #'        as it is inferred directly in the model)
 #'
 #' @details
 #'
-#' The prior choice in [baggr] is always done via 3 distinct arguments: `prior_hypermean`,
-#' `prior_hypersd`, and `prior_hypercor`.
-#'
-#' These respectively refer to the priors on the average of the effects across
-#' the groups (hypermean), the standard deviation of the effects across the groups
-#' (hypersd), and the correlation in the distribution of parameters across groups
-#' when the model allows multivariate shrinkage (say on control group means and effects).
+#' The prior choice in [baggr] is done via distinct arguments for each type of prior,
+#' e.g. `prior_hypermean`, or a named list of several passed to `prior`.
+#' See the examples below.
 #'
 #' Notation for priors is "plain-text", in that you can write the distributions as
 #' `normal(5,10)`, `uniform(0,100)` etc.
-#' As with any other argument one has the option to simply input the prior directly,
-#' e.g. `prior_hypermean = normal(0,1)` , or by creating a named list of custom priors
-#' and then inputting the list to the argument `priors`.
-#' See the examples below for more.
 #'
-#' Different parameters admit different priors:
+#' Different parameters admit different priors (see [baggr] for explanations of
+#' what the different `prior_` arguments do):
 #'
-#' * `prior_hypermean` will take `"normal"`, `"uniform"` and `"cauchy"` input for a scalar mean.
-#'    For a vector mean, it will take any of these arguments and apply them independently to
+#' * `prior_hypermean`, `prior_control`, and `prior_beta`
+#'    will take `"normal"`, `"uniform"`, `"lognormal"`, and
+#'    `"cauchy"` input for scalars.
+#'    For a vector hypermean (see `"mutau"` model), it will take any of these
+#'    arguments and apply them independently to
 #'    each component of the vector, or it can also take a `"multinormal"` argument
 #'    (see the example below).
-#' * `prior_hypersd` will take `"normal"` and `"uniform"`
-#' * `prior_hypercor` allows `"lkj"` input
+#' * `prior_hypersd`, `prior_control_sd`, and `prior_sigma` will take `"normal"`, `"uniform"`, and `"lognormal"`
+#'   but negative parts of the distribution are truncated
+#' * `prior_hypercor` allows `"lkj"` input (see Lewandowski _et al._)
 #'
 #'
 #' @author Witold Wiecek, Rachael Meager
@@ -78,12 +78,6 @@ check_scalar <- function(x) {
     stop("argument must be numeric")
 }
 
-prior_dist_fam <- c("uniform" = 0,
-                    "normal" = 1,
-                    "cauchy" = 2,
-                    "multinormal" = 3,
-                    "lkj" = 4)
-
 #' Output a distribution as a string
 #'
 #' Used for printing nicely formatted outputs when reporting results etc.
@@ -117,12 +111,8 @@ set_prior_val <- function(target, name, prior, p = 1) {
   if(prior$dist %in% c("multinormal", "lkj") && p > 1)
     stop("Multi-dimensional priors can't be 'replicated' in set_prior_val")
 
-  target[[paste0(name, "_fam")]] <- switch(prior$dist,
-                                           "uniform" = 0,
-                                           "normal" = 1,
-                                           "cauchy" = 2,
-                                           "multinormal" = 3,
-                                           "lkj" = 4)
+  target[[paste0(name, "_fam")]] <- prior_dist_fam[[prior$dist]]
+
   if(p > 1)
     target[[paste0(name, "_fam")]] <- rep(target[[paste0(name, "_fam")]], p)
 
@@ -131,8 +121,8 @@ set_prior_val <- function(target, name, prior, p = 1) {
     # For now we only allow dimension of 1 (for LKJ) or 3 (for uni, normal, cauchy, t)
     if(length(prior$values) == 2)
       prior$values <- c(prior$values, 0)
-    else if(length(prior$values) > 1)
-      stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
+    # else if(length(prior$values) > 1)
+      # stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
     target[[paste0(name, "_val")]] <- prior$values
 
     if(p > 1)
@@ -177,6 +167,28 @@ normal <- function(location, scale) {
   if(scale <= 0)
     stop("Scale (SD) parameter must be positive")
   return(list(dist = "normal", values = c(location, scale), dimension = 1))
+}
+
+#' @rdname priors
+#' @export
+lognormal <- function(mu, sigma) {
+  check_scalar(mu)
+  check_scalar(sigma)
+  if(sigma <= 0)
+    stop("sigma parameter must be positive")
+  return(list(dist = "lognormal", values = c(mu, sigma), dimension = 1))
+}
+
+#' @rdname priors
+#' @export
+student_t <- function(nu, mu, sigma) {
+  check_scalar(mu)
+  check_scalar(sigma)
+  if(nu <= 0)
+    stop("degrees of freedom (nu) parameter must be positive")
+  if(sigma <= 0)
+    stop("sigma parameter must be positive")
+  return(list(dist = "student_t", values = c(nu, mu, sigma), dimension = 1))
 }
 
 #' @rdname priors

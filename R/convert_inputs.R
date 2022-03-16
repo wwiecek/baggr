@@ -1,8 +1,9 @@
 #' Convert inputs for baggr models
 #'
-#' Converts data to Stan inputs, checks integrity of data
-#' and suggests default model if needed. Typically all of this is
-#' done automatically by [baggr], __this function is only for debugging__
+#' Converts data to a list of inputs suitable for Stan models,
+#' checks integrity of data and suggests the appropriate default model
+#' if needed. Typically all of this is
+#' done automatically by [baggr], so __this function is only for debugging__
 #' or running models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
@@ -106,15 +107,14 @@ convert_inputs <- function(data,
   #for now this means no automatic conversion of individual->pooled
 
 
-
   # Step 3: conversions of data -----
 
   # 3.1. individual level data
   if(grepl("individual", required_data)) {
-
-    groups <- as.factor(as.character(data[[group]]))
+    groups        <- factor(as.character(data[[group]]),
+                            levels = unique(data[[group]]))
     group_numeric <- as.numeric(groups)
-    group_label <- levels(groups)
+    group_label   <- levels(groups)
 
     if(!is.null(test_data)) {
       groups_test <- as.factor(as.character(test_data[[group]]))
@@ -273,7 +273,6 @@ convert_inputs <- function(data,
 
   # 3.3. summary data: baseline & treatment effect -----
   if(required_data == "pool_wide"){
-    group_label <- data[[group]]
     group_label <- data[[group]]
     if(is.null(data[[group]]) && (group != "group"))
       warning(paste0("Column '", group,

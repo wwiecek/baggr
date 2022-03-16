@@ -6,7 +6,11 @@
       inc = normal_lpdf(y | pars[1], pars[2]);
     if(family == 2)
       inc = cauchy_lpdf(y | pars[1], pars[2]);
-    if(family == 3)
+    //3 and 4 are multinormal and lkj, which for now are not incremented
+    //by using this function
+    if(family == 5)
+      inc = lognormal_lpdf(y | pars[1], pars[2]);
+    if(family == 6)
       inc = student_t_lpdf(y | pars[1], pars[2], pars[3]);
     return inc;
   }
@@ -19,7 +23,9 @@
       inc = normal_lpdf(y | pars[1], pars[2]);
     if(family == 2)
       inc = cauchy_lpdf(y | pars[1], pars[2]);
-    if(family == 3)
+    if(family == 5)
+      inc = lognormal_lpdf(y | pars[1], pars[2]);
+    if(family == 6)
       inc = student_t_lpdf(y | pars[1], pars[2], pars[3]);
     return inc;
   }

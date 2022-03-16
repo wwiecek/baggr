@@ -17,12 +17,13 @@
 #'                or (predicted) `"effects"`.
 #'                The `"groups"` option is not available when `what = "prior"`.
 #' @param transform a function (e.g. exp(), log()) to apply to
-#'                  the values of group (and hyper, if hyper=TRUE)
+#'                  the the sample of group (and hyper, if `hyper=TRUE`)
 #'                  effects before plotting; when working with
 #'                  effects that are on log scale,
 #'                  exponent transform is used automatically,
 #'                  you can plot on log scale by setting
 #'                  transform = identity
+#' @param prob  Width of uncertainty interval (defaults to 95%)
 #' @param plot logical; calls [plot.baggr_compare] when running `baggr_compare`
 #' @return an object of class `baggr_compare`
 #' @seealso [plot.baggr_compare] and [print.baggr_compare]
@@ -96,6 +97,7 @@ baggr_compare <- function(...,
                           what    = "pooling",
                           compare = c("groups", "hyperpars", "effects"),
                           transform = NULL,
+                          prob = 0.95,
                           plot = FALSE) {
   l <- list(...)
   if(length(l) == 0)
@@ -212,6 +214,7 @@ baggr_compare <- function(...,
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
+                              interval = prob,
                               summary = TRUE, message = FALSE)$tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -221,6 +224,7 @@ baggr_compare <- function(...,
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
+                              interval = prob,
                               summary = TRUE, message = FALSE)$sigma_tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -230,6 +234,7 @@ baggr_compare <- function(...,
   posteriorpd_trt <- do.call(rbind, (
     lapply(models, function(x) {
       est <- effect_draw(x, transform = transform,
+                         interval = prob,
                          summary = TRUE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -248,7 +253,8 @@ baggr_compare <- function(...,
       covariates = cov_effects,
       compare = compare,
       effect_names = effect_names,
-      transform = transform
+      transform = transform,
+      prob = prob
     ),
     class = "baggr_compare")
 
@@ -305,14 +311,12 @@ print.baggr_compare <- function(x, digits, ...){
 #'                        if `FALSE`, returns separate plot for each parameter
 #' @param style What kind of plot to display (if `grid_models = TRUE`),
 #'              passed to the `style` argument in [baggr_plot].
-#' @param interval probability level used for display of posterior interval
+#' @param prob  Width of uncertainty interval (defaults to 95%)
 #' @param hyper Whether to plot pooled treatment effect
 #'              in addition to group treatment effects when `compare = "groups"`
 #' @param transform a function (e.g. exp(), log())
 #'                  to apply to the values of group (and hyper, if hyper=TRUE)
-#'                  effects before plotting; when working with effects that are on
-#'                  log scale, exponent transform is used automatically,
-#'                  you can plot on log scale by setting transform = identity
+#'                  effects before plotting
 #' @param order Whether to sort by median treatment effect by group.
 #'              If yes, medians from the model with largest range of estimates
 #'              are used for sorting.
@@ -329,7 +333,7 @@ plot.baggr_compare <- function(x,
                                style   = "areas",
                                grid_models = FALSE,
                                grid_parameters = TRUE,
-                               interval = 0.95,
+                               prob = x$prob,
                                hyper = TRUE,
                                transform = NULL,
                                order = F,
@@ -382,7 +386,7 @@ plot.baggr_compare <- function(x,
       # to reduce dependencies
       effects_list <- lapply(models, function(cmodel) {
         m <- as.data.frame(group_effects(cmodel,
-                                         interval = interval,
+                                         interval = prob,
                                          summary = TRUE,
                                          transform = transform)[,,i])
         m$group <- rownames(m)
@@ -397,9 +401,9 @@ plot.baggr_compare <- function(x,
                                             transform = transform,
                                             message=FALSE)$tau[,i]
           hyper_effects <- data.frame(
-            lci = quantile(hyper_treat, (1 - interval)/2),
+            lci = quantile(hyper_treat, (1 - prob)/2),
             median = quantile(hyper_treat, 0.5),
-            uci = quantile(hyper_treat, 1 - (1 - interval)/2),
+            uci = quantile(hyper_treat, 1 - (1 - prob)/2),
             mean = mean(hyper_treat),
             sd = sd(hyper_treat),
             group = "Pooled Estimate"
@@ -450,7 +454,7 @@ plot.baggr_compare <- function(x,
 
       plots <- single_comp_plot(big_df, "", grid = T,
                                 ylab = paste0("Treatment effect (",
-                                              round(100*interval), "% interval)"),
+                                              as.character(100*prob), "% interval)"),
                                 add_values = add_values,
                                 values_digits = values_digits,
                                 values_size = values_size)
@@ -458,7 +462,7 @@ plot.baggr_compare <- function(x,
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
                          ylab = paste0("Treatment effect (",
-                                       round(100*interval), "% interval)"),
+                                       as.character(100*prob), "% interval)"),
                          add_values = add_values,
                          values_digits = values_digits,
                          values_size = values_size)
