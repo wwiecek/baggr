@@ -56,26 +56,22 @@ data {
 }
 
 transformed data {
-  int K_pooled; // number of modelled sites if we take pooling into account
-  if(pooling_type == 2)
-    K_pooled = 0;
-  if(pooling_type != 2)
-    K_pooled = K;
+  int K_pooled = pooling_type == 2 ? 0 : K;
 }
 
 parameters {
   // corr_matrix[P] Omega;        // prior correlation
-  cholesky_factor_corr[P] L_Omega[joint_prior_variance == 1 && pooling_type == 1? 1: 0];
-  vector<lower=0>[P] hypersd[pooling_type == 1? 1: 0];        // prior scale
-  vector[P] mu[pooling_type != 0? 1: 0];
-  matrix[P,K] eta[pooling_type != 2? 1: 0];
+  cholesky_factor_corr[P] L_Omega[joint_prior_variance == 1 && pooling_type == 1];
+  vector<lower=0>[P] hypersd[pooling_type == 1];        // prior scale
+  vector[P] mu[pooling_type != 0];
+  matrix[P,K] eta[pooling_type != 2];
   vector[Nc] beta;
   // NORMAL specific:
   vector<lower=0>[K] sigma_y_k;
 }
 transformed parameters {
-  matrix[P,K] theta_k[pooling_type != 2? 1: 0];
-  matrix[P,P] tau[pooling_type == 1? 1: 0];
+  matrix[P,K] theta_k[pooling_type != 2];
+  matrix[P,P] tau[pooling_type == 1];
   if(pooling_type == 0)
     theta_k[1] = eta[1];
   if(pooling_type == 1){
@@ -140,7 +136,7 @@ model {
 generated quantities {
   // to do this, we must first (outside of Stan) calculate SEs in each test group,
   // i.e. test_sigma_y_k
-  real logpd[K_test > 0? 1: 0];
+  real logpd[K_test > 0];
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)

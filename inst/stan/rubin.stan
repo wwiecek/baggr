@@ -29,30 +29,24 @@ data {
 }
 
 transformed data {
-  int K_pooled; // number of modelled sites if we take pooling into account
-  if(pooling_type == 2)
-    K_pooled = 0;
-  if(pooling_type != 2)
-    K_pooled = K;
+  int K_pooled = pooling_type == 2 ? 0 : K;
 }
 
 parameters {
-  real mu[pooling_type != 0? 1: 0];
-  real<lower=0> tau[pooling_type == 1? 1: 0];
+  real mu[pooling_type != 0];
+  real<lower=0> tau[pooling_type == 1];
   vector[K_pooled] eta;
   vector[Nc] beta;
 }
 transformed parameters {
+  /* if there is no pooling then eta's assume role of study means
+     this is done to avoid defining yet another parameter but rather
+     recycle something that already exists */
   vector[K_pooled] theta_k;
-  for(k in 1:K_pooled){
-    if(pooling_type == 0)
-      // if there is no pooling then eta's assume role of study means
-      // this is done to avoid defining yet another parameter but rather
-      // recycle something that already exists
-      theta_k[k] = eta[k];
-    if(pooling_type == 1)
-      theta_k[k] = mu[1] + eta[k]*tau[1];
-  }
+  if(pooling_type == 0)
+    theta_k = eta;
+  else if(pooling_type == 1)
+    theta_k = mu[1] + eta*tau[1];
 }
 model {
   vector[K] fe_k;
@@ -93,7 +87,7 @@ model {
 }
 
 generated quantities {
-  real logpd[K_test > 0? 1: 0];
+  real logpd[K_test > 0];
   vector[K_test] fe_k_test;
   if(K_test > 0){
     if(Nc == 0)

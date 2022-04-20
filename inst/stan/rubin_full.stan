@@ -43,19 +43,16 @@ data {
   real test_sigma_y_k[K_test];
 
 }
+
 transformed data {
-  int K_pooled; // number of modelled sites if we take pooling into account
-  if(pooling_type == 2)
-    K_pooled = 0;
-  if(pooling_type != 2)
-    K_pooled = K;
+  int K_pooled = pooling_type == 2 ? 0 : K;
 }
 parameters {
   // SHARED ACROSS FULL MODELS:
-  real mu_baseline[pooling_baseline != 0? 1: 0];
-  real mu[pooling_type != 0? 1: 0];
-  real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
-  real<lower=0> tau[pooling_type == 1? 1: 0];
+  real mu_baseline[pooling_baseline != 0];
+  real mu[pooling_type != 0];
+  real<lower=0> tau_baseline[pooling_baseline != 0];
+  real<lower=0> tau[pooling_type == 1];
   vector[K_pooled] eta;
   vector[K] eta_baseline;
   vector[Nc] beta;
@@ -131,7 +128,7 @@ model {
 generated quantities {
   // to do this, we must first (outside of Stan) calculate SEs in each test group,
   // i.e. test_sigma_y_k
-  real logpd[K_test > 0? 1: 0];
+  real logpd[K_test > 0];
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)
