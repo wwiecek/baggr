@@ -30,6 +30,7 @@ data {
 
 transformed data {
   int K_pooled = pooling_type == 2 ? 0 : K;
+  vector[K_test] test_var_theta_k = test_se_theta_k .* test_se_theta_k;
 }
 
 parameters {
@@ -50,39 +51,28 @@ transformed parameters {
 }
 model {
   vector[K] fe_k;
+
   if(K > 0){
-    if(Nc == 0)
+    if(Nc == 0){
       fe_k = rep_vector(0.0, K);
-    else
+    }else{
       fe_k = X*beta;
+      beta ~ vecprior(prior_beta_fam, prior_beta_val);
+    }
   }
-
-  //hypermean priors:
-  if(pooling_type > 0)
-    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
-  else{
-    // eta's are study means in this case
+  if(pooling_type == 0){
     eta ~ vecprior(prior_hypermean_fam, prior_hypermean_val);
-  }
-
-  //hyper-SD priors:
-  if(pooling_type == 1)
+    theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
+  }else if(pooling_type == 1){
+    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
     tau[1] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
-
-  //fixed effect coefficients
-  // beta ~ normal(0, 10);
-  if(Nc > 0)
-    beta ~ vecprior(prior_beta_fam, prior_beta_val);
-
-  //likelihood (block evaluated only if there are data, i.e. K>0)
-  if(K > 0) {
-    if(pooling_type == 1)
-        eta ~ normal(0,1);
-    if(pooling_type != 2)
-        theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
-    if(pooling_type == 2)
-        theta_hat_k ~ normal(rep_vector(mu[1], K) + fe_k, se_theta_k);
+    eta ~ normal(0,1);
+    theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
+  }else{
+    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
+    theta_hat_k ~ normal(mu[1] + fe_k, se_theta_k);
   }
+
 }
 
 generated quantities {
@@ -96,9 +86,10 @@ generated quantities {
     logpd[1] = 0;
     for(k in 1:K_test){
       if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(tau[1]^2 + test_se_theta_k[k]^2));
+        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(tau[1]^2 + test_var_theta_k));
       if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(test_se_theta_k[k]^2));
+        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, test_se_theta_k);
     }
   }
 }
+
