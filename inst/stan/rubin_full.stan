@@ -97,8 +97,7 @@ model {
   if(pooling_type > 0)
     target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
   else{
-    for(k in 1:K)
-      target += prior_increment_real(prior_hypermean_fam, eta[k], prior_hypermean_val);
+    target += prior_increment_vec(prior_hypermean_fam, eta, prior_hypermean_val);
   }
 
   //hyper-SD priors:
@@ -118,12 +117,10 @@ model {
   // error term priors
   target += prior_increment_vec(prior_sigma_fam, sigma_y_k, prior_sigma_val);
   // likelihood
-  for(i in 1:N){
-    if(pooling_type < 2)
-      y[i] ~ normal(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + fe[i], sigma_y_k[site[i]]);
-    if(pooling_type == 2)
-      y[i] ~ normal(baseline_k[site[i]] + mu[1] * treatment[i] + fe[i], sigma_y_k[site[i]]);
-  }
+  if(pooling_type < 2)
+    y ~ normal(baseline_k[site] + theta_k[site] .* treatment + fe, sigma_y_k[site]);
+  if(pooling_type == 2)
+    y ~ normal(baseline_k[site] + mu[1] * treatment + fe, sigma_y_k[site]);
 }
 generated quantities {
   // to do this, we must first (outside of Stan) calculate SEs in each test group,

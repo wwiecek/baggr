@@ -110,12 +110,10 @@ model {
 
   //LOGIT-specific:
   if(pooling_type < 2){
-    for(i in 1:N)
-      y[i] ~ bernoulli_logit(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + fe[i]);
+      y ~ bernoulli_logit(baseline_k[site] + theta_k[site] .* treatment + fe);
   }
   if(pooling_type == 2) {
-    for(i in 1:N)
-      y[i] ~ bernoulli_logit(baseline_k[site[i]] + mu[1] * treatment[i] + fe[i]);
+      y ~ bernoulli_logit(baseline_k[site] + mu[1] * treatment + fe);
   }
 }
 generated quantities {

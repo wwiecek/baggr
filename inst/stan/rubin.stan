@@ -61,9 +61,8 @@ model {
   if(pooling_type > 0)
     target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
   else{
-    for(k in 1:K)
     // eta's are study means in this case
-      target += prior_increment_real(prior_hypermean_fam, eta[k], prior_hypermean_val);
+    target += prior_increment_vec(prior_hypermean_fam, eta, prior_hypermean_val);
   }
 
   //hyper-SD priors:
