@@ -77,7 +77,7 @@ model {
     to_vector(eta[1]) ~ std_normal();
 
     for(p in 1:P)
-      target += prior_increment_real(prior_hypersd_fam, hypersd[1][p], prior_hypersd_val);
+      hypersd[1][p] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
 
     //for Omega only LKJ allowed for now
     L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);

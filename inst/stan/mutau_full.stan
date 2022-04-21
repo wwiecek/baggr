@@ -91,7 +91,7 @@ model {
       y_mean = rep_vector(0.0, N);
     else{
       y_mean = X*beta;
-      target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+      beta ~ vecprior(prior_beta_fam, prior_beta_val);
     }
 
     // Impact of baseline:
@@ -112,8 +112,8 @@ model {
     if(joint_prior_mean)
       mu[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
     // else {
-    //   target += prior_increment_real(prior_control_fam,   mu[1][1], prior_control_val);
-    //   target += prior_increment_real(prior_hypermean_fam, mu[1][2], prior_hypermean_val);
+    //   mu[1][1] ~ realprior(prior_control_fam,   prior_control_val);
+    //   mu[1][2] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
     // }
   } else {
     for(k in 1:K)
@@ -122,8 +122,8 @@ model {
 
   if(pooling_type == 1) {
     to_vector(eta[1]) ~ std_normal();
-    target += prior_increment_real(prior_hypersd_fam,    hypersd[1][1], prior_hypersd_val);
-    target += prior_increment_real(prior_control_sd_fam, hypersd[1][2], prior_control_sd_val);
+    hypersd[1][1] ~ realprior(prior_hypersd_fam,    prior_hypersd_val);
+    hypersd[1][2] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
     if(joint_prior_variance)
       L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);
   }

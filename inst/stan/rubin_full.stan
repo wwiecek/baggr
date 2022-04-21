@@ -86,27 +86,27 @@ model {
 
   //controls/baselines (hyper)priors
   if(pooling_baseline == 0)
-    target += prior_increment_vec(prior_control_fam, eta_baseline, prior_control_val);
+    eta_baseline ~ vecprior(prior_control_fam, prior_control_val);
   if(pooling_baseline == 1){
     eta_baseline ~ normal(0,1);
-    target += prior_increment_real(prior_control_fam, mu_baseline[1], prior_control_val);
-    target += prior_increment_real(prior_control_sd_fam, tau_baseline[1], prior_control_sd_val);
+    mu_baseline[1] ~ realprior(prior_control_fam, prior_control_val);
+    tau_baseline[1] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
   }
 
   //hypermean priors:
   if(pooling_type > 0)
-    target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
+    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
   else{
-    target += prior_increment_vec(prior_hypermean_fam, eta, prior_hypermean_val);
+    eta ~ vecprior(prior_hypermean_fam, prior_hypermean_val);
   }
 
   //hyper-SD priors:
   if(pooling_type == 1)
-    target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
+    tau[1] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
 
   //fixed effect coefficient priors
   if(Nc > 0)
-    target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+    beta ~ vecprior(prior_beta_fam, prior_beta_val);
 
   //
   if(pooling_type == 1)
@@ -115,7 +115,7 @@ model {
 
   // NORMAL specific:
   // error term priors
-  target += prior_increment_vec(prior_sigma_fam, sigma_y_k, prior_sigma_val);
+  sigma_y_k ~ vecprior(prior_sigma_fam, prior_sigma_val);
   // likelihood
   if(pooling_type < 2)
     y ~ normal(baseline_k[site] + theta_k[site] .* treatment + fe, sigma_y_k[site]);

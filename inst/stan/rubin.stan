@@ -59,20 +59,20 @@ model {
 
   //hypermean priors:
   if(pooling_type > 0)
-    target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
+    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
   else{
     // eta's are study means in this case
-    target += prior_increment_vec(prior_hypermean_fam, eta, prior_hypermean_val);
+    eta ~ vecprior(prior_hypermean_fam, prior_hypermean_val);
   }
 
   //hyper-SD priors:
   if(pooling_type == 1)
-    target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
+    tau[1] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
 
   //fixed effect coefficients
   // beta ~ normal(0, 10);
   if(Nc > 0)
-    target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+    beta ~ vecprior(prior_beta_fam, prior_beta_val);
 
   //likelihood (block evaluated only if there are data, i.e. K>0)
   if(K > 0) {
