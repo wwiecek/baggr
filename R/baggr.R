@@ -20,7 +20,9 @@
 #'                If you are not familiar with the terms, consult the vignette;
 #'                "partial" can be understood as random effects and "full" as fixed effects
 #' @param pooling_control Pooling for group-specific control mean terms in models using
-#'                        individual-level data. Either `"none"` or `"partial"`.
+#'                        individual-level data. Typically we use either `"none"` or `"partial"`,
+#'                        but if you want to remove the group-specific intercept altogether,
+#'                        set this to `"remove"`.
 #' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
@@ -213,7 +215,7 @@ baggr <- function(data,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
-                  pooling_control = c("none", "partial"),
+                  pooling_control = c("none", "partial", "remove"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   silent = FALSE, warn = TRUE, ...) {
@@ -309,7 +311,8 @@ baggr <- function(data,
   if(model %in% c("logit", "rubin_full", "mutau_full"))
     stan_data[["pooling_baseline"]] <- switch(pooling_control,
                                               "none" = 0,
-                                              "partial" = 1)
+                                              "partial" = 1,
+                                              "remove" = 2)
   if(model == "mutau_full"){
     # For now this model only used for joint prior
     stan_data[["joint_prior_mean"]] <- 1

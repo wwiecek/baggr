@@ -19,7 +19,7 @@ baggr(
   prior_sigma = NULL,
   prior = NULL,
   ppd = FALSE,
-  pooling_control = c("none", "partial"),
+  pooling_control = c("none", "partial", "remove"),
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome",
@@ -93,7 +93,9 @@ be used to infer the correct model (if \code{model=NULL}) and to set the
 default priors, therefore you must specify it.}
 
 \item{pooling_control}{Pooling for group-specific control mean terms in models using
-individual-level data. Either \code{"none"} or \code{"partial"}.}
+individual-level data. Typically we use either \code{"none"} or \code{"partial"},
+but if you want to remove the group-specific intercept altogether,
+set this to \code{"remove"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument. See "Cross-validation" section below.}

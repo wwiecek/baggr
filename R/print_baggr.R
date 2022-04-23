@@ -42,10 +42,12 @@ print.baggr <- function(x,
   cat("\n")
 
   if(length(x$effects) == 1)
-    cat(crayon::bold(paste0("Aggregate treatment effect (on ", x$effects, "):\n")))
+    cat(crayon::bold(paste0("Aggregate treatment effect (on ",
+                            x$effects, "), ",
+                            x$n_groups," groups:\n")))
   else
-    cat(crayon::bold(paste0("Aggregate treatment effect:\n")))
-
+    cat(crayon::bold(paste0("Aggregate treatment effects, ",
+                            x$n_groups," groups:\n")))
 
   if(x$pooling == "none") {
     cat("No treatment effect estimated as pooling = 'none'.\n\n")
@@ -161,6 +163,8 @@ print.baggr <- function(x,
     else
       fixed_eff_tab <- fixed_effects(x, summary = TRUE)
 
+    cov_names <- dimnames(fixed_eff_tab)[[1]]
+
     for(i in 1:dim(fixed_eff_tab)[3]){
       cat(paste0("Covariate (fixed) effects on ", x$effects[i]))
       if(exponent){
@@ -169,6 +173,11 @@ print.baggr <- function(x,
       } else{
         cat(":\n")
         tab <- cbind(fixed_eff_tab[,c("mean", "sd"),i])
+      }
+      # Just in case the names were dropped due to dim=1
+      if(dim(fixed_eff_tab)[[1]] == 1){
+        colnames(tab) <- dimnames(fixed_eff_tab)[[1]]
+        tab <- t(tab)
       }
       print(tab, digits = digits)
       cat("\n")

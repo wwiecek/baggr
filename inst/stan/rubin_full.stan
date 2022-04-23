@@ -10,7 +10,7 @@ data {
   matrix[N,Nc] X;  //covariate values (design matrix for FE)
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int pooling_baseline; //pooling for proportions in control arm;
-                        //0 if none, 1 if partial
+                        //0 if none, 1 if partial, else no bsl (==0)
   int<lower=0,upper=K> site[N];
   vector<lower=0,upper=1>[N] treatment;
 
@@ -46,15 +46,16 @@ data {
 
 transformed data {
   int K_pooled = pooling_type == 2 ? 0 : K;
+  int K_bsl_pooled = pooling_baseline == 2 ? 0 : K;
 }
 parameters {
   // SHARED ACROSS FULL MODELS:
-  real mu_baseline[pooling_baseline != 0];
+  real mu_baseline[pooling_baseline == 1];
   real mu[pooling_type != 0];
-  real<lower=0> tau_baseline[pooling_baseline != 0];
+  real<lower=0> tau_baseline[pooling_baseline == 1];
   real<lower=0> tau[pooling_type == 1];
   vector[K_pooled] eta;
-  vector[K] eta_baseline;
+  vector[K_bsl_pooled] eta_baseline;
   vector[Nc] beta;
 
   // NORMAL specific:
@@ -73,6 +74,8 @@ transformed parameters {
     baseline_k = eta_baseline;
   else if(pooling_baseline == 1)
     baseline_k = rep_vector(mu_baseline[1], K) + tau_baseline[1]*eta_baseline;
+  else
+    baseline_k = rep_vector(0.0, K);
 }
 model {
   //fixed effects:
