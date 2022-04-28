@@ -1,4 +1,4 @@
-# baggr: Bayesian aggregation package for R, v0.6.18 (January 2022)
+# baggr: Bayesian aggregation package for R, v0.7 (2022)
 
 
 <!-- badges: start -->
@@ -94,7 +94,7 @@ data, try `vignette("baggr_binary")`. Compiled vignettes are available
 
 ## Current and future releases
 
-Included in baggr v0.6 (2021):
+Included in baggr v0.7 (2022):
 
   - Meta-analysis and hierarchical models for continuous and binary
     outcomes

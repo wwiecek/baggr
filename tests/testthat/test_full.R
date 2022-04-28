@@ -8,8 +8,9 @@ set.seed(1990)
 # Generate 8 schools like IPD data
 schools_ipd <- data.frame()
 N <- c(rep(10, 4), rep(20, 4))
+bsl <- vector(length=8)
 for(i in 1:8){
-  bsl <- rnorm(1, 0, 5)
+  bsl[i] <- rnorm(1, 0, 5)
 
   x <- rnorm(N[i])
   x <- (x-mean(x))/sd(x)
@@ -20,9 +21,9 @@ for(i in 1:8){
   y <- y*schools$se[i]*sqrt(N[i])/1.41
 
   schools_ipd <- rbind(schools_ipd,
-                       data.frame(group = schools$group[i], outcome = bsl + x, treatment = 1),
+                       data.frame(group = schools$group[i], outcome = bsl[i] + x, treatment = 1),
                        # This is just so that we don't trip off prepare_ma:
-                       data.frame(group = schools$group[i], outcome = bsl + y, treatment = 0))
+                       data.frame(group = schools$group[i], outcome = bsl[i] + y, treatment = 0))
 }
 
 
@@ -47,6 +48,10 @@ test_that("Basic operations on rubin_full model", {
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
   expect_is(bgc, "baggr_compare")
 
+  # No pooling gives sensible results:
+  expect_equal(
+    as.numeric(group_effects(bg_n,s=T)[,"mean",1]),
+    schools$tau, tolerance = 1)
 
 })
 
@@ -175,3 +180,23 @@ test_that("Model with covariates works fine", {
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
 })
 
+bg_pr <- expect_warning(baggr(schools_ipd,
+                              pooling = "partial",
+                              pooling_control = "remove",
+                              iter = 150,
+                              refresh=0))
+bg_pn <- expect_warning(baggr(schools_ipd,
+                              pooling = "partial",
+                              pooling_control = "none",
+                              iter = 150,
+                              refresh=0))
+test_that("You can change pooling on values in control group", {
+  expect_is(bg_pr, "baggr")
+  expect_is(bg_pn, "baggr")
+  bsl_k <- apply(rstan::extract(bg_pr$fit, "baseline_k")[[1]], 2, mean)
+  expect_length(bsl_k, 8)
+  expect_equal(bsl_k, rep(0, 8))
+  bsl_k <- apply(rstan::extract(bg_pn$fit, "baseline_k")[[1]], 2, mean)
+  expect_length(bsl_k, 8)
+  expect_equal(bsl_k, bsl, tolerance = 1)
+})

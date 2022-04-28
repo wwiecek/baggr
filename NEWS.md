@@ -1,3 +1,12 @@
+# baggr 0.7 (spring 2022)
+
+* Faster code: all models should now run by up to 50% faster
+* For standardised data, where mean in control group is by definition 0, you can now say `pooling_control = "remove"` when calling `baggr()`. This will avoid estimating parameters which are known to be 0.
+
+Misc:
+
+* More information when printing models
+
 # baggr 0.6.21 (January-March 2022)
 
 Misc:
