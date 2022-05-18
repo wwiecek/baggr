@@ -280,7 +280,6 @@ print.baggr_compare <- function(x, digits, ...){
   if(!is.null(x$covariates)){
     cat("\nMean (SD) for covariates:\n")
     mcov <- x$covariates
-    d <- 3
     mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
                           signif(mcov$sd, digits = digits), ")",
                           sep = "")

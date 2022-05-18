@@ -11,6 +11,9 @@ detect_input_type <- function(data,
     stop("Can't detect input type because it's not data.frame")
 
   # Summary data -----
+  if(check_columns_binary(data, stop = FALSE))
+    return("pool_binary")
+
   if("tau" %in% names(data) && "se" %in% names(data)){
     if("treatment" %in% names(data))
       return("pool_narrow") #will need conversion
@@ -22,8 +25,6 @@ detect_input_type <- function(data,
                       names(data)))))
     return("pool_wide")
 
-  if(check_columns_binary(data, stop = FALSE))
-    return("pool_binary")
 
   # Individual-level data -----
   if(!is.null(data[[group]])){

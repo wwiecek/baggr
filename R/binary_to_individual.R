@@ -6,6 +6,8 @@
 #' @param data A data frame with columns `a`, `c` and `b`/`n1`, `d`/`n2`.
 #'             (You can also use `ai`, `ci`, `n1i`, `n2i` instead.)
 #' @param group Column name storing group
+#' @param covariates Column names in `data` that contain group-level variables
+#'                   to retain when expanding into individual-level `data.frame`
 #' @param rename_group If `TRUE` (default), this will rename the grouping variable
 #'                     to `"group"`, making it easier to work with [baggr]
 #'
@@ -34,6 +36,7 @@
 #' prepare_ma(df_yusuf, group="trial", effect="logOR")
 #'
 binary_to_individual <- function(data, group = "group",
+                                 covariates = c(),
                                  rename_group = TRUE) {
   df_ind <- data.frame()
 
@@ -63,17 +66,18 @@ binary_to_individual <- function(data, group = "group",
     stop("Non-integer number of events or non-events present in data")
 
   for(i in 1:nrow(data)) {
-    df_ind <-
-      rbind(df_ind,
-            setNames(
-              data.frame(
-                data[[group]][i],
-                c(rep(1, data$n1[i]), rep(0, data$n2[i])),
-                c(rep(1, data$a[i]),  rep(0, data$n1[i] - data$a[i]),
-                  rep(1, data$c[i]),  rep(0, data$n2[i] - data$c[i]))),
-              c(group_name, "treatment", "outcome")
-            )
-      )
+    current_df <- setNames(
+      data.frame(
+        data[[group]][i],
+        c(rep(1, data$n1[i]), rep(0, data$n2[i])),
+        c(rep(1, data$a[i]),  rep(0, data$n1[i] - data$a[i]),
+          rep(1, data$c[i]),  rep(0, data$n2[i] - data$c[i]))),
+      c(group_name, "treatment", "outcome")
+    )
+    for(cn in covariates)
+      current_df[[cn]] <- data[[cn]][i]
+
+    df_ind <- rbind(df_ind, current_df)
   }
   df_ind
 }

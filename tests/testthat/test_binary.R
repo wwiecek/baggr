@@ -219,6 +219,27 @@ test_that("Model with covariates works fine", {
 })
 
 
+# covariates, group-level ------
+df_cov <- df_summ
+df_cov$somecov <- rnorm(5)
+
+test_that("Model with covariates works fine", {
+  bg_cov2 <- expect_warning(
+    baggr(df_cov, covariates = c("somecov"), iter = 150, chains = 1, refresh = 0))
+
+  expect_is(bg_cov2, "baggr")
+  expect_error(baggr(df_cov, covariates = c("made_up_covariates")), "are not columns")
+  expect_length(bg_cov2$covariates, 1)
+  expect_null(bg_cov2$mean_lpd)
+
+  # Fixed effects extraction
+  expect_is(fixed_effects(bg_cov2), "matrix")
+  expect_is(fixed_effects(bg_cov2, transform = exp), "matrix")
+  expect_equal(dim(fixed_effects(bg_cov2, summary = TRUE)), c(1,5,1))
+  expect_equal(dim(fixed_effects(bg_cov2, summary = FALSE))[2], 1)
+})
+
+
 
 # tests for helper functions -----
 
