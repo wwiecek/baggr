@@ -103,6 +103,9 @@ test_that("extra pooling stats work", {
   h2 <- pooling(bg5_p, metric = "hsq")
   expect_is(h2, "array")
   expect_gte(min(h2), 1)
+  h <- pooling(bg5_p, metric = "h")
+  expect_is(h, "array")
+  expect_gte(min(h), 1)
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
   expect_is(wt, "array")
@@ -236,17 +239,22 @@ test_that("loocv", {
   expect_error(loocv(df_binary, pooling = "none"))
 
   skip_on_cran()
-  skip_on_travis()
 
   loo_model <- expect_warning(loocv(df_binary, model = "logit",
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_model, "baggr_cv")
   capture_output(print(loo_model))
+  expect_is(plot(loo_model), "gg")
 
   loo_full <- expect_warning(loocv(df_binary, model = "logit", pooling = "full",
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_full, "baggr_cv")
   capture_output(print(loo_full))
+  expect_is(plot(loo_full, add_values = FALSE), "gg")
+
+  looc <- loo_compare(loo_model, loo_full)
+  expect_is(looc, "compare_baggr_cv")
+  capture_output(looc)
 })
 
 comp_pl <- expect_warning(baggr_compare(
