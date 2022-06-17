@@ -73,8 +73,8 @@ convert_inputs <- function(data,
     # model <- names(model_data_types)[which(model_data_types == available_data)[1]]
     model <- data_type_default_model[[available_data]]
     if(!silent)
-      message(paste0("Automatically set model to ", crayon::bold(model_names[model]),
-                     " from data."))
+      message(paste0("Automatically chose ", crayon::bold(model_names[model]),
+                     " based on input data."))
   } else {
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
@@ -95,10 +95,13 @@ convert_inputs <- function(data,
   required_data <- model_data_types[[model]]
 
   if(required_data == "individual_binary" && available_data == "pool_binary") {
-    data <- binary_to_individual(data, group, FALSE)
+    data <- binary_to_individual(data, group, covariates, FALSE)
     available_data <- "individual_binary"
     message("Data were automatically converted from summary to individual-level.")
   }
+
+  if(model == "rubin" && available_data == "pool_binary")
+    available_data <- required_data #quick fix, but this will work OK in all cases
 
   if(required_data != available_data)
     stop(paste(
