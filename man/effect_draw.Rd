@@ -7,6 +7,7 @@
 effect_draw(
   x,
   n,
+  newdata = NULL,
   transform = NULL,
   summary = FALSE,
   message = TRUE,
@@ -19,11 +20,14 @@ effect_draw(
 \item{n}{How many values to draw? The default is as long as the number of samples
 in the \code{baggr} object (see \emph{Details}).}
 
+\item{newdata}{an optional data frame containing new values of covariates
+that were used when fitting the \code{baggr} model}
+
 \item{transform}{a transformation (an R function) to apply to the result of a draw.}
 
 \item{summary}{logical; if TRUE returns summary statistics rather than samples from the distribution;}
 
-\item{message}{logical; use to disable messages prompted by using with
+\item{message}{logical; use to disable messages prompted by using this function with
 no pooling models}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
@@ -31,6 +35,8 @@ no pooling models}
 \value{
 A vector (with \code{n} values) for models with one treatment effect parameter,
 a matrix (\code{n} rows and same number of columns as number of parameters) otherwise.
+If \code{newdata} are specified, an array is returned instead, where the first dimension
+corresponds to rows of \code{newdata}.
 }
 \description{
 This function takes the samples of hyperparameters from a \link{baggr} model
@@ -53,6 +59,12 @@ these cases.
 Under default settings in \link{baggr}, a \emph{posterior} predictive distribution is obtained. But
 \code{effect_draw} can also be used for \emph{prior} predictive distributions when
 setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
+
+If the \code{baggr} model used by the function is a meta-regression
+(i.e. a \code{baggr} model with \code{covariates}), by specifying
+the predicted values can be adjusted for known levels of fixed covariates by
+passing \code{newdata} (same as in \link{predict}). If no adjustment is made, the
+returned value should be interpreted as the effect when all covariates are 0.
 }
 \references{
 Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
@@ -60,6 +72,6 @@ Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 \emph{BMJ 342 (10 February 2011).}.
 }
 \seealso{
-\link{treatment_effect} returns samples of hypermean and hyper-SD
+\link{treatment_effect} returns samples from hypermean(s) and hyper-SD(s)
 which are used by this function
 }

@@ -342,9 +342,12 @@ convert_inputs <- function(data,
       out$X_test <- array(0, dim=c(0, out$Nc))
 
     covariate_coding <- colnames(out$X)
+    covariate_levels <- lapply(cov_bind, levels)
+    covariate_levels[["tau"]] <- NULL
 
   } else {
     covariate_coding <- c()
+    covariate_levels <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -362,6 +365,7 @@ convert_inputs <- function(data,
     data_type = available_data,
     data = data,
     covariate_coding = covariate_coding,
+    covariate_levels = covariate_levels,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))
