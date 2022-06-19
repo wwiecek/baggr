@@ -1,11 +1,15 @@
-# baggr 0.7 (spring 2022)
+# baggr 0.7.1 (spring 2022)
 
 * Faster code: all models should now run by up to 50% faster
 * For standardised data, where mean in control group is by definition 0, you can now say `pooling_control = "remove"` when calling `baggr()`. This will avoid estimating parameters which are known to be 0.
+* Predicting effects for new data: for models with covariates you can use `effect_draw(object, newdata = ...)` or (equvalently) `predict(object, newdata = ...)` 
+to generate predictions for any number of new samples 
 
 Misc:
 
 * More information when printing models
+* I added aliases `predict()` and `posterior_predict()` for drawing from posterior
+  sample. This is more consistent with regression modeling and RStan ecosystem.
 
 # baggr 0.6.21 (January-March 2022)
 

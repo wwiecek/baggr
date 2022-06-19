@@ -91,18 +91,22 @@ treatment_effect <- function(bg, summary = FALSE,
 #' This can be used for both prior and posterior draws, depending on [baggr] model.
 #'
 #' @param x A `baggr` class object.
+#' @param newdata an optional data frame containing new values of covariates
+#'                that were used when fitting the `baggr` model
 #' @param transform a transformation (an R function) to apply to the result of a draw.
 #' @param summary logical; if TRUE returns summary statistics rather than samples from the distribution;
 #' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
 #' @param n How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
-#' @param message logical; use to disable messages prompted by using with
+#' @param message logical; use to disable messages prompted by using this function with
 #'                no pooling models
 #' @return A vector (with `n` values) for models with one treatment effect parameter,
 #'         a matrix (`n` rows and same number of columns as number of parameters) otherwise.
+#'         If `newdata` are specified, an array is returned instead, where the first dimension
+#'         corresponds to rows of `newdata`.
 #' @export
 #'
-#' @seealso [treatment_effect] returns samples of hypermean and hyper-SD
+#' @seealso [treatment_effect] returns samples from hypermean(s) and hyper-SD(s)
 #'          which are used by this function
 #'
 #' @details
@@ -121,66 +125,112 @@ treatment_effect <- function(bg, summary = FALSE,
 #' `effect_draw` can also be used for _prior_ predictive distributions when
 #' setting `ppd=T` in [baggr]. The two outputs work exactly the same way.
 #'
+#' If the `baggr` model used by the function is a meta-regression
+#' (i.e. a `baggr` model with `covariates`), by specifying
+#' the predicted values can be adjusted for known levels of fixed covariates by
+#' passing `newdata` (same as in [predict]). If no adjustment is made, the
+#' returned value should be interpreted as the effect when all covariates are 0.
+#'
 #' @references
 #' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 #' "Interpretation of Random Effects Meta-Analyses".
 #' _BMJ 342 (10 February 2011)._.
 #'
-effect_draw <- function(x, n, transform=NULL,
+effect_draw <- function(x, n, newdata = NULL,
+                        transform=NULL,
                         summary = FALSE, message = TRUE, interval = .95) {
   check_if_baggr(x)
 
   # Resize trt effects to the demanded size by making extra draws
   neffects <- length(x$effects)
 
-  te <- treatment_effect(x, message = FALSE)
+  # Return NA if there is no pooling
   if(x$pooling == "none"){
-
     if(message)
       message("There is no predicted effect when pooling = 'none'.")
-    new_tau <- as.numeric(c(NA))
-
-  } else {
-    if(!missing(n)){
-      if(neffects > 1){
-        if(n > nrow(te$tau))
-          warning("Making more effect draws than there are available samples in Stan object.",
-                  "Consider running baggr() with higher iter= setting")
-        rows <- sample(nrow(te$tau), n, replace = TRUE)
-        te$tau   <- te$tau[rows,]
-        if(x$pooling != "full")
-          te$sigma_tau <- te$sigma_tau[rows,]
-        else
-          te$sigma_tau <- te$tau*0
-      }
-      if(neffects == 1){
-        if(n > length(te$tau))
-          warning("Making more effect draws than there are available samples in Stan object.",
-                  "Consider running baggr() with higher iter= setting")
-        rows <- sample(length(te$tau), n, replace = TRUE)
-        te$tau   <- te$tau[rows]
-        if(x$pooling != "full")
-          te$sigma_tau <- te$sigma_tau[rows]
-        else
-          te$sigma_tau <- te$tau*0
-      }
-    }
-    # Make draws using normal distribution (for now it's the only option)
-    new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+    new_tau <- return(as.numeric(c(NA)))
   }
 
+  te <- treatment_effect(x, message = FALSE)
+  if(!missing(n)){
+    if(neffects > 1){
+      if(n > nrow(te$tau))
+        warning("Making more effect draws than there are available samples in Stan object.",
+                "Consider running baggr() with higher iter= setting")
+      rows <- sample(nrow(te$tau), n, replace = TRUE)
+      te$tau   <- te$tau[rows,]
+      if(x$pooling != "full")
+        te$sigma_tau <- te$sigma_tau[rows,]
+      else
+        te$sigma_tau <- te$tau*0
+    }
+    if(neffects == 1){
+      if(n > length(te$tau))
+        warning("Making more effect draws than there are available samples in Stan object.",
+                "Consider running baggr() with higher iter= setting")
+      rows <- sample(length(te$tau), n, replace = TRUE)
+      te$tau   <- te$tau[rows]
+      if(x$pooling != "full")
+        te$sigma_tau <- te$sigma_tau[rows]
+      else
+        te$sigma_tau <- te$tau*0
+    }
+  }
+
+  # Make draws using normal distribution (for now it's the only option)
+  # and format as matrix of N posterior samples x N effects
+  new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
   if(neffects > 1){
     new_tau <- matrix(new_tau, nrow(te$tau), ncol(te$tau))
     colnames(new_tau) <- colnames(te$tau)
+  } else {
+    new_tau <- matrix(new_tau, length(new_tau), 1)
   }
+
+
+  # N effects x N new data x N posterior samples
+
+  # New data: adjust for values of covariates in each draw:
+
+  if(!is.null(newdata) && x$pooling != "none") {
+    if(!inherits(newdata, "data.frame"))
+      stop("newdata must be a data frame")
+
+    if(neffects > 1)
+      stop("Currently newdata for models with multidimensional effects is not supported")
+
+    new_tau_array <- array(NA, c(ncol(new_tau), nrow(newdata), nrow(new_tau)))
+
+    covariate_levels <- attr(x$inputs, "covariate_levels")
+    for(nm in names(newdata))
+      if(!is.null(covariate_levels[[nm]]))
+        newdata[[nm]] <- factor(newdata[[nm]], covariate_levels[[nm]])
+    fe <- fixed_effects(x)
+    if(!missing(n))
+      fe <- fe[rows,]
+    newdata$tau <- 0
+    cov_mm <- model.matrix(as.formula(
+      paste("tau ~", paste(x$covariates, collapse="+"))),
+      data=newdata)
+    fe_mat <- fe %*% t(cov_mm[,colnames(fe)])
+
+    for(i in 1:ncol(new_tau))
+      new_tau_array[i,,] <- t(new_tau[,i] + fe_mat)
+
+  } else {
+    new_tau_array <- array(new_tau, c(ncol(new_tau), 1, nrow(new_tau)))
+  }
+
   if(!is.null(transform))
-    new_tau <- do.call(transform, list(new_tau))
+    new_tau_array <- apply(new_tau_array, c(1,2,3), transform)
 
-  if(summary) {
-    new_tau <- mint(new_tau, int=interval, median=TRUE, sd = TRUE)
-  }
+  if(summary)
+    new_tau_array <- apply(new_tau_array, c(1, 2), mint, int=interval, median=TRUE, sd = TRUE)
 
-  new_tau
+  if(dim(new_tau_array)[2] == 1)
+    return(new_tau_array[,1,])
+  else
+    return(new_tau_array)
 }
 
 
@@ -287,9 +337,6 @@ effect_plot <- function(..., transform=NULL) {
   if(length(effects) > n_parameters)
     stop("All models must have same effects")
 
-
-
-  # dim <-
   l <- lapply(l, effect_draw, transform=transform)
 
   df <- data.frame()
