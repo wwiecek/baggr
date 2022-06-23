@@ -242,8 +242,6 @@ baggr_compare <- function(...,
       est
     })))
 
-
-
   bgc <- structure(
     list(
       models = models,
@@ -280,7 +278,6 @@ print.baggr_compare <- function(x, digits, ...){
   if(!is.null(x$covariates)){
     cat("\nMean (SD) for covariates:\n")
     mcov <- x$covariates
-    d <- 3
     mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
                           signif(mcov$sd, digits = digits), ")",
                           sep = "")
@@ -470,10 +467,10 @@ plot.baggr_compare <- function(x,
     }
   }
 
-
   if(compare == "effects"){
-    plots <- do.call(effect_plot, models) +
-      ggplot2::labs(fill = NULL)
+    arglist <- models
+    arglist[["transform"]] <- transform
+    plots <- do.call(effect_plot, arglist) + ggplot2::labs(fill = NULL)
   }
 
   # return the plots

@@ -103,6 +103,9 @@ test_that("extra pooling stats work", {
   h2 <- pooling(bg5_p, metric = "hsq")
   expect_is(h2, "array")
   expect_gte(min(h2), 1)
+  h <- pooling(bg5_p, metric = "h")
+  expect_is(h, "array")
+  expect_gte(min(h), 1)
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
   expect_is(wt, "array")
@@ -219,6 +222,27 @@ test_that("Model with covariates works fine", {
 })
 
 
+# covariates, group-level ------
+df_cov <- df_summ
+df_cov$somecov <- rnorm(5)
+
+test_that("Model with covariates works fine", {
+  bg_cov2 <- expect_warning(
+    baggr(df_cov, covariates = c("somecov"), iter = 150, chains = 1, refresh = 0))
+
+  expect_is(bg_cov2, "baggr")
+  expect_error(baggr(df_cov, covariates = c("made_up_covariates")), "are not columns")
+  expect_length(bg_cov2$covariates, 1)
+  expect_null(bg_cov2$mean_lpd)
+
+  # Fixed effects extraction
+  expect_is(fixed_effects(bg_cov2), "matrix")
+  expect_is(fixed_effects(bg_cov2, transform = exp), "matrix")
+  expect_equal(dim(fixed_effects(bg_cov2, summary = TRUE)), c(1,5,1))
+  expect_equal(dim(fixed_effects(bg_cov2, summary = FALSE))[2], 1)
+})
+
+
 
 # tests for helper functions -----
 
@@ -236,17 +260,22 @@ test_that("loocv", {
   expect_error(loocv(df_binary, pooling = "none"))
 
   skip_on_cran()
-  skip_on_travis()
 
   loo_model <- expect_warning(loocv(df_binary, model = "logit",
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_model, "baggr_cv")
   capture_output(print(loo_model))
+  expect_is(plot(loo_model), "gg")
 
   loo_full <- expect_warning(loocv(df_binary, model = "logit", pooling = "full",
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_full, "baggr_cv")
   capture_output(print(loo_full))
+  expect_is(plot(loo_full, add_values = FALSE), "gg")
+
+  looc <- loo_compare(loo_model, loo_full)
+  expect_is(looc, "compare_baggr_cv")
+  capture_output(looc)
 })
 
 comp_pl <- expect_warning(baggr_compare(

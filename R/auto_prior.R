@@ -175,13 +175,15 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
               special_name <- "log odds of event rate in untreated: mean"
             }
             if(model %in% c("rubin_full", "mutau_full")){
-              if(stan_data$pooling_baseline != 0)
+              if(stan_data$pooling_baseline == 1)
                 special_name <- "mu (hyperparameter)"
-              else
+              else if(stan_data$pooling_baseline == 0)
                 special_name <- "independent prior on control means"
+              else
+                special_name <- "DNP"
             }
           } else if(current_prior == "control_sd") {
-            if(stan_data$pooling_baseline != 0){
+            if(stan_data$pooling_baseline == 1){
               if(model == "logit")
                 special_name <- "log odds of event rate in untreated: sd"
               if(model %in% c("rubin_full", "mutau_full")){
@@ -208,7 +210,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
             message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
           if(current_prior == "control_sd" &&
              model %in% c("logit", "rubin_full", "mutau_full") &&
-             stan_data$pooling_baseline == 0)
+             stan_data$pooling_baseline != 1)
             message("SD hyperparameter for control groups defined,",
                     "but there is no pooling. Ignoring it.")
         }

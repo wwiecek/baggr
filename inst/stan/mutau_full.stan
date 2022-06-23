@@ -56,26 +56,22 @@ data {
 }
 
 transformed data {
-  int K_pooled; // number of modelled sites if we take pooling into account
-  if(pooling_type == 2)
-    K_pooled = 0;
-  if(pooling_type != 2)
-    K_pooled = K;
+  int K_pooled = pooling_type == 2 ? 0 : K;
 }
 
 parameters {
   // corr_matrix[P] Omega;        // prior correlation
-  cholesky_factor_corr[P] L_Omega[joint_prior_variance == 1 && pooling_type == 1? 1: 0];
-  vector<lower=0>[P] hypersd[pooling_type == 1? 1: 0];        // prior scale
-  vector[P] mu[pooling_type != 0? 1: 0];
-  matrix[P,K] eta[pooling_type != 2? 1: 0];
+  cholesky_factor_corr[P] L_Omega[joint_prior_variance == 1 && pooling_type == 1];
+  vector<lower=0>[P] hypersd[pooling_type == 1];        // prior scale
+  vector[P] mu[pooling_type != 0];
+  matrix[P,K] eta[pooling_type != 2];
   vector[Nc] beta;
   // NORMAL specific:
   vector<lower=0>[K] sigma_y_k;
 }
 transformed parameters {
-  matrix[P,K] theta_k[pooling_type != 2? 1: 0];
-  matrix[P,P] tau[pooling_type == 1? 1: 0];
+  matrix[P,K] theta_k[pooling_type != 2];
+  matrix[P,P] tau[pooling_type == 1];
   if(pooling_type == 0)
     theta_k[1] = eta[1];
   if(pooling_type == 1){
@@ -95,7 +91,7 @@ model {
       y_mean = rep_vector(0.0, N);
     else{
       y_mean = X*beta;
-      target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
+      beta ~ vecprior(prior_beta_fam, prior_beta_val);
     }
 
     // Impact of baseline:
@@ -116,8 +112,8 @@ model {
     if(joint_prior_mean)
       mu[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
     // else {
-    //   target += prior_increment_real(prior_control_fam,   mu[1][1], prior_control_val);
-    //   target += prior_increment_real(prior_hypermean_fam, mu[1][2], prior_hypermean_val);
+    //   mu[1][1] ~ realprior(prior_control_fam,   prior_control_val);
+    //   mu[1][2] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
     // }
   } else {
     for(k in 1:K)
@@ -126,8 +122,8 @@ model {
 
   if(pooling_type == 1) {
     to_vector(eta[1]) ~ std_normal();
-    target += prior_increment_real(prior_hypersd_fam,    hypersd[1][1], prior_hypersd_val);
-    target += prior_increment_real(prior_control_sd_fam, hypersd[1][2], prior_control_sd_val);
+    hypersd[1][1] ~ realprior(prior_hypersd_fam,    prior_hypersd_val);
+    hypersd[1][2] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
     if(joint_prior_variance)
       L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);
   }
@@ -140,7 +136,7 @@ model {
 generated quantities {
   // to do this, we must first (outside of Stan) calculate SEs in each test group,
   // i.e. test_sigma_y_k
-  real logpd[K_test > 0? 1: 0];
+  real logpd[K_test > 0];
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)

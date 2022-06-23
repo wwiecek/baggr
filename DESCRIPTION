@@ -1,7 +1,7 @@
 Package: baggr
 Type: Package
 Title: Bayesian Aggregate Treatment Effects
-Version: 0.6.21
+Version: 0.7.2
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
              person("Rachael", "Meager", role="aut"),
              person("Brice", "Green", role="ctb", comment = "predict(), loo_compare, many visuals"),

@@ -73,8 +73,8 @@ convert_inputs <- function(data,
     # model <- names(model_data_types)[which(model_data_types == available_data)[1]]
     model <- data_type_default_model[[available_data]]
     if(!silent)
-      message(paste0("Automatically set model to ", crayon::bold(model_names[model]),
-                     " from data."))
+      message(paste0("Automatically chose ", crayon::bold(model_names[model]),
+                     " based on input data."))
   } else {
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
@@ -95,10 +95,13 @@ convert_inputs <- function(data,
   required_data <- model_data_types[[model]]
 
   if(required_data == "individual_binary" && available_data == "pool_binary") {
-    data <- binary_to_individual(data, group, FALSE)
+    data <- binary_to_individual(data, group, covariates, FALSE)
     available_data <- "individual_binary"
     message("Data were automatically converted from summary to individual-level.")
   }
+
+  if(model == "rubin" && available_data == "pool_binary")
+    available_data <- required_data #quick fix, but this will work OK in all cases
 
   if(required_data != available_data)
     stop(paste(
@@ -339,9 +342,12 @@ convert_inputs <- function(data,
       out$X_test <- array(0, dim=c(0, out$Nc))
 
     covariate_coding <- colnames(out$X)
+    covariate_levels <- lapply(cov_bind, levels)
+    covariate_levels[["tau"]] <- NULL
 
   } else {
     covariate_coding <- c()
+    covariate_levels <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -359,6 +365,7 @@ convert_inputs <- function(data,
     data_type = available_data,
     data = data,
     covariate_coding = covariate_coding,
+    covariate_levels = covariate_levels,
     group_label = group_label,
     n_groups = out[["K"]],
     model = model))

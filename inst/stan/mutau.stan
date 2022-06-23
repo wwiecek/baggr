@@ -28,23 +28,19 @@ data {
 }
 
 transformed data {
-  int K_pooled; // number of modelled sites if we take pooling into account
-  if(pooling_type == 2)
-  K_pooled = 0;
-  if(pooling_type != 2)
-  K_pooled = K;
+  int K_pooled = pooling_type == 2 ? 0 : K;
 }
 
 parameters {
-  vector[P] mu[pooling_type != 0? 1: 0];
-  cholesky_factor_corr[P] L_Omega[pooling_type == 1? 1: 0];
-  vector<lower=0>[P] hypersd[pooling_type == 1? 1: 0];    //  scale
-  matrix[P,K] eta[pooling_type != 2? 1: 0];
+  vector[P] mu[pooling_type != 0];
+  cholesky_factor_corr[P] L_Omega[pooling_type == 1];
+  vector<lower=0>[P] hypersd[pooling_type == 1];    //  scale
+  matrix[P,K] eta[pooling_type != 2];
 }
 
 transformed parameters {
-  matrix[P,K] theta_k[pooling_type != 2? 1: 0];
-  matrix[P,P] tau[pooling_type == 1? 1: 0];
+  matrix[P,K] theta_k[pooling_type != 2];
+  matrix[P,P] tau[pooling_type == 1];
 
   if(pooling_type == 0)
     theta_k[1] = eta[1];
@@ -81,7 +77,7 @@ model {
     to_vector(eta[1]) ~ std_normal();
 
     for(p in 1:P)
-      target += prior_increment_real(prior_hypersd_fam, hypersd[1][p], prior_hypersd_val);
+      hypersd[1][p] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
 
     //for Omega only LKJ allowed for now
     L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);
@@ -101,7 +97,7 @@ model {
 }
 
 generated quantities {
-  real logpd[K_test > 0? 1: 0];
+  real logpd[K_test > 0];
   if(K_test > 0) {
     logpd[1] = 0;
     for(k in 1:K_test){
