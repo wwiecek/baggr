@@ -242,8 +242,6 @@ baggr_compare <- function(...,
       est
     })))
 
-
-
   bgc <- structure(
     list(
       models = models,
@@ -469,10 +467,10 @@ plot.baggr_compare <- function(x,
     }
   }
 
-
   if(compare == "effects"){
-    plots <- do.call(effect_plot, models) +
-      ggplot2::labs(fill = NULL)
+    arglist <- models
+    arglist[["transform"]] <- transform
+    plots <- do.call(effect_plot, arglist) + ggplot2::labs(fill = NULL)
   }
 
   # return the plots

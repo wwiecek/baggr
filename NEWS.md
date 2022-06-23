@@ -8,8 +8,9 @@ to generate predictions for any number of new samples
 Misc:
 
 * More information when printing models
-* I added aliases `predict()` and `posterior_predict()` for drawing from posterior
+* I added alias `posterior_predict()` for drawing from posterior
   sample. This is more consistent with regression modeling and RStan ecosystem.
+* Transforms of samples on `baggr_compare` plots previously didn't work for some plots. This is now fixed.
 
 # baggr 0.6.21 (January-March 2022)
 
