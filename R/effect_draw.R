@@ -8,18 +8,18 @@
 #' By default this is done for a single new effect, but for meta-regression models
 #' you can specify values of covariates with the `newdata` argument, same as in [predict].
 #'
-#' @param x A `baggr` class object.
+#' @param object A `baggr` class object.
+#' @param draws How many values to draw? The default is as long as the number of samples
+#'          in the `baggr` object (see _Details_).
 #' @param newdata an optional data frame containing new values of covariates
 #'                that were used when fitting the `baggr` model
 #' @param transform a transformation (an R function) to apply to the result of a draw.
 #' @param summary logical; if TRUE returns summary statistics rather than samples from the distribution;
 #' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
-#' @param n How many values to draw? The default is as long as the number of samples
-#'          in the `baggr` object (see _Details_).
 #' @param message logical; use to disable messages prompted by using this function with
 #'                no pooling models
-#' @return A vector (with `n` values) for models with one treatment effect parameter,
-#'         a matrix (`n` rows and same number of columns as number of parameters) otherwise.
+#' @return A vector (with `draws` values) for models with one treatment effect parameter,
+#'         a matrix (`draws` rows and same number of columns as number of parameters) otherwise.
 #'         If `newdata` are specified, an array is returned instead, where the first dimension
 #'         corresponds to rows of `newdata`.
 #' @export
@@ -55,10 +55,10 @@
 #' _BMJ 342 (10 February 2011)._.
 #'
 effect_draw <- function(object,
-                                             draws = NULL,
-                                             newdata = NULL,
-                                             transform = NULL,
-                                             summary = FALSE, message = TRUE, interval = .95) {
+                        draws = NULL,
+                        newdata = NULL,
+                        transform = NULL,
+                        summary = FALSE, message = TRUE, interval = .95) {
   x <- object
   check_if_baggr(x)
 
@@ -127,7 +127,7 @@ effect_draw <- function(object,
       if(!is.null(covariate_levels[[nm]]))
         newdata[[nm]] <- factor(newdata[[nm]], covariate_levels[[nm]])
     fe <- fixed_effects(x)
-    if(!missing(n))
+    if(!missing(draws))
       fe <- fe[rows,]
     newdata$tau <- 0
     cov_mm <- model.matrix(as.formula(

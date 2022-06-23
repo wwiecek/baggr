@@ -26,6 +26,11 @@ effect_draw(
 )
 }
 \arguments{
+\item{object}{A \code{baggr} class object.}
+
+\item{draws}{How many values to draw? The default is as long as the number of samples
+in the \code{baggr} object (see \emph{Details}).}
+
 \item{newdata}{an optional data frame containing new values of covariates
 that were used when fitting the \code{baggr} model}
 
@@ -37,15 +42,10 @@ that were used when fitting the \code{baggr} model}
 no pooling models}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
-
-\item{x}{A \code{baggr} class object.}
-
-\item{n}{How many values to draw? The default is as long as the number of samples
-in the \code{baggr} object (see \emph{Details}).}
 }
 \value{
-A vector (with \code{n} values) for models with one treatment effect parameter,
-a matrix (\code{n} rows and same number of columns as number of parameters) otherwise.
+A vector (with \code{draws} values) for models with one treatment effect parameter,
+a matrix (\code{draws} rows and same number of columns as number of parameters) otherwise.
 If \code{newdata} are specified, an array is returned instead, where the first dimension
 corresponds to rows of \code{newdata}.
 }
