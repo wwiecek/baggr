@@ -25,9 +25,9 @@ This vignette is written for _baggr_ users who want to analyse binary data. For 
 
 Here, we will show how to:
 
-* Run meta-analysis of summary odd ratio (OR) or risk ratio (RR) data.
+* Run meta-analysis of odds ratio (OR), risk ratio (RR) or risk differences (RD).
 * Prepare standard outputs for the above.
-* Convert individual-level data to summary-level and correct for rare events.
+* Convert individual-level data to summary-level and apply corrections for rare events.
 * Run meta-analysis directly on individual-level data.
 * Model impact of covariates.
 
@@ -44,10 +44,9 @@ There are certain aspects of modelling binary data that are not yet covered by _
 
 # Basic meta-analysis of binary data
 
-Typically, a meta-analysis of binary data is done on summary statistics such as $\log(OR)$ or $\log(RR)$. The reason for this is two-fold: 1) they are the statistics most commonly reported by studies and 2) they are approximately normally distributed. The second assumption needs to be treated carefully, as we will show later.
+Typically, a meta-analysis of binary data is done on summary statistics of ratios such as $\log(OR)$ or $\log(RR)$ or of differences in risks, $RD$. The reason for this is two-fold: 1) they are the statistics most commonly reported by studies and 2) they are approximately normally distributed. The second assumption needs a bit more attention, as we will show later.
 
-
-For the first example we will use a simple summary data based on (part of) Table 6 in @yusuf_beta_1985, a famous study of impact of beta blockers on occurrence of strokes and mortality.
+For the running example in this vignette we will use a dataset based on (part of) Table 6 in @yusuf_beta_1985, a famous meta-analysis of the impact of beta blockers on occurrence of strokes and mortality.
 
 ```{r}
 df_yusuf <- read.table(text="
@@ -64,7 +63,7 @@ df_yusuf <- read.table(text="
 
 In a typical notation, `a` (`c`) are numbers of events in treatment (control) groups, while `n1` (`n2`) are total patients in treatment (control) group. We can also calculate $b = n_1 - a$ and $d = n_2 - c$, i.e. numbers of "non-events" in treatment and control groups respectively.
 
-In our examples we will use OR metric; $\log(OR)$ and its SE can easily be calculated from the values (if you're not familiar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference)):
+In our examples below we will focus on the OR metric; $\log(OR)$ and its SE can easily be calculated from the counts above (if you're not familiar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference) for an introduction):
 
 ```{r}
 # This is a calculation we could do by hand:
@@ -79,7 +78,8 @@ df_ma <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
 df_ma
 ```
 
-We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for logOR is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
+We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
+
 
 
 ```{r, include = F}
@@ -90,7 +90,7 @@ bg_model_agg <- baggr(df_ma, iter = 2000, effect = "logarithm of odds ratio")
 bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
 ```
 
-The argument we specified, `effect`, does not impact results, but it makes outputs nicer, as we will see in the next section.
+The argument we specified, `effect`, does not impact results, but it makes for nicer output labels, as we will see in the next section.
 
 As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
 
@@ -98,9 +98,12 @@ As with continuous quantities, the prior is chosen automatically. However, it is
 
 # Choice of summary statistic
 
-We summarised our data as log(OR). Alternatively, we could work with log(RR). Risk difference is also a simple model that could be useful in some cases. Each model makes different assumptions on how the treatment of interest works. How do we choose the appropriate model for our data?
+We summarised our data as $\log(OR)$. Alternatively, we could work with $\log(RR)$ or $RD$. Each model makes different assumptions on how the treatment of interest works. How do we choose the appropriate model for our data?
 
-The basic tool that can help us choose is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
+
+## Visual inspection of binary data
+
+The basic tool that can help us choose between OR, RD and RR is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
 
 ```{r}
 labbe(df_ma, plot_model = TRUE, shade_se = "or")
@@ -108,12 +111,23 @@ labbe(df_ma, plot_model = TRUE, shade_se = "or")
 
 When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
 
+A very good discussion of these choices and intuitive plots are provided by @deeks_issues_2002 (see especially Figures 1-3).
+
+
+## Using differences instead of ratios
+
+Authors of [Cochrane Handbook for Systematic Reviews of Interventions](https://training.cochrane.org/handbook/current/chapter-06) summarise two important differences between using RD versus RR or OR:
+
+> However, the clinical importance of a risk difference may depend on the underlying risk of events in the population. For example, a risk difference of 0.02 (or 2%) may represent a small, clinically insignificant change from a risk of 58% to 60% or a proportionally much larger and potentially important change from 1% to 3%.
+
+> The risk difference is naturally constrained which may create difficulties when applying results to other patient groups and settings. For example, if a study or meta-analysis estimates a risk difference of –0.1 (or –10%), then for a group with an initial risk of, say, 7% the outcome will have an impossible estimated negative probability of –3%. Similar scenarios for increases in risk occur at the other end of the scale.
+
+In terms of the L'Abbe plot, RD implies an effect line which runs parallel to the 45 degree line.
+
 
 ## Using risk ratios instead of odds ratios
 
-Risk ratio is also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). All of the analysis flow would be identical in that case -- with exception of interpretation of treatment effect, of course.
-
-Before we present the results for the OR model, a reminder on how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
+As with ORs, risk ratios are also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). While we will focus on the OR example below, all of the analytic workflow would be identical in the RR case---with exception of interpretation of treatment effect, of course. Before proceeding let us quickly show how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
 
 ```{r}
 a <- 9; b <- 1; c <- 99; d <- 1
@@ -126,8 +140,6 @@ a <- 10; b <- 20; c <- 100; d <- 100
 cat("Risk ratio is", (a/(a+b))/(c/(c+d)), "\n" )
 cat("Odds ratio is", a*d/(b*c), "\n")
 ```
-
-We can illustrate the similarities and differences of OR and RR with one example:
 
 ```{r}
 par(mfrow = c(2,3), oma = rep(2,4))
@@ -143,13 +155,17 @@ for(es in c(1, .9, .8, .5, .25, .1)){
 title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
 ```
 
-A very good discussion of these choices and intuitive plots are provided by @deeks_issues_2002 (see especially Figures 1-3).
+
+## Model comparison using a measure of model fit
+
+We will return to this topic at the end of the vignette when we discuss leave-one-out cross-validation approaches.
+
 
 
 
 # Visualising and criticising model results
 
-All of the outputs are explained in more detail in the "main" package vignette, `vignette("baggr")`. Here, I simply illustrate their behaviour.
+We now continue discussion of analytic workflow using the OR models. All of the outputs we will show are explained in more detail in the "main" package vignette, `vignette("baggr")`. Here, we simply illustrate their behaviour when applied to binary data.
 
 ```{r}
 bg_model_agg
@@ -211,8 +227,8 @@ effect_plot(
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
 
 ```{r, include = F, warning = F}
-a <- loocv(df_ma, pooling = "partial", iter = 500, chains = 2)
-b <- loocv(df_ma, pooling = "full", iter = 500, chains = 2)
+a <- loocv(df_ma, pooling = "partial", iter = 2000, chains = 4)
+b <- loocv(df_ma, pooling = "full", iter = 2000, chains = 4)
 #a; b; #you can print out individual loocv() calculations
 loo_compare(a,b) #...but typically we compare them to each other
 ```
@@ -238,7 +254,7 @@ head(df_ind)
 We can now use a logistic regression model
 
 ```{r logit model, include = F}
-bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", chains = 2, iter = 500)
+bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio", chains = 4, iter = 2000)
 ```
 
 ```{r, echo = T, eval = F}
@@ -247,7 +263,7 @@ bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio
 
 > Note: as in other cases, `baggr()` will detect model appropriately (in this case by noting that `outcome` has only 0's and 1's) and notify the user, so in everyday use, it is not necessary to set `model = "logit"` . Alternatively, if we wrote `baggr(df_yusuf, model = "logit")`, the conversion to individual-level data would be done automatically behind the scenes.
 
-> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself.
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself.
 
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
@@ -334,9 +350,9 @@ pma01
 It is important to compare different models with different `rare_event_correction` values:
 
 ```{r rare event comparison, include=F}
-bg_correction01 <- baggr(pma01, effect = "logOR", iter = 500)
-bg_correction025 <- baggr(df_rare_logor, effect = "logOR", iter = 500)
-bg_correction1 <- baggr(pma1, effect = "logOR", iter = 500)
+bg_correction01 <- baggr(pma01, effect = "logOR", iter = 2000)
+bg_correction025 <- baggr(df_rare_logor, effect = "logOR", iter = 2000)
+bg_correction1 <- baggr(pma1, effect = "logOR", iter = 2000)
 bg_rare_ind <- baggr(df_rare, model = "logit", effect = "logOR")
 ```
 
@@ -357,7 +373,7 @@ bgc1 <- baggr_compare(
 bgc1
 plot(bgc1) + theme(legend.position = "right")
 ```
-> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself.
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself.
 
 Note in the result above that:
 
@@ -381,7 +397,7 @@ df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
 
 ```{r, include=F}
 bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
-bg_rare_ind <- baggr(df_rare, effect = "logOR", model = "logit", iter = 500, chains = 2)
+bg_rare_ind <- baggr(df_rare, effect = "logOR", model = "logit", iter = 2000, chains = 4)
 ```
 
 ```{r, eval=F, echo=T}
@@ -425,10 +441,10 @@ We exaggerate our prior choices on purpose, to best illustrate the differences.
 #                         prior_control = normal(-4.59, 2))
 bg_rare_pool_bsl <- baggr(df_rare, effect = "logOR", model = "logit",
                         pooling_control = "partial",
-                        chains = 2, iter = 500,
+                        chains = 4, iter = 2000,
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
 bg_rare_strong_prior <- baggr(df_rare, effect = "logOR", model = "logit",
-                        chains = 2, iter = 500,
+                        chains = 4, iter = 2000,
                         prior_control = normal(-4.59, 10))
 ```
 
@@ -453,7 +469,7 @@ bgc3
 plot(bgc3) + theme(legend.position = "right")
 ```
 
-> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 500, chains = 2`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
+> Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
 
 We can see that
 
