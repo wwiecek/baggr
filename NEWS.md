@@ -1,9 +1,10 @@
-# baggr 0.7.1 (spring 2022)
+# baggr 0.7.3 (autumn 2022)
 
 * Faster code: all models should now run by up to 50% faster
 * For standardised data, where mean in control group is by definition 0, you can now say `pooling_control = "remove"` when calling `baggr()`. This will avoid estimating parameters which are known to be 0.
 * Predicting effects for new data: for models with covariates you can use `effect_draw(object, newdata = ...)` or (equvalently) `predict(object, newdata = ...)` 
-to generate predictions for any number of new samples 
+to generate predictions for any number of new samples
+* I updated the calculation of the pooling metric so that it's comparable with frequentist packages
 
 Misc:
 

@@ -92,11 +92,11 @@
 #' all studies. In other words, pooling _P_ is simply ratio of the expected within-study
 #' variance term to total variance.
 #'
-#' To obtain such single estimate we need to substitute average variability of group-specific
-#' treatment effects and then calculate the same way we would calculate \eqn{p}.
-#' By default we use the mean across _k_ \eqn{se_k^2} values. Typically, implementations of
-#' \eqn{I^2} in statistical packages use a different calculation for this quantity,
-#' which may make _I_'s not comparable when different studies have different SE's.
+#' The typical study variance is calculated following Eqn. (1) and (9)
+#' in Higgins and Thompson (see References). We use this formulation
+#' to make our pooling and I^2 comparable with other meta-analysis implementations,
+#' but users should be aware that this is only one possibility for calculating
+#' that "typical" within-study variance.
 #'
 #' Same as for group-specific estimates, _P_ is a Bayesian parameter and its
 #' dispersion can be high.
@@ -160,8 +160,12 @@ pooling <- function(bg,
 
     if(type == "groups")
       ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
-    if(type == "total")
-      ret <- replicate(1, mean(sigma_k^2) / (mean(sigma_k^2) + sigma_tau^2))
+    if(type == "total"){
+      # nu <- mean(sigma_k^2)
+      w <- 1/(sigma_k^2)
+      nu <- (length(sigma_k)-1)*sum(w) / (sum(w)^2 - sum(w^2))
+      ret <- replicate(1, nu / (nu + sigma_tau^2))
+    }
     if(metric == "weights" && type == "groups"){
       precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma_tau^2))
       ret <- t(apply(precisions, 1, function(x) x/sum(x)))
