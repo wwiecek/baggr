@@ -88,6 +88,17 @@ test_that("binary_to_individual() and prepare_ma() with summary data", {
   Multicentre 15 100 12  95
   ", header=TRUE)
   expect_error(binary_to_individual(df_yusuf2, group = "trial"), "Non-integer number")
+
+  # Add some covariates to the data frame
+  df_yusuf3 <- df_yusuf
+  df_yusuf3$bbb <- rnorm(nrow(df_yusuf)) > 0
+  df_yusuf3$aaa <- rnorm(nrow(df_yusuf))
+
+  bti <- binary_to_individual(df_yusuf3, group = "trial", covariates = c("bbb", "aaa"))
+  expect_is(bti, "data.frame")
+  expect_equal(nrow(bti), 1101)
+  expect_equal(ncol(bti), 5)
+  expect_equal(names(bti), c("group", "treatment", "outcome", "bbb", "aaa"))
 })
 
 

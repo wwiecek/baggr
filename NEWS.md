@@ -12,6 +12,7 @@ Misc:
 * I added alias `posterior_predict()` for drawing from posterior
   sample. This is more consistent with regression modeling and RStan ecosystem.
 * Transforms of samples on `baggr_compare` plots previously didn't work for some plots. This is now fixed.
+* Fixed a bug when covariates didn't work for some types of summary-level binary data.
 
 # baggr 0.6.21 (January-March 2022)
 
