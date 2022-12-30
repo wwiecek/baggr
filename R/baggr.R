@@ -23,10 +23,11 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
+#' @param effect Label for effect. Will default to `"mean"` in most cases,
+#'               `"log OR"` in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
-#'               Comparable models (e.g. in [baggr_compare]) should have same `effect`.
+#'               If you plan on comparing models (see [baggr_compare]), use the same `effect` label.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
@@ -247,8 +248,14 @@ baggr <- function(data,
     cumsum_mutau <- 1
   }
 
+  # If lazy users forgot to define their group column,
+  # check if the first column is usable
+  group <- find_group_column(data, group)
+
+
   stan_data <- convert_inputs(data,
                               model,
+                              effect,
                               covariates = covariates,
                               quantiles = quantiles,
                               outcome = outcome,
@@ -336,7 +343,7 @@ baggr <- function(data,
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
-    if(class(prior) != "list" ||
+    if(!inherits(prior, "list") ||
        !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd',
                                 'beta', 'control', 'control_sd')))
       warning(paste("Only names used in the prior argument are:",

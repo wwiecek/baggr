@@ -8,6 +8,7 @@ convert_inputs(
   data,
   model,
   quantiles,
+  effect = NULL,
   group = "group",
   outcome = "outcome",
   treatment = "treatment",
@@ -40,6 +41,9 @@ covariates (fixed effects) in the meta-regression model.}
 testing purposes (see \link{baggr})}
 
 \item{silent}{Whether to print messages when evaluated}
+
+\item{effects}{Only matters for binary data, use \code{logOR}, \code{logRR}, or \code{RD}. Otherwise ignore.
+See \link{prepare_ma} for details.}
 }
 \value{
 R structure that's appropriate for use by \link{baggr} Stan models;
@@ -50,8 +54,8 @@ and are necessary for \link{baggr} to work correctly
 Converts data to a list of inputs suitable for Stan models,
 checks integrity of data and suggests the appropriate default model
 if needed. Typically all of this is
-done automatically by \link{baggr}, so \strong{this function is only for debugging}
-or running models "by hand".
+done automatically by \link{baggr}, so \strong{this function is included only for debugging}
+or running (custom) models "by hand".
 }
 \details{
 Typically this function is only called within \link{baggr} and you do

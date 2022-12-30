@@ -3,8 +3,8 @@
 #' Converts data to a list of inputs suitable for Stan models,
 #' checks integrity of data and suggests the appropriate default model
 #' if needed. Typically all of this is
-#' done automatically by [baggr], so __this function is only for debugging__
-#' or running models "by hand".
+#' done automatically by [baggr], so __this function is included only for debugging__
+#' or running (custom) models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
@@ -14,6 +14,8 @@
 #' @param covariates Character vector with column names in `data`.
 #'                   The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model.
+#' @param effects Only matters for binary data, use `logOR`, `logRR`, or `RD`. Otherwise ignore.
+#'                See [prepare_ma] for details.
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable (designated as string)
@@ -39,6 +41,7 @@
 convert_inputs <- function(data,
                            model,
                            quantiles,
+                           effect = NULL,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
@@ -100,8 +103,18 @@ convert_inputs <- function(data,
     message("Data were automatically converted from summary to individual-level.")
   }
 
-  if(model == "rubin" && available_data == "pool_binary")
-    available_data <- required_data #quick fix, but this will work OK in all cases
+
+  if(model == "rubin" && available_data == "pool_binary"){
+    if(is.null(effect) || !(effect %in% c("logOR", "logRR", "RD"))) {
+        message('Automatically summarising binary data with logOR.
+              In baggr() set effect to one of "logOR", "logRR", "RD".
+              Alternatively, use ?prepare_ma to do this manually before running.')
+        effect <- "logOR"
+    }
+    data <- prepare_ma(data, effect = effect, group = group)
+    group <- "group"
+    available_data <- required_data
+  }
 
   if(required_data != available_data)
     stop(paste(

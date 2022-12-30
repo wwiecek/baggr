@@ -70,7 +70,9 @@ some columns may be renamed or transformed (see the arguments above).
 }
 }
 \description{
-Allows for one-way conversion from full to summary data or for calculation of effects for binary data.
+Allows for one-way conversion from full to summary data
+or for calculation of effects for binary data.
+Usually used before calling \link{baggr}.
 Input must be pre-formatted appropriately.
 }
 \details{

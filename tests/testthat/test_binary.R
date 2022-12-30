@@ -7,7 +7,7 @@ library(testthat)
 set.seed(1990)
 
 df_binary <- data.frame(treatment = rbinom(400, 1, .5),
-                      group = rep(paste("Trial", LETTERS[1:5]), each = 80))
+                        group = rep(paste("Trial", LETTERS[1:5]), each = 80))
 df_binary$outcome <- ifelse(df_binary$treatment, rbinom(400, 1, .3), rbinom(400, 1, .15))
 df_summ <- prepare_ma(df_binary, "logOR")
 
@@ -48,6 +48,19 @@ test_that("Different pooling methods work for Rubin model", {
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 150) #right dimension means right iter
   expect_error(baggr(df_binary, rubbish = 41), "unknown arguments")
+})
+
+test_that("We can run models without prepare_ma'ing data", {
+  # Run without summarising data first
+  expect_message(baggr(df_summ[,c("group", "a", "n1", "c", "n2")],
+                       iter = 150, chains = 2, refresh = 0,
+                       show_messages = F), "Automatically summarising binary data")
+  # Same but now manually set the effect
+  bg5_rr <- baggr(df_summ[,c("group", "a", "n1", "c", "n2")], effect = "logRR",
+                  iter = 150, chains = 2, refresh = 0,
+                  show_messages = F)
+  expect_equal(bg5_rr$effects, "logRR")
+
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -268,7 +281,7 @@ test_that("loocv", {
   expect_is(plot(loo_model), "gg")
 
   loo_full <- expect_warning(loocv(df_binary, model = "logit", pooling = "full",
-                                    return_models = TRUE, iter = 150, chains = 1, refresh = 0))
+                                   return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_full, "baggr_cv")
   capture_output(print(loo_full))
   expect_is(plot(loo_full, add_values = FALSE), "gg")
@@ -337,7 +350,8 @@ test_that("Prior specifications for baselines work", {
   expect_is(bg3, "baggr")
 
   expect_error(baggr(df_binary, "logit", pooling = "none",
-                              pooling_control = "partial", prior_control = multinormal(c(0,0), diag(2)),
-                              iter = 150, chains = 2, refresh = 0,
-                              show_messages = F))
+                     pooling_control = "partial",
+                     prior_control = multinormal(c(0,0), diag(2)),
+                     iter = 150, chains = 2, refresh = 0,
+                     show_messages = F))
 })

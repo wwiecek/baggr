@@ -44,10 +44,11 @@ choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
-\item{effect}{Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
+\item{effect}{Label for effect. Will default to \code{"mean"} in most cases,
+\code{"log OR"} in logistic model,
 quantiles in \code{quantiles} model etc.
 These labels are used in various print and plot outputs.
-Comparable models (e.g. in \link{baggr_compare}) should have same \code{effect}.}
+If you plan on comparing models (see \link{baggr_compare}), use the same \code{effect} label.}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model (in case of aggregate data).

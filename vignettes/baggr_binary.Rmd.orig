@@ -92,6 +92,12 @@ bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
 
 The argument we specified, `effect`, does not impact results, but it makes for nicer output labels, as we will see in the next section.
 
+As a side note, you don't even have to use the `prepare_ma` step. The following one-liner would have worked just the same:
+
+```{r, eval = F, echo = T}
+baggr(df_yusuf, effect = "logOR") #choose between logOR, logRR, RD (see below)
+```
+
 As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
 
 

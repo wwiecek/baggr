@@ -59,3 +59,13 @@ check_columns_binary <- function(data, stop=TRUE) {
   }
   return(1)
 }
+
+find_group_column <- function(data, group) {
+  if(is.null(data[[group]]))
+    if(is.character(data[[1]]) || is.factor(data[[1]])){
+      message("No grouping column found. Using first column in data (", group, ") as a group column.")
+      return(names(data)[1])
+    }
+  return(group)
+}
+
