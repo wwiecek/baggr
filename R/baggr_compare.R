@@ -193,7 +193,7 @@ baggr_compare <- function(...,
         return(
           data.frame(
             model = "",
-            covariate = x$covariates,
+            covariate = rownames(est),
             mean = est[, "mean", 1],
             sd = est[, "sd", 1],
             lci = est[, "lci", 1],

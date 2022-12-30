@@ -304,7 +304,7 @@ convert_inputs <- function(data,
       se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = TRUE)
     )
     if(is.null(test_data)){
-      out$K_test <- 0
+      out$K_test <- as.integer(0)
       out$test_theta_hat_k <- array(0, dim = c(2,0))
       out$test_se_theta_k <- array(0, dim = c(2,0))
     } else {
@@ -372,6 +372,15 @@ convert_inputs <- function(data,
   if(any(na_cols))
     stop(paste0("baggr() does not allow NA values in inputs (see vectors ",
                 paste(names(out)[na_cols], collapse = ", "), ")"))
+
+  # When using data frames with 1 rows, we need to explicitly define them
+  # as arrays before passing from R to Stan. So here I check if any of them
+  # are length 1 and change them to arrays
+  numeric_to_array_c <- c("theta_hat_k", "se_theta_k")
+  for(nm in numeric_to_array_c) {
+    if(length(out[[nm]]) == 1)
+      out[[nm]] <- array(out[[nm]], dim = 1)
+  }
 
   return(structure(
     out,
