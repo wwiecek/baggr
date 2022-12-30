@@ -27,6 +27,9 @@ automatically}
 
 \item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
 
+\item{effect}{Only matters for binary data, use \code{logOR}, \code{logRR}, or \code{RD}. Otherwise ignore.
+See \link{prepare_ma} for details.}
+
 \item{group}{name of the column with grouping variable}
 
 \item{outcome}{name of column with outcome variable (designated as string)}
@@ -41,9 +44,6 @@ covariates (fixed effects) in the meta-regression model.}
 testing purposes (see \link{baggr})}
 
 \item{silent}{Whether to print messages when evaluated}
-
-\item{effects}{Only matters for binary data, use \code{logOR}, \code{logRR}, or \code{RD}. Otherwise ignore.
-See \link{prepare_ma} for details.}
 }
 \value{
 R structure that's appropriate for use by \link{baggr} Stan models;

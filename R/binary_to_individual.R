@@ -44,10 +44,11 @@ binary_to_individual <- function(data, group = "group",
   else
     group_name <- group
 
-  if(is.null(data[[group]]))
-    data[[group]] <- paste("Group ", 1:nrow(data))
+  if(is.null(data[[group]])){
+    message("Automatically created group labels as they were not defined.")
+    data[[group]] <- paste("Group", 1:nrow(data))
     # stop("Missing group column")
-
+  }
   if(!is.null(data[["n1i"]]) && is.null(data[["n1"]])) data[["n1"]] <- data[["n1i"]]
   if(!is.null(data[["n2i"]]) && is.null(data[["n2"]])) data[["n2"]] <- data[["n2i"]]
   if(!is.null(data[["ai"]])  && is.null(data[["a"]]))  data[["a"]] <- data[["ai"]]

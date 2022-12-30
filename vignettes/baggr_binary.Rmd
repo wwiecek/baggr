@@ -128,7 +128,7 @@ labbe(df_ma, plot_model = TRUE, shade_se = "or")
 #> Warning: Removed 1 row containing missing values (`geom_line()`).
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+![plot of chunk unnamed-chunk-6](fig/unnamed-chunk-6-1.png)
 
 When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
 
@@ -183,7 +183,7 @@ for(es in c(1, .9, .8, .5, .25, .1)){
 title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-9](fig/unnamed-chunk-9-1.png)
 
 
 ## Model comparison using a measure of model fit
@@ -226,7 +226,7 @@ Default plot (`plot(bg_model_agg)`) will show pooled group results. If you prefe
 forest_plot(bg_model_agg, show = "both", print = "inputs")
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-11](fig/unnamed-chunk-11-1.png)
 
 Hypothetical treatment effect in a new trial is obtained through `effect_plot`.
 
@@ -235,7 +235,7 @@ Hypothetical treatment effect in a new trial is obtained through `effect_plot`.
 effect_plot(bg_model_agg)
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
+![plot of chunk unnamed-chunk-12](fig/unnamed-chunk-12-1.png)
 
 We can transform printed and plotted outputs to show exponents (or other transforms); for example:
 
@@ -247,7 +247,7 @@ gridExtra::grid.arrange(
   ncol = 2)
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png)
+![plot of chunk unnamed-chunk-13](fig/unnamed-chunk-13-1.png)
 
 ## Model comparison
 
@@ -271,7 +271,7 @@ bg_c <- baggr_compare(df_ma, effect = "logarithm of odds ratio")
 plot(bg_c)
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-16](fig/unnamed-chunk-16-1.png)
 
 We can also examine the compared models directly, by accessing them via `$models`. This is useful e.g. for `effect_plot`:
 
@@ -283,7 +283,7 @@ effect_plot(
   theme(legend.position = "bottom")
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
+![plot of chunk unnamed-chunk-17](fig/unnamed-chunk-17-1.png)
 
 
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
@@ -512,7 +512,7 @@ bgc1
 plot(bgc1) + theme(legend.position = "right")
 ```
 
-![plot of chunk bgc1](figure/bgc1-1.png)
+![plot of chunk bgc1](fig/bgc1-1.png)
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself.
 
 Note in the result above that:
@@ -571,7 +571,7 @@ bgc2
 plot(bgc2)
 ```
 
-![plot of chunk bgc2](figure/bgc2-1.png)
+![plot of chunk bgc2](fig/bgc2-1.png)
 
 The results are still a bit different.
 
@@ -639,7 +639,7 @@ bgc3
 plot(bgc3) + theme(legend.position = "right")
 ```
 
-![plot of chunk bgc3](figure/bgc3-1.png)
+![plot of chunk bgc3](fig/bgc3-1.png)
 
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
 

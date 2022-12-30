@@ -13,8 +13,8 @@ df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
 
 # tests ----------------------------------------------------------
 test_that("Error messages for wrong inputs are in place", {
-  expect_error(baggr("Text"), "it's not data.frame")
-  expect_error(baggr(5), "it's not data.frame")
+  expect_error(baggr("Text"), "it's not a data.frame")
+  expect_error(baggr(5), "it's not a data.frame")
   expect_error(baggr(df_pooled[1,]), "specify hyper-SD prior manually")
 
   # model or pooling type doesn't exist

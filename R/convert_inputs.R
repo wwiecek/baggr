@@ -14,7 +14,7 @@
 #' @param covariates Character vector with column names in `data`.
 #'                   The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model.
-#' @param effects Only matters for binary data, use `logOR`, `logRR`, or `RD`. Otherwise ignore.
+#' @param effect Only matters for binary data, use `logOR`, `logRR`, or `RD`. Otherwise ignore.
 #'                See [prepare_ma] for details.
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
