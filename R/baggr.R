@@ -221,8 +221,8 @@ baggr <- function(data,
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
-  if(!inherits(data, "data.frame") || nrow(data) == 1)
-    stop("data argument must be a data.frame of >1 rows")
+  # if(!inherits(data, "data.frame") || nrow(data) == 1)
+    # stop("data argument must be a data.frame of >1 rows")
 
   # Match arguments
   pooling <- match.arg(pooling)
