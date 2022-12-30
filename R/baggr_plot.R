@@ -53,6 +53,9 @@ baggr_plot <- function(bg, hyper=FALSE,
   else
     vline_value <- 0
 
+  if(bg$n_groups == 1)
+    stop("You can only plot meta-analyses with more than 1 group.")
+
   ret_list <- lapply(as.list(1:dim(m)[3]), function(i) {
     if(order)
       #assigning to m[,,i] wouldn't reorder dimnames

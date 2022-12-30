@@ -47,7 +47,7 @@ See \link{prepare_ma} for details.}
 }
 \value{
 R structure that's appropriate for use by \link{baggr} Stan models;
-\code{group_label}, \code{model} and \code{n_groups} are included as attributes
+\code{group_label}, \code{model}, \code{effect} and \code{n_groups} are included as attributes
 and are necessary for \link{baggr} to work correctly
 }
 \description{

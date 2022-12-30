@@ -134,17 +134,34 @@ print.baggr <- function(x,
         study_eff_tab <- group_effects(x, summary = TRUE,
                                        interval = prob,
                                        rename_int = TRUE)
+      if(dim(study_eff_tab)[3] == 1 && x$n_groups > 1)
+        cat(paste0("Group-specific treatment effects"))
 
       for(i in 1:dim(study_eff_tab)[3]){
-        cat(paste0("Treatment effects on ", x$effects[i]))
+        if(dim(study_eff_tab)[3] > 1 || x$n_groups == 1){
+          if(x$n_groups == 1)
+            cat(paste0("Group-specific treatment effect on ", x$effects[i]))
+          else
+            cat(paste0("Treatment effects on ", x$effects[i]))
+        }
+
         if(exponent){
+          # This is very bad, it depends on ordering of group_effects(). Fix it!
           cat(" (converted to exp scale):\n")
-          tab <- cbind(study_eff_tab[,c(4, 1, 2, 3),i],
-                       pooling = pooling_tab[2,,i])
+          if(x$n_groups == 1)
+            tab <- c(study_eff_tab[,c(4, 1, 2, 3),i],
+                     "pooling" = as.numeric(pooling_tab[2,,i]))
+          else
+            tab <- cbind(study_eff_tab[,c(4, 1, 2, 3),i],
+                         pooling = pooling_tab[2,,i])
         } else{
           cat(":\n")
-          tab <- cbind(study_eff_tab[,c(4, 5, 1, 2, 3),i],
-                       pooling = pooling_tab[2,,i])
+          if(x$n_groups == 1)
+            tab <- c(study_eff_tab[,c(4, 5, 1, 2, 3),i],
+                     "pooling" =  as.numeric(pooling_tab[2,,i]))
+          else
+            tab <- cbind(study_eff_tab[,c(4, 5, 1, 2, 3),i],
+                         pooling = pooling_tab[2,,i])
         }
         print(tab, digits = digits)
       }

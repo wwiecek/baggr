@@ -7,8 +7,8 @@ detect_input_type <- function(data,
                               treatment="treatment",
                               outcome="outcome") {
   # if(class == "baggr_data")
-  if(!("data.frame" %in% class(data)))
-    stop("Can't detect input type because it's not data.frame")
+  if(!inherits(data, "data.frame"))
+    stop("Can't detect input type because it's not a data.frame")
 
   # Summary data -----
   if("tau" %in% names(data) && "se" %in% names(data)){

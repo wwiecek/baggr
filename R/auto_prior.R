@@ -80,23 +80,26 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     for(current_prior in names(priors_spec[[model]])) {
       if(is.null(prior[[current_prior]])) {
         if(model != "sslab"){
-
-          default_prior_dist <- switch(current_prior,
-                                       "hypermean"  = if(re_dim == 1)
-                                         normal(0, 10*max(abs(data$tau)))
-                                       else
-                                         multinormal(c(0,0),
-                                                     c(100*max(abs(data$mu)),
-                                                       100*max(abs(data$tau)))*diag(2)),
-                                       "sigma"      = uniform(0, 10*max(c(sqrt(data$n.mu)*data$se.mu,
-                                                                          sqrt(data$n.tau*data$se.tau)))),
-                                       "hypersd"    = if(nrow(data) == 1)
-                                         normal(0, 1) #this is not used because stop() will trigger below
-                                      else
-                                         uniform(0, 10*sd(data$tau)),
-                                       "hypercor"   = lkj(3),
-                                       "control"    = normal(0, 10*max(abs(data$mu))),
-                                       "control_sd" = uniform(0, 10*sd(data$mu))
+          default_prior_dist <- switch(
+            current_prior,
+            "hypermean"  = if(re_dim == 1)
+              normal(0, 10*max(abs(data$tau)))
+            else
+              multinormal(c(0,0),
+                          c(100*max(abs(data$mu)),
+                            100*max(abs(data$tau)))*diag(2)),
+            "sigma"      = uniform(0, 10*max(c(sqrt(data$n.mu)*data$se.mu,
+                                               sqrt(data$n.tau*data$se.tau)))),
+            "hypersd"    = if(attr(stan_data, "n_groups") == 1)
+              normal(0, 1) #this is not used because stop() will trigger below
+            else
+              uniform(0, 10*sd(data$tau)),
+            "hypercor"   = lkj(3),
+            "control"    = normal(0, 10*max(abs(data$mu))),
+            "control_sd" = if(attr(stan_data, "n_groups") == 1)
+              normal(0, 1) #this is not used because stop() will trigger below
+            else
+              uniform(0, 10*sd(data$mu))
           )
         }
         if(model == "sslab") {
@@ -163,10 +166,10 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
             if(model != "sslab")
               special_name <- "tau"
           } else if(current_prior == "hypersd") {
-            if(nrow(data) == 1)
+            if(attr(stan_data, "n_groups") == 1)
               stop("You must specify hyper-SD prior manually when data has only one row.")
-            if(nrow(data) < 5)
-              message(paste("/Dataset has only", nrow(data),
+            if(attr(stan_data, "n_groups") < 5)
+              message(paste("/Dataset has only", attr(stan_data, "n_groups"),
                             "groups -- consider setting variance prior manually./"))
             if(model != "sslab"){
               message("Setting hyper-SD prior using 10 times the naive SD across sites")
@@ -189,6 +192,10 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                 special_name <- "DNP"
             }
           } else if(current_prior == "control_sd") {
+            if((attr(stan_data, "n_groups") == 1) && (stan_data$pooling_baseline == 1))
+              stop("You must specify SD in baseline rates (control_sd) prior ",
+                   "manually when data has only one row.")
+
             if(stan_data$pooling_baseline == 1){
               if(model == "logit")
                 special_name <- "log odds of event rate in untreated: sd"

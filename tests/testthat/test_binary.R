@@ -50,17 +50,21 @@ test_that("Extra args to Stan passed via ... work well", {
   expect_error(baggr(df_binary, rubbish = 41), "unknown arguments")
 })
 
-test_that("We can run models without prepare_ma'ing data", {
-  # Run without summarising data first
-  expect_message(baggr(df_summ[,c("group", "a", "n1", "c", "n2")],
-                       iter = 150, chains = 2, refresh = 0,
-                       show_messages = F), "Automatically summarising binary data")
-  # Same but now manually set the effect
-  bg5_rr <- baggr(df_summ[,c("group", "a", "n1", "c", "n2")], effect = "logRR",
-                  iter = 150, chains = 2, refresh = 0,
-                  show_messages = F)
-  expect_equal(bg5_rr$effects, "logRR")
+# Run without summarising data first
+bg5_or <- expect_warning(baggr(df_summ[,c("group", "a", "n1", "c", "n2")],
+                     iter = 150, chains = 2, refresh = 0,
+                     show_messages = F))
+# Same but now manually set the effect to RR
+bg5_rr <- expect_warning(
+  baggr(df_summ[,c("group", "a", "n1", "c", "n2")], effect = "logRR",
+                iter = 150, chains = 2, refresh = 0,
+                show_messages = F))
 
+test_that("We can run models without prepare_ma'ing data", {
+  expect_is(bg5_or, "baggr")
+  expect_is(bg5_rr, "baggr")
+  expect_equal(bg5_or$effects, "logOR")
+  expect_equal(bg5_rr$effects, "logRR")
 })
 
 test_that("Various attr of baggr object are correct", {

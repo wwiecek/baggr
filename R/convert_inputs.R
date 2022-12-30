@@ -24,7 +24,7 @@
 #'                  testing purposes (see [baggr])
 #' @param silent Whether to print messages when evaluated
 #' @return R structure that's appropriate for use by [baggr] Stan models;
-#'         `group_label`, `model` and `n_groups` are included as attributes
+#'         `group_label`, `model`, `effect` and `n_groups` are included as attributes
 #'         and are necessary for [baggr] to work correctly
 #' @details Typically this function is only called within [baggr] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
@@ -48,6 +48,10 @@ convert_inputs <- function(data,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
+
+  # If lazy users forgot to define their group column,
+  # check if the first column is usable
+  # group <- find_group_column(data, group)
 
   # Step 1: check what data are available (with some conversions) -----
 
@@ -390,5 +394,6 @@ convert_inputs <- function(data,
     covariate_levels = covariate_levels,
     group_label = group_label,
     n_groups = out[["K"]],
-    model = model))
+    model = model,
+    effect = effect))
 }

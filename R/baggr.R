@@ -248,11 +248,6 @@ baggr <- function(data,
     cumsum_mutau <- 1
   }
 
-  # If lazy users forgot to define their group column,
-  # check if the first column is usable
-  group <- find_group_column(data, group)
-
-
   stan_data <- convert_inputs(data,
                               model,
                               effect,
@@ -269,6 +264,9 @@ baggr <- function(data,
   # data might also change if Rubin model requested but mutau
   # type inputs supplied
   data <- attr(stan_data, "data")
+  # Lastly, effect changes if binary data were passed
+  # and effect arg was not specified
+  effect <- attr(stan_data, "effect")
   attr(data, "outcome") <- outcome
   attr(data, "group") <- group
   attr(data, "treatment") <- treatment

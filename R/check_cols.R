@@ -61,11 +61,16 @@ check_columns_binary <- function(data, stop=TRUE) {
 }
 
 find_group_column <- function(data, group) {
-  if(is.null(data[[group]]))
-    if(is.character(data[[1]]) || is.factor(data[[1]])){
-      message("No grouping column found. Using first column in data (", group, ") as a group column.")
-      return(names(data)[1])
-    }
+
+  if(!inherits(data, "data.frame"))
+    stop("Can't detect input type because it's not a data.frame")
+  if(is.null(data[[group]])) {
+    factors <- which(unlist(lapply(schools, class)) == "factor")
+    chars   <- which(unlist(lapply(schools, class)) == "character")
+    whichcol <- min(c(factors, chars))
+    message("No grouping column found. Using first candidate column in data (", group, ") as a group column.")
+    return(names(data)[1])
+  }
   return(group)
 }
 
