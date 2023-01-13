@@ -7,6 +7,6 @@
 #' @export
 
 test <- function(x,y){
-	result <- x+y
+	result <- x*y
 	return (result)
 }
