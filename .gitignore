@@ -16,3 +16,4 @@ src/RcppExports.cpp
 src/*.h
 /doc/
 /Meta/
+.DS_Store
