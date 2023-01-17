@@ -436,7 +436,7 @@ plot.baggr_compare <- function(x,
 
       # Rearrange ordering of groups/hypereffects
       df_groups$group <- factor(df_groups$group,
-                                levels = rev(ord) # because of flipped coordinates -- had rev()
+                                levels = rev(ord) # because of flipped coordinates 
       )
 
       df_groups

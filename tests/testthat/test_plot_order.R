@@ -10,9 +10,6 @@ compare <- baggr_compare(bg1,bg2,bg3)
 
 plot = plot.baggr_compare(compare)
 
-print(plot$layers[[1]]$position$reverse)
-print(plot$layers[[2]]$position$reverse)
-
 test_that("the big_df order will plot properly",{
 	expect_true(is.ggplot(plot))
 	expect_true(plot$layers[[1]]$position$reverse)
