@@ -1,4 +1,4 @@
-# unit test for plot.bagger_compare() gg plot ordering
+# test for plot.bagger_compare() gg plot ordering
 
 library(baggr)
 library(ggplot2)
