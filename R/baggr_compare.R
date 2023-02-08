@@ -193,7 +193,7 @@ baggr_compare <- function(...,
         return(
           data.frame(
             model = "",
-            covariate = x$covariates,
+            covariate = rownames(est),
             mean = est[, "mean", 1],
             sd = est[, "sd", 1],
             lci = est[, "lci", 1],
@@ -242,8 +242,6 @@ baggr_compare <- function(...,
       est
     })))
 
-
-
   bgc <- structure(
     list(
       models = models,
@@ -280,7 +278,6 @@ print.baggr_compare <- function(x, digits, ...){
   if(!is.null(x$covariates)){
     cat("\nMean (SD) for covariates:\n")
     mcov <- x$covariates
-    d <- 3
     mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
                           signif(mcov$sd, digits = digits), ")",
                           sep = "")
@@ -436,11 +433,10 @@ plot.baggr_compare <- function(x,
 
       # Rearrange ordering of groups/hypereffects
       df_groups$group <- factor(df_groups$group,
-                                levels = rev(ord) # because of flipped coordinates 
+                                levels = rev(ord) # because of flipped coordinates
       )
 
       df_groups
-
     })
 
     names(plot_dfs) <- effect_names
@@ -471,10 +467,10 @@ plot.baggr_compare <- function(x,
     }
   }
 
-
   if(compare == "effects"){
-    plots <- do.call(effect_plot, models) +
-      ggplot2::labs(fill = NULL)
+    arglist <- models
+    arglist[["transform"]] <- transform
+    plots <- do.call(effect_plot, arglist) + ggplot2::labs(fill = NULL)
   }
 
   # return the plots
@@ -514,20 +510,17 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
   pl <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
                                          ymin = lci, ymax = uci,
                                          group = interaction(model),
-                                         color = model))+ 
-
+                                         color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
-    
-    # use position_dodge2 to reverse order of error  bars to match legend
-    ggplot2::geom_errorbar(size = 1.2, width = 0.5,
-                          position = ggplot2::position_dodge2(reverse=TRUE)
-    ) +
 
+    # use position_dodge2 to reverse order of error bars to match legend
+    ggplot2::geom_errorbar(linewidth = 1.2, width = 0.5,
+                           position = ggplot2::position_dodge2(reverse=TRUE)
+    ) +
     # use position_dodge2 to reverse order of points to match legend
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
-                        position = ggplot2::position_dodge2(width=0.5,reverse=TRUE), 
+                        position = ggplot2::position_dodge2(width=0.5, reverse=TRUE),
                         pch = 21) +
-
     { if(points != 0 && !is.null(df[[points]]) && is.numeric(df[[points]]))
       ggplot2::geom_point(aes(x = group, y = .data[[points]]), color = "black") } +
     { if(!add_values) ggplot2::coord_flip() } +
@@ -541,8 +534,6 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
     pl <- add_plot_values(pl, values_digits, values_size)
 
   pl
-
-  
 }
 
 
@@ -574,7 +565,7 @@ add_plot_values <- function(pl, values_digits = 2, values_size = 2.5) {
       position = ggplot2::position_dodge(width = .5),
       size = values_size) +
     ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
-    ggplot2::coord_flip(clip = "off") 
+    ggplot2::coord_flip(clip = "off")
 
   pl
 }

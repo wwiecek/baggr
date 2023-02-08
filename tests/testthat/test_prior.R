@@ -58,6 +58,7 @@ test_that("All possible prior dist's work", {
   expect_is(cauchy(0, 10), "list")
   expect_is(uniform(0, 10), "list")
   expect_is(lognormal(1, 2), "list")
+  expect_is(student_t(1, 0, 1), "list")
   expect_is(multinormal(c(0,0), diag(2)), "list")
   expect_is(lkj(5), "list")
 
@@ -65,12 +66,15 @@ test_that("All possible prior dist's work", {
   expect_error(normal(c(0,0), diag(2)))
   expect_error(cauchy(0, 5, 8))
   expect_error(lognormal(0, 5, 8))
+  expect_error(student_t(0, 1))
 
   expect_error(normal("0", -1))
   expect_error(normal(0, -1))
   expect_error(uniform(0, -1))
   expect_error(cauchy(0, -1))
   expect_error(lognormal(-1, -1))
+  expect_error(student_t(0, 1, 1), "positive")
+  expect_error(student_t(1, 1, -1), "positive")
   expect_error(multinormal(c(0,0), matrix(c(-1,0,-1,1),2,2)), "positive")
   expect_error(multinormal(c(0,0,0), diag(2)), "dimensions")
 })

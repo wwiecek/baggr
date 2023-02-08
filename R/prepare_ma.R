@@ -1,6 +1,8 @@
 #' @title Convert from individual to summary data in meta-analyses
 #'
-#' @description Allows for one-way conversion from full to summary data or for calculation of effects for binary data.
+#' @description Allows for one-way conversion from full to summary data
+#'              or for calculation of effects for binary data.
+#'              Usually used before calling [baggr].
 #'              Input must be pre-formatted appropriately.
 #'
 #' @param data __either__ a data.frame of individual-level observations
@@ -44,6 +46,7 @@
 #' when `data` is given to [baggr]. However, this function can be used to explicitly
 #' convert from full to reduced (summarised) data without analysing it in any model.
 #' It can be useful for examining your data and generating summary tables.
+#'
 #'
 #' If multiple operations are performed, they are taken in this order:
 #' 1) conversion to log scale,

@@ -42,10 +42,12 @@ print.baggr <- function(x,
   cat("\n")
 
   if(length(x$effects) == 1)
-    cat(crayon::bold(paste0("Aggregate treatment effect (on ", x$effects, "):\n")))
+    cat(crayon::bold(paste0("Aggregate treatment effect (on ",
+                            x$effects, "), ",
+                            x$n_groups," groups:\n")))
   else
-    cat(crayon::bold(paste0("Aggregate treatment effect:\n")))
-
+    cat(crayon::bold(paste0("Aggregate treatment effects, ",
+                            x$n_groups," groups:\n")))
 
   if(x$pooling == "none") {
     cat("No treatment effect estimated as pooling = 'none'.\n\n")
@@ -132,17 +134,34 @@ print.baggr <- function(x,
         study_eff_tab <- group_effects(x, summary = TRUE,
                                        interval = prob,
                                        rename_int = TRUE)
+      if(dim(study_eff_tab)[3] == 1 && x$n_groups > 1)
+        cat(paste0("Group-specific treatment effects"))
 
       for(i in 1:dim(study_eff_tab)[3]){
-        cat(paste0("Treatment effects on ", x$effects[i]))
+        if(dim(study_eff_tab)[3] > 1 || x$n_groups == 1){
+          if(x$n_groups == 1)
+            cat(paste0("Group-specific treatment effect on ", x$effects[i]))
+          else
+            cat(paste0("Treatment effects on ", x$effects[i]))
+        }
+
         if(exponent){
+          # This is very bad, it depends on ordering of group_effects(). Fix it!
           cat(" (converted to exp scale):\n")
-          tab <- cbind(study_eff_tab[,c(4, 1, 2, 3),i],
-                       pooling = pooling_tab[2,,i])
+          if(x$n_groups == 1)
+            tab <- c(study_eff_tab[,c(4, 1, 2, 3),i],
+                     "pooling" = as.numeric(pooling_tab[2,,i]))
+          else
+            tab <- cbind(study_eff_tab[,c(4, 1, 2, 3),i],
+                         pooling = pooling_tab[2,,i])
         } else{
           cat(":\n")
-          tab <- cbind(study_eff_tab[,c(4, 5, 1, 2, 3),i],
-                       pooling = pooling_tab[2,,i])
+          if(x$n_groups == 1)
+            tab <- c(study_eff_tab[,c(4, 5, 1, 2, 3),i],
+                     "pooling" =  as.numeric(pooling_tab[2,,i]))
+          else
+            tab <- cbind(study_eff_tab[,c(4, 5, 1, 2, 3),i],
+                         pooling = pooling_tab[2,,i])
         }
         print(tab, digits = digits)
       }
@@ -161,6 +180,8 @@ print.baggr <- function(x,
     else
       fixed_eff_tab <- fixed_effects(x, summary = TRUE)
 
+    cov_names <- dimnames(fixed_eff_tab)[[1]]
+
     for(i in 1:dim(fixed_eff_tab)[3]){
       cat(paste0("Covariate (fixed) effects on ", x$effects[i]))
       if(exponent){
@@ -169,6 +190,11 @@ print.baggr <- function(x,
       } else{
         cat(":\n")
         tab <- cbind(fixed_eff_tab[,c("mean", "sd"),i])
+      }
+      # Just in case the names were dropped due to dim=1
+      if(dim(fixed_eff_tab)[[1]] == 1){
+        colnames(tab) <- dimnames(fixed_eff_tab)[[1]]
+        tab <- t(tab)
       }
       print(tab, digits = digits)
       cat("\n")

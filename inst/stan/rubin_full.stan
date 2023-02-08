@@ -10,7 +10,7 @@ data {
   matrix[N,Nc] X;  //covariate values (design matrix for FE)
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int pooling_baseline; //pooling for proportions in control arm;
-                        //0 if none, 1 if partial
+                        //0 if none, 1 if partial, else no bsl (==0)
   int<lower=0,upper=K> site[N];
   vector<lower=0,upper=1>[N] treatment;
 
@@ -43,21 +43,19 @@ data {
   real test_sigma_y_k[K_test];
 
 }
+
 transformed data {
-  int K_pooled; // number of modelled sites if we take pooling into account
-  if(pooling_type == 2)
-    K_pooled = 0;
-  if(pooling_type != 2)
-    K_pooled = K;
+  int K_pooled = pooling_type == 2 ? 0 : K;
+  int K_bsl_pooled = pooling_baseline == 2 ? 0 : K;
 }
 parameters {
   // SHARED ACROSS FULL MODELS:
-  real mu_baseline[pooling_baseline != 0? 1: 0];
-  real mu[pooling_type != 0? 1: 0];
-  real<lower=0> tau_baseline[pooling_baseline != 0? 1: 0];
-  real<lower=0> tau[pooling_type == 1? 1: 0];
+  real mu_baseline[pooling_baseline == 1];
+  real mu[pooling_type != 0];
+  real<lower=0> tau_baseline[pooling_baseline == 1];
+  real<lower=0> tau[pooling_type == 1];
   vector[K_pooled] eta;
-  vector[K] eta_baseline;
+  vector[K_bsl_pooled] eta_baseline;
   vector[Nc] beta;
 
   // NORMAL specific:
@@ -76,62 +74,50 @@ transformed parameters {
     baseline_k = eta_baseline;
   else if(pooling_baseline == 1)
     baseline_k = rep_vector(mu_baseline[1], K) + tau_baseline[1]*eta_baseline;
+  else
+    baseline_k = rep_vector(0.0, K);
 }
 model {
-  // SHARED ACROSS FULL MODELS:
+  //fixed effects:
   vector[N] fe;
   if(N > 0){
-    if(Nc == 0)
+    if(Nc == 0){
       fe = rep_vector(0.0, N);
-    else
+    } else {
       fe = X*beta;
+      beta ~ vecprior(prior_beta_fam, prior_beta_val);
+    }
   }
 
   //controls/baselines (hyper)priors
   if(pooling_baseline == 0)
-    target += prior_increment_vec(prior_control_fam, eta_baseline, prior_control_val);
-  if(pooling_baseline == 1){
+    eta_baseline ~ vecprior(prior_control_fam, prior_control_val);
+  else if(pooling_baseline == 1){
     eta_baseline ~ normal(0,1);
-    target += prior_increment_real(prior_control_fam, mu_baseline[1], prior_control_val);
-    target += prior_increment_real(prior_control_sd_fam, tau_baseline[1], prior_control_sd_val);
+    mu_baseline[1]  ~ realprior(prior_control_fam, prior_control_val);
+    tau_baseline[1] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
   }
 
-  //hypermean priors:
-  if(pooling_type > 0)
-    target += prior_increment_real(prior_hypermean_fam, mu[1], prior_hypermean_val);
-  else{
-    for(k in 1:K)
-      target += prior_increment_real(prior_hypermean_fam, eta[k], prior_hypermean_val);
-  }
-
-  //hyper-SD priors:
-  if(pooling_type == 1)
-    target += prior_increment_real(prior_hypersd_fam, tau[1], prior_hypersd_val);
-
-  //fixed effect coefficient priors
-  if(Nc > 0)
-    target += prior_increment_vec(prior_beta_fam, beta, prior_beta_val);
-
-  //
-  if(pooling_type == 1)
+  //priors for trt effect and normal likelihood
+  if(pooling_type == 0){
+    eta ~ vecprior(prior_hypermean_fam, prior_hypermean_val);
+    y ~ normal(baseline_k[site] + theta_k[site] .* treatment + fe, sigma_y_k[site]);
+  } else if(pooling_type == 1){
     eta ~ normal(0,1);
-
-
-  // NORMAL specific:
-  // error term priors
-  target += prior_increment_vec(prior_sigma_fam, sigma_y_k, prior_sigma_val);
-  // likelihood
-  for(i in 1:N){
-    if(pooling_type < 2)
-      y[i] ~ normal(baseline_k[site[i]] + theta_k[site[i]] * treatment[i] + fe[i], sigma_y_k[site[i]]);
-    if(pooling_type == 2)
-      y[i] ~ normal(baseline_k[site[i]] + mu[1] * treatment[i] + fe[i], sigma_y_k[site[i]]);
+    tau[1] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
+    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
+    y ~ normal(baseline_k[site] + theta_k[site] .* treatment + fe, sigma_y_k[site]);
+  } else {
+    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
+    y ~ normal(baseline_k[site] + mu[1] * treatment + fe, sigma_y_k[site]);
   }
+  // (normal model only:) error term priors
+  sigma_y_k ~ vecprior(prior_sigma_fam, prior_sigma_val);
 }
 generated quantities {
   // to do this, we must first (outside of Stan) calculate SEs in each test group,
   // i.e. test_sigma_y_k
-  real logpd[K_test > 0? 1: 0];
+  real logpd[K_test > 0];
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)

@@ -2,4 +2,4 @@
 # To pre-compute everything needed to render the vignettes, which will save time
 # on CRAN servers (checks were above 10 mins)
 knitr::knit("vignettes/baggr_binary.Rmd.orig", "vignettes/baggr_binary.Rmd")
-# then copy figure/ into vignettes/figure/
+# then I manually copy figure/ into vignettes/figure/

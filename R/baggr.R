@@ -20,11 +20,14 @@
 #'                If you are not familiar with the terms, consult the vignette;
 #'                "partial" can be understood as random effects and "full" as fixed effects
 #' @param pooling_control Pooling for group-specific control mean terms in models using
-#'                        individual-level data. Either `"none"` or `"partial"`.
-#' @param effect Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
+#'                        individual-level data. Typically we use either `"none"` or `"partial"`,
+#'                        but if you want to remove the group-specific intercept altogether,
+#'                        set this to `"remove"`.
+#' @param effect Label for effect. Will default to `"mean"` in most cases,
+#'               `"log OR"` in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
-#'               Comparable models (e.g. in [baggr_compare]) should have same `effect`.
+#'               If you plan on comparing models (see [baggr_compare]), use the same `effect` label.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
@@ -214,14 +217,14 @@ baggr <- function(data,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
                   prior = NULL, ppd = FALSE,
-                  pooling_control = c("none", "partial"),
+                  pooling_control = c("none", "partial", "remove"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
-  if(!inherits(data, "data.frame") || nrow(data) == 1)
-    stop("data argument must be a data.frame of >1 rows")
+  # if(!inherits(data, "data.frame") || nrow(data) == 1)
+    # stop("data argument must be a data.frame of >1 rows")
 
   # Match arguments
   pooling <- match.arg(pooling)
@@ -252,6 +255,7 @@ baggr <- function(data,
 
   stan_data <- convert_inputs(data,
                               model,
+                              effect,
                               covariates = covariates,
                               quantiles = quantiles,
                               outcome = outcome,
@@ -265,6 +269,9 @@ baggr <- function(data,
   # data might also change if Rubin model requested but mutau
   # type inputs supplied
   data <- attr(stan_data, "data")
+  # Lastly, effect changes if binary data were passed
+  # and effect arg was not specified
+  effect <- attr(stan_data, "effect")
   attr(data, "outcome") <- outcome
   attr(data, "group") <- group
   attr(data, "treatment") <- treatment
@@ -314,7 +321,8 @@ baggr <- function(data,
   if(model %in% c("logit", "rubin_full", "mutau_full"))
     stan_data[["pooling_baseline"]] <- switch(pooling_control,
                                               "none" = 0,
-                                              "partial" = 1)
+                                              "partial" = 1,
+                                              "remove" = 2)
   if(model == "mutau_full"){
     # For now this model only used for joint prior
     stan_data[["joint_prior_mean"]] <- 1
@@ -338,7 +346,7 @@ baggr <- function(data,
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
-    if(class(prior) != "list" ||
+    if(!inherits(prior, "list") ||
        !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd',
                                 'beta', 'control', 'control_sd')))
       warning(paste("Only names used in the prior argument are:",
