@@ -4,13 +4,21 @@
 \alias{binary_to_individual}
 \title{Generate individual-level binary outcome data from an aggregate statistics}
 \usage{
-binary_to_individual(data, group = "group", rename_group = TRUE)
+binary_to_individual(
+  data,
+  group = "group",
+  covariates = c(),
+  rename_group = TRUE
+)
 }
 \arguments{
 \item{data}{A data frame with columns \code{a}, \code{c} and \code{b}/\code{n1}, \code{d}/\code{n2}.
 (You can also use \code{ai}, \code{ci}, \code{n1i}, \code{n2i} instead.)}
 
 \item{group}{Column name storing group}
+
+\item{covariates}{Column names in \code{data} that contain group-level variables
+to retain when expanding into individual-level \code{data.frame}}
 
 \item{rename_group}{If \code{TRUE} (default), this will rename the grouping variable
 to \code{"group"}, making it easier to work with \link{baggr}

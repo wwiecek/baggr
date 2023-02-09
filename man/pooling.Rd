@@ -123,11 +123,11 @@ almost analogous to the group calculation above, but using mean variance across
 all studies. In other words, pooling \emph{P} is simply ratio of the expected within-study
 variance term to total variance.
 
-To obtain such single estimate we need to substitute average variability of group-specific
-treatment effects and then calculate the same way we would calculate \eqn{p}.
-By default we use the mean across \emph{k} \eqn{se_k^2} values. Typically, implementations of
-\eqn{I^2} in statistical packages use a different calculation for this quantity,
-which may make \emph{I}'s not comparable when different studies have different SE's.
+The typical study variance is calculated following Eqn. (1) and (9)
+in Higgins and Thompson (see References). We use this formulation
+to make our pooling and I^2 comparable with other meta-analysis implementations,
+but users should be aware that this is only one possibility for calculating
+that "typical" within-study variance.
 
 Same as for group-specific estimates, \emph{P} is a Bayesian parameter and its
 dispersion can be high.

@@ -3,8 +3,8 @@
 #' Converts data to a list of inputs suitable for Stan models,
 #' checks integrity of data and suggests the appropriate default model
 #' if needed. Typically all of this is
-#' done automatically by [baggr], so __this function is only for debugging__
-#' or running models "by hand".
+#' done automatically by [baggr], so __this function is included only for debugging__
+#' or running (custom) models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
@@ -14,6 +14,8 @@
 #' @param covariates Character vector with column names in `data`.
 #'                   The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model.
+#' @param effect Only matters for binary data, use `logOR`, `logRR`, or `RD`. Otherwise ignore.
+#'                See [prepare_ma] for details.
 #' @param quantiles vector of quantiles to use (only applicable if `model = "quantiles"`)
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable (designated as string)
@@ -22,7 +24,7 @@
 #'                  testing purposes (see [baggr])
 #' @param silent Whether to print messages when evaluated
 #' @return R structure that's appropriate for use by [baggr] Stan models;
-#'         `group_label`, `model` and `n_groups` are included as attributes
+#'         `group_label`, `model`, `effect` and `n_groups` are included as attributes
 #'         and are necessary for [baggr] to work correctly
 #' @details Typically this function is only called within [baggr] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
@@ -39,12 +41,17 @@
 convert_inputs <- function(data,
                            model,
                            quantiles,
+                           effect = NULL,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
+
+  # If lazy users forgot to define their group column,
+  # check if the first column is usable
+  # group <- find_group_column(data, group)
 
   # Step 1: check what data are available (with some conversions) -----
 
@@ -73,8 +80,8 @@ convert_inputs <- function(data,
     # model <- names(model_data_types)[which(model_data_types == available_data)[1]]
     model <- data_type_default_model[[available_data]]
     if(!silent)
-      message(paste0("Automatically set model to ", crayon::bold(model_names[model]),
-                     " from data."))
+      message(paste0("Automatically chose ", crayon::bold(model_names[model]),
+                     " based on input data."))
   } else {
     if(!(model %in% names(model_data_types)))
       stop("Unrecognised model, can't format data.")
@@ -95,9 +102,22 @@ convert_inputs <- function(data,
   required_data <- model_data_types[[model]]
 
   if(required_data == "individual_binary" && available_data == "pool_binary") {
-    data <- binary_to_individual(data, group, FALSE)
+    data <- binary_to_individual(data, group, covariates, FALSE)
     available_data <- "individual_binary"
     message("Data were automatically converted from summary to individual-level.")
+  }
+
+
+  if(model == "rubin" && available_data == "pool_binary"){
+    if(is.null(effect) || !(effect %in% c("logOR", "logRR", "RD"))) {
+        message('Automatically summarising binary data with logOR.
+              In baggr() set effect to one of "logOR", "logRR", "RD".
+              Alternatively, use ?prepare_ma to do this manually before running.')
+        effect <- "logOR"
+    }
+    data <- prepare_ma(data, effect = effect, group = group)
+    group <- "group"
+    available_data <- required_data
   }
 
   if(required_data != available_data)
@@ -288,7 +308,7 @@ convert_inputs <- function(data,
       se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = TRUE)
     )
     if(is.null(test_data)){
-      out$K_test <- 0
+      out$K_test <- as.integer(0)
       out$test_theta_hat_k <- array(0, dim = c(2,0))
       out$test_se_theta_k <- array(0, dim = c(2,0))
     } else {
@@ -339,9 +359,12 @@ convert_inputs <- function(data,
       out$X_test <- array(0, dim=c(0, out$Nc))
 
     covariate_coding <- colnames(out$X)
+    covariate_levels <- lapply(cov_bind, levels)
+    covariate_levels[["tau"]] <- NULL
 
   } else {
     covariate_coding <- c()
+    covariate_levels <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -354,12 +377,23 @@ convert_inputs <- function(data,
     stop(paste0("baggr() does not allow NA values in inputs (see vectors ",
                 paste(names(out)[na_cols], collapse = ", "), ")"))
 
+  # When using data frames with 1 rows, we need to explicitly define them
+  # as arrays before passing from R to Stan. So here I check if any of them
+  # are length 1 and change them to arrays
+  numeric_to_array_c <- c("theta_hat_k", "se_theta_k")
+  for(nm in numeric_to_array_c) {
+    if(length(out[[nm]]) == 1)
+      out[[nm]] <- array(out[[nm]], dim = 1)
+  }
+
   return(structure(
     out,
     data_type = available_data,
     data = data,
     covariate_coding = covariate_coding,
+    covariate_levels = covariate_levels,
     group_label = group_label,
     n_groups = out[["K"]],
-    model = model))
+    model = model,
+    effect = effect))
 }

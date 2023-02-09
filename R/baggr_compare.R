@@ -193,7 +193,7 @@ baggr_compare <- function(...,
         return(
           data.frame(
             model = "",
-            covariate = x$covariates,
+            covariate = rownames(est),
             mean = est[, "mean", 1],
             sd = est[, "sd", 1],
             lci = est[, "lci", 1],
@@ -242,8 +242,6 @@ baggr_compare <- function(...,
       est
     })))
 
-
-
   bgc <- structure(
     list(
       models = models,
@@ -280,7 +278,6 @@ print.baggr_compare <- function(x, digits, ...){
   if(!is.null(x$covariates)){
     cat("\nMean (SD) for covariates:\n")
     mcov <- x$covariates
-    d <- 3
     mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
                           signif(mcov$sd, digits = digits), ")",
                           sep = "")
@@ -470,10 +467,10 @@ plot.baggr_compare <- function(x,
     }
   }
 
-
   if(compare == "effects"){
-    plots <- do.call(effect_plot, models) +
-      ggplot2::labs(fill = NULL)
+    arglist <- models
+    arglist[["transform"]] <- transform
+    plots <- do.call(effect_plot, arglist) + ggplot2::labs(fill = NULL)
   }
 
   # return the plots
@@ -515,7 +512,7 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                                          group = interaction(model),
                                          color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
-    ggplot2::geom_errorbar(size = 1.2, width = 0,
+    ggplot2::geom_errorbar(linewidth = 1.2, width = 0,
                            position = ggplot2::position_dodge(width = 0.5)
     ) +
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",

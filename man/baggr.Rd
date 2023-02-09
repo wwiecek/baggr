@@ -19,7 +19,7 @@ baggr(
   prior_sigma = NULL,
   prior = NULL,
   ppd = FALSE,
-  pooling_control = c("none", "partial"),
+  pooling_control = c("none", "partial", "remove"),
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
   outcome = "outcome",
@@ -44,10 +44,11 @@ choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
-\item{effect}{Label for effect. Will default to "mean" in most cases, "log OR" in logistic model,
+\item{effect}{Label for effect. Will default to \code{"mean"} in most cases,
+\code{"log OR"} in logistic model,
 quantiles in \code{quantiles} model etc.
 These labels are used in various print and plot outputs.
-Comparable models (e.g. in \link{baggr_compare}) should have same \code{effect}.}
+If you plan on comparing models (see \link{baggr_compare}), use the same \code{effect} label.}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model (in case of aggregate data).
@@ -93,7 +94,9 @@ be used to infer the correct model (if \code{model=NULL}) and to set the
 default priors, therefore you must specify it.}
 
 \item{pooling_control}{Pooling for group-specific control mean terms in models using
-individual-level data. Either \code{"none"} or \code{"partial"}.}
+individual-level data. Typically we use either \code{"none"} or \code{"partial"},
+but if you want to remove the group-specific intercept altogether,
+set this to \code{"remove"}.}
 
 \item{test_data}{data for cross-validation; NULL for no validation, otherwise a data frame
 with the same columns as \code{data} argument. See "Cross-validation" section below.}

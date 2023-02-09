@@ -26,7 +26,7 @@ model_data_types <- c("rubin" = "pool_noctrl_narrow",
 
 data_type_default_model <- c("pool_noctrl_narrow" = "rubin",
                              "pool_wide" = "mutau",
-                             "pool_binary" = "logit",
+                             "pool_binary" = "rubin",
                              "individual" = "rubin_full",
                              "individual_binary" = "logit")
 

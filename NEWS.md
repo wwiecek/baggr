@@ -1,3 +1,26 @@
+# baggr 0.7.4 (late 2022)
+
+* Faster code: all models should now run by up to 50% faster
+* For standardised data, where mean in control group is by definition 0, you can now say `pooling_control = "remove"` when calling `baggr()`. This will avoid estimating parameters which are known to be 0.
+* Predicting effects for new data: for models with covariates you can use `effect_draw(object, newdata = ...)` or (equivalently) `predict(object, newdata = ...)` 
+to generate predictions for any number of new samples
+* I updated the calculation of the pooling metric so that it's comparable with frequentist packages. See the help file.
+
+Misc:
+
+* More information when printing models.
+* Baggr automatically checks for a grouping column.
+* For binary data, you can run `baggr()` without any extra steps like `prepare_ma()`, by just defining `effect` when running baggr (or it will default to log OR).
+* I added alias `posterior_predict()` for drawing from posterior
+  sample. This is more consistent with regression modeling and RStan ecosystem.
+  
+Bugs:
+
+* Transforms of samples on `baggr_compare` plots previously didn't work for some plots. This is now fixed.
+* Fixed a bug when covariates didn't work for some types of summary-level binary data.
+
+
+
 # baggr 0.6.21 (January-March 2022)
 
 Misc:

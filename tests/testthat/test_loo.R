@@ -38,6 +38,12 @@ baggr_kfold <- expect_warning(loocv(schools,
                                     # control = list(adapt_delta = 0.9),
                                     iter = 5000))
 
+test_that("LOO outputs work", {
+  expect_is(baggr_kfold, "baggr_cv")
+  capture_output(print(baggr_kfold))
+  expect_error(plot(baggr_kfold), "must include models")
+
+})
 # baggr_ranef <- group_effects(baggr_fit, summary = T)[]
 test_that(desc = "baggr and brms are at least close", {
   skip_on_cran()

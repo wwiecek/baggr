@@ -81,6 +81,18 @@
 #' Response up to 510 Hz.” Bioelectromagnetics 9, no. 3 (1988): 215–27.
 "chicks"
 
+#' Yusuf et al: beta-blockers and heart attacks
+#'
+#' This replicates Table 6 from the famous Yusuf et al. (1985), removing one trial (Snow)
+#' that had NA observations only. The paper is notable for application of rare-event
+#' corrections, which we discuss more in package vignette `baggr_binary`.
+#'
+#' @references Yusuf, S., Peto, R., Lewis, J., Collins, R., & Sleight, P. (1985).
+#' Beta blockade during and after myocardial infarction:
+#' An overview of the randomized trials.
+#' Progress in Cardiovascular Disease, 27(5), 335–371.
+"yusuf"
+
 #' Spike & slab example dataset
 #'
 "data_spike"

@@ -245,15 +245,15 @@ pooling(baggr_schools)
 
 ### Overall pooling (in the model)
 
-Typically, it is a single measure of heterogeneity that is of main interest to researchers.
-Such "big" estimate of pooling $P$ is analogous to averaging $p$ across groups:
+Sometimes researchers prefer to summarise heterogeneity by using a single measure. 
+One possibility is to provide a "big" estimate of pooling $P$ is analogous to averaging $p$ across groups:
 
 $$P = 1 - \frac{\sigma_{\tau}^2}{\sigma_{\tau}^2 + \text{E}(se_k^2)}$$
 
 where \text{E} is average over $K$ groups. Note that the denominator in the formula above is
 an application of the law of total variance to $\hat{\tau_k}$, i.e.
 $\text{Var}(\hat{\tau_k})$ is a sum of between-study variance ($\text{Var}({\tau_k})$) and
-average within-study variance ($\text{E}(se_k^2)$). @von_hippel_heterogeneity_2015 
+average within-study variance ($\text{E}(se_k^2)$); @von_hippel_heterogeneity_2015 
 provides more details.
 
 In many contexts, i.e. medical statistics, it is typical to report $1-P$, called $I^2$
@@ -282,8 +282,10 @@ effect_plot(baggr_schools)
 The values underlying the plot can be obtained by `effect_draw`, which can be used e.g. to draw 1 new value:
 
 ```{r}
-effect_draw(baggr_schools, n = 1)
+effect_draw(baggr_schools, draws = 1)
 ```
+
+You can also summarise over the entire distribution to obtain mean, SD, and quantiles (`effect_draw(baggr_schools, summary = TRUE)`). For meta-regression models (models with covariates), you can also use this function to make predictions for new data, at set values of covariates.
 
 However, from the viewpoint of model building, the most important plots are the ones that directly compare many possible models.
 
@@ -325,7 +327,7 @@ baggr_schools_v2 <- baggr(schools, prior_hypermean = normal(10, 2.5))
 
 We can compare it with the previous model by providing both models as arguments to `baggr_compare` and `effects_plot`. It's good to name the arguments, as these names will be used to label them:
 
-```{r, fig.width=5, fig.height=5}
+```{r, fig.width=6, fig.height=5}
 effect_plot("Default model" = baggr_schools, "normal(10, 2.5)" = baggr_schools_v2) +
   coord_cartesian(xlim = c(-10, 30)) + theme(legend.position = "top")
 baggr_compare("Default model" = baggr_schools, "normal(10, 2.5)" = baggr_schools_v2)
