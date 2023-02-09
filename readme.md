@@ -1,4 +1,5 @@
-# baggr: Bayesian aggregation package for R, v0.7 (2022)
+# baggr: Bayesian aggregation package for R, v0.7 (2023)
+
 
 
 <!-- badges: start -->
@@ -94,18 +95,17 @@ data, try `vignette("baggr_binary")`. Compiled vignettes are available
 
 ## Current and future releases
 
-Included in baggr v0.7 (2022):
+Included in baggr v0.7 (2023):
 
-  - Meta-analysis and hierarchical models for continuous and binary
-    outcomes
+  - Meta-analysis of continuous and binary outcomes
   - Both full and aggregate data sets can be used
   - Summaries and plots specific to meta-analysis, typical diagnostic
     plots
-  - Meta-regression / fixed effect modelling capabilities
+  - Meta-regression / fixed effects modelling
   - Compatibility with `rstan` and `bayesplot` features
   - Automatic choice of priors or “plain-text” specification of priors
-  - Automatic calculation of pooling metrics
-  - Cross-validation (including leave-one-group-out)
+  - Calculation of pooling/heterogeneity metrics
+  - Cross-validation (leave-one-group-out)
   - Prior and posterior predictive distributions
 
-Check \[NEWS.md\] for more information on recent changes to the package.
+Check [NEWS.md] for more information on recent changes to the package.
