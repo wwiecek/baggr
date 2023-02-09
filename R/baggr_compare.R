@@ -512,10 +512,8 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                                          group = interaction(model),
                                          color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
-
-    # use position_dodge2 to reverse order of error bars to match legend
-    ggplot2::geom_errorbar(linewidth = 1.2, width = 0.5,
-                           position = ggplot2::position_dodge2(reverse=TRUE)
+    ggplot2::geom_errorbar(linewidth = 1.2, width = 0,
+                           position = ggplot2::position_dodge(width = 0.5)
     ) +
     # use position_dodge2 to reverse order of points to match legend
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
