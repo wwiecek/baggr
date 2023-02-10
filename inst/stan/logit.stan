@@ -97,15 +97,15 @@ model {
   //priors for trt effect and Bernoulli likelihood
   if(pooling_type == 0){
     eta ~ vecprior(prior_hypermean_fam, prior_hypermean_val);
-    y ~ bernoulli_logit_lpmf(baseline_k[site] + theta_k[site] .* treatment + fe);
+    y ~ bernoulli_logit(baseline_k[site] + theta_k[site] .* treatment + fe);
   } else if(pooling_type == 1){
     eta ~ normal(0,1);
     tau[1] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
     mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
-    y ~ bernoulli_logit_lpmf(baseline_k[site] + theta_k[site] .* treatment + fe);
+    y ~ bernoulli_logit(baseline_k[site] + theta_k[site] .* treatment + fe);
   } else {
     mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
-    y ~ bernoulli_logit_lpmf(baseline_k[site] + mu[1] * treatment + fe);
+    y ~ bernoulli_logit(baseline_k[site] + mu[1] * treatment + fe);
   }
 }
 
