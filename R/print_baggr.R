@@ -121,6 +121,17 @@ print.baggr <- function(x,
     group <- ifelse(x$n_groups > 20, FALSE, TRUE)
   }
 
+  # Print correlation for mu and tu as mean and 95% interval 
+  if(x$model=="mutau"){
+    corr <- mutau_cor(x, summary = TRUE)
+    digits <- 4
+    cat(crayon::bold(paste0("Correlation between mu and tau:")))
+    cat("\nMean = ",format(round(corr[['mean']], digits), nsmall=digits),
+        " with 95% interval ",format(round(corr[['2.5%']], digits), nsmall=digits),
+        " to ",format(round(corr[['97.5%']], digits), nsmall=digits),"")
+    cat("\n \n")
+  }
+
   if(group){ #Print groups
     if(x$pooling != "full") {
       # study_eff_tab <- apply(group_effects(x), c(2,3),
