@@ -7,9 +7,17 @@
 loo_compare(x, ...)
 }
 \arguments{
-\item{x}{An object of class \code{baggr_cv} or a list of such objects.}
+\item{x}{A list of \code{baggr_cv} objects, with a minimum of 2 objects required for comparison.
+\code{baggr_cv} objects can be created via the \code{loocv} method. In instances where a list
+of more than 2 objects is passed, the first model will be compared sequentially to
+all other provided models.}
 
 \item{...}{Additional objects of class "baggr_cv"}
+}
+\value{
+Returns a series of comparisons in order of the list provided as Model 1 - Model N for
+N loocv objects provided. Model 1 corresponds to the first object passed and
+Model N corresponds to the Nth object passed.
 }
 \description{
 Given multiple \link{loocv} outputs, calculate differences in their expected log

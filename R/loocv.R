@@ -191,8 +191,14 @@ is.baggr_cv <- function(x) {
 #' Given multiple [loocv] outputs, calculate differences in their expected log
 #' predictive density.
 #'
-#' @param x An object of class `baggr_cv` or a list of such objects.
+#' @param x A list of `baggr_cv` objects, with a minimum of 2 objects required for comparison.
+#'          `baggr_cv` objects can be created via the `loocv` method. In instances where a list
+#'          of more than 2 objects is passed, the first model will be compared sequentially to 
+#'          all other provided models.
 #' @param ... Additional objects of class "baggr_cv"
+#' @return  Returns a series of comparisons in order of the list provided as Model 1 - Model N for
+#'          N loocv objects provided. Model 1 corresponds to the first object passed and
+#'          Model N corresponds to the Nth object passed.
 #' @export loo_compare
 #' @seealso [loocv] for fitting LOO CV objects and explanation of the procedure
 #' @examples
@@ -263,6 +269,10 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
   class(mat) <- "matrix"
   cat(crayon::bold(paste0("Comparison of cross-validation\n\n")))
   print(signif(mat, digits = digits))
+  cat("\n")
+  cat("Interpretation: A positive ELPD indicates the reference group is a ",
+      "\nmore accurate model, with a larger value indicating a better fit.\n\n")
+
 }
 
 #' Print baggr cv objects nicely
@@ -277,7 +287,7 @@ print.baggr_cv <- function(x, digits = 3, ...) {
   mat <- matrix(nrow = 2, ncol = 2)
 
   mat[1,] <- c(x$elpd, x$se)
-  mat[2,] <- c(x$looic, -2*x$se)
+  mat[2,] <- c(x$looic, abs(-2*x$se))
 
   colnames(mat) <- c("Estimate", "Standard Error")
   rownames(mat) <- c("elpd", "looic")
