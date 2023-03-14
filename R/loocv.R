@@ -192,7 +192,7 @@ is.baggr_cv <- function(x) {
 #' predictive density.
 #'
 #' @param x A list of `baggr_cv` objects, with a minimum of 2 objects required for comparison.
-#'          `baggr_cv` objects can be created via the `loocv` method. In instances where a list
+#'          `baggr_cv` objects can be created via the [loocv] function. In instances where a list
 #'          of more than 2 objects is passed, the first model will be compared sequentially to 
 #'          all other provided models.
 #' @param ... Additional objects of class "baggr_cv"

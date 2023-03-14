@@ -8,7 +8,7 @@ loo_compare(x, ...)
 }
 \arguments{
 \item{x}{A list of \code{baggr_cv} objects, with a minimum of 2 objects required for comparison.
-\code{baggr_cv} objects can be created via the \code{loocv} method. In instances where a list
+\code{baggr_cv} objects can be created via the \link{loocv} function. In instances where a list
 of more than 2 objects is passed, the first model will be compared sequentially to
 all other provided models.}
 
