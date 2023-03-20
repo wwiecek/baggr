@@ -1,3 +1,8 @@
+# baggr 0.7.6 (March 2022)
+
+* Various CRAN and rstan bugfixes. A few quality-of-life type upgrades.
+* You can run meta-analyses with just one row of data, but must specify names for 
+
 # baggr 0.7.4 (late 2022)
 
 * Faster code: all models should now run by up to 50% faster

@@ -262,4 +262,6 @@ effect_plot <- function(..., transform=NULL) {
 
 #' @rdname effect_draw
 #' @export
-posterior_predict.baggr <- effect_draw
+posterior_predict.baggr <- function(object, ...) {
+  effect_draw(object, ...)
+}
