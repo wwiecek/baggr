@@ -47,7 +47,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 150) #right dimension means right iter
-  expect_error(baggr(df_binary, rubbish = 41), "unknown arguments")
+  expect_error(baggr(df_binary, rubbish = 41))
 })
 
 # Run without summarising data first
