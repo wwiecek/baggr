@@ -124,7 +124,6 @@ print.baggr <- function(x,
   # Print correlation for mu and tu as mean and 95% interval 
   if(x$model=="mutau"){
     corr <- mutau_cor(x, summary = TRUE)
-    digits <- 4
     cat(crayon::bold(paste0("Correlation between mu and tau:")))
     cat("\nMean = ",format(round(corr[['mean']], digits), nsmall=digits),
         " with 95% interval ",format(round(corr[['2.5%']], digits), nsmall=digits),
