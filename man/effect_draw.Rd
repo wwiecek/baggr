@@ -2,7 +2,6 @@
 % Please edit documentation in R/effect_draw.R
 \name{effect_draw}
 \alias{effect_draw}
-\alias{posterior_predict.baggr}
 \title{Make predictive draws from baggr model}
 \usage{
 effect_draw(
@@ -14,8 +13,6 @@ effect_draw(
   message = TRUE,
   interval = 0.95
 )
-
-\method{posterior_predict}{baggr}(object, ...)
 }
 \arguments{
 \item{object}{A \code{baggr} class object.}

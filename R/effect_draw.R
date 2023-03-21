@@ -258,10 +258,3 @@ effect_plot <- function(..., transform=NULL) {
     {if(single_model_flag) theme(legend.position = "none")} +
     {if(n_parameters > 1) facet_wrap(~variable, ncol = 3, scales = "free")}
 }
-
-
-#' @rdname effect_draw
-#' @export
-posterior_predict.baggr <- function(object, ...) {
-  effect_draw(object, ...)
-}
