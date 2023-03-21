@@ -15,15 +15,7 @@ effect_draw(
   interval = 0.95
 )
 
-\method{posterior_predict}{baggr}(
-  object,
-  draws = NULL,
-  newdata = NULL,
-  transform = NULL,
-  summary = FALSE,
-  message = TRUE,
-  interval = 0.95
-)
+\method{posterior_predict}{baggr}(object, ...)
 }
 \arguments{
 \item{object}{A \code{baggr} class object.}

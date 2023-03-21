@@ -220,7 +220,6 @@ Other standard functions for working with \code{baggr} object are
 \item \link{effect_draw} and \link{effect_plot} for posterior predictive distributions
 \item \link{baggr_compare} for comparing multiple \code{baggr} models
 \item \link{loocv} for cross-validation
-\item \link{pp_check} for posterior predictive checks
 }
 }
 \examples{
