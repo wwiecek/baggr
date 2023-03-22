@@ -171,7 +171,6 @@
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions
 #' * [baggr_compare] for comparing multiple `baggr` models
 #' * [loocv] for cross-validation
-#' * [pp_check] for posterior predictive checks
 #'
 #'
 #' @author Witold Wiecek, Rachael Meager
