@@ -77,7 +77,7 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_f$pooling, "full")
   expect_equal(bg5_p$n_parameters, 1)
   expect_equal(bg5_p$n_groups, 8)
-  expect_equal(bg5_p$effects, "mean")
+  expect_equal(bg5_p$label, "mean")
   expect_equal(bg5_p$model, "rubin")
   expect_is(bg5_p$fit, "stanfit")
 })

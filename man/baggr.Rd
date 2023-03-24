@@ -8,7 +8,7 @@ baggr(
   data,
   model = NULL,
   pooling = c("partial", "none", "full"),
-  effect = NULL,
+  label = NULL,
   covariates = c(),
   prior_hypermean = NULL,
   prior_hypersd = NULL,
@@ -44,7 +44,7 @@ choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
-\item{effect}{Label for effect. Will default to \code{"mean"} in most cases,
+\item{label}{Label for effect. Will default to \code{"mean"} in most cases,
 \code{"log OR"} in logistic model,
 quantiles in \code{quantiles} model etc.
 These labels are used in various print and plot outputs.

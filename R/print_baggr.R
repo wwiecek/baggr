@@ -41,9 +41,9 @@ print.baggr <- function(x,
 
   cat("\n")
 
-  if(length(x$effects) == 1)
+  if(length(x$label) == 1)
     cat(crayon::bold(paste0("Aggregate treatment effect (on ",
-                            x$effects, "), ",
+                            x$label, "), ",
                             x$n_groups," groups:\n")))
   else
     cat(crayon::bold(paste0("Aggregate treatment effects, ",
@@ -66,7 +66,7 @@ print.baggr <- function(x,
     intervaltxt <- paste0("with ", as.character(100*prob), "% interval")
 
     #trim=T avoids whitespace in place of minus sign
-    if(length(x$effects) == 1){
+    if(length(x$label) == 1){
       tau       <- format(mint(te[[1]], int=prob), digits = digits, trim = TRUE)
       sigma_tau <- format(mint(te[[2]], int=prob), digits = digits, trim = TRUE)
 
@@ -88,9 +88,9 @@ print.baggr <- function(x,
         if(!exponent)
           rownames(sigma_tau) <- paste0(100*x$quantiles, "% quantile")
       } else if(x$model == "sslab") {
-        rownames(tau) <- x$effects
+        rownames(tau) <- x$label
         if(!exponent)
-          rownames(sigma_tau) <- x$effects
+          rownames(sigma_tau) <- x$label
       }
 
       print(tau, digits = digits)
@@ -140,9 +140,9 @@ print.baggr <- function(x,
       for(i in 1:dim(study_eff_tab)[3]){
         if(dim(study_eff_tab)[3] > 1 || x$n_groups == 1){
           if(x$n_groups == 1)
-            cat(paste0("Group-specific treatment effect on ", x$effects[i]))
+            cat(paste0("Group-specific treatment effect on ", x$label[i]))
           else
-            cat(paste0("Treatment effects on ", x$effects[i]))
+            cat(paste0("Treatment effects on ", x$label[i]))
         }
 
         if(exponent){
@@ -183,7 +183,7 @@ print.baggr <- function(x,
     cov_names <- dimnames(fixed_eff_tab)[[1]]
 
     for(i in 1:dim(fixed_eff_tab)[3]){
-      cat(paste0("Covariate (fixed) effects on ", x$effects[i]))
+      cat(paste0("Covariate (fixed) effects on ", x$label[i]))
       if(exponent){
         cat(" (converted to exp scale):\n")
         tab <- cbind(fixed_eff_tab[,c("mean", "lci", "uci"),i])

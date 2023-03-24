@@ -63,7 +63,7 @@ effect_draw <- function(object,
   check_if_baggr(x)
 
   # Resize trt effects to the demanded size by making extra draws
-  neffects <- length(x$effects)
+  neffects <- length(x$label)
 
   # Return NA if there is no pooling
   if(x$pooling == "none"){
@@ -224,7 +224,7 @@ effect_plot <- function(..., transform=NULL) {
   # stop("Effect_plot is only possible for models with 1-dimensional treatment effects")
   # effects <- paste("Treatment effect on",
   # unique(unlist(lapply(l, function(x) x$effects))))
-  effects <- unique(unlist(lapply(l, function(x) x$effects)))
+  effects <- unique(unlist(lapply(l, function(x) x$label)))
   n_parameters <- unique(unlist(lapply(l, function(x) x$n_parameters)))
   if(length(n_parameters) != 1)
     stop("All models must have the same number of parameters")

@@ -23,7 +23,7 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect Label for effect. Will default to `"mean"` in most cases,
+#' @param label Label for effect. Will default to `"mean"` in most cases,
 #'               `"log OR"` in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
@@ -208,7 +208,7 @@
 baggr <- function(data,
                   model = NULL,
                   pooling = c("partial", "none", "full"),
-                  effect = NULL,
+                  label = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
@@ -224,6 +224,13 @@ baggr <- function(data,
   # check that it is data.frame of at least 1 row
   # if(!inherits(data, "data.frame") || nrow(data) == 1)
     # stop("data argument must be a data.frame of >1 rows")
+
+  # get label agrument and pass it as effect for compatibility
+  if("effect" %in% attributes(list(...))$names){
+    label <- list(...)$effect
+    message("The 'effect' argument has been renamed 'label'. Please use 'label' insetad of 'effect' in the future")  
+  }
+  effect <- label
 
   # Match arguments
   pooling <- match.arg(pooling)
@@ -351,6 +358,10 @@ baggr <- function(data,
 
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
+  # remove effect from stan args if present 
+  if("effect" %in% attributes(stan_args)$names){
+    stan_args$effect <- NULL
+  }
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
@@ -386,7 +397,8 @@ baggr <- function(data,
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
     "n_parameters" = n_parameters,
-    "effects" = effect,
+    "label" = effect,
+    #"effects" = effect,
     "covariates" = covariates,
     "pooling" = pooling,
     "fit" = fit,

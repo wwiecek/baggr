@@ -39,7 +39,7 @@ forest_plot <- function(bg,
                         ...) {
   if(!inherits(bg, "baggr"))
     stop("forest_plot can only be used with baggr objects")
-  if(length(bg$effects) > 1)
+  if(length(bg$label) > 1)
     stop("forest_plot only works with 1-dimensional effects")
 
   # Get the summary-level data with tau and se columns
@@ -130,8 +130,8 @@ forest_plot <- function(bg,
   if(show == "covariates"){
     l[["boxsize"]]     <- .15
   }
-  if(!("xlab" %in% names(l)) && bg$effects != "mean")
-    l[["xlab"]] <- bg$effects
+  if(!("xlab" %in% names(l)) && bg$label != "mean")
+    l[["xlab"]] <- bg$label
 
 
   do.call(forestplot, l)
