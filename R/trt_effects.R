@@ -110,3 +110,34 @@ mutau_cor <- function(bg,
 
 }
 
+#' Return the hypermean of the treatments effects
+#'
+#' @param bg        A [baggr] model.
+#' @param interval  The confidence inerval of the hypermean passed as any value between 0 and 1. 
+#' @return          The hypermean of the `baggr` model with the interval specified 
+#'                  by `interval`, with a default interval of 95%.
+#' @export
+hypermean <- function(bg,transform=NULL,interval = 0.95,message=FALSE){
+  t <- treatment_effect(bg,summary=TRUE,transform=transform,interval=interval,message=message)
+  if(message){
+    cat(paste0("Hypermean of ",bg$effects," with ",interval*100,"% interval:\n"))
+    print(t[[1]])
+  }
+  return(t[[1]])
+}
+
+#' Return the hyper standard deviation of the treatments effects
+#'
+#' @param bg        A [baggr] model.
+#' @param interval  The confidence inerval of the hyper SD passed as any value between 0 and 1. 
+#' @return          The hyper SD of the `baggr` model with the interval specified 
+#'                  by `interval`, with a default interval of 95%.
+#' @export
+hypersd <- function(bg,transform=NULL,interval = 0.95,message=FALSE){
+  t <- treatment_effect(bg,summary=TRUE,transform=transform,interval=interval,message=message)
+  if(message){
+    cat(paste0("Hyper SD of ",bg$effects," with ",interval*100,"% interval:\n"))
+    print(t[[2]])
+  }
+  return(t[[2]])
+}

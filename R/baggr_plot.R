@@ -63,7 +63,7 @@ baggr_plot <- function(bg, hyper=FALSE,
     else
       mat_to_plot <- m[,,i]
     if(hyper && bg$pooling != "none"){
-      ate <- treatment_effect(bg, transform = transform)$tau
+      ate <- hypermean(bg, transform = transform) #treatment_effect(bg, transform = transform)$tau
       if(length(bg$effects) > 1) #ATE is a matrix
         mat_to_plot <- cbind(mat_to_plot, ate[,i])
       else #ATE is a vector

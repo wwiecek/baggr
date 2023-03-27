@@ -141,7 +141,7 @@ pooling <- function(bg,
   # if(bg$model %in% c("rubin", "mutau", "logit", "rubin_full")) {
   if(bg$n_parameters == 1) {
     # 1-dimensional vector of S values (S=N samples)
-    sigma_tau <- treatment_effect(bg)$sigma_tau
+    sigma_tau <- hypersd(bg) #treatment_effect(bg)$sigma_tau
 
     # Grab the appropriate SE (k values)
     sigma_k <- switch(bg$model,
@@ -182,7 +182,7 @@ pooling <- function(bg,
     # here it is N effects on N quantiles etc.
 
     # Nq-dimensional sigma_tau
-    sigma_tau <- treatment_effect(bg)$sigma_tau
+    sigma_tau <- hypersd(bg) #treatment_effect(bg)$sigma_tau
     # for(i in 1:dim(sigma_tau)[2])
       # sigma_tau[,i,1] <- sigma_tau[,i,i]
     # sigma_tau <- sigma_tau[,,1] #rows are samples, columns are quantiles
@@ -215,7 +215,7 @@ pooling <- function(bg,
     }
 
     # Must calculate pooling for each effect vector?
-    te <- treatment_effect(bg)$sigma_tau
+    te <- hypersd(bg) #treatment_effect(bg)$sigma_tau
     warning("In this version of baggr calculations of pooling for spike & slab may be wrong")
     warning("Please contact package authors if youy are using this feature")
     ge <- group_effects(bg, summary = T)[,"sd",]
