@@ -136,3 +136,34 @@ forest_plot <- function(bg,
 
   do.call(forestplot, l)
 }
+
+#' Draw a bubble plot using ggplot syntax 
+#'
+#' @param bg          A [baggr] object.
+#' @param covariates  Covariates for the [baggr] data. 
+#' @return A bubble plot of 1/SE^2
+#' @examples
+#' 
+#' covariates <- rnorm(8)
+#' bg <- baggr(schools)
+#' bubble_plot(bg,covariates)
+#'
+#' @export
+bubble_plot <- function(bg, covariates) {
+  data <- bg$data
+  data$se <- 1/(data$se^2)
+
+  #if(!missing(estimate)){
+  #  fit_ribbon_data <- data.frame(x = seq(min(data[[covariates]]), 
+  #    max(data[[covariates]]), length = 100)) %>%
+  #    mutate(y = x*estimate[2], ymin = x*estimate[1], ymax = x*estimate[3])       
+  #}
+  
+  ggplot(data, aes_string(x = covariates, y = "tau")) + 
+    geom_point(aes(size=data$se)) +
+    scale_size_continuous(name = "1/SE^2") + 
+    geom_smooth(method="lm", col="black") +
+    xlab("Covariates") + ylab("Tau")
+  
+}
+
