@@ -149,9 +149,9 @@ loocv <- function(data, return_models = FALSE, ...) {
   close(pb)
 
   tau_estimate <-
-    lapply(kfits, function(x) mean(hypermean(x))) #treatment_effect(x)[[1]])
+    lapply(kfits, function(x) mean(hypermean(x,message=FALSE))) 
   sd_estimate <-
-    lapply(kfits, function(x) mean(hypersd(x))) #treatment_effect(x)[[2]]
+    lapply(kfits, function(x) mean(hypersd(x,message=FALSE))) 
   loglik <-
     lapply(kfits, function(x) apply(as.matrix(x$fit, "logpd[1]"), 2, mean))
 
@@ -310,7 +310,7 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
     stop("To plot, the loocv() output must include models (return_models = TRUE).")
 
   mm1 <- do.call(rbind,
-                 lapply(loo_model$models, function(x) hypermean(x))) #treatment_effect(x, summary = T)$tau)
+                 lapply(loo_model$models, function(x) hypermean(x,message=FALSE))) 
   df1 <- data.frame(
     setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
     model = "LOOCV estimate",

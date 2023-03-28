@@ -4,17 +4,22 @@
 \alias{hypersd}
 \title{Return the hyper standard deviation of the treatments effects}
 \usage{
-hypersd(bg, transform = NULL, interval = 0.95, message = FALSE)
+hypersd(bg, transform = NULL, interval = 0.95, message = TRUE)
 }
 \arguments{
 \item{bg}{A \link{baggr} model.}
 
-\item{interval}{The confidence inerval of the hyper SD passed as any value between 0 and 1.}
+\item{transform}{A transformation to apply to the result, should be an R function;
+(this is commonly used when calling \code{hypersd} from other
+plotting or printing functions)}
+
+\item{interval}{The confidence inerval of the hyper-SD passed as any value between 0 and 1.}
+
+\item{message}{A logical agrument that determines whether the result is printed or not.}
 }
 \value{
-\if{html}{\out{<div class="sourceCode">}}\preformatted{     The hyper SD of the `baggr` model with the interval specified 
-             by `interval`, with a default interval of 95\%.
-}\if{html}{\out{</div>}}
+The hyper-SD of the \code{baggr} model with the interval specified by \code{interval}, with
+a default interval of 95\%, as calculated by \link{treatment_effect}.
 }
 \description{
 Return the hyper standard deviation of the treatments effects

@@ -89,7 +89,7 @@ forest_plot <- function(bg,
   else
     n_ge_rows <- nrow(ge_raw)
 
-  te <- hypermean(bg) #treatment_effect(bg)$tau
+  te <- hypermean(bg,message=FALSE) 
 
   te_printed <- paste0(format(mean(te), digits = digits), " (",
                        format(sd(te), digits = digits), ")")

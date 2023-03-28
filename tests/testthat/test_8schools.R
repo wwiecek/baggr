@@ -24,7 +24,7 @@ brms_totalef <- brms_ranef + brms_fixef
 baggr_fit <- baggr(schools, control = list(adapt_delta = 0.99),
                    iter = 5000, refresh = 0)
 baggr_groupef <- group_effects(baggr_fit, summary = TRUE)[]
-baggr_fixef   <- mean(baggr::treatment_effect(baggr_fit)$tau)
+baggr_fixef   <- mean(baggr::treatment_effect(baggr_fit,message=FALSE)$tau)
 
 # tolerance for differences
 tol <- 0.25

@@ -45,8 +45,8 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
     model_rr <- baggr(data_rr, refresh=0, silent = TRUE)
 
     # Apply trt effects to control pr events to get the right line
-    te_or <- hypermean(model_or) #treatment_effect(model_or, summary = TRUE)$tau
-    te_rr <- hypermean(model_rr) #treatment_effect(model_rr, summary = TRUE)$tau
+    te_or <- hypermean(model_or,message=FALSE) 
+    te_rr <- hypermean(model_rr,message=FALSE) 
     p_bsl <- seq(0,1,length=1000)
     p_trt_rr <- exp(te_rr[["mean"]])*p_bsl
     odds_trt <- exp(te_or[["mean"]])*(p_bsl/(1-p_bsl))
