@@ -74,7 +74,8 @@
 #' @param silent Whether to silence messages about prior settings and about other automatic behaviour.
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
-#'            number of iterations etc.
+#'            number of iterations etc. Note that if the extra option "cov" is passed to Stan functions, 
+ #'           covariates cannot include NA values or the model will not run. 
 #' @return `baggr` class structure: a list including Stan model fit
 #'          alongside input data, pooling metrics, various model properties.
 #'          If test data is used, mean value of -2*lpd is reported as `mean_lpd`
@@ -245,6 +246,10 @@ baggr <- function(data,
     cumsum_mutau <- 0
   } else {
     cumsum_mutau <- 1
+  }
+
+  if(NA %in% data$cov){
+     stop("\n The covariates for these data include an NA value, which will prevent the model from running. Please remove the NA values from the covariates and try again.")
   }
 
   stan_data <- convert_inputs(data,

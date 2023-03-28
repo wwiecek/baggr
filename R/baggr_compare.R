@@ -512,12 +512,13 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                                          group = interaction(model),
                                          color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
-    ggplot2::geom_errorbar(linewidth = 1.2, width = 0,
-                           position = ggplot2::position_dodge(width = 0.5)
-    ) +
-    ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
-                        position = ggplot2::position_dodge(width=0.5),
-                        pch = 21) +
+    # use position_dodge2 to reverse order of error  bars to match legend
+     ggplot2::geom_errorbar(size = 1.2, width = 0.5,
+                           position = ggplot2::position_dodge2(reverse=TRUE)) +
+     # use position_dodge2 to reverse order of points to match legend
+     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
+                         position = ggplot2::position_dodge2(width=0.5,reverse=TRUE),
+                         pch = 21) +
     { if(points != 0 && !is.null(df[[points]]) && is.numeric(df[[points]]))
       ggplot2::geom_point(aes(x = group, y = .data[[points]]), color = "black") } +
     { if(!add_values) ggplot2::coord_flip() } +

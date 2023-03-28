@@ -118,7 +118,8 @@ it will be used as labels for groups when displaying results}
 \item{warn}{print an additional warning if Rhat exceeds 1.05}
 
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
-number of iterations etc.}
+number of iterations etc. Note that if the extra option "cov" is passed to Stan functions,
+covariates cannot include NA values or the model will not run.}
 }
 \value{
 \code{baggr} class structure: a list including Stan model fit
