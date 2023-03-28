@@ -60,7 +60,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
     stop("There are no group effects in prior predictive distribution baggr objects.")
 
   if(bg$pooling == "full"){
-    tau <- treatment_effect(bg)[["tau"]]
+    tau <- treatment_effect(bg,message=FALSE)[["tau"]]
     k <- attr(bg$inputs, "n_groups")
     m <- replicate(k, tau)
     if(length(dim(m)) == 3)

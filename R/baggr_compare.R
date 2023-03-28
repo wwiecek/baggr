@@ -213,9 +213,7 @@ baggr_compare <- function(...,
   # Return treatment effects, hyperSDs, predicted effects
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform,
-                              interval = prob,
-                              summary = TRUE, message = FALSE)$tau
+      est <- hypermean(x,transform=transform,interval=prob,message=FALSE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
@@ -223,9 +221,7 @@ baggr_compare <- function(...,
     })))
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform,
-                              interval = prob,
-                              summary = TRUE, message = FALSE)$sigma_tau
+      est <- hypersd(x,transform=transform,interval=prob,message=FALSE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
       }
@@ -390,9 +386,7 @@ plot.baggr_compare <- function(x,
 
         if(cmodel$pooling != "none" && hyper) {
           if(length(effect_names) == 1)
-            hyper_treat <- treatment_effect(cmodel,
-                                            transform = transform,
-                                            message=FALSE)$tau
+            hyper_treat <- hypermean(cmodel,transform=transform,message=FALSE)
           if(length(effect_names) > 1)
             hyper_treat <- treatment_effect(cmodel,
                                             transform = transform,
