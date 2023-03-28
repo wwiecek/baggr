@@ -136,3 +136,45 @@ forest_plot <- function(bg,
 
   do.call(forestplot, l)
 }
+
+#' Draw a bubble plot using ggplot syntax 
+#'
+#' @param bg          A [baggr] object.
+#' @param covariates  Covariates for the [baggr] data. 
+#' @param regression  A logical value that sets an overlying linear regression and 
+#'                    confidence interval on or off.
+#' @param intervals   The confidence interval used in the linear regression, 
+#'                    given as a value between 0 and 1.
+#' @return A bubble plot of 1/SE^2 for Tau as a function of the given covariates with 
+#'         linear regression and confidence interval.  
+#' @examples
+#' 
+#' covariates <- rnorm(8)
+#' bg <- baggr(schools)
+#' bubble_plot(bg,covariates)
+#'
+#' @export
+bubble_plot <- function(bg, covariates, regression=TRUE, interval=0.95) {
+  data <- bg$data
+  data$se <- 1/(data$se^2)
+
+  #if(!missing(estimate)){
+  #  fit_ribbon_data <- data.frame(x = seq(min(data[[covariates]]), 
+  #    max(data[[covariates]]), length = 100)) %>%
+  #    mutate(y = x*estimate[2], ymin = x*estimate[1], ymax = x*estimate[3])       
+  #}
+  if(regression){
+    ggplot(data, aes_string(x = covariates, y = "tau")) + 
+      geom_point(aes(size=data$se)) +
+      scale_size_continuous(name = "1/SE^2") + 
+      geom_smooth(method="lm",level=interval, col="black") +
+      xlab("Covariates") + ylab("Tau")
+  } else {
+    ggplot(data, aes_string(x = covariates, y = "tau")) + 
+      geom_point(aes(size=data$se)) +
+      scale_size_continuous(name = "1/SE^2") + 
+      xlab("Covariates") + ylab("Tau")
+  }
+  
+
+}
