@@ -43,7 +43,7 @@ baggr_plot <- function(bg, hyper=FALSE,
     return(effect_plot(bg))
   }
   m <- group_effects(bg, transform = transform)
-  effect_labels <- bg$effects
+  effect_labels <- bg$label
 
   if(!(style %in% c("areas", "intervals")))
     stop('plot "style" argument must be one of: "areas", "intervals"')
@@ -64,7 +64,7 @@ baggr_plot <- function(bg, hyper=FALSE,
       mat_to_plot <- m[,,i]
     if(hyper && bg$pooling != "none"){
       ate <- treatment_effect(bg, transform = transform)$tau
-      if(length(bg$effects) > 1) #ATE is a matrix
+      if(length(bg$label) > 1) #ATE is a matrix
         mat_to_plot <- cbind(mat_to_plot, ate[,i])
       else #ATE is a vector
         mat_to_plot <- cbind(mat_to_plot, ate)
@@ -77,7 +77,7 @@ baggr_plot <- function(bg, hyper=FALSE,
                 "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob,
                                                         prob_outer = prob_outer, ...))
     p +
-      ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
+      ggplot2::labs(x = paste("Effect on", bg$label[i])) +
       baggr_theme_get() +
       {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
       {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}

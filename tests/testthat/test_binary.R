@@ -63,8 +63,8 @@ bg5_rr <- expect_warning(
 test_that("We can run models without prepare_ma'ing data", {
   expect_is(bg5_or, "baggr")
   expect_is(bg5_rr, "baggr")
-  expect_equal(bg5_or$effects, "logOR")
-  expect_equal(bg5_rr$effects, "logRR")
+  expect_equal(bg5_or$label, "logOR")
+  expect_equal(bg5_rr$label, "logRR")
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -73,7 +73,7 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_f$pooling, "full")
   expect_equal(bg5_p$n_parameters, 1)
   expect_equal(bg5_p$n_groups, 5)
-  expect_equal(bg5_p$effects, "logOR")
+  expect_equal(bg5_p$label, "logOR")
   expect_equal(bg5_p$model, "logit")
   expect_equal(bg5_summarydt$model, "rubin")
   expect_equal(bg5_summarydt$pooling, "partial")

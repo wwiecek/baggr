@@ -65,8 +65,8 @@ treatment_effect <- function(bg, summary = FALSE,
     stop("Can't calculate treatment effect for this model.")
   }
 
-  if(length(bg$effects) > 1)
-    colnames(tau) <- colnames(sigma_tau) <- bg$effects
+  if(length(bg$label) > 1)
+    colnames(tau) <- colnames(sigma_tau) <- bg$label
 
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))

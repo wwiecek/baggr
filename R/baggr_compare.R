@@ -160,7 +160,7 @@ baggr_compare <- function(...,
     compare <- "effects"
   }
 
-  effect_names <- lapply(models, function(x) x$effects)
+  effect_names <- lapply(models, function(x) x$label)
   # quite a mouthful:
   if(!all(
     unlist(

@@ -51,7 +51,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
     par_names <- attr(bg$inputs, "group_label")
 
   # Grab effect names
-  effect_names <- bg$effects
+  effect_names <- bg$label
 
 
 

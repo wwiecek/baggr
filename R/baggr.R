@@ -11,7 +11,7 @@
 #'
 #' @param data data frame with summary or individual level data to meta-analyse;
 #'             see Details section for how to format your data
-#' @param model if \code{NULL}, detected automatically from input data
+#' @param label if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
 #'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
 #'              (see Details).
@@ -207,7 +207,7 @@
 baggr <- function(data,
                   model = NULL,
                   pooling = c("partial", "none", "full"),
-                  effect = NULL,
+                  label = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
@@ -224,6 +224,13 @@ baggr <- function(data,
   # if(!inherits(data, "data.frame") || nrow(data) == 1)
     # stop("data argument must be a data.frame of >1 rows")
 
+  # get label agrument and pass it as effect for compatibility
+  if("effect" %in% attributes(list(...))$names){
+    label <- list(...)$effect
+    message("The 'effect' argument has been renamed 'label'. Please use 'label' insetad of 'effect' in the future")  
+  }
+  effect <- label
+  
   # Match arguments
   pooling <- match.arg(pooling)
   pooling_control <- match.arg(pooling_control)
@@ -350,6 +357,10 @@ baggr <- function(data,
 
   # If extracting prior from another model, we need to do a swapsie switcheroo:
   stan_args <- list(...)
+  # remove effect from stan args if present 
+  if("effect" %in% attributes(stan_args)$names){
+    stan_args$effect <- NULL
+  }
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
@@ -385,7 +396,7 @@ baggr <- function(data,
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
     "n_parameters" = n_parameters,
-    "effects" = effect,
+    "label" = effect,
     "covariates" = covariates,
     "pooling" = pooling,
     "fit" = fit,
