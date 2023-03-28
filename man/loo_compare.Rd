@@ -4,12 +4,20 @@
 \alias{loo_compare}
 \title{Compare LOO CV models}
 \usage{
-loo_compare(x, ...)
+loo_compare(...)
 }
 \arguments{
-\item{x}{An object of class \code{baggr_cv} or a list of such objects.}
-
-\item{...}{Additional objects of class "baggr_cv"}
+\item{...}{A series of \code{baggr_cv} objects passed as arguments, with a minimum of 2
+arguments required for comparison. \code{baggr_cv} objects can be created via the
+\link{loocv} function. In instances where more than 2 arguments are passed, the
+first model will be compared sequentially to all other provided models.
+Arguments can be passed with names (see example below).}
+}
+\value{
+Returns a series of comparisons in order of the arguments provided as Model 1 - Model N for
+N loocv objects provided. Model 1 corresponds to the first object passed and
+Model N corresponds to the Nth object passed. If arguments are passed with names,
+the names will be used instead of Model 1 - Model N.
 }
 \description{
 Given multiple \link{loocv} outputs, calculate differences in their expected log
@@ -21,7 +29,7 @@ predictive density.
 cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
 cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
-loo_compare(cv_1, cv_2)
+loo_compare("cv_1"=cv_1,"cv_2"=cv_2)
 }
 }
 \seealso{
