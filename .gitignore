@@ -17,3 +17,6 @@ src/*.h
 /doc/
 /Meta/
 .DS_Store
+src/Makevars
+src/Makevars.win
+*.so
