@@ -143,7 +143,7 @@ forest_plot <- function(bg,
 #' @param covariates  Covariates for the [baggr] data. 
 #' @param regression  A logical value that sets an overlying linear regression and 
 #'                    confidence interval on or off.
-#' @param intervals   The confidence interval used in the linear regression, 
+#' @param interval    The confidence interval used in the linear regression, 
 #'                    given as a value between 0 and 1.
 #' @return A bubble plot of 1/SE^2 for Tau as a function of the given covariates with 
 #'         linear regression and confidence interval.  

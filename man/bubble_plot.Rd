@@ -14,7 +14,7 @@ bubble_plot(bg, covariates, regression = TRUE, interval = 0.95)
 \item{regression}{A logical value that sets an overlying linear regression and
 confidence interval on or off.}
 
-\item{intervals}{The confidence interval used in the linear regression,
+\item{interval}{The confidence interval used in the linear regression,
 given as a value between 0 and 1.}
 }
 \value{
