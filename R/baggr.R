@@ -248,9 +248,14 @@ baggr <- function(data,
     cumsum_mutau <- 1
   }
 
-  if(NA %in% data$cov){
-     stop("\n The covariates for these data include an NA value, which will prevent the model from running. Please remove the NA values from the covariates and try again.")
-  }
+  if(is.data.frame(data)){
+    if(NA %in% data$cov){
+       stop("\n The covariates for these data include an NA value, which will prevent the model from running. Please remove the NA values from the covariates and try again.")
+    }
+    } else {
+      stop("it's not a data.frame")
+    }
+  
 
   stan_data <- convert_inputs(data,
                               model,
