@@ -88,7 +88,7 @@ baggr_plot <- function(bg, hyper=FALSE,
       baggr_theme_get() +
       {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")} 
     
-    if(is.list(add_color_to)){ 
+    if(length(add_color_to)>=1){ 
       p <- p + {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)}
       p <- add_color(p,add_color_to,style) 
       
