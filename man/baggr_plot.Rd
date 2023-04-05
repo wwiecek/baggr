@@ -13,6 +13,7 @@ baggr_plot(
   prob_outer = 0.95,
   vline = FALSE,
   order = TRUE,
+  add_color_to = NULL,
   ...
 )
 }
@@ -36,6 +37,11 @@ plot on log scale by setting \code{transform = identity}}
 \item{vline}{logical; show vertical line through 0 in the plot?}
 
 \item{order}{logical; sort groups by magnitude of treatment effect?}
+
+\item{add_color_to}{A list of objects and colors to be added to the plots.
+Lists are constructed such that objects and colors are given
+in pairs. For example, a list to turn School A red and School B
+blue would be constructed as \code{list('School A','red','School B','blue')}.}
 
 \item{...}{extra arguments to pass to the \code{bayesplot} functions}
 }

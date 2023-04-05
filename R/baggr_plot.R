@@ -15,6 +15,10 @@
 #' @param prob_outer Probability mass for the outer interval in visualisation
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param order logical; sort groups by magnitude of treatment effect?
+#' @param add_color_to  A list of objects and colors to be added to the plots.
+#'                      Lists are constructed such that objects and colors are given
+#'                      in pairs. For example, a list to turn School A red and School B
+#'                      blue would be constructed as `list('School A','red','School B','blue')`.
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -27,6 +31,7 @@
 #' @export
 #' @import ggplot2
 #' @import bayesplot
+#' @import ggplotify
 #'
 #' @author Witold Wiecek; the visual style is based on _bayesplot_ package
 #' @seealso [bayesplot::MCMC-intervals] for more information about _bayesplot_ functionality;
@@ -37,7 +42,8 @@ baggr_plot <- function(bg, hyper=FALSE,
                        style = "intervals",
                        transform = NULL,
                        prob = 0.5, prob_outer = 0.95,
-                       vline = FALSE, order = TRUE, ...) {
+                       vline = FALSE, order = TRUE, 
+                       add_color_to=NULL,...) {
   if(attr(bg, "ppd")){
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))
@@ -76,11 +82,22 @@ baggr_plot <- function(bg, hyper=FALSE,
                                                     prob_outer = prob_outer, ...),
                 "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob,
                                                         prob_outer = prob_outer, ...))
+    
     p +
       ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
       baggr_theme_get() +
-      {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
-      {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}
+      {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")} 
+    
+    if(is.list(add_color_to)){ 
+      p <- p + {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)}
+      p <- add_color(p,add_color_to,style) 
+      
+    } else {
+      p <- p + {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)}
+      
+    }
+      
+
   })
 
   if(length(ret_list) == 1)
@@ -88,3 +105,43 @@ baggr_plot <- function(bg, hyper=FALSE,
   else
     return(ret_list)
 }
+
+
+#' Add colors to baggr plots
+#'
+#' @param p             A ggplot object to add colors to
+#' @param add_color_to  A list of objects and colors to be added to the plots.
+#'                      Lists are constructed such that objects and colors are given
+#'                      in pairs. For example, a list to turn School A red and School B
+#'                      blue would be constructed as `list('School A','red','School B','blue')`.
+#'                      CSS hex numbers are also supported. 
+#' @param style         The style of the plot. Currently, only plots of style `intervals` are 
+#'                      supported.
+#' @examples
+#' bg <- baggr(schools)
+#' colors <- list('School A','red','School B','blue')
+#' plot(bg,add_color_to=colors)
+
+add_color <- function(p,add_color_to,style){
+  if(style == 'areas'){
+    stop('Adding color is currently only supported for plots in interval style. Please change the `style` argument to `intervals` and try again.')
+  }
+  if(style == "intervals"){
+    obj_names <- add_color_to[c(TRUE,FALSE)]
+    objects <- NULL
+    for(name in obj_names){
+      objects[length(objects)+1] <- which(p$data==name)
+    }
+    colors <- add_color_to[c(FALSE,TRUE)]
+    pb <- ggplot2::ggplot_build(p)
+    for(obj in 1:length(objects)){
+      pb$data[[2]][objects[obj],'colour'] <- colors[obj]
+      pb$data[[3]][objects[obj],'colour'] <- colors[obj] 
+      pb$data[[4]][objects[obj],'colour'] <- colors[obj] 
+      pb$data <- pb$data
+    }
+    pb <- ggplot2::ggplot_gtable(pb)
+    return(ggplotify::as.ggplot(pb))
+  }
+}
+

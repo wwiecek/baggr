@@ -23,6 +23,7 @@ Imports:
     crayon,
 	forestplot,
     ggplot2,
+    ggplotify,
     gridExtra,
     utils,
     stats,
