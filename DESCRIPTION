@@ -27,7 +27,8 @@ Imports:
     utils,
     stats,
     testthat,
-    methods
+    methods,
+    metafor
 LinkingTo: 
     StanHeaders (>= 2.18.1), 
     rstan (>= 2.18.1), 
