@@ -11,8 +11,12 @@ baggr_plot(
   transform = NULL,
   prob = 0.5,
   prob_outer = 0.95,
-  vline = FALSE,
+  vline = TRUE,
   order = TRUE,
+  metafor_style = TRUE,
+  range_full = TRUE,
+  values_size = 4,
+  values_digits = 2,
   ...
 )
 }
@@ -36,6 +40,15 @@ plot on log scale by setting \code{transform = identity}}
 \item{vline}{logical; show vertical line through 0 in the plot?}
 
 \item{order}{logical; sort groups by magnitude of treatment effect?}
+
+\item{metafor_style}{logical; plot intervals in a metafor style}
+
+\item{range_full}{logical; use the full range when plotting in metafor style.
+FALSE uses the IQR, rather than the full range, for the plotted intervals.}
+
+\item{values_size}{size of the text values in the plot}
+
+\item{values_digits}{number of significant digits to use in the plot}
 
 \item{...}{extra arguments to pass to the \code{bayesplot} functions}
 }

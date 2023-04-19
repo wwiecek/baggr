@@ -337,7 +337,7 @@ plot.baggr_compare <- function(x,
                                vline = FALSE,
                                add_values = FALSE,
                                values_digits = 2,
-                               values_size = 2,
+                               values_size = 4,
                                ...) {
 
   # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
@@ -361,6 +361,7 @@ plot.baggr_compare <- function(x,
                     order = FALSE,
                     transform = transform,
                     vline = vline)
+    print(models)
     grid_width <- length(plots)
     # if each plots element contains multiple plots (like with quantiles):
     if(class(plots[[1]])[1] == "list")
@@ -498,10 +499,15 @@ plot.baggr_compare <- function(x,
 #' @export
 single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                              points = FALSE,
-                             add_values = FALSE, values_digits = 2, values_size = 2.5) {
+                             add_values = FALSE, values_digits = 2, values_size = 4) {
 
   group <- median <- lci <- uci <- model <- NULL
-
+  if(values_digits<3){
+    buffer = (values_size*8)/4
+  }
+  else{
+    buffer = (values_size*values_digits*3)/4
+  }
   # A bit of code to avoid printing pointless colour legend
   if(is.null(df[["model"]])) df$model <- ""
   if(length(unique(df[["model"]])) == 1)
@@ -513,10 +519,10 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                                          color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
     ggplot2::geom_errorbar(linewidth = 1.2, width = 0,
-                           position = ggplot2::position_dodge(width = 0.5)
+                           position = ggplot2::position_dodge(width = 0.75)
     ) +
     ggplot2::geom_point(size = 2, stroke = 1.5, fill = "white",
-                        position = ggplot2::position_dodge(width=0.5),
+                        position = ggplot2::position_dodge(width=0.75),
                         pch = 21) +
     { if(points != 0 && !is.null(df[[points]]) && is.numeric(df[[points]]))
       ggplot2::geom_point(aes(x = group, y = .data[[points]]), color = "black") } +
@@ -525,49 +531,20 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                   y = ylab) +
     {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
     baggr_theme_get() +
-    ggplot2::theme(legend.position=legend)
-
-  if(add_values)
-    pl <- add_plot_values(pl, values_digits, values_size)
-
+    ggplot2::theme(plot.margin = unit(c(1,buffer,1,1), "lines")) +
+    ggplot2::theme(legend.position=legend,
+                   axis.text.y=element_text(size=values_size*3),
+                   axis.title.x=element_text(size=values_size*3+2),
+                   legend.text=element_text(size=values_size*3),
+                   strip.text.x = ggplot2::element_blank()) +
+    {if(add_values) ggplot2::geom_text(aes(y=max(uci),hjust=-0.25, 
+                                           label=paste0(format(median,digits=values_digits)," [",format(lci,digits=values_digits)," - ",format(uci,digits=values_digits),"]")),
+                                           position = position_dodge2(width = 0.75),
+                                           size=values_size)} +
+    ggplot2::coord_flip(clip = "off") 
+    
   pl
 }
-
-
-add_plot_values <- function(pl, values_digits = 2, values_size = 2.5) {
-
-  fmti <- function(x, digits = values_digits) {
-    format(round(x, digits), nsmall = digits)
-  }
-
-  group <- median <- lci <- uci <- model <- NULL
-
-  pl <- pl +
-    ggplot2::geom_text(
-      aes(label = fmti(lci, values_digits),
-          hjust = 1,
-          y = 1.1*max(uci)),
-      position = ggplot2::position_dodge(width = .5),
-      size = values_size) +
-    ggplot2::geom_text(
-      aes(label = fmti(mean, values_digits),
-          hjust = 1,
-          y = 1.2*max(uci)),
-      position = ggplot2::position_dodge(width = .5),
-      size = values_size) +
-    ggplot2::geom_text(
-      aes(label = fmti(uci, values_digits),
-          hjust = 1,
-          y = 1.3*max(uci)),
-      position = ggplot2::position_dodge(width = .5),
-      size = values_size) +
-    ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
-    ggplot2::coord_flip(clip = "off")
-
-  pl
-}
-
-
 
 #' Separate out ordering so we can test directly
 #' @param df_groups data.frame of group effects used in [plot.baggr_compare]

@@ -15,6 +15,11 @@
 #' @param prob_outer Probability mass for the outer interval in visualisation
 #' @param vline logical; show vertical line through 0 in the plot?
 #' @param order logical; sort groups by magnitude of treatment effect?
+#' @param metafor_style logical; plot intervals in a metafor style
+#' @param range_full logical; use the full range when plotting in metafor style. 
+#'                   FALSE uses the IQR, rather than the full range, for the plotted intervals.
+#' @param values_size size of the text values in the plot
+#' @param values_digits number of significant digits to use in the plot
 #' @param ... extra arguments to pass to the `bayesplot` functions
 #'
 #' @return ggplot2 object
@@ -37,7 +42,9 @@ baggr_plot <- function(bg, hyper=FALSE,
                        style = "intervals",
                        transform = NULL,
                        prob = 0.5, prob_outer = 0.95,
-                       vline = FALSE, order = TRUE, ...) {
+                       vline = TRUE, order = TRUE,
+                       metafor_style=TRUE,range_full=TRUE, 
+                       values_size=4,values_digits=2,...) {
   if(attr(bg, "ppd")){
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))
@@ -70,17 +77,60 @@ baggr_plot <- function(bg, hyper=FALSE,
         mat_to_plot <- cbind(mat_to_plot, ate)
       colnames(mat_to_plot)[ncol(mat_to_plot)] <- "Hypermean"
     }
+    if(style=="areas"){
+      metafor_style = FALSE
+    }
+    if(!metafor_style || style=="areas"){
+      p <- switch(style,
+                  "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob,
+                                                      prob_outer = prob_outer, ...),
+                  "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob,
+                                                          prob_outer = prob_outer, ...))
+      p +
+        ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
+        baggr_theme_get() +
+        {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
+        {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}
 
-    p <- switch(style,
-                "areas"     = bayesplot::mcmc_areas(mat_to_plot, prob = prob,
-                                                    prob_outer = prob_outer, ...),
-                "intervals" = bayesplot::mcmc_intervals(mat_to_plot, prob = prob,
-                                                        prob_outer = prob_outer, ...))
-    p +
-      ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
-      baggr_theme_get() +
-      {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
-      {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}
+    }
+    if(metafor_style && style=="intervals"){
+      if(values_digits<3){
+        buffer = (values_size*8)/3.5
+      }
+      else{
+        buffer = (values_size*values_digits*3)/4
+      }
+
+      parameter <- ll <- l <- m <- h <- hh <- NULL
+
+      data <- bayesplot::mcmc_intervals_data(mat_to_plot, prob = prob,prob_outer = prob_outer, ...)
+    
+      p <- ggplot2::ggplot(data, aes(x = m, y = parameter)) +
+              ggplot2::scale_y_discrete(limits = rev) +
+              ggplot2::geom_point(size=5,shape=15) +
+              ggplot2::geom_errorbarh(aes(y = parameter,xmin = ll, xmax = hh),size=0.5, height=0.15,inherit.aes=FALSE) +
+              ggplot2::geom_errorbarh(aes(y = parameter,xmin = l, xmax = h),size=2,height=0,inherit.aes=FALSE) +
+              ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
+              ggplot2::theme(panel.background = element_rect(fill = "white", colour = "white"),
+                legend.position="none",
+                axis.title.y=element_blank(),
+                axis.title.x=element_text(size=values_size*3+2),
+                axis.text.y=element_text(size=values_size*3),
+                axis.text.x=element_text(size=values_size*3),
+                axis.ticks.y = element_blank(),
+                plot.margin = unit(c(1,buffer,1,1), "lines")) +
+              {if(range_full) ggplot2::geom_text(aes(x=max(hh),hjust=-0.25, label=paste0(format(m,digits=values_digits)," [",format(ll,digits=values_digits)," - ",format(hh,digits=values_digits),"]")),
+                                                 size=values_size)} +
+              {if(range_full == FALSE) ggplot2::geom_text(aes(x=max(hh),hjust=-0.25, label=paste0(format(m,digits=values_digits)," [",format(l,digits=values_digits)," - ",format(h,digits=values_digits),"]")),
+                                                          size=values_size)} +
+              ggplot2::coord_cartesian(clip = 'off') +
+              {if(hyper & style == "intervals") geom_hline(yintercept = 1.5)} +
+              {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")} 
+
+    }
+
+    p
+
   })
 
   if(length(ret_list) == 1)
@@ -88,3 +138,8 @@ baggr_plot <- function(bg, hyper=FALSE,
   else
     return(ret_list)
 }
+
+
+
+
+

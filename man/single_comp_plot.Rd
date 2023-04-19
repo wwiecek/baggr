@@ -13,7 +13,7 @@ single_comp_plot(
   points = FALSE,
   add_values = FALSE,
   values_digits = 2,
-  values_size = 2.5
+  values_size = 4
 )
 }
 \arguments{
