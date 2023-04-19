@@ -361,7 +361,6 @@ plot.baggr_compare <- function(x,
                     order = FALSE,
                     transform = transform,
                     vline = vline)
-    print(models)
     grid_width <- length(plots)
     # if each plots element contains multiple plots (like with quantiles):
     if(class(plots[[1]])[1] == "list")
