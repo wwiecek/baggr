@@ -328,6 +328,13 @@ convert_inputs <- function(data,
   # 4. Include covariates ------
   # if(required_data != "individual") {
   if(length(covariates) > 0) {
+
+    for(cov in covariates){
+      if(NA %in% data[[cov]]){
+        stop("\n The covariates for these data include an NA value, which will prevent the model from running. \n Please remove the NA values from the covariates and try again.")
+      }
+    }
+    
     if(model == "quantiles")
       stop("Quantiles model cannot regress on covariates.")
 
