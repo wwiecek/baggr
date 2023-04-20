@@ -60,6 +60,16 @@ bg5_rr <- expect_warning(
                 iter = 150, chains = 2, refresh = 0,
                 show_messages = F))
 
+bg5_rr_l <- expect_warning(
+  baggr(df_summ[,c("group", "a", "n1", "c", "n2")], label = "logRR",
+                iter = 150, chains = 2, refresh = 0,
+                show_messages = F))
+
+test_that("`effect` and `label` can be used the same way",{
+  expect_is(bg5_rr_l, "baggr")
+  expect_equal(bg5_rr_l$label, "logRR")
+})
+
 test_that("We can run models without prepare_ma'ing data", {
   expect_is(bg5_or, "baggr")
   expect_is(bg5_rr, "baggr")

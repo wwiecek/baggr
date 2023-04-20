@@ -34,15 +34,21 @@ baggr(
 \item{data}{data frame with summary or individual level data to meta-analyse;
 see Details section for how to format your data}
 
+\item{model}{if \code{NULL}, detected automatically from input data
+otherwise choose from
+\code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
+(see Details).}
+
 \item{pooling}{Type of pooling;
 choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
-\item{label}{if \code{NULL}, detected automatically from input data
-otherwise choose from
-\code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
-(see Details).}
+\item{label}{Label for effect. Will default to \code{"mean"} in most cases,
+\code{"log OR"} in logistic model,
+quantiles in \code{quantiles} model etc.
+These labels are used in various print and plot outputs.
+If you plan on comparing models (see \link{baggr_compare}), use the same \code{label}.}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model (in case of aggregate data).
@@ -113,12 +119,6 @@ it will be used as labels for groups when displaying results}
 
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 number of iterations etc.}
-
-\item{effect}{Label for effect. Will default to \code{"mean"} in most cases,
-\code{"log OR"} in logistic model,
-quantiles in \code{quantiles} model etc.
-These labels are used in various print and plot outputs.
-If you plan on comparing models (see \link{baggr_compare}), use the same \code{effect} label.}
 }
 \value{
 \code{baggr} class structure: a list including Stan model fit

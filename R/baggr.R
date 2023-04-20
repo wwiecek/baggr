@@ -11,7 +11,7 @@
 #'
 #' @param data data frame with summary or individual level data to meta-analyse;
 #'             see Details section for how to format your data
-#' @param label if \code{NULL}, detected automatically from input data
+#' @param model if \code{NULL}, detected automatically from input data
 #'              otherwise choose from
 #'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
 #'              (see Details).
@@ -23,11 +23,11 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect Label for effect. Will default to `"mean"` in most cases,
+#' @param label Label for effect. Will default to `"mean"` in most cases,
 #'               `"log OR"` in logistic model,
 #'               quantiles in `quantiles` model etc.
 #'               These labels are used in various print and plot outputs.
-#'               If you plan on comparing models (see [baggr_compare]), use the same `effect` label.
+#'               If you plan on comparing models (see [baggr_compare]), use the same `label`.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
