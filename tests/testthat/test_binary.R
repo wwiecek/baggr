@@ -138,8 +138,11 @@ test_that("extra pooling stats work", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
-  expect_length(hypermean(bg5_p,message=FALSE), 5) 
-  expect_length(hypersd(bg5_p,message=FALSE), 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
+
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau,hypermean(bg5_p,message=FALSE)) 
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau,hypersd(bg5_p,message=FALSE))
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(150, 5 , 1)))

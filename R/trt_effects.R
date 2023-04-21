@@ -112,17 +112,11 @@ mutau_cor <- function(bg,
 
 #' Return the hypermean of the treatments effects
  #'
- #' @param bg        A [baggr] model.
- #' @param transform A transformation to apply to the result, should be an R function;
- #'                  (this is commonly used when calling `hypermean` from other
- #'                  plotting or printing functions)
- #' @param interval  The confidence inerval of the hypermean passed as any value between 0 and 1. 
- #' @param message   A logical agrument that determines whether the result is printed or not.  
- #' @return The hypermean of the `baggr` model with the interval specified by `interval`, with 
+ #' @describeIn treatment_effect The hypermean of the `baggr` model with the interval specified by `interval`, with 
  #'         a default interval of 95%, as calculated by [treatment_effect].
  #' @export
- hypermean <- function(bg,transform=NULL,interval = 0.95,message=TRUE) {
-   t <- treatment_effect(bg,summary=TRUE,transform=transform,interval=interval,message=FALSE)
+ hypermean <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRUE) {
+   t <- treatment_effect(bg,summary=summary,transform=transform,interval=interval,message=FALSE)
    if(message){
      cat(paste0("Hypermean of ",bg$effects," with ",interval*100,"% interval:\n"))
      print(t[[1]])
@@ -132,17 +126,11 @@ mutau_cor <- function(bg,
 
  #' Return the hyper standard deviation of the treatments effects
  #'
- #' @param bg        A [baggr] model.
- #' @param transform A transformation to apply to the result, should be an R function;
- #'                  (this is commonly used when calling `hypersd` from other
- #'                  plotting or printing functions)
- #' @param interval  The confidence inerval of the hyper-SD passed as any value between 0 and 1. 
- #' @param message   A logical agrument that determines whether the result is printed or not.  
- #' @return The hyper-SD of the `baggr` model with the interval specified by `interval`, with 
+ #' @describeIn treatment_effect The hyper-SD of the `baggr` model with the interval specified by `interval`, with 
  #'         a default interval of 95%, as calculated by [treatment_effect].
  #' @export
- hypersd <- function(bg,transform=NULL,interval = 0.95,message=TRUE) {
-   t <- treatment_effect(bg,summary=TRUE,transform=transform,interval=interval,message=FALSE)
+ hypersd <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRUE) {
+   t <- treatment_effect(bg,summary=summary,transform=transform,interval=interval,message=FALSE)
    if(message){
      cat(paste0("Hyper SD of ",bg$effects," with ",interval*100,"% interval:\n"))
      print(t[[2]])

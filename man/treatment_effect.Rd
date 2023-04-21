@@ -2,6 +2,8 @@
 % Please edit documentation in R/trt_effects.R
 \name{treatment_effect}
 \alias{treatment_effect}
+\alias{hypermean}
+\alias{hypersd}
 \title{Average treatment effect in a baggr model}
 \usage{
 treatment_effect(
@@ -11,6 +13,16 @@ treatment_effect(
   interval = 0.95,
   message = TRUE
 )
+
+hypermean(
+  bg,
+  transform = NULL,
+  interval = 0.95,
+  message = FALSE,
+  summary = TRUE
+)
+
+hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
@@ -34,4 +46,17 @@ both vectors are summarised as mean and lower/upper bounds according to
 }
 \description{
 Average treatment effect in a baggr model
+
+Return the hypermean of the treatments effects
+
+Return the hyper standard deviation of the treatments effects
 }
+\section{Functions}{
+\itemize{
+\item \code{hypermean()}: The hypermean of the \code{baggr} model with the interval specified by \code{interval}, with
+a default interval of 95\%, as calculated by \link{treatment_effect}.
+
+\item \code{hypersd()}: The hyper-SD of the \code{baggr} model with the interval specified by \code{interval}, with
+a default interval of 95\%, as calculated by \link{treatment_effect}.
+
+}}
