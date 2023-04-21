@@ -139,42 +139,47 @@ forest_plot <- function(bg,
 
 #' Draw a bubble plot using ggplot syntax 
 #'
+#' A bubble plot shows the inverse variance (1/SE^2) as a function of the mean treatment effect
+#' for given covariates. The size of the bubble corresponds to the magnitude of the inverse
+#' variance. 
+#'
 #' @param bg          A [baggr] object.
 #' @param covariates  Covariates for the [baggr] data. 
 #' @param regression  A logical value that sets an overlying linear regression and 
 #'                    confidence interval on or off.
 #' @param interval    The confidence interval used in the linear regression, 
 #'                    given as a value between 0 and 1.
-#' @return A bubble plot of 1/SE^2 for Tau as a function of the given covariates with 
-#'         linear regression and confidence interval.  
+#' @param add_label   A logical value that determines if group labels are added to the plot. 
+#' @return A bubble plot of the inverse variance of the mean treatment effect as a function  
+#'         of the given covariates.  
 #' @examples
 #' 
 #' covariates <- rnorm(8)
 #' bg <- baggr(schools)
 #' bubble_plot(bg,covariates)
 #'
+#' @details
+#' 
+#' The bubble plot shows the observed outcomes (e.g. mean or logOR) of individual
+#' studies plotted against quantitative covariates. The size of the points reflect
+#' the wieght the studies have in the meta analysis, measured by inverse variance. 
+#' A regression and 95% confidence interval shows the predicted mean treatment effect
+#' as a function of the covariate.
+#'
 #' @export
-bubble_plot <- function(bg, covariates, regression=TRUE, interval=0.95) {
+#' @import ggrepel
+bubble_plot <- function(bg, covariates, regression=TRUE, interval=0.95,add_label=TRUE) {
   data <- bg$data
   data$se <- 1/(data$se^2)
+  data$mean <- as.data.frame(group_effects(bg, summary = TRUE, interval = interval)[,,1])$mean
 
-  #if(!missing(estimate)){
-  #  fit_ribbon_data <- data.frame(x = seq(min(data[[covariates]]), 
-  #    max(data[[covariates]]), length = 100)) %>%
-  #    mutate(y = x*estimate[2], ymin = x*estimate[1], ymax = x*estimate[3])       
-  #}
-  if(regression){
-    ggplot(data, aes_string(x = covariates, y = "tau")) + 
-      geom_point(aes(size=data$se)) +
-      scale_size_continuous(name = "1/SE^2") + 
-      geom_smooth(method="lm",level=interval, col="black") +
-      xlab("Covariates") + ylab("Tau")
-  } else {
-    ggplot(data, aes_string(x = covariates, y = "tau")) + 
-      geom_point(aes(size=data$se)) +
-      scale_size_continuous(name = "1/SE^2") + 
-      xlab("Covariates") + ylab("Tau")
-  }
+  group <- NULL
   
-
+  ggplot2::ggplot(data, aes(x = covariates,y=mean)) + 
+  ggplot2::geom_point(aes(size=data$se)) +
+  ggplot2::scale_size_continuous(name = "1/SE^2") + 
+  ggplot2::xlab("Covariates") + ggplot2::ylab(bg$effects) +
+  {if(regression) ggplot2::geom_smooth(method="lm",level=interval, col="black")} +
+  {if(add_label) ggrepel::geom_text_repel(aes(x = covariates,y=mean,label=data$group),box.padding=1)}
+  
 }

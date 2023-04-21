@@ -175,6 +175,19 @@ test_that("Forest plots for Rubin model", {
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "should be one of")
 })
+
+test_that("Bubble plots for Rubin model",{
+  covar = c(rnorm(length(df_pooled)))
+  expect_is(bubble_plot(bg5_n,covar),"gg")
+  expect_is(bubble_plot(bg5_p,covar),"gg")
+  expect_is(bubble_plot(bg5_n,covar,regression=FALSE),"gg")
+  expect_is(bubble_plot(bg5_p,covar,regression=FALSE),"gg")
+  expect_is(bubble_plot(bg5_n,covar,interval=0.9),"gg")
+  expect_is(bubble_plot(bg5_p,covar,interval=0.9),"gg")
+  expect_is(bubble_plot(bg5_n,covar,add_label=FALSE),"gg")
+  expect_is(bubble_plot(bg5_p,covar,add_label=FALSE),"gg")
+})
+
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
   expect_error(baggr(data = df_pooled, test_data = cars), "is of type")

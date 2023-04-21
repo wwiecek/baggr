@@ -45,6 +45,7 @@ test_that("Basic operations on rubin_full model", {
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
   expect_is(forest_plot(bg_p), "gforge_forestplot")
+  expect_error(bubble_plot(bg_p,c(rnorm(length(schools_ipd)))))
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
   expect_is(bgc, "baggr_compare")
 

@@ -136,6 +136,9 @@ test_that("Plotting works", {
   expect_is(forest_plot(bg5_n), "gforge_forestplot")
   expect_is(forest_plot(bg5_p), "gforge_forestplot")
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
+  expect_error(bubble_plot(bg5_n,c(rnorm(length(df_mutau)))))
+  expect_error(bubble_plot(bg5_p,c(rnorm(length(df_mutau)))))
+  expect_error(bubble_plot(bg5_f,c(rnorm(length(df_mutau)))))  
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
 })

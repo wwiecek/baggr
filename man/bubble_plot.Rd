@@ -4,7 +4,13 @@
 \alias{bubble_plot}
 \title{Draw a bubble plot using ggplot syntax}
 \usage{
-bubble_plot(bg, covariates, regression = TRUE, interval = 0.95)
+bubble_plot(
+  bg,
+  covariates,
+  regression = TRUE,
+  interval = 0.95,
+  add_label = TRUE
+)
 }
 \arguments{
 \item{bg}{A \link{baggr} object.}
@@ -16,13 +22,24 @@ confidence interval on or off.}
 
 \item{interval}{The confidence interval used in the linear regression,
 given as a value between 0 and 1.}
+
+\item{add_label}{A logical value that determines if group labels are added to the plot.}
 }
 \value{
-A bubble plot of 1/SE^2 for Tau as a function of the given covariates with
-linear regression and confidence interval.
+A bubble plot of the inverse variance of the mean treatment effect as a function
+of the given covariates.
 }
 \description{
-Draw a bubble plot using ggplot syntax
+A bubble plot shows the inverse variance (1/SE^2) as a function of the mean treatment effect
+for given covariates. The size of the bubble corresponds to the magnitude of the inverse
+variance.
+}
+\details{
+The bubble plot shows the observed outcomes (e.g. mean or logOR) of individual
+studies plotted against quantitative covariates. The size of the points reflect
+the wieght the studies have in the meta analysis, measured by inverse variance.
+A regression and 95\% confidence interval shows the predicted mean treatment effect
+as a function of the covariate.
 }
 \examples{
 
