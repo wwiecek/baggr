@@ -1,8 +1,9 @@
-# baggr 0.7.6 (March 2022)
+# baggr 0.7.7 (mid-2023)
 
 * Various CRAN and rstan bugfixes. 
 * A few "quality of life"-type and presentation upgrades.
 * You can run meta-analyses with just one row of data, but must specify priors
+* Use `bubble` to create bubble plots for baggr objects which have covariates
 
 # baggr 0.7.4 (late 2022)
 
