@@ -12,7 +12,7 @@ data {
                         //0 if none, 1 if partial
   int joint_prior_mean;     //0 if no, 1 if yes
   int joint_prior_variance; //0 if no, 1 if yes
-  int<lower=0,upper=K> site[N];
+  array[N] int<lower=0,upper=K> site;
   vector<lower=0,upper=1>[N] treatment;
   int<lower=0> P;  //number of parameters -- CURRENTLY IT HAS TO BE 2, more will fail
 
@@ -46,8 +46,8 @@ data {
   int<lower=0> N_test;
   int<lower=0> K_test;
   matrix[N_test, Nc] X_test;
-  int<lower=0, upper=K> test_site[N_test];
-  int<lower=0, upper=1> test_treatment[N_test];
+  array[N_test] int<lower=0, upper=K> test_site;
+  array[N_test] int<lower=0, upper=1> test_treatment;
 
   // NORMAL specific:
   vector[N] y;
@@ -61,17 +61,17 @@ transformed data {
 
 parameters {
   // corr_matrix[P] Omega;        // prior correlation
-  cholesky_factor_corr[P] L_Omega[joint_prior_variance == 1 && pooling_type == 1];
-  vector<lower=0>[P] hypersd[pooling_type == 1];        // prior scale
-  vector[P] mu[pooling_type != 0];
-  matrix[P,K] eta[pooling_type != 2];
+  array[joint_prior_variance == 1 && pooling_type == 1] cholesky_factor_corr[P] L_Omega;
+  array[pooling_type == 1] vector<lower=0>[P] hypersd;        // prior scale
+  array[pooling_type != 0] vector[P] mu;
+  array[pooling_type != 2] matrix[P,K] eta;
   vector[Nc] beta;
   // NORMAL specific:
   vector<lower=0>[K] sigma_y_k;
 }
 transformed parameters {
-  matrix[P,K] theta_k[pooling_type != 2];
-  matrix[P,P] tau[pooling_type == 1];
+  array[pooling_type != 2] matrix[P,K] theta_k;
+  array[pooling_type == 1] matrix[P,P] tau;
   if(pooling_type == 0)
     theta_k[1] = eta[1];
   if(pooling_type == 1){
@@ -136,7 +136,7 @@ model {
 generated quantities {
   // to do this, we must first (outside of Stan) calculate SEs in each test group,
   // i.e. test_sigma_y_k
-  real logpd[K_test > 0];
+  array[K_test > 0] real logpd;
   vector[N_test] fe_test;
   if(K_test > 0){
     if(Nc == 0)

@@ -11,7 +11,7 @@ data {
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int pooling_baseline; //pooling for proportions in control arm;
                         //0 if none, 1 if partial, else no bsl (==0)
-  int<lower=0,upper=K> site[N];
+  array[N] int<lower=0,upper=K> site;
   vector<lower=0,upper=1>[N] treatment;
 
   //priors for baseline parameters
@@ -31,12 +31,12 @@ data {
   int<lower=0> N_test;
   int<lower=0> K_test;
   matrix[N_test, Nc] X_test;
-  int<lower=0, upper=K> test_site[N_test];
+  array[N_test] int<lower=0, upper=K> test_site;
   vector<lower=0, upper=1>[N_test] test_treatment;
 
   //LOGIT-specific:
-  int<lower=0,upper=1> y[N];
-  int<lower=0,upper=1> test_y[N_test];
+  array[N] int<lower=0,upper=1> y;
+  array[N_test] int<lower=0,upper=1> test_y;
 }
 
 transformed data {
@@ -46,10 +46,10 @@ transformed data {
 
 parameters {
   // SHARED ACROSS FULL MODELS:
-  real mu_baseline[pooling_baseline == 1];
-  real mu[pooling_type != 0];
-  real<lower=0> tau_baseline[pooling_baseline == 1];
-  real<lower=0> tau[pooling_type == 1];
+  array[pooling_baseline == 1] real mu_baseline;
+  array[pooling_type != 0] real mu;
+  array[pooling_baseline == 1] real<lower=0> tau_baseline;
+  array[pooling_type == 1] real<lower=0> tau;
   vector[K_pooled] eta;
   vector[K_bsl_pooled] eta_baseline;
   vector[Nc] beta;
@@ -110,7 +110,7 @@ model {
 }
 
 generated quantities {
-  real logpd[K_test > 0];
+  array[K_test > 0] real logpd;
   vector[pooling_type == 1? K_test: 0] theta_k_test;
   vector[N_test] fe_test;
   if(K_test > 0){
