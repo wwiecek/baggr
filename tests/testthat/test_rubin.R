@@ -150,9 +150,10 @@ test_that("Plotting works", {
   expect_is(plot(bg5_ppd), "gg")
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
+  expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
   # but we can crash it easily if
-  expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
+  expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 })
 
 
@@ -312,6 +313,10 @@ test_that("baggr_compare basic cases work with Rubin", {
 
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f)
   expect_is(bgcomp2, "baggr_compare")
+  p1 <- plot(bgcomp2)
+  p2 <- plot(bgcomp2, add_values = TRUE)
+  expect_is(p1, "gg")
+  expect_is(p2, "gg")
 })
 
 test_that("loocv", {

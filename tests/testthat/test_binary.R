@@ -162,7 +162,7 @@ test_that("Plotting and printing works", {
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   # but we can crash it easily if
-  expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
+  expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 
   capture_output(print(bg5_n))
   capture_output(print(bg5_p))

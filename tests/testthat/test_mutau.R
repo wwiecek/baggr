@@ -132,12 +132,13 @@ test_that("Calculation of effects works", {
 test_that("Plotting works", {
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
+  expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
   expect_is(forest_plot(bg5_n), "gforge_forestplot")
   expect_is(forest_plot(bg5_p), "gforge_forestplot")
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   # but we can crash it easily if
-  expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
+  expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 })
 
 test_that("Test data can be used in the mu tau model", {
