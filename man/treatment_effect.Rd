@@ -2,7 +2,9 @@
 % Please edit documentation in R/trt_effects.R
 \name{treatment_effect}
 \alias{treatment_effect}
-\title{Average treatment effect in a baggr model}
+\alias{hypermean}
+\alias{hypersd}
+\title{Average treatment effects in a baggr model}
 \usage{
 treatment_effect(
   bg,
@@ -11,6 +13,16 @@ treatment_effect(
   interval = 0.95,
   message = TRUE
 )
+
+hypermean(
+  bg,
+  transform = NULL,
+  interval = 0.95,
+  message = FALSE,
+  summary = TRUE
+)
+
+hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
 }
 \arguments{
 \item{bg}{a \link{baggr} model}
@@ -26,12 +38,20 @@ plotting or printing functions)}
 \item{message}{logical; use to disable messages prompted by using with
 no pooling models}
 }
-\value{
-A list with 2 vectors (corresponding to MCMC samples)
+\description{
+The most general \code{treatment_effect} displays
+both hypermean and hyperSD (as a list of length 2),
+whereas \code{hypermean} and \code{hypersd} can be used as shorthands.
+}
+\section{Functions}{
+\itemize{
+\item \code{treatment_effect()}: A list with 2 vectors (corresponding to MCMC samples)
 \code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
 both vectors are summarised as mean and lower/upper bounds according to
 \code{interval}
-}
-\description{
-Average treatment effect in a baggr model
-}
+
+\item \code{hypermean()}: The hypermean of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[1]]}
+
+\item \code{hypersd()}: The hyper-SD of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[2]]}
+
+}}

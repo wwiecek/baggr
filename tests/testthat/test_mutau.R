@@ -122,6 +122,9 @@ test_that("Calculation of effects works", {
   expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
   expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
 
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau,hypermean(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau,hypersd(bg5_p,message=FALSE))
+
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
