@@ -1,8 +1,12 @@
-# baggr 0.7.7 (Oct 2023)
+# baggr 0.7.8 (late 2023)
 
 * Various CRAN and rstan bugfixes. Now that rstan 2.26 is on CRAN, this package requires users to update to it.
 * A few "quality of life"-type and presentation upgrades.
 * You can run meta-analyses with just one row of data, but must specify priors
+
+Bugfixes:
+
+- Forest plots now display correctly even if you don't label studies/groups
 
 # baggr 0.7.4 (late 2022)
 
