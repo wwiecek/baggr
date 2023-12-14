@@ -106,7 +106,7 @@ baggr_compare <- function(...,
 
   if(all(unlist(lapply(l, class)) == "baggr_cv")) {
     message("LOO CV models used instead of baggr models.",
-    "Using full models.")
+            "Using full models.")
     l <- lapply(l, function(x) x$full_model)
   }
 
@@ -354,6 +354,8 @@ plot.baggr_compare <- function(x,
   effect_names <- x$effect_names
 
   if(grid_models) {
+    if(compare != "groups")
+      message("To grid_models we set compare = 'groups'.")
     if(length(effect_names) > 1)
       stop("Cannot plot models with more than 1 effect in a grid")
     plots <- lapply(models, baggr_plot,
@@ -452,17 +454,17 @@ plot.baggr_compare <- function(x,
       plots <- single_comp_plot(big_df, "", grid = T,
                                 ylab = paste0("Treatment effect (",
                                               as.character(100*prob), "% interval)"),
-                                add_values = add_values,
+                                add_values    = add_values,
                                 values_digits = values_digits,
-                                values_size = values_size)
+                                values_size   = values_size)
     } else {
       plots <- lapply(as.list(1:(length(effect_names))), function(i) {
         single_comp_plot(plot_dfs[[i]], effect_names[i], grid = F,
                          ylab = paste0("Treatment effect (",
                                        as.character(100*prob), "% interval)"),
-                         add_values = add_values,
+                         add_values    = add_values,
                          values_digits = values_digits,
-                         values_size = values_size)
+                         values_size   = values_size)
       })
     }
   }
@@ -498,19 +500,27 @@ plot.baggr_compare <- function(x,
 #' @export
 single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                              points = FALSE,
-                             add_values = FALSE, values_digits = 2, values_size = 4) {
+                             add_values = FALSE, values_digits = 1, values_size = 4) {
 
   group <- median <- lci <- uci <- model <- NULL
-  if(values_digits<3){
-    buffer = (values_size*8)/4
-  }
-  else{
-    buffer = (values_size*values_digits*3)/4
-  }
+
+  # Set the appropriate right margin
+  if(add_values) {
+    if(values_digits<3)
+      buffer = (values_size*8)/4
+    else
+      buffer = (values_size*values_digits*3)/4
+  } else
+    buffer <- 1 #unit margin, same as others
+
   # A bit of code to avoid printing pointless colour legend
   if(is.null(df[["model"]])) df$model <- ""
   if(length(unique(df[["model"]])) == 1)
     legend <- "none"
+
+
+  if(add_values)
+    value_text <- paste3_formatter(df$median, df$lci, df$uci, values_digits)
 
   pl <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
                                          ymin = lci, ymax = uci,
@@ -525,7 +535,7 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                         pch = 21) +
     { if(points != 0 && !is.null(df[[points]]) && is.numeric(df[[points]]))
       ggplot2::geom_point(aes(x = group, y = .data[[points]]), color = "black") } +
-    { if(!add_values) ggplot2::coord_flip() } +
+    # { if(!add_values) ggplot2::coord_flip() } +
     ggplot2::labs(x = "",
                   y = ylab) +
     {if(title != "") ggplot2::ggtitle(paste0("Effect of treatment on ", title)) } +
@@ -536,12 +546,13 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                    axis.title.x=element_text(size=values_size*3+2),
                    legend.text=element_text(size=values_size*3),
                    strip.text.x = ggplot2::element_blank()) +
-    {if(add_values) ggplot2::geom_text(aes(y=max(uci),hjust=-0.25, 
-                                           label=paste0(format(median,digits=values_digits)," [",format(lci,digits=values_digits)," - ",format(uci,digits=values_digits),"]")),
-                                           position = position_dodge2(width = 0.75),
-                                           size=values_size)} +
-    ggplot2::coord_flip(clip = "off") 
-    
+    {if(add_values) ggplot2::geom_text(aes(y=max(uci),
+                                           hjust=-0.25,
+                                           label=value_text),
+                                       position = position_dodge2(width = 0.75),
+                                       size=values_size)} +
+    ggplot2::coord_flip(clip = "off")
+
   pl
 }
 
