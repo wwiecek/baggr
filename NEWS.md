@@ -1,8 +1,11 @@
 # baggr 0.7.8 (late 2023)
 
-* Various CRAN and rstan bugfixes. Now that rstan 2.26 is on CRAN, this package requires users to update to it.
-* A few "quality of life"-type and presentation upgrades.
-* You can run meta-analyses with just one row of data, but must specify priors
+- Various CRAN and rstan bugfixes. Now that rstan 2.26 is on CRAN, this package requires users to update to it.
+- Plotting baggr and baggr_compare objects now has more powerful `add_values` functionality.
+- `baggr_plot` can be made to look more like forest plot with `baggr_plot(bg, style = "forest")`
+- You can customise colour of hypermean, e.g. `baggr_plot(bg, hyper = "red")`
+- You can run meta-analyses with just one row of data, but must specify priors
+- A few "quality of life"-type and presentation upgrades.
 
 Bugfixes:
 

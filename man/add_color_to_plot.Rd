@@ -9,13 +9,8 @@ add_color_to_plot(p, what)
 \arguments{
 \item{p}{A ggplot object to add colors to}
 
-\item{add_color_to}{A named vector, e.g. \code{c(Hypermean = "red", "Group A" = "green")}.}
+\item{what}{A named vector, e.g. \code{c(Hypermean = "red", "Group A" = "green")}.}
 }
 \description{
 Add colors to baggr plots
-}
-\examples{
-bg <- baggr(schools)
-bgplot <- plot(bg)
-add_color_to_plot(bgplot, c('School A' = 'red','School B' = 'blue'))
 }

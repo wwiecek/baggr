@@ -160,13 +160,9 @@ baggr_plot <- function(bg, hyper=FALSE,
 
 #' Add colors to baggr plots
 #'
-#' @param p             A ggplot object to add colors to
-#' @param add_color_to  A named vector, e.g. `c(Hypermean = "red", "Group A" = "green")`.
+#' @param p    A ggplot object to add colors to
+#' @param what A named vector, e.g. `c(Hypermean = "red", "Group A" = "green")`.
 #' @importFrom ggplotify as.ggplot
-#' @examples
-#' bg <- baggr(schools)
-#' bgplot <- plot(bg)
-#' add_color_to_plot(bgplot, c('School A' = 'red','School B' = 'blue'))
 
 add_color_to_plot <- function(p,what){
   target <- names(what)
