@@ -5,6 +5,8 @@
 #'
 #' @param bg object of class \code{baggr}
 #' @param hyper logical; show hypereffect as the last row of the plot?
+#'              alternatively you can pass colour for the hypermean row,
+#'              e.g. `hyper = "red"`
 #' @param style `"forest_plot"` imitates the visual style of forest plots
 #'              and also prints means and intervals next to each row;
 #'              `"intervals"` (default) or `"areas"` use package `bayesplot` styles
@@ -27,8 +29,9 @@
 #'
 #' @examples
 #' fit <- baggr(schools, pooling = "none")
-#' plot(fit)
+#' plot(fit, hyper = "red")
 #' plot(fit, style = "areas", order = FALSE)
+#' plot(fit, style = "forest_plot", order = FALSE)
 #'
 #' @export
 #' @import ggplot2
@@ -52,6 +55,12 @@ baggr_plot <- function(bg, hyper=FALSE,
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))
   }
+  if(is.character(hyper)){
+    hyper_colour <- hyper
+    hyper <- TRUE
+  } else
+    hyper_colour <- NULL
+
   m <- group_effects(bg, transform = transform)
   effect_labels <- bg$effects
 
@@ -132,8 +141,15 @@ baggr_plot <- function(bg, hyper=FALSE,
               {if(hyper) geom_hline(yintercept = 1.5)} +
               {if(vline) geom_vline(xintercept = vline_value, lty = "dashed")}
     }
+
+    if(!is.null(hyper_colour) && style != "areas") {
+      p <- add_color_to_plot(p, c("Hypermean" = hyper_colour))
+    }
+
     p
   })
+
+
 
   if(length(ret_list) == 1)
     return(ret_list[[1]])
@@ -142,6 +158,27 @@ baggr_plot <- function(bg, hyper=FALSE,
 }
 
 
+#' Add colors to baggr plots
+#'
+#' @param p             A ggplot object to add colors to
+#' @param add_color_to  A named vector, e.g. `c(Hypermean = "red", "Group A" = "green")`.
+#' @importFrom ggplotify as.ggplot
+#' @examples
+#' bg <- baggr(schools)
+#' bgplot <- plot(bg)
+#' add_color_to_plot(bgplot, c('School A' = 'red','School B' = 'blue'))
 
-
-
+add_color_to_plot <- function(p,what){
+  target <- names(what)
+  colors <- what
+  where <- sapply(target, function(x) which(p$data == x))
+  pb <- ggplot2::ggplot_build(p)
+  for(i in 1:length(what)){
+    pb$data[[2]][where[[i]],'colour'] <- colors[[i]]
+    pb$data[[3]][where[[i]],'colour'] <- colors[[i]]
+    pb$data[[4]][where[[i]],'colour'] <- colors[[i]]
+    pb$data <- pb$data
+  }
+  pb <- ggplot2::ggplot_gtable(pb)
+  return(ggplotify::as.ggplot(pb))
+}

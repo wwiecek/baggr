@@ -22,7 +22,9 @@ baggr_plot(
 \arguments{
 \item{bg}{object of class \code{baggr}}
 
-\item{hyper}{logical; show hypereffect as the last row of the plot?}
+\item{hyper}{logical; show hypereffect as the last row of the plot?
+alternatively you can pass colour for the hypermean row,
+e.g. \code{hyper = "red"}}
 
 \item{style}{\code{"forest_plot"} imitates the visual style of forest plots
 and also prints means and intervals next to each row;
@@ -60,8 +62,9 @@ possibly next to the hypereffect estimate.
 }
 \examples{
 fit <- baggr(schools, pooling = "none")
-plot(fit)
+plot(fit, hyper = "red")
 plot(fit, style = "areas", order = FALSE)
+plot(fit, style = "forest_plot", order = FALSE)
 
 }
 \seealso{
