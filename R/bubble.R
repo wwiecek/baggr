@@ -32,6 +32,15 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
     data$group <- group_names(bg)
   data$.group <- data$group
 
+  browser()
+
+  if(is.factor(data$.covariate)) {
+    if(length(levels(data$.covariate)) > 2){
+      message("For a covariate with more than one level, no plotting of effects")
+      prediction = FALSE
+    }
+  }
+
   ggplot2::ggplot(data, aes(x = .covariate,y=mean)) +
     ggplot2::geom_point(aes(size=dotsize)) +
     ggplot2::guides(size = "none") +
