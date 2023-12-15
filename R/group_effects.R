@@ -45,10 +45,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
   check_if_baggr(bg)
 
   # Grab group labels
-  if(is.null(attr(bg$inputs, "group_label")))
-    par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
-  else
-    par_names <- attr(bg$inputs, "group_label")
+  par_names <- group_names(bg)
 
   # Grab effect names
   effect_names <- bg$effects
@@ -131,4 +128,13 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
 #' @export
 random_effects <- function(...) {
   group_effects(random_only = TRUE, ...)
+}
+
+#' Grabbing labels for group/study names
+group_names <- function(bg) {
+  if(is.null(attr(bg$inputs, "group_label")))
+    par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
+  else
+    par_names <- attr(bg$inputs, "group_label")
+  par_names
 }

@@ -7,6 +7,7 @@
 - You can run meta-analyses with just one row of data, but must specify priors
 - A few "quality of life"-type and presentation upgrades.
 - You can print hyperparameters of a model using `hypermean()` and `hypersd()` (defaults to summaries)
+- For meta-regressions, you can plot a bubble 
 
 Bugfixes:
 

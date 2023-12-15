@@ -242,6 +242,14 @@ test_that("Model with covariates works fine", {
   expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
 
+  # Bubble plots
+  p1 <- bubble(bg_cov, "a")
+  p2 <- bubble(bg_cov_factor, "f")
+  p1
+  p2
+  expect_is(p1, "gg")
+  expect_is(p2, "gg")
+
   # covariates and test_data
   expect_error(baggr(sa, covariates = c("a", "b"), test_data = sb), "Cannot bind")
   expect_error(baggr(sb, model = "rubin", test_data=sa[1:2,], covariates = c("b")), "are not columns")

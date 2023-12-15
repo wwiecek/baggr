@@ -97,13 +97,9 @@ forest_plot <- function(bg,
 
   if(show == "covariates")
     fp_labels <- c("Covariate", bg$covariates, NA, "Treatment effect (hypermean)")
-  else {
-    if(is.null(attr(bg$inputs, "group_label")))
-      group_labels <- paste("Group", 1:n_ge_rows)
-    else #Sometimes people don't label their studies
-      group_labels <- as.character(attr(bg$inputs, "group_label"))
-    fp_labels <- c("Group mean treatment effect", group_labels, NA, "Hypermean treatment effect")
-  }
+  else
+    fp_labels <- c("Group mean treatment effect", group_names(bg), NA, "Hypermean treatment effect")
+
 
   fp_printed_vals <- c("Mean (SD)", ge_printed, NA, te_printed)
   fp_text <- matrix(c(fp_labels, fp_printed_vals), n_ge_rows + 3, 2, byrow = FALSE)

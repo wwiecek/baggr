@@ -1,4 +1,4 @@
-## cran-comments for baggr v0.7.6
+## cran-comments for baggr v0.7.7
 
 Test environments:
 
@@ -20,7 +20,7 @@ but that does not seem related to the package.
 
 On Windows I added the following compilation flags as instructed by Stan devs
 -Wa,-mbig-obj
-this is done to avoid compilation errors ("file too big") for users of new 
-Stan versions. However, it does seem to trigger a NOTE on Windows (on some 
-versions of R?)
+this was done to avoid compilation errors ("file too big") for users of new 
+Stan versions. However, it does seem to trigger a NOTE on Windows (in some 
+versions of R at least)
 
