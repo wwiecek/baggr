@@ -2,7 +2,8 @@
 #'
 #' @param bg a [baggr()] model using summary-level data, with covariates
 #' @param covariate one of the covariates present in the model
-#' @param fit logical: show mean model prediction? (slope is mean estimate of [fixed_effects()], intercept is [hypermean()])
+#' @param fit logical: show mean model prediction? (slope is mean estimate of [fixed_effects()], intercept is [hypermean()]);
+#' if you have more than two groups and the covariate is a factor, this will be ignored
 #' @param label logical: label study/group names?
 #'
 #' @return A simple bubble plot in `ggplot` style.
@@ -32,12 +33,10 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
     data$group <- group_names(bg)
   data$.group <- data$group
 
-  browser()
-
   if(is.factor(data$.covariate)) {
     if(length(levels(data$.covariate)) > 2){
       message("For a covariate with more than one level, no plotting of effects")
-      prediction = FALSE
+      fit <- FALSE
     }
   }
 
@@ -46,7 +45,7 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
     ggplot2::guides(size = "none") +
     ggplot2::xlab(covariate) + ggplot2::ylab(bg$effects) +
     # {if(pred) ggplot2::geom_smooth(method="lm", level = interval, col="black")} +
-    {if(prediction) ggplot2::geom_abline(slope = fe, intercept = te, lty = "dashed")} +
+    {if(fit) ggplot2::geom_abline(slope = fe, intercept = te, lty = "dashed")} +
     {if(label) ggrepel::geom_text_repel(aes(x = .covariate,
                                             y=mean,
                                             label=.group),

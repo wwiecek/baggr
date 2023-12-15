@@ -11,7 +11,8 @@ bubble(bg, covariate, fit = TRUE, label = TRUE)
 
 \item{covariate}{one of the covariates present in the model}
 
-\item{fit}{logical: show mean model prediction? (slope is mean estimate of \code{\link[=fixed_effects]{fixed_effects()}}, intercept is \code{\link[=hypermean]{hypermean()}})}
+\item{fit}{logical: show mean model prediction? (slope is mean estimate of \code{\link[=fixed_effects]{fixed_effects()}}, intercept is \code{\link[=hypermean]{hypermean()}});
+if you have more than two groups and the covariate is a factor, this will be ignored}
 
 \item{label}{logical: label study/group names?}
 }
