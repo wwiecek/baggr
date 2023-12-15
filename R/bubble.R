@@ -10,6 +10,7 @@
 #' Dot sizes are proportional to inverse of variance of each study (more precise studies are larger).
 #' @seealso [labbe()] for an exploratory plot of binary data in similar style
 #' @export
+#' @importFrom ggrepel geom_text_repel
 #'
 bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
   if(!inherits(bg, "baggr"))

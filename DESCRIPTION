@@ -24,6 +24,7 @@ Imports:
 	  forestplot,
     ggplot2,
     ggplotify,
+    ggrepel,
     gridExtra,
     utils,
     stats,
