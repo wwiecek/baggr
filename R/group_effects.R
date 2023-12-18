@@ -130,7 +130,7 @@ random_effects <- function(...) {
   group_effects(random_only = TRUE, ...)
 }
 
-#' Grabbing labels for group/study names
+# Grabbing labels for group/study names
 group_names <- function(bg) {
   if(is.null(attr(bg$inputs, "group_label")))
     par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))

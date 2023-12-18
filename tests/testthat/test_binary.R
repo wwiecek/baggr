@@ -221,6 +221,8 @@ sa$a <- rnorm(nrow(df_binary))
 sa$b <- rnorm(nrow(df_binary))
 sb <- sa
 sb$b <- NULL
+sa$bad <- sa$a
+sa$bad[2] <- NA
 
 
 test_that("Model with covariates works fine", {
@@ -233,6 +235,7 @@ test_that("Model with covariates works fine", {
   expect_length(bg5_p$covariates, 0)
   expect_length(bg_cov$covariates, 2)
   expect_null(bg_cov$mean_lpd)
+  expect_error(baggr(sa, covariates = c("bad")), "NA")
 
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov), "matrix")

@@ -518,7 +518,6 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
   if(length(unique(df[["model"]])) == 1)
     legend <- "none"
 
-
   if(add_values)
     value_text <- paste3_formatter(df$median, df$lci, df$uci, values_digits)
 

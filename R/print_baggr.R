@@ -53,11 +53,13 @@ print.baggr <- function(x,
     cat("No treatment effect estimated as pooling = 'none'.\n\n")
   } else {
     # Means:
-    if(exponent)
+    if(exponent){
       te <- treatment_effect(x, transform = base::exp)
-    else
+      de <- effect_draw(x, transform = base::exp)
+    }else{
       te <- treatment_effect(x)
-
+      de <- effect_draw(x)
+    }
     if(exponent)
       cat("Exponent of hypermean (exp(tau))")
     else
@@ -69,16 +71,27 @@ print.baggr <- function(x,
     if(length(x$effects) == 1){
       tau       <- format(mint(te[[1]], int=prob), digits = digits, trim = TRUE)
       sigma_tau <- format(mint(te[[2]], int=prob), digits = digits, trim = TRUE)
-
+      posteriorpred <- format(mint(de,  int=prob), digits = digits, trim = TRUE)
       cat(" = ", tau[2], intervaltxt, tau[1], "to", tau[3], "\n")
-      if(x$pooling == "partial" && !exponent){
-        cat("Hyper-SD (sigma_tau) =", sigma_tau[2], intervaltxt,
+      if(x$pooling == "partial"){
+        if(!exponent)
+          cat("Hyper-SD (sigma_tau) =", sigma_tau[2], intervaltxt,
             sigma_tau[1], "to", sigma_tau[3], "\n")
+        cat("Posterior predictive effect =", posteriorpred[2], intervaltxt,
+            posteriorpred[1], "to", posteriorpred[3], "\n")
         tot_pool <- format(heterogeneity(x)[,,1], digits = digits, trim = TRUE)
         if(!ppd)
           cat("Total pooling (1 - I^2) =", tot_pool[2], intervaltxt,
               tot_pool[1], "to", tot_pool[3], "\n")
       }
+
+      if(x$model == "mutau") {
+        mutauc <- format(mutau_cor(x, summary = TRUE, interval=prob),
+                         digits = digits, trim = TRUE)
+        cat("Correlation of treatment effect and baseline =", mutauc[2], intervaltxt,
+            mutauc[1], "to", mutauc[3], "\n")
+      }
+
     } else {
       tau       <- mint(te[[1]], int=prob)
       sigma_tau <- mint(te[[2]], int=prob)
@@ -98,10 +111,7 @@ print.baggr <- function(x,
         cat(crayon::bold("\nSD of treatement effects:"))
         print(sigma_tau, digits = digits)
 
-        if(x$model == "mutau") {
-          print("\nCorrelation of treatment effect and baseline:")
-          print(mutau_cor(x, summary = TRUE), digits = digits)
-        }
+
       }
     }
   }
@@ -120,6 +130,8 @@ print.baggr <- function(x,
     group_warning_flag <- TRUE
     group <- ifelse(x$n_groups > 20, FALSE, TRUE)
   }
+
+
 
   if(group){ #Print groups
     if(x$pooling != "full") {

@@ -204,6 +204,7 @@ sa$a <- rnorm(8)
 sa$b <- rnorm(8)
 sa$f <- as.factor(c(rep("Yes", 4), rep("No", 4)))
 sa$f2 <- as.factor(c(rep("Yes", 3), rep("No", 2), rep("Maybe", 3)))
+sa$bad <- c(rnorm(7), NA)
 
 sb <- sa
 sb$b <- NULL
@@ -232,6 +233,7 @@ test_that("Model with covariates works fine", {
   expect_equal(bg_cov$formatted_prior$prior_beta_val[3], 0)
   expect_error(baggr(sa, covariates = c("made_up_covariates")))
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
+  expect_error(baggr(sa, covariates = c("bad")), "NA")
   expect_length(bg5_p$covariates, 0)
   expect_length(bg_cov$covariates, 2)
   expect_null(bg_cov$mean_lpd)
