@@ -14,6 +14,7 @@ Back end and minor changes:
 - A few "quality of life"-type and presentation upgrades. 
 - You can print hyperparameters of a model using `hypermean()` and `hypersd()` (defaults to summaries)
 - Printing baggr models now also includes correlations and the posterior predictive distribution.
+- `loo_compare` now has better annotation
 
 Bugfixes:
 

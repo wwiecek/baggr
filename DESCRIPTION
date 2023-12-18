@@ -5,7 +5,8 @@ Version: 0.7.8
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
              person("Rachael", "Meager", role="aut"),
              person("Brice", "Green", role="ctb", comment = "loo_compare, many visuals"),
-             person("Trustees of", "Columbia University", role = "cph", comment = "tools/make_cc.R"))
+             person("Danny", "Toomey", role="ctb", comment = "many bug fixes"),
+             person("Trustees of", "Columbia University", role = "cph", comment = "package skeleton"))
 Maintainer: Witold Wiecek <witold.wiecek@gmail.com>
 Description: Running and comparing meta-analyses of data with hierarchical 
     Bayesian models in Stan, including convenience functions for formatting

@@ -19,7 +19,7 @@ test_that("Error messages for wrong inputs are in place", {
 
   # model or pooling type doesn't exist
   expect_error(baggr(df_pooled, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_pooled, pooling = "nune"), "should be one of")
+  expect_error(baggr(df_pooled, pooling = "nune"), "one of")
 
   # NA or NULL inputs
   df_na <- df_pooled; df_na$tau[1] <- NA
@@ -153,7 +153,7 @@ test_that("Plotting works", {
   expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
   # but we can crash it easily if
-  expect_error(plot(bg5_n, style = "rubbish"), "be one of")
+  expect_error(plot(bg5_n, style = "rubbish"), "one of")
 })
 
 
@@ -174,7 +174,7 @@ test_that("Forest plots for Rubin model", {
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   expect_error(forest_plot(cars), "baggr objects")
-  expect_error(forest_plot(bg5_p, show = "abc"), "should be one of")
+  expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
@@ -308,8 +308,7 @@ test_that("baggr_compare basic cases work with Rubin", {
   # if I pass list of rubbish
   expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # try to make nonexistant comparison:
-  expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"),
-               "should be one of")
+  expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"), "one of")
   # Run models from baggr_compare:
   bgcomp <- expect_warning(baggr_compare(schools,
                                          iter = 200, refresh = 0))

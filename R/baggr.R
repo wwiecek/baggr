@@ -23,11 +23,9 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect Label for effect. Will default to `"mean"` in most cases,
-#'               `"log OR"` in logistic model,
-#'               quantiles in `quantiles` model etc.
-#'               These labels are used in various print and plot outputs.
-#'               If you plan on comparing models (see [baggr_compare]), use the same `effect` label.
+#' @param effect_label How to label the effect(s). These labels are used in various print and plot outputs.
+#'                     Will default to `"mean"` in most models, `"log OR"` in logistic model etc.
+#'                     If you plan on comparing models (see [baggr_compare]), use the same labels.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
@@ -207,7 +205,7 @@
 baggr <- function(data,
                   model = NULL,
                   pooling = c("partial", "none", "full"),
-                  effect = NULL,
+                  effect_label = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
@@ -223,9 +221,6 @@ baggr <- function(data,
   # check that it is data.frame of at least 1 row
   # if(!inherits(data, "data.frame") || nrow(data) == 1)
     # stop("data argument must be a data.frame of >1 rows")
-  # check that it is data.frame
-  if(!inherits(data, "data.frame"))
-    stop("data argument must be a data.frame")
 
   # Match arguments
   pooling <- match.arg(pooling)
