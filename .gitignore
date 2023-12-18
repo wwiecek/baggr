@@ -16,3 +16,6 @@ src/RcppExports.cpp
 src/*.h
 /doc/
 /Meta/
+src/Makevars
+src/Makevars.win
+*.so
