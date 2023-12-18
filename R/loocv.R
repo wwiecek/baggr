@@ -191,24 +191,24 @@ is.baggr_cv <- function(x) {
 #' Given multiple [loocv] outputs, calculate differences in their expected log
 #' predictive density.
 #'
-#' @param ... A series of `baggr_cv` objects passed as arguments, with a minimum of 2 
-#'          arguments required for comparison. `baggr_cv` objects can be created via the 
-#'          [loocv] function. In instances where more than 2 arguments are passed, the 
+#' @param ... A series of `baggr_cv` objects passed as arguments, with a minimum of 2
+#'          arguments required for comparison. `baggr_cv` objects can be created via the
+#'          [loocv] function. In instances where more than 2 arguments are passed, the
 #'          first model will be compared sequentially to all other provided models.
 #'          Arguments can be passed with names (see example below).
 #' @return  Returns a series of comparisons in order of the arguments provided as Model 1 - Model N for
 #'          N loocv objects provided. Model 1 corresponds to the first object passed and
-#'          Model N corresponds to the Nth object passed. If arguments are passed with names,
-#'          the names will be used instead of Model 1 - Model N. 
+#'          Model N corresponds to the Nth object passed.
 #' @export loo_compare
-#' @seealso [loocv] for fitting LOO CV objects and explanation of the procedure
+#' @seealso [loocv] for fitting LOO CV objects and explanation of the procedure;
+#' loo package by Vehtari et al (available on CRAN) for a more comprehensive approach
 #' @examples
 #' \dontrun{
 #' # 2 models with more/less informative priors -- this will take a while to run
 #' cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
 #' cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
-#'               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
-#' loo_compare("cv_1"=cv_1,"cv_2"=cv_2)
+#'               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,2.5))
+#' loo_compare("Default prior"=cv_1,"Alternative prior"=cv_2)
 #' }
 #' @export
 loo_compare <- function(...) {
@@ -270,8 +270,7 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
   cat(crayon::bold(paste0("Comparison of cross-validation\n\n")))
   print(signif(mat, digits = digits))
   cat("\n")
-  cat("Interpretation: A positive ELPD indicates the reference group is a ",
-      "\nmore accurate model, with a larger value indicating a better fit.\n\n")
+  cat("Positive ELPD indicates the reference group is preferred.")
 }
 
 #' Print baggr cv objects nicely
