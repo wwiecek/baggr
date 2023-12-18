@@ -12,7 +12,7 @@ a comparison will be plotted and  names of objects
 will be used as a plot legend (see examples).}
 
 \item{transform}{a transformation to apply to the result, should be an R function;
-(this is commonly used when calling \code{group_effects} from other
+(this is commonly used when calling \link{group_effects} from other
 plotting or printing functions)}
 }
 \value{

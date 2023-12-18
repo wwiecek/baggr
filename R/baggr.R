@@ -164,14 +164,11 @@
 #' Other standard functions for working with `baggr` object are
 #'
 #' * [treatment_effect] for distribution of hyperparameters
-#' * [group_effects] for distributions of group-specific parameters
+#' * [group_effects] for distributions of group-specific parameters (alias: [study_effects], we use the two interchangeably)
 #' * [fixed_effects] for coefficients in (meta-)regression
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions
 #' * [baggr_compare] for comparing multiple `baggr` models
 #' * [loocv] for cross-validation
-#'
-#'
-#' @author Witold Wiecek, Rachael Meager
 #'
 #' @examples
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),

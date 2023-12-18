@@ -45,7 +45,7 @@ If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
 \item{effect_label}{How to label the effect(s). These labels are used in various print and plot outputs.
-Will default to \code{"mean"} in most cases, \code{"log OR"} in logistic model etc.
+Will default to \code{"mean"} in most models, \code{"log OR"} in logistic model etc.
 If you plan on comparing models (see \link{baggr_compare}), use the same labels.}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
@@ -213,7 +213,7 @@ plot method for \emph{baggr} objects which you can access via \link{baggr_plot} 
 Other standard functions for working with \code{baggr} object are
 \itemize{
 \item \link{treatment_effect} for distribution of hyperparameters
-\item \link{group_effects} for distributions of group-specific parameters
+\item \link{group_effects} for distributions of group-specific parameters (alias: \link{study_effects}, we use the two interchangeably)
 \item \link{fixed_effects} for coefficients in (meta-)regression
 \item \link{effect_draw} and \link{effect_plot} for posterior predictive distributions
 \item \link{baggr_compare} for comparing multiple \code{baggr} models
@@ -245,7 +245,4 @@ baggr(microcredit_summary_data, model = "mutau",
 }
 
 
-}
-\author{
-Witold Wiecek, Rachael Meager
 }
