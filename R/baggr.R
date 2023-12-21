@@ -223,6 +223,9 @@ baggr <- function(data,
   pooling <- match.arg(pooling)
   pooling_control <- match.arg(pooling_control)
 
+  # Rename effect_label to effect (old naming convention in code)
+  effect <- effect_label
+
   # For now we recommend that users format their data before passing to baggr()
   # data <- prepare_ma(data,
   #                    standardise = standardise, log = log,
