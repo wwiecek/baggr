@@ -118,6 +118,15 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
   return(m)
 }
 
+# Grabbing labels for group/study names
+group_names <- function(bg) {
+  if(is.null(attr(bg$inputs, "group_label")))
+    par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
+  else
+    par_names <- attr(bg$inputs, "group_label")
+  par_names
+}
+
 #' Extract only random effects from a baggr model
 #'
 #' This function is a shortcut for `group_effects(random_only=TRUE, ...)`
