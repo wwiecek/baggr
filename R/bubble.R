@@ -41,6 +41,8 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
     }
   }
 
+  dotsize <- .group <- .covariate <- NULL
+
   ggplot2::ggplot(data, aes(x = .covariate,y=mean)) +
     ggplot2::geom_point(aes(size=dotsize)) +
     ggplot2::guides(size = "none") +
