@@ -23,11 +23,9 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect Label for effect. Will default to `"mean"` in most cases,
-#'               `"log OR"` in logistic model,
-#'               quantiles in `quantiles` model etc.
-#'               These labels are used in various print and plot outputs.
-#'               If you plan on comparing models (see [baggr_compare]), use the same `effect` label.
+#' @param effect_label How to label the effect(s). These labels are used in various print and plot outputs.
+#'                     Will default to `"mean"` in most models, `"log OR"` in logistic model etc.
+#'                     If you plan on comparing models (see [baggr_compare]), use the same labels.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
@@ -166,14 +164,11 @@
 #' Other standard functions for working with `baggr` object are
 #'
 #' * [treatment_effect] for distribution of hyperparameters
-#' * [group_effects] for distributions of group-specific parameters
+#' * [group_effects] for distributions of group-specific parameters (alias: [study_effects], we use the two interchangeably)
 #' * [fixed_effects] for coefficients in (meta-)regression
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions
 #' * [baggr_compare] for comparing multiple `baggr` models
 #' * [loocv] for cross-validation
-#'
-#'
-#' @author Witold Wiecek, Rachael Meager
 #'
 #' @examples
 #' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
@@ -207,7 +202,7 @@
 baggr <- function(data,
                   model = NULL,
                   pooling = c("partial", "none", "full"),
-                  effect = NULL,
+                  effect_label = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
@@ -227,6 +222,9 @@ baggr <- function(data,
   # Match arguments
   pooling <- match.arg(pooling)
   pooling_control <- match.arg(pooling_control)
+
+  # Rename effect_label to effect (old naming convention in code)
+  effect <- effect_label
 
   # For now we recommend that users format their data before passing to baggr()
   # data <- prepare_ma(data,

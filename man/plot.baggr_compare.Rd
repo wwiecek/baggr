@@ -17,7 +17,7 @@
   vline = FALSE,
   add_values = FALSE,
   values_digits = 2,
-  values_size = 2,
+  values_size = 4,
   ...
 )
 }

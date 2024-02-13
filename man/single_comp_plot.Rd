@@ -12,8 +12,8 @@ single_comp_plot(
   grid = F,
   points = FALSE,
   add_values = FALSE,
-  values_digits = 2,
-  values_size = 2.5
+  values_digits = 1,
+  values_size = 4
 )
 }
 \arguments{

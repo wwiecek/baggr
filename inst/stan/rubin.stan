@@ -34,8 +34,8 @@ transformed data {
 }
 
 parameters {
-  real mu[pooling_type != 0];
-  real<lower=0> tau[pooling_type == 1];
+  array[pooling_type != 0] real mu;
+  array[pooling_type == 1] real<lower=0> tau;
   vector[K_pooled] eta;
   vector[Nc] beta;
 }
@@ -76,7 +76,7 @@ model {
 }
 
 generated quantities {
-  real logpd[K_test > 0];
+  array[K_test > 0] real logpd;
   vector[K_test] fe_k_test;
   if(K_test > 0){
     if(Nc == 0)

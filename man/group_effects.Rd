@@ -2,9 +2,19 @@
 % Please edit documentation in R/group_effects.R
 \name{group_effects}
 \alias{group_effects}
-\title{Extract baggr study effects}
+\alias{study_effects}
+\title{Extract baggr study/group effects}
 \usage{
 group_effects(
+  bg,
+  summary = FALSE,
+  transform = NULL,
+  interval = 0.95,
+  random_only = FALSE,
+  rename_int = FALSE
+)
+
+study_effects(
   bg,
   summary = FALSE,
   transform = NULL,
@@ -39,7 +49,7 @@ For arrays the three dimensions are: N samples, N groups and N effects
 }
 \description{
 Given a baggr object, returns the raw MCMC draws of the posterior for
-each group's effect or a summary of these draws.
+each group's effect or a summary of these draws. (We use "group" and "study" interchangeably.)
 If there are no covariates in the model, this effect is a single random variable.
 If there are covariates, the group effect is a sum of effect of covariates (fixed effects)
 and the study-specific random variable (random effects).

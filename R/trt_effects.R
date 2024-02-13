@@ -1,5 +1,9 @@
 
-#' Average treatment effect in a baggr model
+#' Average treatment effects in a baggr model
+#'
+#' The most general `treatment_effect` displays
+#' both hypermean and hyperSD (as a list of length 2),
+#' whereas `hypermean` and `hypersd` can be used as shorthands.
 #'
 #' @param bg a [baggr] model
 #' @param summary logical; if TRUE returns summary statistics as explained below.
@@ -9,7 +13,7 @@
 #'                  plotting or printing functions)
 #' @param message logical; use to disable messages prompted by using with
 #'                no pooling models
-#' @return A list with 2 vectors (corresponding to MCMC samples)
+#' @describeIn treatment_effect A list with 2 vectors (corresponding to MCMC samples)
 #'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
 #'         both vectors are summarised as mean and lower/upper bounds according to
 #'         `interval`
@@ -81,6 +85,29 @@ treatment_effect <- function(bg, summary = FALSE,
   return(list(tau = tau, sigma_tau = sigma_tau))
 }
 
+
+
+#' @describeIn treatment_effect The hypermean of a `baggr` model, shorthand for `treatment_effect(x, s=T)[[1]]`
+#' @export
+hypermean <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRUE) {
+  t <- treatment_effect(bg,summary=summary,transform=transform,interval=interval,message=FALSE)
+  if(message){
+    cat(paste0("Hypermean of ",bg$effects," with ",interval*100,"% interval:\n"))
+    print(t[[1]])
+  } else
+    t[[1]]
+}
+
+#' @describeIn treatment_effect The hyper-SD of a `baggr` model, shorthand for `treatment_effect(x, s=T)[[2]]`
+#' @export
+hypersd <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRUE) {
+  t <- treatment_effect(bg,summary=summary,transform=transform,interval=interval,message=FALSE)
+  if(message){
+    cat(paste0("Hyper SD of ",bg$effects," with ",interval*100,"% interval:\n"))
+    print(t[[2]])
+  } else
+    t[[2]]
+}
 
 
 #' Correlation between mu and tau in a baggr model

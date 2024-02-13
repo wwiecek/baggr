@@ -5,8 +5,8 @@ functions {
 data {
   int<lower=0> K; // number of sites
   int<lower=2> P; // number of parameters (1 or 2)
-  real theta_hat_k[P,K]; // estimated treatment effects
-  real<lower=0> se_theta_k[P,K]; // s.e. of effect estimates
+  array[P,K] real theta_hat_k; // estimated treatment effects
+  array[P,K] real<lower=0> se_theta_k; // s.e. of effect estimates
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int<lower=0, upper=1> cumsum; //if 1, tau = control + trt effect,
                                 //if 0, tau (TE) does not get added to mu ("control")
@@ -22,8 +22,8 @@ data {
 
   //cross-validation variables:
   int<lower=0> K_test; // number of sites
-  real test_theta_hat_k[P,K_test]; // estimated treatment effects
-  real<lower=0> test_se_theta_k[P,K_test]; // s.e. of effect estimates
+  array[P,K_test] real test_theta_hat_k; // estimated treatment effects
+  array[P,K_test] real<lower=0> test_se_theta_k; // s.e. of effect estimates
 
 }
 
@@ -32,15 +32,15 @@ transformed data {
 }
 
 parameters {
-  vector[P] mu[pooling_type != 0];
-  cholesky_factor_corr[P] L_Omega[pooling_type == 1];
-  vector<lower=0>[P] hypersd[pooling_type == 1];    //  scale
-  matrix[P,K] eta[pooling_type != 2];
+  array[pooling_type != 0] vector[P] mu;
+  array[pooling_type == 1] cholesky_factor_corr[P] L_Omega;
+  array[pooling_type == 1] vector<lower=0>[P] hypersd;    //  scale
+  array[pooling_type != 2] matrix[P,K] eta;
 }
 
 transformed parameters {
-  matrix[P,K] theta_k[pooling_type != 2];
-  matrix[P,P] tau[pooling_type == 1];
+  array[pooling_type != 2] matrix[P,K] theta_k;
+  array[pooling_type == 1] matrix[P,P] tau;
 
   if(pooling_type == 0)
     theta_k[1] = eta[1];
@@ -97,7 +97,7 @@ model {
 }
 
 generated quantities {
-  real logpd[K_test > 0];
+  array[K_test > 0] real logpd;
   if(K_test > 0) {
     logpd[1] = 0;
     for(k in 1:K_test){

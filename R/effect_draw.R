@@ -166,7 +166,7 @@ effect_draw <- function(object,
 #'            a comparison will be plotted and  names of objects
 #'            will be used as a plot legend (see examples).
 #' @param transform a transformation to apply to the result, should be an R function;
-#'                  (this is commonly used when calling `group_effects` from other
+#'                  (this is commonly used when calling [group_effects] from other
 #'                  plotting or printing functions)
 #' @return A `ggplot` object.
 #' @import bayesplot
