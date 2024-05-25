@@ -18,10 +18,8 @@ plotting or printing functions)}
 \item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
 }
 \value{
-A list with 2 vectors (corresponding to MCMC samples)
-\code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
-both vectors are summarised as mean and lower/upper bounds according to
-\code{interval}
+A matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
+Number of rows depends on iterations in the MCMC (i.e. \code{x} in baggr(..., iter = x`)
 }
 \description{
 Effects of covariates on outcome in baggr models
@@ -30,4 +28,5 @@ Effects of covariates on outcome in baggr models
 \link{treatment_effect} for overall treatment effect across groups,
 \link{group_effects} for effects within each group,
 \link{effect_draw} and \link{effect_plot} for predicted treatment effect in new group
+(which you can condition on fixed effects using new data argument)
 }
