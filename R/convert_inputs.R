@@ -72,9 +72,11 @@ convert_inputs <- function(data,
     available_data <- "individual" #in future can call it 'inferred ind.'
 
   if(grepl("individual", available_data)){
-    check_columns(data, outcome, group, treatment)
-    if(!is.null(test_data))
-      check_columns(data, outcome, group, treatment)
+    check_columns_ipd(data, outcome, group, treatment)
+    if(!is.null(test_data)){
+      # For test data it's OK if we only have treatment == 1 rows (essential for LOO CV)
+      check_columns_ipd(test_data, outcome, group, treatment, trt_only = TRUE)
+    }
   }
   if(is.null(model)) {
     # model <- names(model_data_types)[which(model_data_types == available_data)[1]]

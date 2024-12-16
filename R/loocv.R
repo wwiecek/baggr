@@ -122,7 +122,9 @@ loocv <- function(data, return_models = FALSE, ...) {
       args$test_data <- data[data[[group_col]] == group_names[i], ]
     } else if(args[["model"]] %in% c("rubin_full", "logit")) {
       trt_column <- ifelse(is.null(args[["treatment"]]), "treatment", args[["treatment"]])
+      # for these models we have to use control group in leave out study to calculate baseline
       args$data      <- data[data[[group_col]] != group_names[i] | data[[trt_column]] == 0, ]
+      # ...and then use treatment arm of the left out study
       args$test_data <- data[data[[group_col]] == group_names[i] & data[[trt_column]] == 1, ]
     } else {
       args$data      <- data[-i,]

@@ -13,7 +13,8 @@ is_binary <- function(v) {
     return(FALSE)
 }
 
-check_columns <- function(data, outcome, group, treatment, stop.for.na = TRUE)  {
+check_columns_ipd <- function(data, outcome, group, treatment,
+                              stop.for.na = TRUE, trt_only = FALSE)  {
 
   if(!(is.character(outcome) && is.character(group) && is.character(treatment)))
     stop('Arguments "outcome", "group", "treatment" must be of type "character"')
@@ -45,9 +46,9 @@ check_columns <- function(data, outcome, group, treatment, stop.for.na = TRUE)  
   # Treatment has to be dichotomous
   if(!any((data[[treatment]] == 0) | (data[[treatment]] == 1)))
     stop("Treatment column has to have values 0 or 1")
-  if(length(unique(data[[treatment]])) < 2)
+  if(!trt_only && (length(unique(data[[treatment]])) < 2)) {
     stop("Treatment column has to have both 0's and 1's for baggr to work")
-
+  }
 }
 
 check_columns_binary <- function(data, stop=TRUE) {

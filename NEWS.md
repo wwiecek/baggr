@@ -1,3 +1,10 @@
+# baggr 0.7.8 (late 2024)
+
+Bugs:
+
+- Better checks for wrong `test_data` in `baggr()` and `loocv()`
+
+
 # baggr 0.7.8 (late 2023)
 
 

@@ -98,7 +98,7 @@ prepare_ma <- function(data, #standardise = NULL,
     }else
       stop("Data must be individual-level (if summarising) or binary (if converting), see ?prepare_ma")
   }
-  check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
+  check_columns_ipd(data, outcome, group, treatment, stop.for.na = FALSE)
 
 
   # Input checks and prep
@@ -112,7 +112,7 @@ prepare_ma <- function(data, #standardise = NULL,
     if(summarise)
       warning("NA values present in data - they may be dropped when summarising")
     else
-      check_columns(data, outcome, group, treatment, stop.for.na = TRUE)
+      check_columns_ipd(data, outcome, group, treatment, stop.for.na = TRUE)
   }
 
   if(effect %in% c("logOR", "logRR", "RD")) {
