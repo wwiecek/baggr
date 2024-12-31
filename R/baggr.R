@@ -346,7 +346,7 @@ baggr <- function(data,
                     'beta', 'control', 'control_sd'"))
   }
 
-  # If extracting prior from another model, we need to do a swapsie switcheroo:
+  # If extracting prior from another model, we need to do this switcheroo:
   stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
@@ -370,7 +370,21 @@ baggr <- function(data,
   stan_args$data <- stan_data
 
 
+  # ENTIRELY TEMPORARY CHANGE TO HOW THE FULL RUBIN/LOGIT MODEL OPERATES WITH P==1
+  if(model %in% c("rubin_full", "logit")) {
+    # browser()
+    # stan_args$data$P <- 1
+    # stan_args$data$treatment <- array(stan_args$data$treatment, c(stan_args$data$N, 1))
+    # stan_args$data$test_treatment <- array(stan_args$data$test_treatment, c(stan_args$data$test_N, 1))
 
+    # wip:
+    stan_args$data$test_treatment      <- array(stan_args$data$test_treatment, c(stan_args$data$N_test, attr(stan_data, "n_re")))
+
+    # stan_args$data$prior_hypermean_fam <- array(stan_args$data$prior_hypermean_fam, 1)
+    # stan_args$data$prior_hypersd_fam   <- array(stan_args$data$prior_hypersd_fam, 1)
+    # stan_args$data$prior_hypermean_val <- list(stan_args$data$prior_hypermean_val)
+    # stan_args$data$prior_hypersd_val   <- list(stan_args$data$prior_hypersd_val)
+  }
   # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
 
@@ -436,28 +450,39 @@ remove_data_for_prior_pred <- function(data) {
   scalars_to0 <- c("K", "N", "Nc",
                    # specific to sslab (generalise this)
                    "N_neg", "N_pos")
-  vectors_to_remove <- c("theta_hat_k", "se_theta_k",
-                         "y", "treatment", "site",
+  objects_to_remove <- c("theta_hat_k", "se_theta_k",
+                         "y", "site",
                          # specific to sslab
                          "treatment_neg", "treatment_pos", "cat",
-                         "site_neg", "site_pos", "y_neg", "y_pos")
-  matrices_to_remove <- c("X")
+                         "site_neg", "site_pos", "y_neg", "y_pos",
+                         "X")
+
   # Specific to quantiles:
   matrices_to_rescale <- c("y_0", "y_1")
   arrays_to_rescale <- c("Sigma_y_k_0", "Sigma_y_k_1")
   matrices_remove_rows <- c("x")
 
+  # Treatment can be matrix or vector, so:
+  if(is.vector(data[["treatment"]]))
+    objects_to_remove <- c(objects_to_remove, "treatment")
+  if(is.matrix(data[["treatment"]]))
+    matrices_remove_rows <- c(matrices_remove_rows, "treatment")
+
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
 
-  for(nm in vectors_to_remove)
-    if(!is.null(data[[nm]]))
-      data[[nm]] <- array(0, dim = c(0))
+  for(nm in objects_to_remove){
+    if(!is.null(data[[nm]])){
+      # Make sure we're replacing it with the right data type
+      cdim <- ifelse(is.null(dim(data[[nm]])), 1, length(dim(data[[nm]])))
+      data[[nm]] <- array(0, dim = rep(0, cdim))
+    }
+  }
 
-  for(nm in matrices_to_remove)
-    if(!is.null(data[[nm]]))
-      data[[nm]] <- array(0, dim = c(0,0))
+  # for(nm in matrices_to_remove)
+  #   if(!is.null(data[[nm]]))
+  #     data[[nm]] <- array(0, dim = c(0,0))
 
   for(nm in matrices_remove_rows)
     if(!is.null(data[[nm]]))

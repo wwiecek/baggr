@@ -1,4 +1,4 @@
-#' @title Convert from individual to summary data in meta-analyses
+#' @title Convert individual- to summary-level data in meta-analyses
 #'
 #' @description Allows for one-way conversion from full to summary data
 #'              or for calculation of effects for binary data.
@@ -28,7 +28,8 @@
 #'                  converted (e.g. logged) data with columns renamed
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
-#' @param treatment name of column with treatment variable
+#' @param treatment name of column with treatment variable; can be binary or
+#'                  a factor (if using multiple treatment columns)
 #' @param baseline name of column with baseline variable
 #' @param pooling Internal use only, please ignore
 #'
@@ -98,8 +99,9 @@ prepare_ma <- function(data, #standardise = NULL,
     }else
       stop("Data must be individual-level (if summarising) or binary (if converting), see ?prepare_ma")
   }
-  check_columns_ipd(data, outcome, group, treatment, stop.for.na = FALSE)
 
+  check_columns_ipd(data, outcome, group, treatment,
+                    trt_binary = FALSE, stop.for.na = FALSE)
 
   # Input checks and prep
   data <- data[,c(treatment, group, outcome, baseline)]
@@ -116,7 +118,7 @@ prepare_ma <- function(data, #standardise = NULL,
   }
 
   if(effect %in% c("logOR", "logRR", "RD")) {
-    if(!is_binary(data$outcome))
+    if(!is.binary(data$outcome))
       stop("Outcome column is not binary (only 0 and 1 values allowed).")
   }
 
@@ -191,27 +193,10 @@ prepare_ma <- function(data, #standardise = NULL,
   if(summarise){
     bdt_sort <- unique(data$group) #remember order in which names appear in data
     if(effect == "mean") {
-      magg   <- stats::aggregate(outcome ~ treatment + group,
-                                 mean, data = data)
-      seagg  <- stats::aggregate(outcome ~ treatment + group,
-                                 function(x) sd(x)/sqrt(length(x)), data = data)
-      mwide  <- stats::reshape(data = magg, timevar = "treatment",
-                               idvar = "group", direction = "wide")
-      sewide <- stats::reshape(data = seagg, timevar = "treatment",
-                               idvar = "group", direction = "wide")
-      nagg  <- stats::aggregate(outcome ~ treatment + group, length, data = data)
-      nwide  <- stats::reshape(data = nagg, timevar = "treatment",
-                               idvar = "group", direction = "wide")
-
-      out <- data.frame(group = mwide$group,
-                        mu = mwide$outcome.0,
-                        tau = mwide$outcome.1 - mwide$outcome.0,
-                        se.mu = sewide$outcome.0,
-                        se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
-                        n.mu = nwide$outcome.0,
-                        n.tau = nwide$outcome.1)
+      out <- compute_effects_from_ipd(data)
+      if(length(unique(out$treatment)) == 1)
+        out$treatment <- NULL
       out <- out[order(factor(out$group, levels = bdt_sort)),]
-      rownames(out) <- NULL
     }
 
     # Prepare event counts for binary data models
@@ -244,6 +229,53 @@ prepare_ma <- function(data, #standardise = NULL,
 
   out
 }
+
+# prepare_ma() helper for calculating effect sizes in continuous data
+compute_effects_from_ipd <- function(data) {
+  # I will be looping over levels of treatment, in case it is not binary
+  if (!is.factor(data$treatment))
+    data$treatment <- factor(data$treatment)
+  ref_level <- levels(data$treatment)[1]
+  results <- list()
+
+  for (treat_level in levels(data$treatment)[-1]) {
+    subset_data <- data[data$treatment %in% c(ref_level, treat_level), ]
+    subset_data$temp_treat <- as.numeric(subset_data$treatment == treat_level)
+
+    # Old baggr code for creating summaries for binary treatments
+    magg <- stats::aggregate(outcome ~ temp_treat + group,
+                             mean, data = subset_data)
+    seagg <- stats::aggregate(outcome ~ temp_treat + group,
+                              function(x) sd(x)/sqrt(length(x)),
+                              data = subset_data)
+    mwide <- stats::reshape(data = magg, timevar = "temp_treat",
+                            idvar = "group", direction = "wide")
+    sewide <- stats::reshape(data = seagg, timevar = "temp_treat",
+                             idvar = "group", direction = "wide")
+    nagg <- stats::aggregate(outcome ~ temp_treat + group,
+                             length, data = subset_data)
+    nwide <- stats::reshape(data = nagg, timevar = "temp_treat",
+                            idvar = "group", direction = "wide")
+
+    # output dataframe for this treatment level
+    out <- data.frame(
+      group = mwide$group,
+      treatment = treat_level,
+      mu = mwide$outcome.0,
+      tau = mwide$outcome.1 - mwide$outcome.0,
+      se.mu = sewide$outcome.0,
+      se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
+      n.mu = nwide$outcome.0,
+      n.tau = nwide$outcome.1
+    )
+    results[[treat_level]] <- out
+  }
+
+  final_out <- do.call(rbind, results)
+  rownames(final_out) <- NULL
+  return(final_out)
+}
+
 
 # see prepare_ma()
 calc_or_rr <- function(out, effect) {

@@ -75,7 +75,8 @@ convert_inputs <- function(data,
     check_columns_ipd(data, outcome, group, treatment)
     if(!is.null(test_data)){
       # For test data it's OK if we only have treatment == 1 rows (essential for LOO CV)
-      check_columns_ipd(test_data, outcome, group, treatment, trt_only = TRUE)
+      # (see below: Baselines for all these groups should be included in data argument.)
+      check_columns_ipd(test_data, outcome, group, treatment, trt_binary = TRUE)
     }
   }
   if(is.null(model)) {
@@ -129,7 +130,7 @@ convert_inputs <- function(data,
   #for now this means no automatic conversion of individual->pooled
 
 
-  # Step 3: conversions of data -----
+  # Step 3: conversions of data into Stan inputs -----
 
   # 3.1. individual level data
   if(grepl("individual", required_data)) {
@@ -153,7 +154,9 @@ convert_inputs <- function(data,
     }
 
     if(model %in% c("rubin_full", "mutau_full", "logit")){
+
       out <- list(
+        # !preserve this ordering for unit tests!
         K = max(group_numeric),
         N = nrow(data),
         P = 2, #will be dynamic
@@ -161,8 +164,15 @@ convert_inputs <- function(data,
         treatment = data[[treatment]],
         site = group_numeric
       )
-      # }
-      # if(model == "logit") {
+      # Developing this in stages: rubin, then logit, then mutau
+      if(model %in% c("logit", "rubin_full")){
+        # Use typical contrast coding, but drop the matrix
+        trt_matrix <- model.matrix(as.formula(paste0("~ ", treatment)), data = data)[,-1, drop = FALSE]
+        colnames(trt_matrix) <- gsub("^treatment", "", colnames(trt_matrix))
+        out$treatment <- trt_matrix
+        out$P <- ncol(out$treatment)
+      }
+
       if(is.null(test_data)) {
         out$N_test <- 0
         out$K_test <- 0
@@ -392,14 +402,23 @@ convert_inputs <- function(data,
       out[[nm]] <- array(out[[nm]], dim = 1)
   }
 
-  return(structure(
+  out_structure <- structure(
     out,
     data_type = available_data,
     data = data,
+    columns = c("treatment" = treatment,
+               "group" = group,
+               "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
     group_label = group_label,
     n_groups = out[["K"]],
+    n_re = out[["P"]],
+    treatment_levels =
+      if(model %in% c("rubin_full", "logit") && out[["P"]] > 1)
+        colnames(out$treatment) else 1,
     model = model,
-    effect = effect))
+    effect = effect)
+
+  return(out_structure)
 }
