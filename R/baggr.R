@@ -300,6 +300,10 @@ baggr <- function(data,
   if(is.null(effect))
     effect <- "mean"
 
+  # For models with multiple REs (treatment is factor), we now expand it:
+  if((model %in% c("logit", "rubin_full")) && (attr(stan_data, "n_re") > 1))
+    effect <- paste(effect, attr(stan_data, "treatment_levels"))
+
   # Number of TE parameters
   # (in the future this can be built into the models):
   n_parameters <- length(effect)

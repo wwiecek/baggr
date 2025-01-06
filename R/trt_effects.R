@@ -47,7 +47,7 @@ treatment_effect <- function(bg, summary = FALSE,
         sigma_tau <- c(sigma_tau)
     }
     if(bg$pooling == "full")
-      sigma_tau <- 0 #same dim as tau, but by convention set to 0
+      sigma_tau <- rep(0, length(bg$effects)) #same dim as tau, but by convention set to 0
   } else if(bg$model == "quantiles") {
     # In this case we have N columns = N quantiles
     tau <- as.matrix(bg$fit, "beta_1")
@@ -68,10 +68,10 @@ treatment_effect <- function(bg, summary = FALSE,
   } else {
     stop("Can't calculate treatment effect for this model.")
   }
-
-  if(length(bg$effects) > 1)
-    colnames(tau) <- colnames(sigma_tau) <- bg$effects
-
+  if(length(bg$effects) > 1){
+    colnames(tau) <- bg$effects
+    if(bg$pooling != "full") colnames(sigma_tau) <- bg$effects
+  }
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))
     sigma_tau <- NA # by convention we set it to NA so that people don't transform

@@ -127,6 +127,7 @@ pooling <- function(bg,
                     metric = c("pooling", "isq", "hsq", "weights"),
                     type = c("groups", "total"),
                     summary = TRUE) {
+
   type <- match.arg(type, c("groups", "total"))
   metric <- match.arg(metric, c("pooling", "isq", "hsq", "weights"))
 
@@ -137,46 +138,7 @@ pooling <- function(bg,
   if(bg$pooling == "full")
     return(array(1, c(3, bg$n_groups, bg$n_parameters)))
 
-  # we'll replace by switch() in the future
-  # if(bg$model %in% c("rubin", "mutau", "logit", "rubin_full")) {
-  if(bg$n_parameters == 1) {
-    # 1-dimensional vector of S values (S=N samples)
-    sigma_tau <- treatment_effect(bg)$sigma_tau
-
-    # Grab the appropriate SE (k values)
-    sigma_k <- switch(bg$model,
-                      "mutau"       = bg$data$se.tau,
-                      "rubin"       = bg$data$se,
-                      # May need to apply rare event correction for
-                      # the pooling models to work correctly
-                      "logit"       = apply_cont_corr(bg$summary_data, 0.25, "single",
-                                                      add_or = TRUE, pooling = TRUE)$se,
-                      # These are SDs after pooling, don't use this (here for tests)
-                      # "rubin_full"  = group_effects(bg, summary = TRUE)[, "sd", 1],
-                      "rubin_full"  = bg$summary_data$se.tau,
-                      "mutau_full"  = bg$summary_data$se.tau
-                      )
-
-
-    if(type == "groups")
-      ret <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
-    if(type == "total"){
-      # nu <- mean(sigma_k^2)
-      w <- 1/(sigma_k^2)
-      nu <- (length(sigma_k)-1)*sum(w) / (sum(w)^2 - sum(w^2))
-      ret <- replicate(1, nu / (nu + sigma_tau^2))
-    }
-    if(metric == "weights" && type == "groups"){
-      precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma_tau^2))
-      ret <- t(apply(precisions, 1, function(x) x/sum(x)))
-    }
-    if(metric == "weights" && type == "total")
-      stop("Weights can be calculated only for type = 'groups'")
-
-    ret <- replicate(1, ret) #third dim is always N parameters, by convention,
-                             #so we set it to 1 here
-
-  } else if(bg$model == "quantiles") {
+  if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension
     # which is number of quantiles; so if sigma_tau above is sigma of trt effect
     # here it is N effects on N quantiles etc.
@@ -184,7 +146,7 @@ pooling <- function(bg,
     # Nq-dimensional sigma_tau
     sigma_tau <- treatment_effect(bg)$sigma_tau
     # for(i in 1:dim(sigma_tau)[2])
-      # sigma_tau[,i,1] <- sigma_tau[,i,i]
+    # sigma_tau[,i,1] <- sigma_tau[,i,i]
     # sigma_tau <- sigma_tau[,,1] #rows are samples, columns are quantiles
 
     # now SE's of study treatment effects: this is our input data!
@@ -224,19 +186,53 @@ pooling <- function(bg,
     ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
 
   } else {
-    stop("Cannot calculate pooling metrics.")
+    ret <- lapply(1:(bg$n_parameters), function(i) {
+
+      csd <- bg$summary_data #current summary data
+      if(bg$n_parameters > 1){
+        csd <- csd[csd$treatment == attr(bg$inputs, "treatment_levels")[i],]
+        sigma_tau <- treatment_effect(bg)$sigma_tau[,i]
+      } else
+        sigma_tau <- treatment_effect(bg)$sigma_tau
+
+      # Grab the appropriate SE (k values)
+      sigma_k <- switch(bg$model,
+                        "mutau"       = bg$data$se.tau,
+                        "rubin"       = bg$data$se,
+                        # May need to apply rare event correction for
+                        # the pooling models to work correctly
+                        "logit"       = apply_cont_corr(csd, 0.25, "single",
+                                                        add_or = TRUE, pooling = TRUE)$se,
+                        "rubin_full"  = csd$se.tau,
+                        "mutau_full"  = csd$se.tau
+      )
+
+      if(type == "groups")
+        ret_i <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
+      if(type == "total"){
+        # nu <- mean(sigma_k^2)
+        w <- 1/(sigma_k^2)
+        nu <- (length(sigma_k)-1)*sum(w) / (sum(w)^2 - sum(w^2))
+        ret_i <- replicate(1, nu / (nu + sigma_tau^2))
+      }
+      if(metric == "weights" && type == "groups"){
+        precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma_tau^2))
+        ret_i <- t(apply(precisions, 1, function(x) x/sum(x)))
+      }
+      if(metric == "weights" && type == "total")
+        stop("Weights can be calculated only for type = 'groups'")
+      ret_i
+    })
+    ret <- array(unlist(ret), dim=c(dim(ret[[1]]), length(ret)))
+
   }
 
   if(metric == "isq") ret <- 1-ret
   if(metric == "hsq") ret <- 1/ret
   if(metric == "h")   ret <- sqrt(1/ret)
 
-
   if(summary)
     ret <- apply(ret, c(2,3), mint)
-
-  # if(bg$n_parameters == 1)
-  #   ret <- ret[1,,]
 
   return(ret)
 
@@ -245,9 +241,9 @@ pooling <- function(bg,
 #' @rdname pooling
 #' @export
 heterogeneity <- function(
-  bg,
-  metric = c("pooling", "isq", "hsq", "weights"),
-  summary = TRUE)
+    bg,
+    metric = c("pooling", "isq", "hsq", "weights"),
+    summary = TRUE)
   pooling(bg, metric, type = "total", summary = summary)
 
 #' @rdname pooling
