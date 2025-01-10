@@ -45,6 +45,7 @@ convert_inputs <- function(data,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
+                           cluster = NULL,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
@@ -138,6 +139,12 @@ convert_inputs <- function(data,
                             levels = unique(data[[group]]))
     group_numeric <- as.numeric(groups)
     group_label   <- levels(groups)
+    # Creating cluster indicator: each study & cluster combo needs a separate ID
+    # I do not save cluster labels, unlike group labels
+    if(!is.null(cluster))
+      cluster_numeric <- as.integer(interaction(data[[group]], data[[cluster]], drop = TRUE))
+    else
+      cluster_numeric <- numeric(0)
 
     if(!is.null(test_data)) {
       groups_test <- as.factor(as.character(test_data[[group]]))
@@ -155,6 +162,7 @@ convert_inputs <- function(data,
 
     if(model %in% c("rubin_full", "mutau_full", "logit")){
 
+
       out <- list(
         # !preserve this ordering for unit tests!
         K = max(group_numeric),
@@ -162,7 +170,10 @@ convert_inputs <- function(data,
         P = 2, #will be dynamic
         y = data[[outcome]],
         treatment = data[[treatment]],
-        site = group_numeric
+        site = group_numeric,
+        clustered = if(!is.null(cluster)) 1 else 0,
+        cluster = cluster_numeric,
+        Ncluster = if(!is.null(cluster)) max(cluster_numeric) else 0
       )
       # Developing this in stages: rubin, then logit, then mutau
       if(model %in% c("logit", "rubin_full")){
@@ -273,6 +284,9 @@ convert_inputs <- function(data,
       for(nm in names(out_test))
         out[[nm]] <- out_test[[nm]]
     }
+  } else {
+    if(!is.null(cluster))
+      warning("Clustering column defined, but data is not individual level; ignoring.")
   }
 
   # 3.2. summary data: treatment effect only -----

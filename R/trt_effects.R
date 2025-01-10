@@ -33,18 +33,16 @@ treatment_effect <- function(bg, summary = FALSE,
   }
   if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
     tau <- rstan::extract(bg$fit, pars="mu")[[1]]
-    if(bg$model %in% c("rubin", "logit"))
-      tau <- c(tau)
     if(bg$model %in% c("mutau", "mutau_full"))
-      tau <- tau[,1,2]
+      tau <- tau[,1,2] #in this mutau case the second element is trt effect, first is baseline
+    if(is.matrix(tau) && ncol(tau) == 1) tau <- c(tau) #convert to vector for 1D cases
 
     if(bg$pooling == "partial"){
       if(bg$model %in% c("mutau", "mutau_full"))
         sigma_tau <- rstan::extract(bg$fit, pars="hypersd[1,2]")[[1]]
       else
         sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
-      if(bg$model %in% c("rubin", "logit"))
-        sigma_tau <- c(sigma_tau)
+      if(is.matrix(tau) && ncol(sigma_tau) == 1) sigma_tau <- c(sigma_tau)
     }
     if(bg$pooling == "full")
       sigma_tau <- rep(0, length(bg$effects)) #same dim as tau, but by convention set to 0

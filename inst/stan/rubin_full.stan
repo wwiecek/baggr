@@ -8,10 +8,14 @@ data {
   int<lower=0> P;   // number of treatment columns
   int<lower=0> K;   // number of sites
   int<lower=0> Nc;  //number of covariates (fixed effects)
+  int<lower=0> Ncluster;  //number of clusters
   matrix[N,Nc] X;   //covariate values (design matrix for FE)
+  int clustered;    //indicator for cluster REs within trials
   int pooling_type; //0 if none, 1 if partial, 2 if full
   int pooling_baseline; //pooling for proportions in control arm;
+                        //0 if none, 1 if partial, else no bsl (==0)
   array[N] int<lower=0,upper=K> site;
+  array[clustered == 1 ? N : 0] int<lower=0, upper=Ncluster> cluster;
   matrix<lower=0,upper=1>[N,P] treatment;
 
   //PRIORS
@@ -28,11 +32,12 @@ data {
   // coefficients in regression:
   int prior_beta_fam;
   vector[3] prior_beta_val;
-  // noise in regression:
-  int prior_sigma_fam;
-  vector[3] prior_sigma_val;
+  // clusters:
+  int prior_cluster_fam;
+  vector[3] prior_cluster_val;
 
-  //cross-validation variables:
+
+  // cross-validation variables:
   int<lower=0> N_test;
   int<lower=0> K_test;
   matrix[N_test, Nc] X_test;
@@ -43,6 +48,9 @@ data {
   array[N] real y;
   array[N_test] real test_y;
   array[K_test] real test_sigma_y_k;
+  // priors on noise in regression:
+  int prior_sigma_fam;
+  vector[3] prior_sigma_val;
 
 }
 
@@ -59,6 +67,8 @@ parameters {
   vector[K_pooled * P] eta;
   vector[K_bsl_pooled] eta_baseline;
   vector[Nc] beta;
+  vector<lower=0>[clustered == 1 ? K : 0] sigma_cluster;
+  vector[clustered == 1 ? Ncluster : 0] eta_cluster;
 
   // NORMAL specific:
   vector<lower=0>[K] sigma_y_k;
@@ -93,6 +103,14 @@ model {
     }
   }
 
+  //cluster REs
+  vector[N] re = rep_vector(0, N);
+  if(clustered) {
+    eta_cluster ~ normal(0, 1);
+    sigma_cluster ~ vecprior(prior_cluster_fam, prior_cluster_val);
+    re = eta_cluster[cluster] .* sigma_cluster[site];
+  }
+
   //controls/baselines (hyper)priors
   if(pooling_baseline == 0)
     eta_baseline ~ vecprior(prior_control_fam, prior_control_val);
@@ -107,18 +125,18 @@ model {
     //each column of eta_matrix should use a different "P-specific" distribution
     for (p in 1:P)
       eta_matrix[:, p] ~ vecprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
-    y ~ normal(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe, sigma_y_k[site]);
+    y ~ normal(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re, sigma_y_k[site]);
   } else if(pooling_type == 1) {
     eta ~ normal(0,1);
     for(p in 1:P){
       tau[p] ~ realprior(prior_hypersd_fam[p], prior_hypersd_val[p]);
       mu[p]  ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
     }
-    y   ~ normal(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe, sigma_y_k[site]);
+    y   ~ normal(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re, sigma_y_k[site]);
   } else {
     for(p in 1:P)
       mu[p] ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
-    y ~ normal(baseline_k[site] + treatment * mu + fe, sigma_y_k[site]);
+    y ~ normal(baseline_k[site] + treatment * mu + fe + re, sigma_y_k[site]);
   }
   // (normal model only:) error term priors
   sigma_y_k ~ vecprior(prior_sigma_fam, prior_sigma_val);
