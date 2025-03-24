@@ -40,6 +40,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
                            group = stan_data$site,
                            treatment = attr(stan_data, "data")[[trt_col]]
     )
+
     # if(model %in% c("rubin_full", "logit") && re_dim > 1)
     # stop("For a model with multiple interventions you must set prior manually.")
     if(model == "logit"){
@@ -48,8 +49,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
       p <- data$c/data$n2
       data$mu <- log(p/(1-p))
     }
-    if(model %in% c("mutau_full", "rubin_full"))
+    if(model %in% c("mutau_full", "rubin_full")) {
       data <- prepare_ma(pma_data, effect = "mean")
+      # mu and tau columns could be NA because in some studies you may not
+      # have all treatments present; for purpose of deriving prior, we need
+      # to ignore them:
+      data <- data[!is.na(data$mu) & !is.na(data$tau),]
+    }
   }
   # ...then proceed as you would in Rubin model
 
@@ -256,7 +262,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     # }
   }
 
-  # Setting covariates prior
+  # Setting fixed effects/beta/covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){
       val <- 10*max(apply(stan_data$X, 2, sd))
@@ -271,6 +277,23 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     }
   } else {
     prior_list <- set_prior_val(prior_list, "prior_beta", uniform(0, 1))
+  }
+
+  # Setting clustering prior
+  if(!is.null(stan_data$clustered) && (stan_data$clustered == 1)) {
+    if(is.null(prior$cluster)){
+      val <- 10*sd(abs(tapply(stan_data$y, stan_data$cluster, mean)))
+      prior_list <- set_prior_val(prior_list, "prior_cluster", normal(0, val))
+      message(
+        paste0("Setting prior for cluster SD to normal,",
+               " with SD equal to 10*(SD in all cluster-level means):\n",
+               "* cluster ~ ", print_dist(normal(0, val)),
+               "---purely experimental, we recommend you set this manually"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_cluster", prior$beta)
+    }
+  } else {
+    prior_list <- set_prior_val(prior_list, "prior_cluster", uniform(0, 1))
   }
 
   return(prior_list)

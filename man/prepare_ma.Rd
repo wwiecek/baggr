@@ -2,7 +2,7 @@
 % Please edit documentation in R/prepare_ma.R
 \name{prepare_ma}
 \alias{prepare_ma}
-\title{Convert from individual to summary data in meta-analyses}
+\title{Convert individual- to summary-level data in meta-analyses}
 \usage{
 prepare_ma(
   data,
@@ -48,7 +48,8 @@ variable is taken as a difference between values in \code{outcome} and
 \item{summarise}{logical; \code{TRUE} by default, but you can disable it to obtain
 converted (e.g. logged) data with columns renamed}
 
-\item{treatment}{name of column with treatment variable}
+\item{treatment}{name of column with treatment variable; can be binary or
+a factor (if using multiple treatment columns)}
 
 \item{baseline}{name of column with baseline variable}
 

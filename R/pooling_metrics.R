@@ -186,6 +186,10 @@ pooling <- function(bg,
     ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
 
   } else {
+    # Make sure we follow the same ordering of groups as in group_effects()
+    # and the fact that they can be NA e.g. multi-arm study without all trt arms
+    group_names <- group_names(bg)
+
     ret <- lapply(1:(bg$n_parameters), function(i) {
 
       csd <- bg$summary_data #current summary data
@@ -202,9 +206,9 @@ pooling <- function(bg,
                         # May need to apply rare event correction for
                         # the pooling models to work correctly
                         "logit"       = apply_cont_corr(csd, 0.25, "single",
-                                                        add_or = TRUE, pooling = TRUE)$se,
-                        "rubin_full"  = csd$se.tau,
-                        "mutau_full"  = csd$se.tau
+                                                        add_or = TRUE, pooling = TRUE)$se[match(group_names, csd$group)],
+                        "rubin_full"  = csd$se.tau[match(group_names, csd$group)],
+                        "mutau_full"  = csd$se.tau[match(group_names, csd$group)]
       )
 
       if(type == "groups")

@@ -2,7 +2,7 @@
 % Please edit documentation in R/group_effects.R
 \name{random_effects}
 \alias{random_effects}
-\title{Extract only random effects from a baggr model}
+\title{Extract only random (treatment) effects from a baggr model}
 \usage{
 random_effects(...)
 }
@@ -10,5 +10,7 @@ random_effects(...)
 \item{...}{arguments passed to \link{group_effects}}
 }
 \description{
-This function is a shortcut for \code{group_effects(random_only=TRUE, ...)}
+This function is a shortcut for \code{group_effects(random_only=TRUE, ...)}. Note that this
+is different to cluster random effects in individual-level data: by random effects we
+mean the random component of the group-wide effect
 }

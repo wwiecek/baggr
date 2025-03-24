@@ -1,4 +1,13 @@
-# baggr 0.7.8 (late 2024)
+# baggr 0.7.11 (late 2024)
+
+Two big additions:
+
+(1) You can run models with individual-level data (continuous and logit) with arbitrary number of treatment effects.
+Instead of defining column `treatment` in data as binary, just use a factor. This was designed especially for multi-arm experiments.
+There may be a generalisation into network meta-analysis later.
+
+(2) You can add random effects for clusters (for now only of the random intercepts variety, u ~ normal(0, sigma_cluster))
+and define priors for them.
 
 Bugs:
 
