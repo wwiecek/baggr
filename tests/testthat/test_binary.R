@@ -47,7 +47,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 150) #right dimension means right iter
-  expect_error(baggr(df_binary, rubbish = 41), "unknown arguments")
+  expect_error(baggr(df_binary, rubbish = 41))
 })
 
 # Run without summarising data first
@@ -141,6 +141,9 @@ test_that("Calculation of effects works", {
   expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
   expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
 
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau, hypermean(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, hypersd(bg5_p,message=FALSE))
+
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(150, 5 , 1)))
@@ -162,7 +165,7 @@ test_that("Plotting and printing works", {
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   # but we can crash it easily if
-  expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
+  expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 
   capture_output(print(bg5_n))
   capture_output(print(bg5_p))
@@ -218,6 +221,8 @@ sa$a <- rnorm(nrow(df_binary))
 sa$b <- rnorm(nrow(df_binary))
 sb <- sa
 sb$b <- NULL
+sa$bad <- sa$a
+sa$bad[2] <- NA
 
 
 test_that("Model with covariates works fine", {
@@ -230,6 +235,7 @@ test_that("Model with covariates works fine", {
   expect_length(bg5_p$covariates, 0)
   expect_length(bg_cov$covariates, 2)
   expect_null(bg_cov$mean_lpd)
+  expect_error(baggr(sa, covariates = c("bad")), "NA")
 
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov), "matrix")

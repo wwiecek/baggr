@@ -1,3 +1,30 @@
+# baggr 0.7.8 (late 2023)
+
+
+New functionality:
+- You can run meta-analyses with just one row of data, but must specify priors
+- `baggr_plot` can be made to look more like forest plot with `baggr_plot(bg, style = "forest")`
+- Plotting baggr and baggr_compare objects now has more powerful `add_values` functionality.
+- You can customise colour of hypermean, e.g. `baggr_plot(bg, hyper = "red")`
+- For meta-regressions, you can draw a `bubble()`
+
+Back end and minor changes:
+
+- Various CRAN and rstan bugfixes. Now that rstan 2.26 is on CRAN, this package requires users to update to it.
+- A few "quality of life"-type and presentation upgrades. 
+- You can print hyperparameters of a model using `hypermean()` and `hypersd()` (defaults to summaries)
+- Printing baggr models now also includes correlations and the posterior predictive distribution.
+- `loo_compare` now has better annotation
+
+Bugfixes:
+
+- Forest plots now display correctly even if you don't label studies/groups
+
+# baggr 0.7.6 (March 2022)
+
+* Various CRAN and rstan bugfixes. A few quality-of-life type upgrades.
+* You can run meta-analyses with just one row of data, but must specify names for 
+
 # baggr 0.7.4 (late 2022)
 
 * Faster code: all models should now run by up to 50% faster

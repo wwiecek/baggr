@@ -1,7 +1,7 @@
-#' Extract baggr study effects
+#' Extract baggr study/group effects
 #'
 #' Given a baggr object, returns the raw MCMC draws of the posterior for
-#' each group's effect or a summary of these draws.
+#' each group's effect or a summary of these draws. (We use "group" and "study" interchangeably.)
 #' If there are no covariates in the model, this effect is a single random variable.
 #' If there are covariates, the group effect is a sum of effect of covariates (fixed effects)
 #' and the study-specific random variable (random effects).
@@ -38,17 +38,13 @@
 #'          `group_effects(random_only=TRUE)`.
 #'
 #' @export
-
 group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
                           random_only = FALSE,
                           rename_int = FALSE) {
   check_if_baggr(bg)
 
   # Grab group labels
-  if(is.null(attr(bg$inputs, "group_label")))
-    par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
-  else
-    par_names <- attr(bg$inputs, "group_label")
+  par_names <- group_names(bg)
 
   # Grab effect names
   effect_names <- bg$effects
@@ -122,13 +118,26 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
   return(m)
 }
 
-#' Extract random effects from a baggr model
+# Grabbing labels for group/study names
+group_names <- function(bg) {
+  if(is.null(attr(bg$inputs, "group_label")))
+    par_names <- paste0("Group ", 1:attr(bg$inputs, "n_groups"))
+  else
+    par_names <- attr(bg$inputs, "group_label")
+  par_names
+}
+
+#' Extract only random effects from a baggr model
 #'
-#' This is a shortcut for writing `group_effects(random_only=TRUE, ...)`
+#' This function is a shortcut for `group_effects(random_only=TRUE, ...)`
 #'
 #' @param ... arguments passed to [group_effects]
-#'
 #' @export
 random_effects <- function(...) {
   group_effects(random_only = TRUE, ...)
 }
+
+#' `study_effects` is just an alias for `group_effects`
+#' @rdname group_effects
+#' @export
+study_effects <- group_effects

@@ -1,4 +1,4 @@
-# baggr: Bayesian aggregation package for R, v0.7 (2023)
+# baggr: Bayesian aggregation package for R, v0.7.8 (2024)
 
 
 

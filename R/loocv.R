@@ -191,34 +191,40 @@ is.baggr_cv <- function(x) {
 #' Given multiple [loocv] outputs, calculate differences in their expected log
 #' predictive density.
 #'
-#' @param x An object of class `baggr_cv` or a list of such objects.
-#' @param ... Additional objects of class "baggr_cv"
+#' @param ... A series of `baggr_cv` objects passed as arguments, with a minimum of 2
+#'          arguments required for comparison. `baggr_cv` objects can be created via the
+#'          [loocv] function. In instances where more than 2 arguments are passed, the
+#'          first model will be compared sequentially to all other provided models.
+#'          Arguments can be passed with names (see example below).
+#' @return  Returns a series of comparisons in order of the arguments provided as Model 1 - Model N for
+#'          N loocv objects provided. Model 1 corresponds to the first object passed and
+#'          Model N corresponds to the Nth object passed.
 #' @export loo_compare
-#' @seealso [loocv] for fitting LOO CV objects and explanation of the procedure
+#' @seealso [loocv] for fitting LOO CV objects and explanation of the procedure;
+#' loo package by Vehtari et al (available on CRAN) for a more comprehensive approach
 #' @examples
 #' \dontrun{
 #' # 2 models with more/less informative priors -- this will take a while to run
 #' cv_1 <- loocv(schools, model = "rubin", pooling = "partial")
 #' cv_2 <- loocv(schools, model = "rubin", pooling = "partial",
-#'               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,4))
-#' loo_compare(cv_1, cv_2)
+#'               prior_hypermean = normal(0, 5), prior_hypersd = cauchy(0,2.5))
+#' loo_compare("Default prior"=cv_1,"Alternative prior"=cv_2)
 #' }
 #' @export
-loo_compare <- function(x, ...) {
+loo_compare <- function(...) {
   UseMethod("loo_compare")
 }
 
 #' @aliases loo_compare
 #' @export
-loo_compare.baggr_cv <- function(x, ...) {
-  if (is.baggr_cv(x)) {
-    dots <- list(...)
-    loos <- c(list(x), dots)
-  } else {
-    if (!is.list(x) || !length(x)) {
-      stop("'x' must be a list if not a 'loo' object.")
-    }
-    loos <- x
+loo_compare.baggr_cv <- function(...) {
+   l <- list(...)
+   if(all(unlist(lapply(l, class)) == "baggr_cv")) {
+     if(is.null(names(l)))
+       names(l) <- paste("Model", 1:length(l))
+     if(length(unique(names(l))) != length(names(l)))
+       stop("You must use unique model names")
+     loos <- l
   }
   if (!all(sapply(loos, is.baggr_cv))) {
     stop("All inputs should have class 'baggr_cv'.")
@@ -237,7 +243,7 @@ loo_compare.baggr_cv <- function(x, ...) {
   diffs <- list()
 
   for(i in 2:ncol(comp)) {
-    diffname <- paste0("Model 1", " - ", "Model ", i)
+    diffname <- paste0(names(loos)[1], " - ", names(loos)[i])
     rawdiffs <- comp[,1] - comp[,i]
     diffs[[i-1]] <-
       matrix(nrow = 1, ncol = 2,
@@ -263,6 +269,8 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
   class(mat) <- "matrix"
   cat(crayon::bold(paste0("Comparison of cross-validation\n\n")))
   print(signif(mat, digits = digits))
+  cat("\n")
+  cat("Positive ELPD indicates the reference group is preferred.")
 }
 
 #' Print baggr cv objects nicely
@@ -277,7 +285,7 @@ print.baggr_cv <- function(x, digits = 3, ...) {
   mat <- matrix(nrow = 2, ncol = 2)
 
   mat[1,] <- c(x$elpd, x$se)
-  mat[2,] <- c(x$looic, -2*x$se)
+  mat[2,] <- c(x$looic, abs(-2*x$se))
 
   colnames(mat) <- c("Estimate", "Standard Error")
   rownames(mat) <- c("elpd", "looic")

@@ -7,21 +7,28 @@
 baggr_plot(
   bg,
   hyper = FALSE,
-  style = "intervals",
+  style = c("intervals", "areas", "forest_plot"),
   transform = NULL,
   prob = 0.5,
   prob_outer = 0.95,
-  vline = FALSE,
+  vline = TRUE,
   order = TRUE,
+  values_outer = TRUE,
+  values_size = 4,
+  values_digits = 1,
   ...
 )
 }
 \arguments{
 \item{bg}{object of class \code{baggr}}
 
-\item{hyper}{logical; show hypereffect as the last row of the plot?}
+\item{hyper}{logical; show hypereffect as the last row of the plot?
+alternatively you can pass colour for the hypermean row,
+e.g. \code{hyper = "red"}}
 
-\item{style}{either \code{"intervals"} or \code{"areas"}}
+\item{style}{\code{"forest_plot"} imitates the visual style of forest plots
+and also prints means and intervals next to each row;
+\code{"intervals"} (default) or \code{"areas"} use package \code{bayesplot} styles}
 
 \item{transform}{a function (e.g. \code{exp()}, \code{log()}) to apply to the
 values of group (and hyper, if \code{hyper=TRUE}) effects
@@ -37,25 +44,33 @@ plot on log scale by setting \code{transform = identity}}
 
 \item{order}{logical; sort groups by magnitude of treatment effect?}
 
+\item{values_outer}{logical; use the interval corresponding to \code{prob_outer} when \code{style = "forest_plot"}?
+if not, the "inner" interval (\code{prob}) is used}
+
+\item{values_size}{size of the text values in the plot when \code{style = "forest_plot"}}
+
+\item{values_digits}{number of significant digits to use when \code{style = "forest_plot"}}
+
 \item{...}{extra arguments to pass to the \code{bayesplot} functions}
 }
 \value{
 ggplot2 object
 }
 \description{
-Extracts study effects from the  \code{baggr} model and sends them to
-one of \code{bayesplot} package plotting functions.
+Extracts study effects from the  \code{baggr} model and plots them,
+possibly next to the hypereffect estimate.
 }
 \examples{
 fit <- baggr(schools, pooling = "none")
-plot(fit)
+plot(fit, hyper = "red")
 plot(fit, style = "areas", order = FALSE)
+plot(fit, style = "forest_plot", order = FALSE)
 
 }
 \seealso{
 \link[bayesplot:MCMC-intervals]{bayesplot::MCMC-intervals} for more information about \emph{bayesplot} functionality;
-\link{forest_plot} for a typical meta-analysis alternative; \link{effect_plot} for plotting
-treatment effects for a new group
+\link{forest_plot} for a typical meta-analysis alternative (which you can imitate using \code{style = "forest_plot"});
+\link{effect_plot} for plotting treatment effects for a new group
 }
 \author{
 Witold Wiecek; the visual style is based on \emph{bayesplot} package

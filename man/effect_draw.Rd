@@ -2,20 +2,9 @@
 % Please edit documentation in R/effect_draw.R
 \name{effect_draw}
 \alias{effect_draw}
-\alias{posterior_predict.baggr}
 \title{Make predictive draws from baggr model}
 \usage{
 effect_draw(
-  object,
-  draws = NULL,
-  newdata = NULL,
-  transform = NULL,
-  summary = FALSE,
-  message = TRUE,
-  interval = 0.95
-)
-
-\method{posterior_predict}{baggr}(
   object,
   draws = NULL,
   newdata = NULL,

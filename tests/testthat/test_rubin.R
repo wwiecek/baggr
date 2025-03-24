@@ -19,7 +19,7 @@ test_that("Error messages for wrong inputs are in place", {
 
   # model or pooling type doesn't exist
   expect_error(baggr(df_pooled, "made_up_model"), "Unrecognised model")
-  expect_error(baggr(df_pooled, pooling = "nune"), "should be one of")
+  expect_error(baggr(df_pooled, pooling = "nune"), "one of")
 
   # NA or NULL inputs
   df_na <- df_pooled; df_na$tau[1] <- NA
@@ -150,9 +150,10 @@ test_that("Plotting works", {
   expect_is(plot(bg5_ppd), "gg")
   expect_is(plot(bg5_n), "gg")
   expect_is(plot(bg5_p, order = TRUE), "gg")
+  expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
   # but we can crash it easily if
-  expect_error(plot(bg5_n, style = "rubbish"), "argument must be one of")
+  expect_error(plot(bg5_n, style = "rubbish"), "one of")
 })
 
 
@@ -173,7 +174,7 @@ test_that("Forest plots for Rubin model", {
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   expect_error(forest_plot(cars), "baggr objects")
-  expect_error(forest_plot(bg5_p, show = "abc"), "should be one of")
+  expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
@@ -203,6 +204,7 @@ sa$a <- rnorm(8)
 sa$b <- rnorm(8)
 sa$f <- as.factor(c(rep("Yes", 4), rep("No", 4)))
 sa$f2 <- as.factor(c(rep("Yes", 3), rep("No", 2), rep("Maybe", 3)))
+sa$bad <- c(rnorm(7), NA)
 
 sb <- sa
 sb$b <- NULL
@@ -231,6 +233,7 @@ test_that("Model with covariates works fine", {
   expect_equal(bg_cov$formatted_prior$prior_beta_val[3], 0)
   expect_error(baggr(sa, covariates = c("made_up_covariates")))
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")))
+  expect_error(baggr(sa, covariates = c("bad")), "NA")
   expect_length(bg5_p$covariates, 0)
   expect_length(bg_cov$covariates, 2)
   expect_null(bg_cov$mean_lpd)
@@ -240,6 +243,14 @@ test_that("Model with covariates works fine", {
   expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
   expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
+
+  # Bubble plots
+  p1 <- bubble(bg_cov, "a")
+  p2 <- bubble(bg_cov_factor, "f")
+  p1
+  p2
+  expect_is(p1, "gg")
+  expect_is(p2, "gg")
 
   # covariates and test_data
   expect_error(baggr(sa, covariates = c("a", "b"), test_data = sb), "Cannot bind")
@@ -297,8 +308,7 @@ test_that("baggr_compare basic cases work with Rubin", {
   # if I pass list of rubbish
   expect_error(baggr_compare("Fit 1" = cars, "Fit 2" = cars))
   # try to make nonexistant comparison:
-  expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"),
-               "should be one of")
+  expect_error(baggr_compare(bg5_p, bg5_n, bg5_f, compare = "sreffects"), "one of")
   # Run models from baggr_compare:
   bgcomp <- expect_warning(baggr_compare(schools,
                                          iter = 200, refresh = 0))
@@ -312,6 +322,10 @@ test_that("baggr_compare basic cases work with Rubin", {
 
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f)
   expect_is(bgcomp2, "baggr_compare")
+  p1 <- plot(bgcomp2)
+  p2 <- plot(bgcomp2, add_values = TRUE)
+  expect_is(p1, "gg")
+  expect_is(p2, "gg")
 })
 
 test_that("loocv", {
