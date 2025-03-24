@@ -1,7 +1,7 @@
 Package: baggr
 Type: Package
 Title: Bayesian Aggregate Treatment Effects
-Version: 0.7.8
+Version: 0.7.11
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
              person("Rachael", "Meager", role="aut"),
              person("Brice", "Green", role="ctb", comment = "loo_compare, many visuals"),
@@ -40,7 +40,7 @@ LinkingTo:
     RcppEigen (>= 0.3.3.4.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,

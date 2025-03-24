@@ -45,6 +45,7 @@ convert_inputs <- function(data,
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
+                           cluster = NULL,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
@@ -72,9 +73,12 @@ convert_inputs <- function(data,
     available_data <- "individual" #in future can call it 'inferred ind.'
 
   if(grepl("individual", available_data)){
-    check_columns(data, outcome, group, treatment)
-    if(!is.null(test_data))
-      check_columns(data, outcome, group, treatment)
+    check_columns_ipd(data, outcome, group, treatment)
+    if(!is.null(test_data)){
+      # For test data it's OK if we only have treatment == 1 rows (essential for LOO CV)
+      # (see below: Baselines for all these groups should be included in data argument.)
+      check_columns_ipd(test_data, outcome, group, treatment, trt_binary = TRUE)
+    }
   }
   if(is.null(model)) {
     # model <- names(model_data_types)[which(model_data_types == available_data)[1]]
@@ -127,7 +131,7 @@ convert_inputs <- function(data,
   #for now this means no automatic conversion of individual->pooled
 
 
-  # Step 3: conversions of data -----
+  # Step 3: conversions of data into Stan inputs -----
 
   # 3.1. individual level data
   if(grepl("individual", required_data)) {
@@ -135,6 +139,12 @@ convert_inputs <- function(data,
                             levels = unique(data[[group]]))
     group_numeric <- as.numeric(groups)
     group_label   <- levels(groups)
+    # Creating cluster indicator: each study & cluster combo needs a separate ID
+    # I do not save cluster labels, unlike group labels
+    if(!is.null(cluster))
+      cluster_numeric <- as.integer(interaction(data[[group]], data[[cluster]], drop = TRUE))
+    else
+      cluster_numeric <- numeric(0)
 
     if(!is.null(test_data)) {
       groups_test <- as.factor(as.character(test_data[[group]]))
@@ -151,16 +161,29 @@ convert_inputs <- function(data,
     }
 
     if(model %in% c("rubin_full", "mutau_full", "logit")){
+
+
       out <- list(
+        # !preserve this ordering for unit tests!
         K = max(group_numeric),
         N = nrow(data),
         P = 2, #will be dynamic
         y = data[[outcome]],
         treatment = data[[treatment]],
-        site = group_numeric
+        site = group_numeric,
+        clustered = if(!is.null(cluster)) 1 else 0,
+        cluster = cluster_numeric,
+        Ncluster = if(!is.null(cluster)) max(cluster_numeric) else 0
       )
-      # }
-      # if(model == "logit") {
+      # Developing this in stages: rubin, then logit, then mutau
+      if(model %in% c("logit", "rubin_full")){
+        # Use typical contrast coding, but drop the matrix
+        trt_matrix <- model.matrix(as.formula(paste0("~ ", treatment)), data = data)[,-1, drop = FALSE]
+        colnames(trt_matrix) <- gsub("^treatment", "", colnames(trt_matrix))
+        out$treatment <- trt_matrix
+        out$P <- ncol(out$treatment)
+      }
+
       if(is.null(test_data)) {
         out$N_test <- 0
         out$K_test <- 0
@@ -261,6 +284,9 @@ convert_inputs <- function(data,
       for(nm in names(out_test))
         out[[nm]] <- out_test[[nm]]
     }
+  } else {
+    if(!is.null(cluster))
+      warning("Clustering column defined, but data is not individual level; ignoring.")
   }
 
   # 3.2. summary data: treatment effect only -----
@@ -390,14 +416,23 @@ convert_inputs <- function(data,
       out[[nm]] <- array(out[[nm]], dim = 1)
   }
 
-  return(structure(
+  out_structure <- structure(
     out,
     data_type = available_data,
     data = data,
+    columns = c("treatment" = treatment,
+               "group" = group,
+               "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
     group_label = group_label,
     n_groups = out[["K"]],
+    n_re = out[["P"]],
+    treatment_levels =
+      if(model %in% c("rubin_full", "logit") && out[["P"]] > 1)
+        colnames(out$treatment) else 1,
     model = model,
-    effect = effect))
+    effect = effect)
+
+  return(out_structure)
 }

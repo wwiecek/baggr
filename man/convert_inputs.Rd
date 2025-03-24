@@ -12,6 +12,7 @@ convert_inputs(
   group = "group",
   outcome = "outcome",
   treatment = "treatment",
+  cluster = NULL,
   covariates = c(),
   test_data = NULL,
   silent = FALSE

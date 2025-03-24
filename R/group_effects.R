@@ -127,9 +127,11 @@ group_names <- function(bg) {
   par_names
 }
 
-#' Extract only random effects from a baggr model
+#' Extract only random (treatment) effects from a baggr model
 #'
-#' This function is a shortcut for `group_effects(random_only=TRUE, ...)`
+#' This function is a shortcut for `group_effects(random_only=TRUE, ...)`. Note that this
+#' is different to cluster random effects in individual-level data: by random effects we
+#' mean the random component of the group-wide effect
 #'
 #' @param ... arguments passed to [group_effects]
 #' @export

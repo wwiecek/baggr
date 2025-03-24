@@ -14,6 +14,7 @@ baggr(
   prior_hypersd = NULL,
   prior_hypercor = NULL,
   prior_beta = NULL,
+  prior_cluster = NULL,
   prior_control = NULL,
   prior_control_sd = NULL,
   prior_sigma = NULL,
@@ -25,6 +26,7 @@ baggr(
   outcome = "outcome",
   group = "group",
   treatment = "treatment",
+  cluster = NULL,
   silent = FALSE,
   warn = TRUE,
   ...
@@ -69,6 +71,9 @@ same rules apply as for \verb{_hypermean};}
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
 
+\item{prior_cluster}{priors for SDs of cluster random effects in each study
+(i.e. assuming normal(0, sigma_k^2), with different sigma in each \code{group})}
+
 \item{prior_control}{prior for the mean in the control arm (baseline), currently
 used in \code{"logit"} model only;
 if \code{pooling_control = "partial"}, the prior is hyperprior
@@ -102,14 +107,16 @@ with the same columns as \code{data} argument. See "Cross-validation" section be
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}
 
-\item{outcome}{character; column name in (individual-level)
-\code{data} with outcome variable values}
+\item{outcome}{column name in \code{data} (used in individual-level only) with outcome variable values}
 
-\item{group}{character; column name in \code{data} with grouping factor;
+\item{group}{column name in \code{data} with grouping factor;
 it's necessary for individual-level data, for summarised data
 it will be used as labels for groups when displaying results}
 
-\item{treatment}{character; column name in (individual-level) \code{data} with treatment factor;}
+\item{treatment}{column name in (individual-level) \code{data} with treatment factor;}
+
+\item{cluster}{optional; column name in (individual-level) \code{data}; if defined,
+random cluster effects will be fitted in each study}
 
 \item{silent}{Whether to silence messages about prior settings and about other automatic behaviour.}
 

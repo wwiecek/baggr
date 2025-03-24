@@ -29,7 +29,7 @@ detect_input_type <- function(data,
   # Individual-level data -----
   if(!is.null(data[[group]])){
     if(nrow(data) > length(unique(data[[group]]))){
-      if(is_binary(data[[outcome]]))
+      if(is.binary(data[[outcome]]))
         return("individual_binary")
       else
         return("individual")
