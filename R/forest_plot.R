@@ -1,7 +1,7 @@
 #' Draw a forest plot for a baggr model
 #'
 #' The forest plot functionality in _baggr_ is a simple interface for
-#' calling the [forestplot] function. By default the forest plot
+#' calling \link[forestplot]{forestplot} By default the forest plot
 #' displays raw (unpooled) estimates for groups and the treatment effect
 #' estimate underneath. This behaviour can be modified to display pooled
 #' group estimates.
@@ -20,7 +20,7 @@
 #'        in the plot
 #' @param ... other arguments passed to [forestplot]
 #'
-#' @seealso [forestplot] function and its vignette for examples;
+#' @seealso \link[forestplot]{forestplot} function and its vignette for examples;
 #'          [effect_plot] and [baggr_plot] for non-forest plots of baggr results
 #'
 #' @examples
@@ -135,5 +135,5 @@ forest_plot <- function(bg,
     l[["xlab"]] <- bg$effects
 
 
-  do.call(forestplot, l)
+  do.call(forestplot::forestplot, l)
 }

@@ -20,6 +20,7 @@
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
+#' @param cluster name of the column with clustering variable for analysing c-RCTs
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
 #' @param silent Whether to print messages when evaluated

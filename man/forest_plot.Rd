@@ -35,7 +35,7 @@ in the plot}
 }
 \description{
 The forest plot functionality in \emph{baggr} is a simple interface for
-calling the \link{forestplot} function. By default the forest plot
+calling \link[forestplot]{forestplot} By default the forest plot
 displays raw (unpooled) estimates for groups and the treatment effect
 estimate underneath. This behaviour can be modified to display pooled
 group estimates.
@@ -47,6 +47,6 @@ forest_plot(bg, show = "posterior", print = "inputs", digits = 2)
 
 }
 \seealso{
-\link{forestplot} function and its vignette for examples;
+\link[forestplot]{forestplot} function and its vignette for examples;
 \link{effect_plot} and \link{baggr_plot} for non-forest plots of baggr results
 }

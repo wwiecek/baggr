@@ -37,6 +37,8 @@ See \link{prepare_ma} for details.}
 
 \item{treatment}{name of column with treatment variable}
 
+\item{cluster}{name of the column with clustering variable for analysing c-RCTs}
+
 \item{covariates}{Character vector with column names in \code{data}.
 The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model.}
