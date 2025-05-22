@@ -32,3 +32,28 @@ try the built-in vignette (\code{vignette("baggr")}).
 \references{
 Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.21.2. https://mc-stan.org
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/wwiecek/baggr}
+  \item Report bugs at \url{https://github.com/wwiecek/baggr/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Witold Wiecek \email{witold.wiecek@gmail.com}
+
+Authors:
+\itemize{
+  \item Rachael Meager
+}
+
+Other contributors:
+\itemize{
+  \item Brice Green (loo_compare, many visuals) [contributor]
+  \item Danny Toomey (many bug fixes) [contributor]
+  \item Trustees of Columbia University (package skeleton) [copyright holder]
+}
+
+}
+\keyword{internal}

@@ -100,8 +100,11 @@ print_dist <- function(dist){
 #' @param prior one of prior distributions allowed by baggr like [normal]
 #' @param p number of repeats of the prior, i.e. when P i.i.d. priors are set for
 #'                  P dimensional parameter as in "mu & tau" type of model
+#' @param to_array for some models where `p` may be larger than 1, Stan will expect
+#'                 an array instead of a numeric (even when p == 1), so for compatibiliy
+#'                 we return `fam` as an array type
 #'
-set_prior_val <- function(target, name, prior, p = 1) {
+set_prior_val <- function(target, name, prior, p = 1, to_array = FALSE) {
   if(is.null(prior$dist))
     stop("Wrong prior specification")
 
@@ -111,7 +114,10 @@ set_prior_val <- function(target, name, prior, p = 1) {
   if(prior$dist %in% c("multinormal", "lkj") && p > 1)
     stop("Multi-dimensional priors can't be 'replicated' in set_prior_val")
 
-  target[[paste0(name, "_fam")]] <- prior_dist_fam[[prior$dist]]
+  if(to_array)
+    target[[paste0(name, "_fam")]] <- array(prior_dist_fam[[prior$dist]], dim = 1)
+  else
+    target[[paste0(name, "_fam")]] <- prior_dist_fam[[prior$dist]]
 
   if(p > 1)
     target[[paste0(name, "_fam")]] <- rep(target[[paste0(name, "_fam")]], p)
@@ -122,8 +128,11 @@ set_prior_val <- function(target, name, prior, p = 1) {
     if(length(prior$values) == 2)
       prior$values <- c(prior$values, 0)
     # else if(length(prior$values) > 1)
-      # stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
-    target[[paste0(name, "_val")]] <- prior$values
+    # stop("Prior with more than 2 parameters used. Stopping - this is work in progress.")
+    if(to_array)
+      target[[paste0(name, "_val")]] <- array(prior$values, dim = c(1, length(prior$values)))
+    else
+      target[[paste0(name, "_val")]] <- prior$values
 
     if(p > 1)
       target[[paste0(name, "_val")]] <- t(replicate(p, prior$values))

@@ -1,4 +1,4 @@
-#' @title Convert from individual to summary data in meta-analyses
+#' @title Convert individual- to summary-level data in meta-analyses
 #'
 #' @description Allows for one-way conversion from full to summary data
 #'              or for calculation of effects for binary data.
@@ -28,7 +28,8 @@
 #'                  converted (e.g. logged) data with columns renamed
 #' @param group name of the column with grouping variable
 #' @param outcome name of column with outcome variable
-#' @param treatment name of column with treatment variable
+#' @param treatment name of column with treatment variable; can be binary or
+#'                  a factor (if using multiple treatment columns)
 #' @param baseline name of column with baseline variable
 #' @param pooling Internal use only, please ignore
 #'
@@ -98,8 +99,9 @@ prepare_ma <- function(data, #standardise = NULL,
     }else
       stop("Data must be individual-level (if summarising) or binary (if converting), see ?prepare_ma")
   }
-  check_columns(data, outcome, group, treatment, stop.for.na = FALSE)
 
+  check_columns_ipd(data, outcome, group, treatment,
+                    trt_binary = FALSE, stop.for.na = FALSE)
 
   # Input checks and prep
   data <- data[,c(treatment, group, outcome, baseline)]
@@ -112,11 +114,11 @@ prepare_ma <- function(data, #standardise = NULL,
     if(summarise)
       warning("NA values present in data - they may be dropped when summarising")
     else
-      check_columns(data, outcome, group, treatment, stop.for.na = TRUE)
+      check_columns_ipd(data, outcome, group, treatment, stop.for.na = TRUE)
   }
 
   if(effect %in% c("logOR", "logRR", "RD")) {
-    if(!is_binary(data$outcome))
+    if(!is.binary(data$outcome))
       stop("Outcome column is not binary (only 0 and 1 values allowed).")
   }
 
@@ -190,60 +192,100 @@ prepare_ma <- function(data, #standardise = NULL,
   # 4. Summarising
   if(summarise){
     bdt_sort <- unique(data$group) #remember order in which names appear in data
-    if(effect == "mean") {
-      magg   <- stats::aggregate(outcome ~ treatment + group,
-                                 mean, data = data)
-      seagg  <- stats::aggregate(outcome ~ treatment + group,
-                                 function(x) sd(x)/sqrt(length(x)), data = data)
-      mwide  <- stats::reshape(data = magg, timevar = "treatment",
-                               idvar = "group", direction = "wide")
-      sewide <- stats::reshape(data = seagg, timevar = "treatment",
-                               idvar = "group", direction = "wide")
-      nagg  <- stats::aggregate(outcome ~ treatment + group, length, data = data)
-      nwide  <- stats::reshape(data = nagg, timevar = "treatment",
-                               idvar = "group", direction = "wide")
 
-      out <- data.frame(group = mwide$group,
-                        mu = mwide$outcome.0,
-                        tau = mwide$outcome.1 - mwide$outcome.0,
-                        se.mu = sewide$outcome.0,
-                        se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
-                        n.mu = nwide$outcome.0,
-                        n.tau = nwide$outcome.1)
-      out <- out[order(factor(out$group, levels = bdt_sort)),]
-      rownames(out) <- NULL
+    # I will be looping over levels of treatment, in case it is not binary
+    if (!is.factor(data$treatment))
+      data$treatment <- factor(data$treatment)
+    ref_level <- levels(data$treatment)[1]
+    results <- list()
+
+    for (treat_level in levels(data$treatment)[-1]) {
+      subset_data <- data[data$treatment %in% c(ref_level, treat_level), ]
+      subset_data$treatment <- as.numeric(subset_data$treatment == treat_level)
+      if(effect == "mean")
+        results[[treat_level]] <- summarise_cont_data(subset_data)
+      if(effect %in% c("logOR", "logRR", "RD"))
+        results[[treat_level]] <- summarise_binary_data(subset_data,
+                                                        rare_event_correction,
+                                                        correction_type,
+                                                        pooling,
+                                                        effect)
+
+      results[[treat_level]][["treatment"]] <- treat_level
     }
 
-    # Prepare event counts for binary data models
-    # (including rare event corrections)
-    if(effect %in% c("logOR", "logRR", "RD")) {
-      bdt_by <- by(data, list(data$group), function(x) {
-        with(x,
-             data.frame(
-               group = unique(as.character(group)),
-               a     = sum(outcome[treatment == 1]),
-               n1    = sum(treatment == 1),
-               c     = sum(outcome[treatment == 0]),
-               n2    = sum(treatment == 0),
-               b     = sum(treatment == 1) - sum(outcome[treatment == 1]),
-               d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
-      })
-      binary_data_table <- do.call(rbind, bdt_by[bdt_sort])
-      out <- apply_cont_corr(binary_data_table,
-                             rare_event_correction,
-                             correction_type,
-                             pooling=pooling)
-      rownames(out) <- NULL
-      # Add OR or RR estimate
-      out <- calc_or_rr(out, effect)
+    final_out <- do.call(rbind, results)
+    rownames(final_out) <- NULL
 
-    }
+    if(length(unique(final_out$treatment)) == 1)
+      final_out$treatment <- NULL
+
+    out <- final_out
+
   } else {
     out <- data
   }
 
   out
 }
+
+summarise_cont_data <- function(subset_data) {
+  # Old baggr code for creating summaries for binary treatments
+  magg <- stats::aggregate(outcome ~ treatment + group,
+                           mean, data = subset_data)
+  seagg <- stats::aggregate(outcome ~ treatment + group,
+                            function(x) sd(x)/sqrt(length(x)),
+                            data = subset_data)
+  mwide <- stats::reshape(data = magg, timevar = "treatment",
+                          idvar = "group", direction = "wide")
+  sewide <- stats::reshape(data = seagg, timevar = "treatment",
+                           idvar = "group", direction = "wide")
+  nagg <- stats::aggregate(outcome ~ treatment + group,
+                           length, data = subset_data)
+  nwide <- stats::reshape(data = nagg, timevar = "treatment",
+                          idvar = "group", direction = "wide")
+
+  # output dataframe for this treatment level
+  data.frame(
+    group = mwide$group,
+    treatment = NA,
+    mu = mwide$outcome.0,
+    tau = mwide$outcome.1 - mwide$outcome.0,
+    se.mu = sewide$outcome.0,
+    se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
+    n.mu = nwide$outcome.0,
+    n.tau = nwide$outcome.1
+  )
+}
+
+summarise_binary_data <- function(data,
+                                  rare_event_correction,
+                                  correction_type,
+                                  pooling,
+                                  effect) {
+  bdt_by <- by(data, list(data$group), function(x) {
+    with(x,
+         data.frame(
+           group = unique(as.character(group)),
+           a     = sum(outcome[treatment == 1]),
+           n1    = sum(treatment == 1),
+           c     = sum(outcome[treatment == 0]),
+           n2    = sum(treatment == 0),
+           b     = sum(treatment == 1) - sum(outcome[treatment == 1]),
+           d     = sum(treatment == 0) - sum(outcome[treatment == 0])))
+  })
+  binary_data_table <- do.call(rbind, bdt_by)
+  out <- apply_cont_corr(binary_data_table,
+                         rare_event_correction,
+                         correction_type,
+                         pooling=pooling)
+  rownames(out) <- NULL
+  # Add OR or RR estimate
+  out <- calc_or_rr(out, effect)
+  out$treatment <- NA
+  out
+}
+
 
 # see prepare_ma()
 calc_or_rr <- function(out, effect) {

@@ -22,7 +22,6 @@
 #' For description of models, data types and priors available in the package,
 #' try the built-in vignette (`vignette("baggr")`).
 #'
-#' @docType package
 #' @name baggr-package
 #' @useDynLib baggr, .registration = TRUE
 #' @import methods
@@ -32,4 +31,10 @@
 #'
 #' @references
 #' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.21.2. https://mc-stan.org
+
+#' @keywords internal
+"_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
 NULL

@@ -42,6 +42,8 @@
 #' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
 #' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
 #'                       experimental normal(0, 10^2) distribution
+#' @param prior_cluster priors for SDs of cluster random effects in each study
+#'                      (i.e. assuming normal(0, sigma_k^2), with different sigma in each `group`)
 #' @param prior_control prior for the mean in the control arm (baseline), currently
 #'                      used in `"logit"` model only;
 #'                      if `pooling_control = "partial"`, the prior is hyperprior
@@ -59,12 +61,13 @@
 #'                  and ignore `data` in inference. However, `data` argument might still
 #'                  be used to infer the correct model (if `model=NULL`) and to set the
 #'                  default priors, therefore you must specify it.
-#' @param outcome   character; column name in (individual-level)
-#'                  \code{data} with outcome variable values
-#' @param group     character; column name in \code{data} with grouping factor;
+#' @param outcome   column name in \code{data} (used in individual-level only) with outcome variable values
+#' @param group     column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
 #'                  it will be used as labels for groups when displaying results
-#' @param treatment character; column name in (individual-level) \code{data} with treatment factor;
+#' @param treatment column name in (individual-level) \code{data} with treatment factor;
+#' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
+#'                  random cluster effects will be fitted in each study
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -205,7 +208,8 @@ baggr <- function(data,
                   effect_label = NULL,
                   covariates = c(),
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
-                  prior_beta = NULL, prior_control = NULL, prior_control_sd = NULL,
+                  prior_beta = NULL, prior_cluster = NULL,
+                  prior_control = NULL, prior_control_sd = NULL,
                   prior_sigma = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
@@ -213,6 +217,7 @@ baggr <- function(data,
                   pooling_control = c("none", "partial", "remove"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
+                  cluster = NULL,
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
@@ -253,8 +258,10 @@ baggr <- function(data,
                               outcome = outcome,
                               group = group,
                               treatment = treatment,
+                              cluster = cluster,
                               test_data = test_data,
                               silent = silent)
+
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
@@ -300,6 +307,10 @@ baggr <- function(data,
   if(is.null(effect))
     effect <- "mean"
 
+  # For models with multiple REs (treatment is factor), we now expand it:
+  if((model %in% c("logit", "rubin_full")) && (attr(stan_data, "n_re") > 1))
+    effect <- paste(effect, attr(stan_data, "treatment_levels"))
+
   # Number of TE parameters
   # (in the future this can be built into the models):
   n_parameters <- length(effect)
@@ -331,22 +342,23 @@ baggr <- function(data,
                   hypercor  = prior_hypercor,
                   hypersd   = prior_hypersd,
                   beta      = prior_beta,
+                  cluster   = prior_cluster,
                   control   = prior_control,
                   control_sd= prior_control_sd)
   } else {
-    if(!is.null(prior_hypermean) || !is.null(prior_beta) ||
+    if(!is.null(prior_hypermean) || !is.null(prior_beta) || is.null(prior_cluster) ||
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
-      message("Both 'prior' and 'prior_' arguments specified. Using 'prior' only.")
+      message("Both 'prior$' and 'prior_' arguments specified. Using 'prior' only.")
     if(!inherits(prior, "list") ||
-       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd',
+       !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'cluster',
                                 'beta', 'control', 'control_sd')))
       warning(paste("Only names used in the prior argument are:",
-                    "'hypermean', 'hypercor', 'hypersd',
+                    "'hypermean', 'hypercor', 'hypersd', 'cluster',
                     'beta', 'control', 'control_sd'"))
   }
 
-  # If extracting prior from another model, we need to do a swapsie switcheroo:
+  # If extracting prior from another model, we need to do this switcheroo:
   stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
@@ -370,7 +382,22 @@ baggr <- function(data,
   stan_args$data <- stan_data
 
 
+  # ENTIRELY TEMPORARY CHANGE TO HOW THE FULL RUBIN/LOGIT MODEL OPERATES WITH P==1
+  if(model %in% c("rubin_full", "logit")) {
+    # browser()
+    # stan_args$data$P <- 1
+    # stan_args$data$treatment <- array(stan_args$data$treatment, c(stan_args$data$N, 1))
+    # stan_args$data$test_treatment <- array(stan_args$data$test_treatment, c(stan_args$data$test_N, 1))
 
+    # wip:
+    stan_args$data$test_treatment      <- array(stan_args$data$test_treatment,
+                                                c(stan_args$data$N_test, attr(stan_data, "n_re")))
+
+    # stan_args$data$prior_hypermean_fam <- array(stan_args$data$prior_hypermean_fam, 1)
+    # stan_args$data$prior_hypersd_fam   <- array(stan_args$data$prior_hypersd_fam, 1)
+    # stan_args$data$prior_hypermean_val <- list(stan_args$data$prior_hypermean_val)
+    # stan_args$data$prior_hypersd_val   <- list(stan_args$data$prior_hypersd_val)
+  }
   # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
 
@@ -436,28 +463,39 @@ remove_data_for_prior_pred <- function(data) {
   scalars_to0 <- c("K", "N", "Nc",
                    # specific to sslab (generalise this)
                    "N_neg", "N_pos")
-  vectors_to_remove <- c("theta_hat_k", "se_theta_k",
-                         "y", "treatment", "site",
+  objects_to_remove <- c("theta_hat_k", "se_theta_k",
+                         "y", "site",
                          # specific to sslab
                          "treatment_neg", "treatment_pos", "cat",
-                         "site_neg", "site_pos", "y_neg", "y_pos")
-  matrices_to_remove <- c("X")
+                         "site_neg", "site_pos", "y_neg", "y_pos",
+                         "X")
+
   # Specific to quantiles:
   matrices_to_rescale <- c("y_0", "y_1")
   arrays_to_rescale <- c("Sigma_y_k_0", "Sigma_y_k_1")
   matrices_remove_rows <- c("x")
 
+  # Treatment can be matrix or vector, so:
+  if(is.vector(data[["treatment"]]))
+    objects_to_remove <- c(objects_to_remove, "treatment")
+  if(is.matrix(data[["treatment"]]))
+    matrices_remove_rows <- c(matrices_remove_rows, "treatment")
+
   for(nm in scalars_to0)
     if(!is.null(data[[nm]]))
       data[[nm]] <- 0
 
-  for(nm in vectors_to_remove)
-    if(!is.null(data[[nm]]))
-      data[[nm]] <- array(0, dim = c(0))
+  for(nm in objects_to_remove){
+    if(!is.null(data[[nm]])){
+      # Make sure we're replacing it with the right data type
+      cdim <- ifelse(is.null(dim(data[[nm]])), 1, length(dim(data[[nm]])))
+      data[[nm]] <- array(0, dim = rep(0, cdim))
+    }
+  }
 
-  for(nm in matrices_to_remove)
-    if(!is.null(data[[nm]]))
-      data[[nm]] <- array(0, dim = c(0,0))
+  # for(nm in matrices_to_remove)
+  #   if(!is.null(data[[nm]]))
+  #     data[[nm]] <- array(0, dim = c(0,0))
 
   for(nm in matrices_remove_rows)
     if(!is.null(data[[nm]]))

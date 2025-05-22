@@ -12,6 +12,7 @@ convert_inputs(
   group = "group",
   outcome = "outcome",
   treatment = "treatment",
+  cluster = NULL,
   covariates = c(),
   test_data = NULL,
   silent = FALSE
@@ -35,6 +36,8 @@ See \link{prepare_ma} for details.}
 \item{outcome}{name of column with outcome variable (designated as string)}
 
 \item{treatment}{name of column with treatment variable}
+
+\item{cluster}{name of the column with clustering variable for analysing c-RCTs}
 
 \item{covariates}{Character vector with column names in \code{data}.
 The corresponding columns are used as

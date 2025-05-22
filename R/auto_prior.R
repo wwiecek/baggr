@@ -28,24 +28,34 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
 
   prior_list <- list()
 
-  if(model %in% c("mutau", "mutau_full"))
-    re_dim <- 2
+  if(model %in% c("rubin_full", "logit"))
+    re_dim <- attr(stan_data, "n_re")
   else
     re_dim <- 1
 
   # Swap data for summary data...
   if(model %in% c("rubin_full", "logit", "mutau_full")) {
+    trt_col <- attr(stan_data, "columns")[["treatment"]]
     pma_data <- data.frame(outcome = stan_data$y,
                            group = stan_data$site,
-                           treatment = stan_data$treatment)
+                           treatment = attr(stan_data, "data")[[trt_col]]
+    )
+
+    # if(model %in% c("rubin_full", "logit") && re_dim > 1)
+    # stop("For a model with multiple interventions you must set prior manually.")
     if(model == "logit"){
       data <- prepare_ma(pma_data, effect = "logOR", rare_event_correction = 0.1)
       # Must add mu for automatic definition of baseline prior
       p <- data$c/data$n2
       data$mu <- log(p/(1-p))
     }
-    if(model %in% c("mutau_full", "rubin_full"))
+    if(model %in% c("mutau_full", "rubin_full")) {
       data <- prepare_ma(pma_data, effect = "mean")
+      # mu and tau columns could be NA because in some studies you may not
+      # have all treatments present; for purpose of deriving prior, we need
+      # to ignore them:
+      data <- data[!is.na(data$mu) & !is.na(data$tau),]
+    }
   }
   # ...then proceed as you would in Rubin model
 
@@ -82,12 +92,15 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
         if(model != "sslab"){
           default_prior_dist <- switch(
             current_prior,
-            "hypermean"  = if(re_dim == 1)
-              normal(0, 10*max(abs(data$tau)))
+            "hypermean"  =
+              if(model %in% c("mutau", "mutau_full"))
+                multinormal(c(0,0),
+                            c(100*max(abs(data$mu)),
+                              100*max(abs(data$tau)))*diag(2))
             else
-              multinormal(c(0,0),
-                          c(100*max(abs(data$mu)),
-                            100*max(abs(data$tau)))*diag(2)),
+              normal(0, 10*max(abs(data$tau))),
+            # else
+            # replicate(re_dim, normal(0, 10*max(abs(data$tau))), simplify = FALSE),
             "sigma"      = uniform(0, 10*max(c(sqrt(data$n.mu)*data$se.mu,
                                                sqrt(data$n.tau*data$se.tau)))),
             "hypersd"    = if(attr(stan_data, "n_groups") == 1)
@@ -131,21 +144,28 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
           )
         }
 
-        prior_list <- set_prior_val(prior_list,
-                                    paste0("prior_", current_prior),
-                                    default_prior_dist)
+        dist_to_set <- default_prior_dist
 
       } else {
-
-        # Expand Normal() to Normal_p() when P > 1
-        if(re_dim > 1 && prior[[current_prior]][["dist"]] == "normal")
-          prior$hypermean <- multinormal(rep(prior[[current_prior]]$values[1], 2),
-                                         (prior[[current_prior]]$values[2]^2)*diag(2))
-
-        prior_list <- set_prior_val(prior_list,
-                                    paste0("prior_", current_prior),
-                                    prior[[current_prior]])
+        dist_to_set <- prior[[current_prior]]
       }
+
+
+      convert_to_array <-
+        model %in% c("logit", "rubin_full") &&
+        current_prior %in% c("hypermean", "hypersd")
+      prior_list <- set_prior_val(prior_list,
+                                  paste0("prior_", current_prior),
+                                  dist_to_set,
+                                  p = if(convert_to_array) re_dim else 1,
+                                  to_array = convert_to_array)
+
+
+
+      # else if(model %in% c("logit", "rubin_full")) {
+      #   prior$hypermean <- replicate(re_dim, prior$hypermean, simplify = FALSE)
+      #   prior$hypersd   <- replicate(re_dim, prior$hypersd,   simplify = FALSE)
+      # }
 
       # Print out priors
       if(!silent) {
@@ -242,7 +262,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     # }
   }
 
-  # Setting covariates prior
+  # Setting fixed effects/beta/covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){
       val <- 10*max(apply(stan_data$X, 2, sd))
@@ -259,6 +279,23 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     prior_list <- set_prior_val(prior_list, "prior_beta", uniform(0, 1))
   }
 
+  # Setting clustering prior
+  if(!is.null(stan_data$clustered) && (stan_data$clustered == 1)) {
+    if(is.null(prior$cluster)){
+      val <- 10*sd(abs(tapply(stan_data$y, stan_data$cluster, mean)))
+      prior_list <- set_prior_val(prior_list, "prior_cluster", normal(0, val))
+      message(
+        paste0("Setting prior for cluster SD to normal,",
+               " with SD equal to 10*(SD in all cluster-level means):\n",
+               "* cluster ~ ", print_dist(normal(0, val)),
+               "---purely experimental, we recommend you set this manually"))
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_cluster", prior$beta)
+    }
+  } else {
+    prior_list <- set_prior_val(prior_list, "prior_cluster", uniform(0, 1))
+  }
+
   return(prior_list)
 }
 
@@ -271,10 +308,12 @@ check_eligible_priors <- function(prior, spec) {
 
     allowed_dist <- available_priors[[spec[[nm]]]]
 
-    if(!any(prior_dist_fam[allowed_dist] == prior[[paste0("prior_", nm, "_fam")]]))
-      stop("Prior for ", nm, " must be one of the following: ",
-           paste(allowed_dist, collapse = ", "))
-
+    # Usually priors family is length 1 but sometimes it can be a vector, so loop:
+    for(cud in prior[[paste0("prior_", nm, "_fam")]]){
+      if(!any(prior_dist_fam[allowed_dist] == cud))
+        stop("Prior for ", nm, " must be one of the following: ",
+             paste(allowed_dist, collapse = ", "))
+    }
     if(spec[[nm]] == "real_2"){
       if(length(prior[[paste0("prior_", nm, "_mean")]]) != 2)
         stop("Prior for ", nm, " must have the dimension equal to 2")

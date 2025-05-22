@@ -149,8 +149,6 @@ baggr_plot <- function(bg, hyper=FALSE,
     p
   })
 
-
-
   if(length(ret_list) == 1)
     return(ret_list[[1]])
   else

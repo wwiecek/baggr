@@ -18,7 +18,9 @@ test_that("Error messages for wrong inputs are in place", {
 
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_binary, "logit")),
-                   c("K", "N", "P", "y", "treatment", "site", "N_test", "K_test",
+                   c("K", "N", "P", "y", "treatment", "site",
+                     "clustered", "cluster", "Ncluster",
+                     "N_test", "K_test",
                      "test_y", "test_site", "test_treatment", "Nc", "X", "X_test"))
 })
 

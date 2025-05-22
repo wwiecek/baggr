@@ -7,13 +7,12 @@
 #'                  (this is commonly used when calling from other
 #'                  plotting or printing functions)
 #' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
-#' @return A list with 2 vectors (corresponding to MCMC samples)
-#'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
-#'         both vectors are summarised as mean and lower/upper bounds according to
-#'         `interval`
+#' @return A matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
+#'         Number of rows depends on iterations in the MCMC (i.e. `x` in baggr(..., iter = x`)
 #' @seealso [treatment_effect] for overall treatment effect across groups,
 #'          [group_effects] for effects within each group,
 #'          [effect_draw] and [effect_plot] for predicted treatment effect in new group
+#'          (which you can condition on fixed effects using new data argument)
 #' @export
 #' @importFrom rstan extract
 
