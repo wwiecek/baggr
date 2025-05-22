@@ -1,13 +1,18 @@
-## cran-comments for baggr v0.7.8
+## cran-comments for baggr v0.7.11 (May 2025)
 
-Test environments:
+(Intial submission for this version had some broken URLs 
+and one documentation NOTE that has now been fixed, apologies.)
 
-* win-builder
-* Windows 10 PC locally: R 4.2.2
-* Ubuntu 22.04 locally
-* builder.r-hub.io (via rhub::check_for_cran)
+Test environments, now implemented via GitHub Actions:
 
-There are no WARNINGs or ERRORs and 2 NOTEs in some environements:
+* ubuntu-latest, devel, oldrel1
+* windows-latest
+* macos-latest
+* generic R-hub configuration (`rhub::rhub_setup()`)
+
+* I also conduct CHECK locally on some Linux distros and Windows 11.
+
+There are no WARNINGs; sometimes the following NOTEs
 
 N checking installed package size ... NOTE
   sub-directories of 1Mb or more: libs
@@ -15,18 +20,8 @@ N checking installed package size ... NOTE
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements.
 
-Some Rhub environments tend to give preperrors, 
-but that does not seem related to the functioning of the package itself,
-just compilation time on Rhub. I am not sure.
-
 On Windows I added the following compilation flags as instructed by Stan devs
 -Wa,-mbig-obj
 this was done to avoid compilation errors ("file too big") for users of new 
-Stan versions. However, it does seem to trigger a NOTE on Windows (in some 
-versions of R at least) for non-standard flags.
-
-There were some CRAN errors on previous submission, but I was not able to 
-replicate them, I think that was some compilation error unrelated to the package
-or a termination of compilation due to time-out, but I am not sure whether this is
-a "real" problem.
-
+Stan versions. However, it does seem to sometime trigger a NOTE on Windows (in some 
+versions of R) for non-standard flags.

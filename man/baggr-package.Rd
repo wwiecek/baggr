@@ -14,8 +14,7 @@ it's easier to understand the models you are building and criticise them.
 \emph{Baggr} package provides a suite of models that work with both summary data and full data sets,
 to synthesise evidence collected from different groups, contexts or time periods.
 The \link{baggr} command automatically detects the data type and, by default, fits a partial
-pooling model (which you may know as
-\href{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode}{random effects models})
+pooling model (which some users may know as random effects models)
 with weakly informative priors by calling \href{https://mc-stan.org/}{Stan} to carry
 out Bayesian inference. Modelling of variances or quantiles, standardisation and
 transformation of data are also possible.

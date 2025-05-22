@@ -31,7 +31,7 @@ or \code{"posterior"} means?
 \item{digits}{number of digits to display when printing out mean and SD
 in the plot}
 
-\item{...}{other arguments passed to \link{forestplot}}
+\item{...}{other arguments passed to \link[forestplot]{forestplot}}
 }
 \description{
 The forest plot functionality in \emph{baggr} is a simple interface for

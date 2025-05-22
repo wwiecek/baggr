@@ -133,9 +133,8 @@
 #'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
 #'   model. It can be modelled on summary-level data.
 #' * In `"logit"` and `"rubin_full"` models, covariates that __change according to individual unit__.
-#'   Then, such a model is commonly referred to as a
-#'   [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888)
-#'   . It has to be fitted to individual-level data. Note that meta-regression is a special
+#'   Then, such a model is often referred to as a mixed model. It has to be
+#'   fitted to individual-level data. Note that meta-regression is a special
 #'   case of a mixed model for individual-level data.
 #'
 #'

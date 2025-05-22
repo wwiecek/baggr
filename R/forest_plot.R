@@ -18,7 +18,7 @@
 #' @param prob width of the intervals (lines) for the plot
 #' @param digits number of digits to display when printing out mean and SD
 #'        in the plot
-#' @param ... other arguments passed to [forestplot]
+#' @param ... other arguments passed to \link[forestplot]{forestplot}
 #'
 #' @seealso \link[forestplot]{forestplot} function and its vignette for examples;
 #'          [effect_plot] and [baggr_plot] for non-forest plots of baggr results

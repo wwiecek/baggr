@@ -660,12 +660,9 @@ This section provides only a short example. To learn more about meta-regression 
 Two types of covariates may be present in your data:
 
 * Covariates that __change according to group unit__. In that case, the model accounting for the group covariates is a [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm) model. It can be modelled on summary-level data.
-* Covariates that __change according to individual unit__. Then, the model can be called a [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888). It has to be fitted to individual-level data. Note that the first case can also be accounted for by using a mixed model.
+* Covariates that __change according to individual unit__ (mixed model). It has to be fitted to individual-level data. Note that the first bullet point is a special case of this mixed model.
 
 In both cases we only need to name one extra argument to `baggr`: `covariates=`, followed by a vector of column names in input data. You should remember that your treatment effect estimate will vary a lot not only with choice of covariates, but also the contrasts that you use.
-
-
-
 
 ```r
 #let's use the data.frame we created from Yusuf et al earlier
@@ -673,7 +670,6 @@ df_ma$study_grouping      <- c(1,1,1,0,0,0,0)
 df_ma$different_contrasts <- c(1,1,1,0,0,0,0) - .5
 bg_cov1 <- baggr(df_ma, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
 ```
-
 
 ```r
 baggr_compare("No covariate" = bg_model_agg,
