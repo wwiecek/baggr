@@ -29,6 +29,8 @@ any one group affects the overall result, as well as how well the model
 predicts the omitted group. LOO-CV approaches are a good general practice
 for comparing Bayesian models, not only in meta-analysis.
 
+To learn about cross-validation see Gelman et al 2014.
+
 This function automatically runs \emph{K} baggr models, where \emph{K} is number of groups (e.g. studies),
 leaving out one group at a time. For each run, it calculates
 \emph{expected log predictive density} (ELPD) for that group (see Gelman et al 2013).
@@ -42,8 +44,7 @@ information criterion, or -2 times the ELPD summed over \emph{K} models.
 (We sum the terms as we are working with logarithms.)
 This is related to, and often approximated by, the Watanabe-Akaike
 Information Criterion. When comparing models, smaller values mean
-a better fit. For more information on cross-validation see
-\href{http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf}{this overview article}
+a better fit.
 
 For running more computation-intensive models, consider setting the
 \code{mc.cores} option before running loocv, e.g. \code{options(mc.cores = 4)}

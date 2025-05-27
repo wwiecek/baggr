@@ -19,6 +19,8 @@
 #' predicts the omitted group. LOO-CV approaches are a good general practice
 #' for comparing Bayesian models, not only in meta-analysis.
 #'
+#' To learn about cross-validation see Gelman et al 2014.
+#'
 #' This function automatically runs _K_ baggr models, where _K_ is number of groups (e.g. studies),
 #' leaving out one group at a time. For each run, it calculates
 #' _expected log predictive density_ (ELPD) for that group (see Gelman et al 2013).
@@ -32,8 +34,7 @@
 #' (We sum the terms as we are working with logarithms.)
 #' This is related to, and often approximated by, the Watanabe-Akaike
 #' Information Criterion. When comparing models, smaller values mean
-#' a better fit. For more information on cross-validation see
-#' [this overview article](http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf)
+#' a better fit.
 #'
 #' For running more computation-intensive models, consider setting the
 #' `mc.cores` option before running loocv, e.g. `options(mc.cores = 4)`

@@ -1,7 +1,8 @@
 ## cran-comments for baggr v0.7.11 (May 2025)
 
-(Intial submission for this version had some broken URLs 
-and one documentation NOTE that has now been fixed, apologies.)
+(Intial two submissions for this version had some broken/moved permanently 
+URLs and one documentation NOTE. I hope that has now all been fixed, apologies.
+I attempted to also use `remote` and `incoming` check in `devtools::check()`)
 
 Test environments, now implemented via GitHub Actions:
 

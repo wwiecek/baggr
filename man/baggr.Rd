@@ -159,9 +159,6 @@ Using it will automatically format data inputs to work with \code{baggr()}.
 \code{"rubin"} model for average treatment effect (using summary data), \code{"mutau"}
 version which takes into account means of control groups (also using summary data),
 \code{"rubin_full"},  which is the same model as \code{"rubin"} but works with individual-level data
-\item for \strong{continuous variable quantiles}: `"quantiles"`` model
-(see Meager, 2019 in references)
-\item for \emph{mixture data}: \code{"sslab"} (experimental)
 \item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
 you can also analyse continuous statistics such as
 log odds ratios and logs risk ratios using the models listed above;

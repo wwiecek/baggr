@@ -106,9 +106,6 @@
 #'   `"rubin"` model for average treatment effect (using summary data), `"mutau"`
 #'   version which takes into account means of control groups (also using summary data),
 #'   `"rubin_full"`,  which is the same model as `"rubin"` but works with individual-level data
-#' * for __continuous variable quantiles__: `"quantiles"`` model
-#'   (see Meager, 2019 in references)
-#' * for _mixture data_: `"sslab"` (experimental)
 #' * for __binary data__: `"logit"` model can be used on individual-level data;
 #'   you can also analyse continuous statistics such as
 #'   log odds ratios and logs risk ratios using the models listed above;
