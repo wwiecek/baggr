@@ -1,8 +1,8 @@
 ## cran-comments for baggr v0.7.11 (May 2025)
 
-(Intial two submissions for this version had some broken/moved permanently 
-URLs and one documentation NOTE. I hope that has now all been fixed, apologies.
-I attempted to also use `remote` and `incoming` check in `devtools::check()`)
+Intial three submissions for this version had 
+(1) some broken/moved permanently URLs and one documentation NOTE. I hope that has now all been fixed, apologies.
+(2) NOTE on Windows about -Wa,-mbig-obj flags; I removed them for CRAN release
 
 Test environments, now implemented via GitHub Actions:
 
@@ -20,9 +20,3 @@ N checking installed package size ... NOTE
   
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements.
-
-On Windows I added the following compilation flags as instructed by Stan devs
--Wa,-mbig-obj
-this was done to avoid compilation errors ("file too big") for users of new 
-Stan versions. However, it does seem to sometime trigger a NOTE on Windows (in some 
-versions of R) for non-standard flags.
