@@ -1,12 +1,15 @@
 ## cran-comments for baggr v0.7.11 (May 2025)
 
-Intial three submissions for this version had 
+Intial four submissions for this version (apologies!!!) had 
 (1) some broken/moved permanently URLs and one documentation NOTE. I hope that has now all been fixed, apologies.
 (2) NOTE on Windows about -Wa,-mbig-obj flags; I removed them for CRAN release
+(3) Accidentally re-added .Rdata in build folder which inflated tarball size
+
+These issues have now been fixed, thank you for your patience.
 
 Test environments, now implemented via GitHub Actions:
 
-* ubuntu-latest, devel, oldrel1
+* ubuntu-latest, devel, oldrel
 * windows-latest
 * macos-latest
 * generic R-hub configuration (`rhub::rhub_setup()`)
