@@ -164,8 +164,10 @@
 #' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()` fits a symmetric
 #' selection-on-z-values model (currently only in the `"rubin"` summary-data model).
 #' The values in `selection` are cut-points on |z| = |tau / se|; for example,
-#' `selection = c(1.96, 2.58)` gives three intervals, (0, 1.96], (1.96, 2.58],
-#' and (2.58, Inf). Each interval has its own relative publication probability
+#' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`, `[1.96, 2.58)`,
+#' and `[2.58, Inf)`. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
+#' (You should also consider defining it to more significant digits in large datasets.)
+#' Each interval has its own relative publication probability
 #' (weight), with the highest-|z| interval normalised to 1, and these weights
 #' are estimated jointly with the usual Rubin parameters.
 #'

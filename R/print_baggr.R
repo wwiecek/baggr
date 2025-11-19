@@ -131,10 +131,8 @@ print.baggr <- function(x,
 
   if(is_selection_model) {
     omega_summary <- selection(x, interval = prob)
-    if(is.null(dim(omega_summary))) {
-      omega_summary <- matrix(omega_summary, nrow = 1,
-                              dimnames = list(NULL, names(omega_summary)))
-    }
+    if(is.null(dim(omega_summary)))
+      omega_summary <- matrix(omega_summary, nrow = 1, dimnames = list(NULL, names(omega_summary)))
     cuts <- x$inputs$c
     fmt_cut <- function(val) formatC(val, format = "f", digits = 2, drop0trailing = TRUE)
     lower_bounds <- c(0, utils::head(cuts, -1))

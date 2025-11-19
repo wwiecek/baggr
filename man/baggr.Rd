@@ -221,8 +221,10 @@ For using aggregate level data, there is no such restriction.
 \strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()} fits a symmetric
 selection-on-z-values model (currently only in the \code{"rubin"} summary-data model).
 The values in \code{selection} are cut-points on |z| = |tau / se|; for example,
-\code{selection = c(1.96, 2.58)} gives three intervals, (0, 1.96], (1.96, 2.58],
-and (2.58, Inf). Each interval has its own relative publication probability
+\code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)}, \verb{[1.96, 2.58)},
+and \verb{[2.58, Inf)}. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
+(You should also consider defining it to more significant digits in large datasets.)
+Each interval has its own relative publication probability
 (weight), with the highest-|z| interval normalised to 1, and these weights
 are estimated jointly with the usual Rubin parameters.
 
