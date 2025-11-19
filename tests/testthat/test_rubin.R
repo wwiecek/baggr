@@ -176,6 +176,26 @@ test_that("Forest plots for Rubin model", {
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
+
+test_that("selection() helper returns omega summaries and draws", {
+  sel_summary <- selection(bg5_p)
+  expect_is(sel_summary, "matrix")
+  expect_equal(nrow(sel_summary), bg5_p$inputs$M)
+  expect_equal(colnames(sel_summary), c("2.5%", "mean", "97.5%", "median", "sd"))
+
+  sel_draws <- selection(bg5_p, summary = FALSE)
+  expect_true(is.matrix(sel_draws))
+  expect_equal(ncol(sel_draws), bg5_p$inputs$M)
+  expect_equal(nrow(sel_draws), nrow(as.matrix(bg5_p$fit)))
+
+  non_selection <- bg5_p
+  non_selection$model <- "mutau"
+  expect_error(selection(non_selection), "Selection parameters are only available")
+
+  missing_intervals <- bg5_p
+  missing_intervals$inputs$M <- 0
+  expect_error(selection(missing_intervals), "does not define any selection intervals")
+})
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
   expect_error(baggr(data = df_pooled, test_data = cars), "is of type")

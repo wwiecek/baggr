@@ -3,6 +3,9 @@
 #'
 #' This prints a concise summary of the main [baggr] model features.
 #' More info is included in the summary of the model and its attributes.
+#' When the model supports publication selection (currently `"rubin"`), the
+#' printout also reports the posterior summaries of the relative publication
+#' probability across the |z|-intervals defined in the selection model.
 #'
 #' @param x object of class `baggr`
 #' @param exponent if `TRUE`, results (for means) are converted to exp scale
@@ -118,6 +121,28 @@ print.baggr <- function(x,
   if(x$pooling == "full")
     cat("(SD(tau) undefined.)\n")
   cat("\n")
+
+  if(x$model %in% c("rubin") &&
+     !is.null(x$inputs$M) && x$inputs$M > 0 &&
+     !is.null(x$inputs$c)) {
+    omega_summary <- selection(x, interval = prob)
+    if(is.null(dim(omega_summary))) {
+      omega_summary <- matrix(omega_summary, nrow = 1,
+                              dimnames = list(NULL, names(omega_summary)))
+    }
+    cuts <- x$inputs$c
+    cut_digits <- if(is.null(digits)) 3 else digits
+    fmt_cut <- function(val) format(signif(val, digits = cut_digits), trim = TRUE)
+    lower_bounds <- c(0, cuts[-length(cuts)])
+    upper_bounds <- cuts
+    interval_labels <- paste0("|z| in (", fmt_cut(lower_bounds), ", ",
+                              fmt_cut(upper_bounds), "]")
+    rownames(omega_summary) <- interval_labels
+    cat("Relative publication probability (omega) by |z|-interval:\n")
+    print(omega_summary, digits = digits)
+    cat("Interval (", fmt_cut(tail(cuts, 1)), ", Inf) is fixed to 1 by the model.\n\n",
+        sep = "")
+  }
 
   # If this is just drawing from prior, stop here
   if(ppd)
