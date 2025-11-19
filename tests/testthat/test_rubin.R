@@ -153,6 +153,8 @@ test_that("Plotting works", {
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
+  expect_is(funnel(bg5_p), "gg")
+  expect_error(funnel(bg5_n), "Need a pooled model")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "one of")
 })
