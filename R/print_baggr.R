@@ -21,6 +21,7 @@
 #' @importFrom crayon bold
 #' @importFrom crayon red
 #' @importFrom crayon blue
+#' @importFrom utils head tail
 #' @export
 #' @method print baggr
 #'
@@ -132,7 +133,7 @@ print.baggr <- function(x,
     }
     cuts <- x$inputs$c
     fmt_cut <- function(val) formatC(val, format = "f", digits = 2, drop0trailing = TRUE)
-    lower_bounds <- c(0, head(cuts, -1))
+    lower_bounds <- c(0, utils::head(cuts, -1))
     upper_bounds <- cuts
     mean_col <- which(colnames(omega_summary) == "mean")
     if(length(mean_col) != 1) mean_col <- 2L
@@ -150,7 +151,7 @@ print.baggr <- function(x,
           mean_val, " ", intervaltxt_selection, " ", lower_val, " to ",
           upper_val, "\n", sep = "")
     }
-    cat("Publication probability relative to |z| in (", fmt_cut(tail(cuts, 1)),
+    cat("Publication probability relative to |z| in (", fmt_cut(utils::tail(cuts, 1)),
         ", Inf)\n\n", sep = "")
   }
 
