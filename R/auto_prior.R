@@ -305,7 +305,10 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
       prior_list <- set_prior_val(prior_list, "prior_sel", normal(0, 2))
       message("* log(relative publication probability) ~ N(0, 2); consider setting this manually.")
     }
+  } else {
+    prior_list <- set_prior_val(prior_list, "prior_sel", uniform(0, 1))
   }
+
   return(prior_list)
 }
 
