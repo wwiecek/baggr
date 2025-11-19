@@ -177,6 +177,7 @@ test_that("Forest plots for Rubin model", {
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
+
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
   expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
