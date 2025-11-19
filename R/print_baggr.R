@@ -33,13 +33,19 @@ print.baggr <- function(x,
                         group,
                         fixed = TRUE, ...) {
   ppd <- attr(x, "ppd")
+  is_selection_model <- x$model %in% c("rubin") &&
+    !is.null(x$inputs$M) && x$inputs$M > 0 && !is.null(x$inputs$c)
 
   # Announce model type
   if(ppd) {
     cat("Model type: Prior predictive draws for",
         crayon::bold(model_names[x$model]), "\n")
   } else {
-    cat("Model type:", crayon::bold(model_names[x$model]), "\n")
+    if(!is_selection_model)
+      cat("Model type:", crayon::bold(model_names[x$model]), "\n")
+    else
+      cat("Model type:", crayon::bold(model_names[x$model]), "and with selection on |z|\n")
+
     cat("Pooling of effects:", crayon::bold(x$pooling), "\n")
   }
 
@@ -123,9 +129,7 @@ print.baggr <- function(x,
     cat("(SD(tau) undefined.)\n")
   cat("\n")
 
-  if(x$model %in% c("rubin") &&
-     !is.null(x$inputs$M) && x$inputs$M > 0 &&
-     !is.null(x$inputs$c)) {
+  if(is_selection_model) {
     omega_summary <- selection(x, interval = prob)
     if(is.null(dim(omega_summary))) {
       omega_summary <- matrix(omega_summary, nrow = 1,
@@ -140,19 +144,19 @@ print.baggr <- function(x,
     lower_col <- if(ncol(omega_summary) >= 1) 1L else NA_integer_
     upper_col <- if(ncol(omega_summary) >= 3) 3L else NA_integer_
     intervaltxt_selection <- paste0("with ", as.character(100*prob), "% interval")
-    cat("Relative publication probability:\n")
+    cat("Publication probability relative to |z| in (", fmt_cut(utils::tail(cuts, 1)),
+        ", Inf):\n", sep = "")
     for(i in seq_len(nrow(omega_summary))) {
       mean_val <- format(omega_summary[i, mean_col], digits = digits, trim = TRUE)
       lower_val <- if(!is.na(lower_col))
         format(omega_summary[i, lower_col], digits = digits, trim = TRUE) else NA
       upper_val <- if(!is.na(upper_col))
         format(omega_summary[i, upper_col], digits = digits, trim = TRUE) else NA
-      cat("|z| in (", fmt_cut(lower_bounds[i]), ", ", fmt_cut(upper_bounds[i]), "] = ",
+      cat("* |z| in (", fmt_cut(lower_bounds[i]), ", ", fmt_cut(upper_bounds[i]), "] = ",
           mean_val, " ", intervaltxt_selection, " ", lower_val, " to ",
           upper_val, "\n", sep = "")
     }
-    cat("Publication probability relative to |z| in (", fmt_cut(utils::tail(cuts, 1)),
-        ", Inf)\n\n", sep = "")
+    cat("\n")
   }
 
   # If this is just drawing from prior, stop here
