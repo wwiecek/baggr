@@ -207,7 +207,14 @@ baggr_schools <- baggr(schools, model = "rubin", pooling = "partial",
                        iter = 10000, chains = 8)
 ```
 
-Other warnings you may see involve "divergent transitions". While not as serious as high Rhat, this can signal problems with the model. As the stan message that you will see suggests, try adjusting `adapt_delta` argument above 0.8, e.g. to 0.99. You cannot pass this parameter directly to _stan_ and thus you cannot pass it directly to baggr, so instead you must pass the argument `control = list(adapt_delta = 0.99)`. 
+Other warnings you may see involve "divergent transitions". While not as serious as high Rhat, this can signal problems with the model. As the stan message that you will see suggests, try adjusting `adapt_delta` argument above 0.8, e.g. to 0.99; same as with `iter` and `chains`, since you can pass Stan arguments within `baggr()`, you can simply do:
+
+```{r eval=FALSE}
+baggr_schools <- baggr(schools, model = "rubin", pooling = "partial", 
+                       iter = 10000, chains = 8,
+                       control = list(adapt_delta = 0.99)) #see rstan documentation for details
+```
+
 
 
 ## Measuring "pooling"
@@ -347,6 +354,13 @@ The plots can be modified by passing extra arguments -- see `?forestplot`. It's 
 ```{r, fig.width=5}
 forest_plot(baggr_schools, show = "both")
 ```
+
+For a visual similar to forest plot but more in the default plotting style, you can also try 
+
+```{r echo=TRUE, fig.width=5}
+plot(baggr_schools, style = "forest")
+```
+
 
 ## Cross-validation in _baggr_
 
