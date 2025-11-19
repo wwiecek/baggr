@@ -60,6 +60,8 @@ funnel <- function(bg,
     upper = hypermean + crit * sqrt(se_grid^2 + hetero^2)
   )
 
+  effect <- group <- head <- lower <- se <- tail <- upper <- NULL
+
   ggplot2::ggplot(plot_df, ggplot2::aes(x = effect, y = se)) +
     ggplot2::geom_point() +
     ggplot2::geom_line(data = fan,

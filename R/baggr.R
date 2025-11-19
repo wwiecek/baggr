@@ -49,13 +49,14 @@
 #'                      if `pooling_control = "partial"`, the prior is hyperprior
 #'                      for all baselines, if `"none"`,
 #'                      then it is an independent prior for all baselines
+#' @param prior_selection prior for the log of relative publication probability (see __Selection__ section below and argument `selection`)
 #' @param prior_control_sd prior for the SD in the control arm (baseline), currently
 #'                         used in `"logit"` model only;
 #'                         this can only be used if `pooling_control = "partial"`
 #' @param prior_sigma prior for error terms in linear regression models (`"rubin_full"` or `"mutau_full"`)
-#' @param prior alternative way to specify all priors as a named list with `hypermean`,
-#'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
-#'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
+#' @param prior alternative way to specify all of the priors above as a single named list, with `hypermean`,
+#'              `hypersd`, `hypercor`, `beta` etc., with names dropping `prior_` prefix,
+#'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-5, 5))`
 #' @param ppd       logical; use prior predictive distribution? (_p.p.d._)
 #'                  If `ppd=TRUE`, Stan model will sample from the prior distribution(s)
 #'                  and ignore `data` in inference. However, `data` argument might still

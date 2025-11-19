@@ -11,17 +11,17 @@ selection(bg, summary = TRUE, interval = 0.95)
 (currently \code{model = "rubin"}).}
 
 \item{summary}{logical; if \code{TRUE}, returns summary statistics (mean and
- the uncertainty interval defined by \code{interval}).}
+the uncertainty interval defined by \code{interval}).}
 
 \item{interval}{uncertainty interval width (numeric between 0 and 1),
- used only when \code{summary = TRUE}.}
+used only when \code{summary = TRUE}.}
 }
 \value{
 If \code{summary = FALSE}, a matrix of posterior draws where each column
-corresponds to a \eqn{|z|}-interval. Otherwise, a matrix with one row per interval
+corresponds to a |z|-interval. Otherwise, a matrix with one row per interval
 and columns containing the mean and bounds of the uncertainty interval.
 }
 \description{
 Extracts the posterior draws (or summaries) of the selection-model parameters
-that describe the relative publication probabilities across \eqn{|z|}-intervals.
+that describe the relative publication probabilities across |z|-intervals.
 }

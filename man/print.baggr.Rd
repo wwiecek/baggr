@@ -27,7 +27,7 @@ to or from other methods (\code{print}  requirement)}
 \description{
 This prints a concise summary of the main \link{baggr} model features.
 More info is included in the summary of the model and its attributes.
-When the selected model supports publication selection (currently \code{"rubin"}),
-the printout also reports the posterior summaries of the relative publication
-probability across the \eqn{|z|}-intervals defined in the selection model.
+When the model supports publication selection (currently \code{"rubin"}), the
+printout also reports the posterior summaries of the relative publication
+probability across the |z|-intervals defined in the selection model.
 }

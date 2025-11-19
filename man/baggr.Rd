@@ -86,11 +86,13 @@ then it is an independent prior for all baselines}
 used in \code{"logit"} model only;
 this can only be used if \code{pooling_control = "partial"}}
 
+\item{prior_selection}{prior for the log of relative publication probability (see \strong{Selection} section below and argument \code{selection})}
+
 \item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"mutau_full"})}
 
-\item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
-\code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
-e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
+\item{prior}{alternative way to specify all of the priors above as a single named list, with \code{hypermean},
+\code{hypersd}, \code{hypercor}, \code{beta} etc., with names dropping \code{prior_} prefix,
+e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-5, 5))}}
 
 \item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.})
 If \code{ppd=TRUE}, Stan model will sample from the prior distribution(s)
