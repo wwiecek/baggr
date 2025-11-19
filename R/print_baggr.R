@@ -131,9 +131,8 @@ print.baggr <- function(x,
                               dimnames = list(NULL, names(omega_summary)))
     }
     cuts <- x$inputs$c
-    cut_digits <- if(is.null(digits)) 3 else digits
-    fmt_cut <- function(val) format(signif(val, digits = cut_digits), trim = TRUE)
-    lower_bounds <- c(0, cuts[-length(cuts)])
+    fmt_cut <- function(val) formatC(val, format = "f", digits = 2, drop0trailing = TRUE)
+    lower_bounds <- c(0, head(cuts, -1))
     upper_bounds <- cuts
     mean_col <- which(colnames(omega_summary) == "mean")
     if(length(mean_col) != 1) mean_col <- 2L
@@ -151,8 +150,8 @@ print.baggr <- function(x,
           mean_val, " ", intervaltxt_selection, " ", lower_val, " to ",
           upper_val, "\n", sep = "")
     }
-    cat("Interval (", fmt_cut(tail(cuts, 1)), ", Inf) is fixed to 1 by the model.\n\n",
-        sep = "")
+    cat("Publication probability relative to |z| in (", fmt_cut(tail(cuts, 1)),
+        ", Inf)\n\n", sep = "")
   }
 
   # If this is just drawing from prior, stop here
