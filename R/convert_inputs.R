@@ -367,12 +367,6 @@ convert_inputs <- function(data,
       if(any(is.na(data[[cov]])))
         stop("NA values present in covariates")
 
-    if(!is.null(test_data) && !all(covariates %in% names(test_data)))
-      stop(paste0("Covariates ",
-                  paste(covariates[!(covariates %in% names(test_data))], collapse=","),
-                  " are not columns in test_data"))
-
-
     # Test_data preparation
     cov_bind <- data[,covariates, drop = FALSE]
     if(!is.null(test_data)){
