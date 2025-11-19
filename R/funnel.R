@@ -47,17 +47,17 @@ funnel <- function(bg,
   plot_df <- if(show == "inputs") raw_df else post_df
 
   # hyper-mean + heterogeneity
-  hypermean <- hypermean(bg)[["mean"]]
+  hypermean <- hypermean(bg)
   hetero <- if(bg$pooling == "partial") hypersd(bg)[["mean"]] else 0
   if(is.na(hypermean))
-    stop("Need a pooled model to define hypermean/hypersd for the funnel.")
+    stop("Need a pooled model to plot average treatment effect for the funnel.")
 
   crit <- stats::qnorm(1 - (1 - level)/2)
   se_grid <- seq(0, max(plot_df$se), length.out = 200)
   fan <- data.frame(
     se = se_grid,
-    lower = hypermean - crit * sqrt(se_grid^2 + hetero^2),
-    upper = hypermean + crit * sqrt(se_grid^2 + hetero^2)
+    lower = hypermean[["mean"]] - crit * sqrt(se_grid^2 + hetero^2),
+    upper = hypermean[["mean"]] + crit * sqrt(se_grid^2 + hetero^2)
   )
 
   ggplot2::ggplot(plot_df, ggplot2::aes(x = effect, y = se)) +
@@ -68,7 +68,7 @@ funnel <- function(bg,
     ggplot2::geom_line(data = fan,
                        ggplot2::aes(x = upper, y = se),
                        linetype = "dashed") +
-    ggplot2::geom_vline(xintercept = hypermean, linewidth = 0.4) +
+    ggplot2::geom_vline(xintercept = hypermean[["mean"]], linewidth = 0.4) +
     {if(label) ggrepel::geom_text_repel(ggplot2::aes(label = group),
                                         min.segment.length = 0)} +
     ggplot2::scale_y_reverse() +

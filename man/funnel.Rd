@@ -25,4 +25,5 @@ Funnel plots for baggr models
 \examples{
 bg <- baggr(schools, iter = 500, refresh = 0)
 funnel(bg, label = TRUE)
+
 }
