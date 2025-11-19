@@ -68,6 +68,8 @@
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
 #' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
+#' @param selection optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
+#'                  most commonly you'd set this to 1.96 (p=0.05) of `c(1.96, 2.58)` (p=0.05 and p=0.01)
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -206,6 +208,7 @@ baggr <- function(data,
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_cluster = NULL,
                   prior_control = NULL, prior_control_sd = NULL,
+                  prior_selection = NULL,
                   prior_sigma = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
@@ -214,6 +217,7 @@ baggr <- function(data,
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   cluster = NULL,
+                  selection = NULL,
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
@@ -255,6 +259,7 @@ baggr <- function(data,
                               group = group,
                               treatment = treatment,
                               cluster = cluster,
+                              selection = selection,
                               test_data = test_data,
                               silent = silent)
 
@@ -340,7 +345,9 @@ baggr <- function(data,
                   beta      = prior_beta,
                   cluster   = prior_cluster,
                   control   = prior_control,
-                  control_sd= prior_control_sd)
+                  control_sd= prior_control_sd,
+                  selection = prior_selection
+                  )
   } else {
     if(!is.null(prior_hypermean) || !is.null(prior_beta) || is.null(prior_cluster) ||
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
@@ -361,7 +368,8 @@ baggr <- function(data,
     stan_args$formatted_prior <- NULL
   } else { # extract priors from inputs & fill in missing priors
     formatted_prior <- prepare_prior(prior, data, stan_data, model,
-                                     pooling, covariates, quantiles = quantiles,
+                                     pooling, covariates, selection,
+                                     quantiles = quantiles,
                                      silent = silent)
   }
 
