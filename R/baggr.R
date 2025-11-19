@@ -160,6 +160,19 @@
 #' only heterogeneity in treatment arms.)
 #' For using aggregate level data, there is no such restriction.
 #'
+#' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()` fits a symmetric
+#' selection-on-z-values model (currently only in the `"rubin"` summary-data model).
+#' The values in `selection` are cut-points on |z| = |tau / se|; for example,
+#' `selection = c(1.96, 2.58)` gives three intervals, (0, 1.96], (1.96, 2.58],
+#' and (2.58, Inf). Each interval has its own relative publication probability
+#' (weight), with the highest-|z| interval normalised to 1, and these weights
+#' are estimated jointly with the usual Rubin parameters.
+#'
+#' The selection model assumes that publication depends only on |z| (not on the
+#' sign or other study features). Inference can be very sensitive to the choice of
+#' cut-points and priors on the selection weights, which you should set manually.
+#' For more complex cases you should consider using other methods.
+#'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
 #' Other standard functions for working with `baggr` object are
