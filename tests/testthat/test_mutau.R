@@ -141,7 +141,7 @@ test_that("Plotting works", {
   expect_is(forest_plot(bg5_n), "gforge_forestplot")
   expect_is(forest_plot(bg5_p), "gforge_forestplot")
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
-  expect_is(funnel(bg5_p), "gg")
+  expect_is(funnel_plot(bg5_p), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 })

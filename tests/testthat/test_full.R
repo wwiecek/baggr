@@ -44,7 +44,7 @@ test_that("Basic operations on rubin_full model", {
   expect_is(pooling(bg_p)[,,1], "matrix")
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
-  expect_is(funnel(bg_p), "gg")
+  expect_is(funnel_plot(bg_p), "gg")
   expect_is(forest_plot(bg_p), "gforge_forestplot")
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
   expect_is(bgc, "baggr_compare")
@@ -162,11 +162,11 @@ sa$c <- sample(c("A", "B", "C"), nrow(schools_ipd), replace = T)
 sb <- sa
 sb$b <- NULL
 
+bg_cov <- expect_warning(
+  baggr(sa, covariates = c("a", "b", "c"), iter = 150, chains = 1, refresh = 0))
+
 
 test_that("Model with covariates works fine", {
-  bg_cov <- expect_warning(
-    baggr(sa, covariates = c("a", "b", "c"), iter = 150, chains = 1, refresh = 0))
-
   expect_is(bg_cov, "baggr")
   expect_error(baggr(sa, covariates = c("made_up_covariates")), "are not columns")
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")), "are not columns")
@@ -179,6 +179,13 @@ test_that("Model with covariates works fine", {
   expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
   expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,5,1))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
+})
+
+test_that("Funnel plot handles covariates", {
+  p <- funnel_plot(bg_cov, covariate = "c")
+  expect_is(p, "gg")
+  expect_true("covariate_value" %in% names(p$data))
+  expect_warning(funnel_plot(bg_cov, covariate = "missing"), "Covariate column")
 })
 
 bg_pr <- expect_warning(baggr(schools_ipd,
