@@ -385,7 +385,6 @@ baggr <- function(data,
   } else { # extract priors from inputs & fill in missing priors
     formatted_prior <- prepare_prior(prior, data, stan_data, model,
                                      pooling, covariates, selection,
-                                     quantiles = quantiles,
                                      silent = silent)
   }
 

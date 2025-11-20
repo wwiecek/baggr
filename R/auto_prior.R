@@ -14,27 +14,32 @@
 #' @param pooling same as in [baggr]
 #' @param covariates same as in [baggr]
 #' @param selection  same as in [baggr]
-#' @param quantiles  same as in [baggr]
 #' @param silent same as in [baggr]
 #'
 #' @return A named list with prior values that can be appended to `stan_data`
 #'         and passed to a Stan model.
 #'
 
-prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, selection,
-                          quantiles = c(), silent = FALSE) {
+prepare_prior <- function(prior,
+                          data,
+                          stan_data,
+                          model,
+                          pooling = c("partial", "none", "full"),
+                          covariates = c(),
+                          selection = NULL,
+                          silent = FALSE) {
 
   if(missing(prior))
     prior <- list()
 
   prior_list <- list()
 
-  if(model %in% c("rubin_full", "logit"))
-    re_dim <- attr(stan_data, "n_re")
-  else
-    re_dim <- 1
+  pooling <- match.arg(pooling)
 
-  # Swap data for summary data...
+  # Determine number of random effects in the model, which will determine dimension of some priors
+  if(model %in% c("rubin_full", "logit")) re_dim <- attr(stan_data, "n_re") else re_dim <- 1
+
+  # In models that use individual-level data, swap `data` argument for summary data
   if(model %in% c("rubin_full", "logit", "mutau_full")) {
     trt_col <- attr(stan_data, "columns")[["treatment"]]
     pma_data <- data.frame(outcome = stan_data$y,
@@ -60,7 +65,14 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
   }
   # ...then proceed as you would in Rubin model
 
-  if(model %in% c("rubin", "mutau", "logit", "rubin_full", "sslab", "mutau_full")) {
+  if(!(model %in% c("rubin", "mutau", "logit", "rubin_full", "sslab", "mutau_full")))
+    stop(paste0("Cannot prepare priors for model of type ", model))
+
+
+
+  # Now set the priors in several steps:
+  # (1) Setting model-specific priors (and checking they conform to spec)
+
     # For each model we need a list of what priors can be specified and
     # what families of distributions are allowed for them
     # (this second part should be changed to just specifying dimensionality/type)
@@ -81,13 +93,12 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
                    "control" = "real", "control_sd" = "positive_real"),
       "sslab"  = c("hypermean" = "real", "hypersd" = "positive_real",
                    "control" = "real", "control_sd" = "positive_real",
-                   "scale_control"  = "real",
-                   "scale_control_sd"  = "positive_real",
-                   "scale"  = "real",
-                   "scale_sd"  = "positive_real",
-                   "kappa"  = "real",
-                   "kappa_sd"  = "positive_real")
+                   "scale_control"  = "real", "scale_control_sd"  = "positive_real",
+                   "scale"  = "real", "scale_sd"  = "positive_real",
+                   "kappa"  = "real", "kappa_sd"  = "positive_real")
     )
+
+    # Now loop over all priors that need to be specified for a given model
     for(current_prior in names(priors_spec[[model]])) {
       if(is.null(prior[[current_prior]])) {
         if(model != "sslab"){
@@ -155,18 +166,13 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
       convert_to_array <-
         model %in% c("logit", "rubin_full") &&
         current_prior %in% c("hypermean", "hypersd")
+
+      # SET THE PRIOR VALUE HERE
       prior_list <- set_prior_val(prior_list,
                                   paste0("prior_", current_prior),
                                   dist_to_set,
                                   p = if(convert_to_array) re_dim else 1,
                                   to_array = convert_to_array)
-
-
-
-      # else if(model %in% c("logit", "rubin_full")) {
-      #   prior$hypermean <- replicate(re_dim, prior$hypermean, simplify = FALSE)
-      #   prior$hypersd   <- replicate(re_dim, prior$hypersd,   simplify = FALSE)
-      # }
 
       # Print out priors
       if(!silent) {
@@ -253,17 +259,8 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
 
     # Check eligibility
     check_eligible_priors(prior_list, priors_spec[[model]])
-  }
 
-  if(model == "quantiles") {
-    # prior_list[["prior_dispersion_on_beta_0"]] <- 1000*diag(stan_data$Nq)
-    # prior_list[["prior_dispersion_on_beta_1"]] <- 1000*diag(stan_data$Nq)
-    # if(!silent) {
-    #   message("Sigma (hypervariance-covariance) = 1000*I_{Nquantiles}")
-    # }
-  }
-
-  # Setting fixed effects/beta/covariates prior
+  # (2) Setting fixed effects/beta/covariates prior
   if(length(covariates) > 0) {
     if(is.null(prior$beta)){
       val <- 10*max(apply(stan_data$X, 2, sd))
@@ -280,7 +277,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
     prior_list <- set_prior_val(prior_list, "prior_beta", uniform(0, 1))
   }
 
-  # Setting clustering prior
+  # (3) Setting clustering prior
   if(!is.null(stan_data$clustered) && (stan_data$clustered == 1)) {
     if(is.null(prior$cluster)){
       val <- 10*sd(abs(tapply(stan_data$y, stan_data$cluster, mean)))
@@ -297,7 +294,7 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, se
     prior_list <- set_prior_val(prior_list, "prior_cluster", uniform(0, 1))
   }
 
-  # Setting the selection prior (for relative publication Pr on log scale)
+  # (4) Setting the selection prior (for relative publication Pr on log scale)
   if(model == "rubin" && !is.null(selection)){
     if(!is.null(prior$selection)){
       prior_list <- set_prior_val(prior_list, "prior_sel", prior$selection)
