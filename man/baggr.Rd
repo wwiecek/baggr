@@ -17,6 +17,7 @@ baggr(
   prior_cluster = NULL,
   prior_control = NULL,
   prior_control_sd = NULL,
+  prior_selection = NULL,
   prior_sigma = NULL,
   prior = NULL,
   ppd = FALSE,
@@ -27,6 +28,7 @@ baggr(
   group = "group",
   treatment = "treatment",
   cluster = NULL,
+  selection = NULL,
   silent = FALSE,
   warn = TRUE,
   ...
@@ -84,11 +86,13 @@ then it is an independent prior for all baselines}
 used in \code{"logit"} model only;
 this can only be used if \code{pooling_control = "partial"}}
 
+\item{prior_selection}{prior for the log of relative publication probability (see \strong{Selection} section below and argument \code{selection})}
+
 \item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"mutau_full"})}
 
-\item{prior}{alternative way to specify all priors as a named list with \code{hypermean},
-\code{hypersd}, \code{hypercor}, \code{beta}, analogous to \code{prior_} arguments above,
-e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))}}
+\item{prior}{alternative way to specify all of the priors above as a single named list, with \code{hypermean},
+\code{hypersd}, \code{hypercor}, \code{beta} etc., with names dropping \code{prior_} prefix,
+e.g. \code{prior = list(hypermean = normal(0,10), beta = uniform(-5, 5))}}
 
 \item{ppd}{logical; use prior predictive distribution? (\emph{p.p.d.})
 If \code{ppd=TRUE}, Stan model will sample from the prior distribution(s)
@@ -117,6 +121,9 @@ it will be used as labels for groups when displaying results}
 
 \item{cluster}{optional; column name in (individual-level) \code{data}; if defined,
 random cluster effects will be fitted in each study}
+
+\item{selection}{optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
+most commonly you'd set this to 1.96 (p=0.05) of \code{c(1.96, 2.58)} (p=0.05 and p=0.01)}
 
 \item{silent}{Whether to silence messages about prior settings and about other automatic behaviour.}
 
@@ -210,6 +217,21 @@ of the groups of interest. (This is because in cross-validation we are not typic
 interested in the model's ability to fit heterogeneity in control arms, but
 only heterogeneity in treatment arms.)
 For using aggregate level data, there is no such restriction.
+
+\strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()} fits a symmetric
+selection-on-z-values model (currently only in the \code{"rubin"} summary-data model).
+The values in \code{selection} are cut-points on |z| = |tau / se|; for example,
+\code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)}, \verb{[1.96, 2.58)},
+and \verb{[2.58, Inf)}. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
+(You should also consider defining it to more significant digits in large datasets.)
+Each interval has its own relative publication probability
+(weight), with the highest-|z| interval normalised to 1, and these weights
+are estimated jointly with the usual Rubin parameters.
+
+The selection model assumes that publication depends only on |z| (not on the
+sign or other study features). Inference can be very sensitive to the choice of
+cut-points and priors on the selection weights, which you should set manually.
+For more complex cases you should consider using other methods.
 
 \strong{Outputs.} By default, some outputs are printed. There is also a
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).

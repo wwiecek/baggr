@@ -37,7 +37,8 @@ test_that("Error messages for wrong inputs are in place", {
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
                    c("K", "theta_hat_k", "se_theta_k", "K_test",
-                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
+                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
+                     "M", "c"))
 
   expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
@@ -152,6 +153,8 @@ test_that("Plotting works", {
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
+  expect_is(funnel(bg5_p), "gg")
+  expect_error(funnel(bg5_n), "Need a pooled model")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "one of")
 })
@@ -176,6 +179,7 @@ test_that("Forest plots for Rubin model", {
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
+
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
   expect_error(baggr(data = df_pooled, test_data = cars), "is of type")

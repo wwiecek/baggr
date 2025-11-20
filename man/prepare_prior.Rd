@@ -11,6 +11,7 @@ prepare_prior(
   model,
   pooling,
   covariates,
+  selection,
   quantiles = c(),
   silent = FALSE
 )
@@ -28,6 +29,8 @@ this is already pre-obtained through \link{convert_inputs}}
 \item{pooling}{same as in \link{baggr}}
 
 \item{covariates}{same as in \link{baggr}}
+
+\item{selection}{same as in \link{baggr}}
 
 \item{quantiles}{same as in \link{baggr}}
 

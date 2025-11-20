@@ -1,3 +1,11 @@
+# baggr 0.8 (late 2025)
+
+* You can fit a "typical" selection model on |z| values (a la Hedges 1992) using 
+  `selection` argument, e.g. `selection = c(1.96, 2.58)`.
+  This is recommended only for sufficiently large datasets and you should set your 
+  own priors (on log(relative probability Pr)) when doing this, using `prior_selection`
+* For any baggr object you can also create a funnel plot, e.g. `funnel(bg, label = TRUE, show = "inputs")`
+
 # baggr 0.7.11 (late 2024)
 
 Two big additions:

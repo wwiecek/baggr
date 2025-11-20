@@ -13,6 +13,7 @@
 #' @param model same as in [baggr]
 #' @param pooling same as in [baggr]
 #' @param covariates same as in [baggr]
+#' @param selection  same as in [baggr]
 #' @param quantiles  same as in [baggr]
 #' @param silent same as in [baggr]
 #'
@@ -20,7 +21,7 @@
 #'         and passed to a Stan model.
 #'
 
-prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
+prepare_prior <- function(prior, data, stan_data, model, pooling, covariates, selection,
                           quantiles = c(), silent = FALSE) {
 
   if(missing(prior))
@@ -294,6 +295,18 @@ prepare_prior <- function(prior, data, stan_data, model, pooling, covariates,
     }
   } else {
     prior_list <- set_prior_val(prior_list, "prior_cluster", uniform(0, 1))
+  }
+
+  # Setting the selection prior (for relative publication Pr on log scale)
+  if(model == "rubin" && !is.null(selection)){
+    if(!is.null(prior$selection)){
+      prior_list <- set_prior_val(prior_list, "prior_sel", prior$selection)
+    } else {
+      prior_list <- set_prior_val(prior_list, "prior_sel", normal(0, 2))
+      message("* log(relative publication probability) ~ N(0, 2); consider setting this manually.")
+    }
+  } else {
+    prior_list <- set_prior_val(prior_list, "prior_sel", uniform(0, 1))
   }
 
   return(prior_list)

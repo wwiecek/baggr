@@ -21,7 +21,8 @@ test_that("Error messages for wrong inputs are in place", {
                    c("K", "N", "P", "y", "treatment", "site",
                      "clustered", "cluster", "Ncluster",
                      "N_test", "K_test",
-                     "test_y", "test_site", "test_treatment", "Nc", "X", "X_test"))
+                     "test_y", "test_site", "test_treatment", "Nc", "X", "X_test",
+                     "M", "c"))
 })
 
 bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",
@@ -166,6 +167,7 @@ test_that("Plotting and printing works", {
   expect_is(forest_plot(bg5_p), "gforge_forestplot")
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
+  expect_is(funnel(bg5_p), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 

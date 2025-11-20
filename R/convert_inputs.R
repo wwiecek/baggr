@@ -21,6 +21,7 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
+#' @param selection same as in [baggr]; vector of cut-offs for |z| value in selection model
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
 #' @param silent Whether to print messages when evaluated
@@ -47,6 +48,7 @@ convert_inputs <- function(data,
                            outcome   = "outcome",
                            treatment = "treatment",
                            cluster = NULL,
+                           selection = NULL,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
@@ -401,6 +403,19 @@ convert_inputs <- function(data,
       out$X <- array(0, dim=c(nrow(data), 0))
       out$X_test <- array(0, dim=c(ifelse(is.null(test_data), 0, nrow(test_data)), 0))
     }
+  }
+
+
+
+  # Add selection model cut-offs -----
+  if(is.null(selection)){
+    out$M <- 0L
+    out$c <- numeric(0)
+  } else {
+    if(!is.numeric(selection) || any(!is.finite(selection)) || any(selection < 0) || length(selection) < 1)
+      stop("selection input has to be a finite- and positive-valued vector")
+    out$M <- length(selection)
+    out$c <- array(selection, length(selection))
   }
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
