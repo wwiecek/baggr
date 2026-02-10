@@ -109,6 +109,6 @@ Included in baggr v0.8 (2026):
   - Cross-validation (leave-one-group-out)
   - Prior and posterior predictive distributions
   - Selection models based on \|z\| thresholds (`selection = ...`)
-  - Funnel plots for fitted objects via `funnel()`
+  - Funnel plots for fitted objects via `funnel_plot()`
 
 Check [NEWS.md] for more information on recent changes to the package.

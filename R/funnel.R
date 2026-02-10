@@ -5,19 +5,30 @@
 #'   posterior summaries (`"posterior"`)
 #' @param level confidence level for reference lines
 #' @param label logical: add study/group labels?
+#' @param covariate optional name of a column in the model input data used to
+#'   colour points.
 #'
 #' @return A ggplot funnel plot for the supplied model
+#' @details
+#' Funnel plots provide a visual check of how study-level effects vary with
+#' precision. Apparent asymmetry can indicate small-study effects, but can also
+#' arise due to unexplained heterogeneity between studies.
+#'
+#' For models with group-level covariates, colouring points by a covariate can
+#' help inspect whether asymmetry is partly explained by meta-regression effects.
+#'
 #' @export
 #' @importFrom ggrepel geom_text_repel
 #'
 #' @examples
 #' bg <- baggr(schools, iter = 500, refresh = 0)
-#' funnel(bg, label = TRUE)
+#' funnel_plot(bg, label = TRUE)
 #'
-funnel <- function(bg,
-                   show = c("inputs", "posterior"),
-                   level = 0.95,
-                   label = FALSE) {
+funnel_plot <- function(bg,
+                        show = c("inputs", "posterior"),
+                        level = 0.95,
+                        label = FALSE,
+                        covariate = NULL) {
   stopifnot(inherits(bg, "baggr"))
   if(length(bg$effects) != 1)
     stop("Funnel plot currently defined for 1-dimensional effects.")
@@ -37,12 +48,22 @@ funnel <- function(bg,
   raw_df <- studies[, c("group", "tau", "se")]
   names(raw_df) <- c("group", "effect", "se")
 
+  if(!is.null(covariate)) {
+    if(!(covariate %in% names(studies))) {
+      warning("Requested covariate column was not found; points are shown without colouring")
+    } else {
+      raw_df$.covariate <- studies[[covariate]]
+    }
+  }
+
   # posterior summaries (mean & SD) for partial/full pooling outputs
   post_df <- as.data.frame(group_effects(bg, summary = TRUE,
                                          interval = level)[,,1])
   post_df$group <- group_names(bg)
   post_df <- post_df[, c("group", "mean", "sd")]
   names(post_df) <- c("group", "effect", "se")
+  if(!is.null(raw_df$.covariate))
+    post_df$.covariate <- raw_df$.covariate
 
   plot_df <- if(show == "inputs") raw_df else post_df
 
@@ -61,9 +82,14 @@ funnel <- function(bg,
   )
 
   effect <- group <- head <- lower <- se <- tail <- upper <- NULL
+  .covariate <- NULL
+
+  point_mapping <- if(!is.null(plot_df$.covariate)) {
+    ggplot2::aes(colour = .covariate)
+  }
 
   ggplot2::ggplot(plot_df, ggplot2::aes(x = effect, y = se)) +
-    ggplot2::geom_point() +
+    ggplot2::geom_point(mapping = point_mapping) +
     ggplot2::geom_line(data = fan,
                        ggplot2::aes(x = lower, y = se),
                        linetype = "dashed") +

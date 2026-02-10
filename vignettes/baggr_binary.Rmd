@@ -656,6 +656,7 @@ Each of the models considered could now be compared using `loocv()` (see the exa
 # Accounting for covariates: meta-regression and mixed models
 
 This section provides only a short example. To learn more about meta-regression see e.g. @baker_understanding_2009
+When assessing funnel plots, keep in mind that asymmetry does not only reflect publication or small-study biases: it can also arise from unexplained between-study heterogeneity. Meta-regression covariates can sometimes account for part of that asymmetry by explaining systematic differences across studies.
 
 Two types of covariates may be present in your data:
 
