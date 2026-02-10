@@ -7,7 +7,7 @@
 selection(bg, summary = TRUE, interval = 0.95)
 }
 \arguments{
-\item{bg}{a \link{baggr} model fitted with a selection-enabled likelihood
+\item{bg}{a \code{\link[=baggr]{baggr()}} model fitted with a selection-enabled likelihood
 (currently \code{model = "rubin"}).}
 
 \item{summary}{logical; if \code{TRUE}, returns summary statistics (mean and

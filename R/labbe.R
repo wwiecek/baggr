@@ -6,7 +6,7 @@
 #' @param data a data frame with binary data
 #'             (must have columns `a`, `c`, `b`/`n1`, `d`/`n2`)
 #' @param group a character string specifying group names (e.g. study names), used for labels;
-#' @param plot_model if `TRUE`, then odds ratios and risk ratios [baggr] models are estimated (using default
+#' @param plot_model if `TRUE`, then odds ratios and risk ratios [baggr::baggr()] models are estimated (using default
 #'                   settings) and their mean estimates of effects are plotted as lines
 #' @param labels if `TRUE`, names from the `group` column are displayed
 #' @param shade_se if `"none"`, nothing is plotted, if `"or"` or `"rr"`, a shaded area corresponding to

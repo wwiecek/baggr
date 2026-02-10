@@ -1,10 +1,10 @@
 #' Make predictive draws from baggr model
 #'
 #' The function `effect_draw` and its alias, `posterior_predict`, take the sample
-#' of hyperparameters from a [baggr] model
+#' of hyperparameters from a [baggr::baggr()] model
 #' (typically hypermean and hyper-SD, which you can see using [treatment_effect])
 #' and draws values of new realisations of treatment effect, i.e. an additional draw from the "population of studies".
-#' This can be used for both prior and posterior draws, depending on [baggr] model.
+#' This can be used for both prior and posterior draws, depending on [baggr::baggr()] model.
 #' By default this is done for a single new effect, but for meta-regression models
 #' you can specify values of covariates with the `newdata` argument, same as in [predict].
 #'
@@ -34,14 +34,14 @@
 #' as priors in analysis of future data (since the draws can be seen as an expected treatment effect
 #' in a hypothetical study).
 #'
-#' The default number of samples is the same as what is returned by Stan model implemented in [baggr],
+#' The default number of samples is the same as what is returned by Stan model implemented in [baggr::baggr()],
 #' (depending on such options as `iter`, `chains`, `thin`). If `n` is larger than what is available
 #' in Stan model, we draw values with replacement. This is not recommended and warning is printed in
 #' these cases.
 #'
-#' Under default settings in [baggr], a _posterior_ predictive distribution is obtained. But
+#' Under default settings in [baggr::baggr()], a _posterior_ predictive distribution is obtained. But
 #' `effect_draw` can also be used for _prior_ predictive distributions when
-#' setting `ppd=T` in [baggr]. The two outputs work exactly the same way.
+#' setting `ppd=T` in [baggr::baggr()]. The two outputs work exactly the same way.
 #'
 #' If the `baggr` model used by the function is a meta-regression
 #' (i.e. a `baggr` model with `covariates`), by specifying
@@ -162,7 +162,7 @@ effect_draw <- function(object,
 #' (under default settings, _posterior_ predictive),
 #' for one or more `baggr` objects.
 #'
-#' @param ... Object(s) of class [baggr]. If there is more than one,
+#' @param ... Object(s) of class [baggr::baggr()]. If there is more than one,
 #'            a comparison will be plotted and  names of objects
 #'            will be used as a plot legend (see examples).
 #' @param transform a transformation to apply to the result, should be an R function;
@@ -176,9 +176,9 @@ effect_draw <- function(object,
 #'          `compare = "effects"`
 #'
 #' @details
-#' Under default settings in [baggr] posterior predictive is obtained. But
+#' Under default settings in [baggr::baggr()] posterior predictive is obtained. But
 #' `effect_plot` can also be used for _prior_ predictive distributions when
-#' setting `ppd=T` in [baggr]. The two outputs work exactly the same, but
+#' setting `ppd=T` in [baggr::baggr()]. The two outputs work exactly the same, but
 #' labels will change to indicate this difference.
 #'
 #' @examples

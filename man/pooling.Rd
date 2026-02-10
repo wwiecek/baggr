@@ -22,7 +22,7 @@ heterogeneity(
 \method{weights}{baggr}(object, ...)
 }
 \arguments{
-\item{bg}{a \link{baggr} model}
+\item{bg}{a \code{\link[=baggr]{baggr()}} model}
 
 \item{metric}{\code{"pooling"} for Gelman & Pardoe statistic \emph{P},
 \code{"isq"} for I-squared statistic (\emph{1-P}, Higgins & Thompson, 2002)
@@ -36,13 +36,13 @@ also see \emph{Details}}
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
 
-\item{object}{\link{baggr} model for which to calculate group (study) weights}
+\item{object}{\code{\link[=baggr]{baggr()}} model for which to calculate group (study) weights}
 
 \item{...}{Unused, please ignore.}
 }
 \description{
 Compute statistics relating to
-\code{pooling} in a given \link{baggr} meta-analysis model returns statistics, for
+\code{pooling} in a given \code{\link[=baggr]{baggr()}} meta-analysis model returns statistics, for
 either the entire model or individual groups, such as
 pooling statistic by Gelman & Pardoe (2006), \emph{I-squared}, \emph{H-squared}, or study weights;
 \code{heterogeneity} is a shorthand for \code{pooling(type = "total")}
@@ -52,7 +52,7 @@ pooling statistic by Gelman & Pardoe (2006), \emph{I-squared}, \emph{H-squared},
 Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
 group-level estimates of treatment
 effect are "pooled" toward average treatment effect in the meta-analysis model.
-If \code{pooling = "none"} or \code{"full"} (which you specify when calling \link{baggr}),
+If \code{pooling = "none"} or \code{"full"} (which you specify when calling \code{\link[=baggr]{baggr()}}),
 then the values are always 0 or 1, respectively.
 If \code{pooling = "partial"}, the value is somewhere between 0 and 1.
 We can distinguish between pooling of individual groups and overall pooling in
@@ -71,7 +71,7 @@ statistic relates to the pooling metric.
 
 
 This is the calculation done by \code{pooling()} if \code{type = "groups"} (default).
-In a partial pooling model (see \link{baggr} and above), group \emph{k} (e.g. study) has
+In a partial pooling model (see \code{\link[=baggr]{baggr()}} and above), group \emph{k} (e.g. study) has
 standard error of treatment effect estimate, \eqn{se_k}.
 The treatment effect (across \emph{k} groups) is variable across groups, with
 hyper-SD parameter \eqn{\sigma_(\tau)}.

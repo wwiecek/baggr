@@ -3,12 +3,12 @@
 #' Converts data to a list of inputs suitable for Stan models,
 #' checks integrity of data and suggests the appropriate default model
 #' if needed. Typically all of this is
-#' done automatically by [baggr], so __this function is included only for debugging__
+#' done automatically by [baggr::baggr()], so __this function is included only for debugging__
 #' or running (custom) models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
-#'              see [baggr] for allowed models
+#'              see [baggr::baggr()] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
 #' @param covariates Character vector with column names in `data`.
@@ -21,14 +21,14 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
-#' @param selection same as in [baggr]; vector of cut-offs for |z| value in selection model
+#' @param selection same as in [baggr::baggr()]; vector of cut-offs for |z| value in selection model
 #' @param test_data same format as `data` argument, gets left aside for
-#'                  testing purposes (see [baggr])
+#'                  testing purposes (see [baggr::baggr()])
 #' @param silent Whether to print messages when evaluated
-#' @return R structure that's appropriate for use by [baggr] Stan models;
+#' @return R structure that's appropriate for use by [baggr::baggr()] Stan models;
 #'         `group_label`, `model`, `effect` and `n_groups` are included as attributes
-#'         and are necessary for [baggr] to work correctly
-#' @details Typically this function is only called within [baggr] and you do
+#'         and are necessary for [baggr::baggr()] to work correctly
+#' @details Typically this function is only called within [baggr::baggr()] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'

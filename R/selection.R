@@ -3,7 +3,7 @@
 #' Extracts the posterior draws (or summaries) of the selection-model parameters
 #' that describe the relative publication probabilities across |z|-intervals.
 #'
-#' @param bg a [baggr] model fitted with a selection-enabled likelihood
+#' @param bg a [baggr::baggr()] model fitted with a selection-enabled likelihood
 #'   (currently `model = "rubin"`).
 #' @param summary logical; if `TRUE`, returns summary statistics (mean and
 #'   the uncertainty interval defined by `interval`).

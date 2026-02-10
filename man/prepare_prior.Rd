@@ -16,29 +16,29 @@ prepare_prior(
 )
 }
 \arguments{
-\item{prior}{\code{prior} argument passed from \link{baggr} call}
+\item{prior}{\code{prior} argument passed from \code{\link[=baggr]{baggr()}} call}
 
-\item{data}{\code{data} another argument in \link{baggr}}
+\item{data}{\code{data} another argument in \code{\link[=baggr]{baggr()}}}
 
 \item{stan_data}{list of inputs that will be used by sampler
-this is already pre-obtained through \link{convert_inputs}}
+this is already pre-obtained through \code{\link[=convert_inputs]{convert_inputs()}}}
 
-\item{model}{same as in \link{baggr}}
+\item{model}{same as in \code{\link[=baggr]{baggr()}}}
 
-\item{pooling}{same as in \link{baggr}}
+\item{pooling}{same as in \code{\link[=baggr]{baggr()}}}
 
-\item{covariates}{same as in \link{baggr}}
+\item{covariates}{same as in \code{\link[=baggr]{baggr()}}}
 
-\item{selection}{same as in \link{baggr}}
+\item{selection}{same as in \code{\link[=baggr]{baggr()}}}
 
-\item{silent}{same as in \link{baggr}}
+\item{silent}{same as in \code{\link[=baggr]{baggr()}}}
 }
 \value{
 A named list with prior values that can be appended to \code{stan_data}
 and passed to a Stan model.
 }
 \description{
-This is an internal function called by \link{baggr}. You can use it for debugging
+This is an internal function called by \code{\link[=baggr]{baggr()}}. You can use it for debugging
 or to run modified models.
 It extracts and prepares priors passed by the user.
 Then, if any necessary priors are missing, it sets them automatically
