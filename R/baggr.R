@@ -12,9 +12,7 @@
 #' @param data data frame with summary or individual level data to meta-analyse;
 #'             see Details section for how to format your data
 #' @param model if \code{NULL}, detected automatically from input data
-#'              otherwise choose from
-#'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
-#'              (see Details).
+#'              otherwise choose from `rubin`, `rubin_full`, `logit`, `mutau` (see Details).
 #' @param pooling Type of pooling;
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
@@ -420,6 +418,11 @@ baggr <- function(data,
     # stan_args$data$prior_hypermean_val <- list(stan_args$data$prior_hypermean_val)
     # stan_args$data$prior_hypersd_val   <- list(stan_args$data$prior_hypersd_val)
   }
+
+  # If data are small, we use Rubin model and no covariates, you can default refresh to 0
+  if(is.null(stan_args[["refresh"]]) && (model == "rubin") && length(covariates) == 0)
+    stan_args[["refresh"]] <- 0
+
   # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
 

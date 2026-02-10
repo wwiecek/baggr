@@ -45,9 +45,8 @@ Suggests:
     knitr,
     covr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
 Language: en-GB
-Config/testthat/edition: 3

@@ -39,9 +39,7 @@ baggr(
 see Details section for how to format your data}
 
 \item{model}{if \code{NULL}, detected automatically from input data
-otherwise choose from
-\code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
-(see Details).}
+otherwise choose from \code{rubin}, \code{rubin_full}, \code{logit}, \code{mutau} (see Details).}
 
 \item{pooling}{Type of pooling;
 choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
