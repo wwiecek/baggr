@@ -331,6 +331,21 @@ convert_inputs <- function(data,
       if(any(is.na(data[[cov]])))
         stop("NA values present in covariates")
 
+    # For individual-level models, check if covariates are fixed within studies.
+    # This indicates if the model can be interpreted as a meta-regression.
+    if(grepl("individual", required_data)) {
+      covariate_is_fixed <- vapply(covariates, function(cov) {
+        all(tapply(data[[cov]], data[[group]], function(x) length(unique(x)) == 1))
+      }, logical(1))
+      varying_covariates <- covariates[!covariate_is_fixed]
+      for(cov in varying_covariates)
+        message("Covariate ", cov,
+                " varies within studies. Model fitting will work but is not a meta-regression.")
+      meta_regression_covariates <- covariates[covariate_is_fixed]
+    } else {
+      meta_regression_covariates <- covariates
+    }
+
     # Test_data preparation
     # (sometimes column names may not match in data and test_data, check for it):
     cov_bind <- tryCatch({
@@ -365,6 +380,7 @@ convert_inputs <- function(data,
   } else {
     covariate_coding <- c()
     covariate_levels <- c()
+    meta_regression_covariates <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -408,6 +424,7 @@ convert_inputs <- function(data,
                 "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
+    meta_regression_covariates = meta_regression_covariates,
     group_label = group_label,
     n_groups = out[["K"]],
     n_re = out[["P"]],

@@ -181,6 +181,30 @@ test_that("Model with covariates works fine", {
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
 })
 
+
+
+test_that("Fixed within-study covariates are added to summary_data", {
+  sa_fixed <- schools_ipd
+  sa_fixed$site_cov <- as.numeric(factor(sa_fixed$group))
+  bg_cov_fixed <- expect_warning(
+    baggr(sa_fixed, covariates = c("site_cov"), iter = 150, chains = 1, refresh = 0)
+  )
+
+  expect_true("site_cov" %in% names(bg_cov_fixed$summary_data))
+  expected <- sa_fixed$site_cov[match(bg_cov_fixed$summary_data$group, sa_fixed$group)]
+  expect_equal(bg_cov_fixed$summary_data$site_cov, expected)
+})
+
+
+test_that("Within-study varying covariates are reported as not meta-regression", {
+  sa_vary <- schools_ipd
+  sa_vary$ind_cov <- rnorm(nrow(sa_vary))
+
+  expect_message(
+    baggr(sa_vary, covariates = c("ind_cov"), iter = 150, chains = 1, refresh = 0),
+    "Covariate ind_cov varies within studies. Model fitting will work but is not a meta-regression."
+  )
+})
 bg_pr <- expect_warning(baggr(schools_ipd,
                               pooling = "partial",
                               pooling_control = "remove",
