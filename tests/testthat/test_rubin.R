@@ -303,6 +303,9 @@ test_that("Extracting treatment/study effects works", {
   expect_length(eds1, 5)
   expect_gt(eds2[1], eds1[1]) #narrower interval
   expect_warning(effect_draw(bg5_p, 1e05), "more effect draws than there are available samples")
+  set.seed(1); pred1 <- predict(bg5_p, draws = 7)
+  set.seed(1); pred2 <- effect_draw(bg5_p, draws = 7)
+  expect_equal(pred1, pred2)
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")
