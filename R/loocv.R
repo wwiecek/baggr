@@ -269,7 +269,6 @@ loo_compare.baggr_cv <- function(...) {
 #' @param x baggr_cv comparison to print
 #' @param digits number of digits to print
 #' @param ... additional arguments for s3 consistency
-#' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
@@ -285,7 +284,6 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
 #' @param x `baggr_cv` object obtained from [loocv] to print
 #' @param digits number of digits to print
 #' @param ... Unused, ignore
-#' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
 print.baggr_cv <- function(x, digits = 3, ...) {

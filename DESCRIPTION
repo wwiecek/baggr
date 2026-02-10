@@ -29,7 +29,6 @@ Imports:
     gridExtra,
     utils,
     stats,
-    testthat,
     methods
 LinkingTo: 
     StanHeaders (>= 2.26.0), 
@@ -45,8 +44,10 @@ Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
     covr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
 Language: en-GB
+Config/testthat/edition: 3
