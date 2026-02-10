@@ -35,7 +35,8 @@ test_that("Error messages for wrong inputs are in place", {
                  "No labels will be added.")
   expect_identical(names(convert_inputs(df_mutau, "mutau")),
                    c("K", "P", "theta_hat_k", "se_theta_k",
-                     "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
+                     "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
+                     "M", "c"))
 })
 
 bg5_n <- expect_warning(baggr(df_mutau, pooling = "none", group = "state",
@@ -140,6 +141,7 @@ test_that("Plotting works", {
   expect_is(forest_plot(bg5_n), "gforge_forestplot")
   expect_is(forest_plot(bg5_p), "gforge_forestplot")
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
+  expect_is(funnel_plot(bg5_p), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 })
@@ -176,7 +178,7 @@ comp_mt <- baggr_compare(
 test_that("baggr comparison method works for mu-tau models", {
 
   expect_is(comp_mt, "baggr_compare")
-  expect_output(print(comp_mt))
+  expect_type(testthat::capture_output(print(comp_mt)), "character")
   expect_gt(length(comp_mt), 0)
 
   expect_is(plot(comp_mt), "gg")

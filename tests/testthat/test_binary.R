@@ -21,7 +21,8 @@ test_that("Error messages for wrong inputs are in place", {
                    c("K", "N", "P", "y", "treatment", "site",
                      "clustered", "cluster", "Ncluster",
                      "N_test", "K_test",
-                     "test_y", "test_site", "test_treatment", "Nc", "X", "X_test"))
+                     "test_y", "test_site", "test_treatment", "Nc", "X", "X_test",
+                     "M", "c"))
 })
 
 bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",
@@ -106,7 +107,7 @@ test_that("Pooling metrics", {
   # expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
 
   # since all SEs are the same, pooling should be the same for all sites
-  # capture_output(print(pp))
+  # expect_type(testthat::capture_output(print(pp)), "character")
   # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 150 iter
   # expect_equal(length(unique(pp[2,,1])), 1)
   # expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
@@ -166,13 +167,14 @@ test_that("Plotting and printing works", {
   expect_is(forest_plot(bg5_p), "gforge_forestplot")
   expect_is(forest_plot(bg5_f), "gforge_forestplot")
   expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
+  expect_is(funnel_plot(bg5_p), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 
-  capture_output(print(bg5_n))
-  capture_output(print(bg5_p))
-  capture_output(print(bg5_f))
-  capture_output(print(bg5_p, exponent = TRUE))
+  expect_type(testthat::capture_output(print(bg5_n)), "character")
+  expect_type(testthat::capture_output(print(bg5_p)), "character")
+  expect_type(testthat::capture_output(print(bg5_f)), "character")
+  expect_type(testthat::capture_output(print(bg5_p, exponent = TRUE)), "character")
 })
 
 # test_that("Test data can be used in the Rubin model", {
@@ -289,18 +291,18 @@ test_that("loocv", {
   loo_model <- expect_warning(loocv(df_binary, model = "logit",
                                     return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_model, "baggr_cv")
-  capture_output(print(loo_model))
+  expect_type(testthat::capture_output(print(loo_model)), "character")
   expect_is(plot(loo_model), "gg")
 
   loo_full <- expect_warning(loocv(df_binary, model = "logit", pooling = "full",
                                    return_models = TRUE, iter = 150, chains = 1, refresh = 0))
   expect_is(loo_full, "baggr_cv")
-  capture_output(print(loo_full))
+  expect_type(testthat::capture_output(print(loo_full)), "character")
   expect_is(plot(loo_full, add_values = FALSE), "gg")
 
   looc <- loo_compare(loo_model, loo_full)
   expect_is(looc, "compare_baggr_cv")
-  capture_output(looc)
+  expect_type(testthat::capture_output(looc), "character")
 })
 
 comp_pl <- expect_warning(baggr_compare(

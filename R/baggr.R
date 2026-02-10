@@ -12,9 +12,7 @@
 #' @param data data frame with summary or individual level data to meta-analyse;
 #'             see Details section for how to format your data
 #' @param model if \code{NULL}, detected automatically from input data
-#'              otherwise choose from
-#'              \code{"rubin"}, \code{"mutau"}, \code{"rubin_full"}, \code{"quantiles"}
-#'              (see Details).
+#'              otherwise choose from `rubin`, `rubin_full`, `logit`, `mutau` (see Details).
 #' @param pooling Type of pooling;
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
@@ -49,13 +47,14 @@
 #'                      if `pooling_control = "partial"`, the prior is hyperprior
 #'                      for all baselines, if `"none"`,
 #'                      then it is an independent prior for all baselines
+#' @param prior_selection prior for the log of relative publication probability (see __Selection__ section below and argument `selection`)
 #' @param prior_control_sd prior for the SD in the control arm (baseline), currently
 #'                         used in `"logit"` model only;
 #'                         this can only be used if `pooling_control = "partial"`
 #' @param prior_sigma prior for error terms in linear regression models (`"rubin_full"` or `"mutau_full"`)
-#' @param prior alternative way to specify all priors as a named list with `hypermean`,
-#'              `hypersd`, `hypercor`, `beta`, analogous to `prior_` arguments above,
-#'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-50, 50))`
+#' @param prior alternative way to specify all of the priors above as a single named list, with `hypermean`,
+#'              `hypersd`, `hypercor`, `beta` etc., with names dropping `prior_` prefix,
+#'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-5, 5))`
 #' @param ppd       logical; use prior predictive distribution? (_p.p.d._)
 #'                  If `ppd=TRUE`, Stan model will sample from the prior distribution(s)
 #'                  and ignore `data` in inference. However, `data` argument might still
@@ -68,6 +67,8 @@
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
 #' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
+#' @param selection optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
+#'                  most commonly you'd set this to 1.96 (p=0.05) of `c(1.96, 2.58)` (p=0.05 and p=0.01)
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -158,6 +159,21 @@
 #' only heterogeneity in treatment arms.)
 #' For using aggregate level data, there is no such restriction.
 #'
+#' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()` fits a symmetric
+#' selection-on-z-values model (currently only in the `"rubin"` summary-data model).
+#' The values in `selection` are cut-points on |z| = |tau / se|; for example,
+#' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`, `[1.96, 2.58)`,
+#' and `[2.58, Inf)`. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
+#' (You should also consider defining it to more significant digits in large datasets.)
+#' Each interval has its own relative publication probability
+#' (weight), with the highest-|z| interval normalised to 1, and these weights
+#' are estimated jointly with the usual Rubin parameters.
+#'
+#' The selection model assumes that publication depends only on |z| (not on the
+#' sign or other study features). Inference can be very sensitive to the choice of
+#' cut-points and priors on the selection weights, which you should set manually.
+#' For more complex cases you should consider using other methods.
+#'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
 #' Other standard functions for working with `baggr` object are
@@ -206,6 +222,7 @@ baggr <- function(data,
                   prior_hypermean = NULL, prior_hypersd = NULL, prior_hypercor=NULL,
                   prior_beta = NULL, prior_cluster = NULL,
                   prior_control = NULL, prior_control_sd = NULL,
+                  prior_selection = NULL,
                   prior_sigma = NULL,
                   # log = FALSE, cfb = FALSE, standardise = FALSE,
                   # baseline = NULL,
@@ -214,6 +231,7 @@ baggr <- function(data,
                   test_data = NULL, quantiles = seq(.05, .95, .1),
                   outcome = "outcome", group = "group", treatment = "treatment",
                   cluster = NULL,
+                  selection = NULL,
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
@@ -255,6 +273,7 @@ baggr <- function(data,
                               group = group,
                               treatment = treatment,
                               cluster = cluster,
+                              selection = selection,
                               test_data = test_data,
                               silent = silent)
 
@@ -340,7 +359,9 @@ baggr <- function(data,
                   beta      = prior_beta,
                   cluster   = prior_cluster,
                   control   = prior_control,
-                  control_sd= prior_control_sd)
+                  control_sd= prior_control_sd,
+                  selection = prior_selection
+                  )
   } else {
     if(!is.null(prior_hypermean) || !is.null(prior_beta) || is.null(prior_cluster) ||
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
@@ -359,10 +380,13 @@ baggr <- function(data,
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
+    prior_dist <- NULL
   } else { # extract priors from inputs & fill in missing priors
-    formatted_prior <- prepare_prior(prior, data, stan_data, model,
-                                     pooling, covariates, quantiles = quantiles,
+    auto_prior <- prepare_prior(prior, data, stan_data, model,
+                                     pooling, covariates, selection,
                                      silent = silent)
+    formatted_prior <- auto_prior$stan
+    prior_dist      <- auto_prior$dist
   }
 
   for(nm in names(formatted_prior))
@@ -375,25 +399,22 @@ baggr <- function(data,
       stop("Can't use prior predictive distribution with no pooling.")
     stan_data <- remove_data_for_prior_pred(stan_data)
   }
+
   stan_args$data <- stan_data
 
+  # If data are small, we use Rubin model and no covariates, you can default refresh to 0
+  if(is.null(stan_args[["refresh"]]) && (model == "rubin") && length(covariates) == 0)
+    stan_args[["refresh"]] <- 0
 
-  # ENTIRELY TEMPORARY CHANGE TO HOW THE FULL RUBIN/LOGIT MODEL OPERATES WITH P==1
-  if(model %in% c("rubin_full", "logit")) {
-    # browser()
-    # stan_args$data$P <- 1
-    # stan_args$data$treatment <- array(stan_args$data$treatment, c(stan_args$data$N, 1))
-    # stan_args$data$test_treatment <- array(stan_args$data$test_treatment, c(stan_args$data$test_N, 1))
-
-    # wip:
-    stan_args$data$test_treatment      <- array(stan_args$data$test_treatment,
-                                                c(stan_args$data$N_test, attr(stan_data, "n_re")))
-
-    # stan_args$data$prior_hypermean_fam <- array(stan_args$data$prior_hypermean_fam, 1)
-    # stan_args$data$prior_hypersd_fam   <- array(stan_args$data$prior_hypersd_fam, 1)
-    # stan_args$data$prior_hypermean_val <- list(stan_args$data$prior_hypermean_val)
-    # stan_args$data$prior_hypersd_val   <- list(stan_args$data$prior_hypersd_val)
+  # Cluster-level random effects are nuisance parameters
+  # Exclude them from monitored outputs unless user explicitly controls monitored pars
+  if(model %in% c("rubin_full", "logit") &&
+     is.null(stan_args[["pars"]]) &&
+     is.null(stan_args[["include"]])) {
+    stan_args[["pars"]] <- "eta_cluster"
+    stan_args[["include"]] <- FALSE
   }
+
   # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
 
@@ -403,6 +424,7 @@ baggr <- function(data,
     "data" = data,
     "inputs" = stan_data,
     "user_prior" = prior,
+    "prior_dist" = prior_dist,
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
     "n_parameters" = n_parameters,

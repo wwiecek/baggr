@@ -49,7 +49,7 @@ baggr_plot <- function(bg, hyper=FALSE,
                        vline = TRUE, order = TRUE,
                        values_outer = TRUE,
                        values_size = 4,
-                       values_digits = 1,
+                       values_digits = 2,
                        ...) {
   if(attr(bg, "ppd")){
     message("Baggr model is prior predictive; returning effect_plot().")
@@ -123,10 +123,12 @@ baggr_plot <- function(bg, hyper=FALSE,
       p <- ggplot2::ggplot(data, aes(x = m, y = parameter)) +
               ggplot2::scale_y_discrete(limits = rev) +
               ggplot2::geom_point(size=5,shape=15) +
-              ggplot2::geom_errorbarh(aes(y = parameter,xmin = ll, xmax = hh),
-                                      linewidth=0.5, height=0.15,inherit.aes=FALSE) +
-              ggplot2::geom_errorbarh(aes(y = parameter,xmin = l, xmax = h),
-                                      linewidth=2,height=0,inherit.aes=FALSE) +
+              ggplot2::geom_errorbar(aes(y = parameter,xmin = ll, xmax = hh),
+                                     orientation=NA,
+                                     linewidth=0.5, width=0.15,inherit.aes=FALSE) +
+              ggplot2::geom_errorbar(aes(y = parameter,xmin = l, xmax = h),
+                                     orientation=NA,
+                                     linewidth=2,width=0,inherit.aes=FALSE) +
               ggplot2::labs(x = paste("Effect on", bg$effects[i])) +
               ggplot2::theme(panel.background = element_rect(fill = "white", colour = "white"),
                 legend.position="none",

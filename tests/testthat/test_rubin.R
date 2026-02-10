@@ -37,7 +37,8 @@ test_that("Error messages for wrong inputs are in place", {
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
                    c("K", "theta_hat_k", "se_theta_k", "K_test",
-                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test"))
+                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
+                     "M", "c"))
 
   expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
@@ -105,7 +106,7 @@ test_that("Pooling metrics", {
   expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
 
   # since all SEs are the same, pooling should be the same for all sites
-  capture_output(print(pp))
+  expect_type(testthat::capture_output(print(pp)), "character")
   # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
   expect_equal(length(unique(pp[2,,1])), 1)
   expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
@@ -152,18 +153,23 @@ test_that("Plotting works", {
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
+  expect_is(funnel_plot(bg5_p), "gg")
+  expect_error(funnel_plot(bg5_n), "Need a pooled model")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "one of")
 })
 
 
 test_that("printing works", {
-  capture_output(print(bg5_n))
-  capture_output(print(bg5_p))
-  capture_output(print(bg5_p, group = FALSE))
-  expect_error(print(bg5_p, group = "abc"), "logical")
-  capture_output(print(bg5_f))
-  capture_output(print(bg5_ppd))
+  expect_type(testthat::capture_output(print(bg5_n)), "character")
+  expect_type(testthat::capture_output(print(bg5_p)), "character")
+  expect_type(testthat::capture_output(print(bg5_p, group = FALSE)), "character")
+  expect_type(
+    testthat::capture_output(expect_error(print(bg5_p, group = "abc"), "logical")),
+    "character"
+  )
+  expect_type(testthat::capture_output(print(bg5_f)), "character")
+  expect_type(testthat::capture_output(print(bg5_ppd)), "character")
 })
 
 test_that("Forest plots for Rubin model", {
@@ -176,6 +182,7 @@ test_that("Forest plots for Rubin model", {
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
+
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
   expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
@@ -251,6 +258,15 @@ test_that("Model with covariates works fine", {
   p2
   expect_is(p1, "gg")
   expect_is(p2, "gg")
+
+  # Funnel plots with optional covariate colouring
+  p3 <- funnel_plot(bg_cov, covariate = "a")
+  expect_is(p3, "gg")
+  expect_false(is.null(p3$layers[[1]]$mapping$colour))
+  expect_warning(
+    funnel_plot(bg_cov, covariate = "does_not_exist"),
+    "covariate column was not found"
+  )
 
   # covariates and test_data
   expect_error(baggr(sa, covariates = c("a", "b"), test_data = sb), "Cannot bind")
@@ -338,7 +354,7 @@ test_that("loocv", {
 
   loo_model <- expect_warning(loocv(schools, return_models = TRUE, iter = 200, refresh = 0))
   expect_is(loo_model, "baggr_cv")
-  capture_output(print(loo_model))
+  expect_type(testthat::capture_output(print(loo_model)), "character")
 })
 
 

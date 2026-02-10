@@ -78,9 +78,14 @@ loocv <- function(data, return_models = FALSE, ...) {
   # temp_cores <- FALSE
 
   # Model with all of data:
-  full_fit <- try(baggr(data, refresh = 0, ...))
-  if(inherits(full_fit, "try-error"))
-    stop("Inference failed for the model with all data, please try fitting outside of loocv()")
+  full_fit <- tryCatch(
+    baggr(data, refresh = 0, ...),
+    error = function(e) {
+      stop(
+        "Inference failed for the model with all data, please try fitting outside of loocv().\n",
+        "Original error: ", conditionMessage(e),
+        call. = FALSE
+      )})
 
   # Prepare the arguments
   args[["data"]] <- data
@@ -221,13 +226,13 @@ loo_compare <- function(...) {
 #' @aliases loo_compare
 #' @export
 loo_compare.baggr_cv <- function(...) {
-   l <- list(...)
-   if(all(unlist(lapply(l, class)) == "baggr_cv")) {
-     if(is.null(names(l)))
-       names(l) <- paste("Model", 1:length(l))
-     if(length(unique(names(l))) != length(names(l)))
-       stop("You must use unique model names")
-     loos <- l
+  l <- list(...)
+  if(all(unlist(lapply(l, class)) == "baggr_cv")) {
+    if(is.null(names(l)))
+      names(l) <- paste("Model", 1:length(l))
+    if(length(unique(names(l))) != length(names(l)))
+      stop("You must use unique model names")
+    loos <- l
   }
   if (!all(sapply(loos, is.baggr_cv))) {
     stop("All inputs should have class 'baggr_cv'.")
@@ -264,7 +269,6 @@ loo_compare.baggr_cv <- function(...) {
 #' @param x baggr_cv comparison to print
 #' @param digits number of digits to print
 #' @param ... additional arguments for s3 consistency
-#' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
 print.compare_baggr_cv <- function(x, digits = 3, ...) {
@@ -280,7 +284,6 @@ print.compare_baggr_cv <- function(x, digits = 3, ...) {
 #' @param x `baggr_cv` object obtained from [loocv] to print
 #' @param digits number of digits to print
 #' @param ... Unused, ignore
-#' @importFrom testthat capture_output
 #' @importFrom crayon bold
 #' @export
 print.baggr_cv <- function(x, digits = 3, ...) {
@@ -342,19 +345,19 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
 
   # add_values
   if(add_values){
-  group <- median <- lci <- uci <- model <- elpd <- NULL
-  values_digits <- 2
-  values_size <- 2.5
+    group <- median <- lci <- uci <- model <- elpd <- NULL
+    values_digits <- 2
+    values_size <- 2.5
 
-  pl <- pl +
-    ggplot2::geom_text(
-      aes(label = fmti(elpd, values_digits),
-          hjust = 1,
-          y = 1.1*max(uci)),
-      position = ggplot2::position_dodge(width = .5),
-      size = values_size) +
-    ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
-    ggplot2::coord_flip(clip = "off")
+    pl <- pl +
+      ggplot2::geom_text(
+        aes(label = fmti(elpd, values_digits),
+            hjust = 1,
+            y = 1.1*max(uci)),
+        position = ggplot2::position_dodge(width = .5),
+        size = values_size) +
+      ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
+      ggplot2::coord_flip(clip = "off")
   }
 
   pl

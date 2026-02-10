@@ -29,7 +29,7 @@ try the built-in vignette (\code{vignette("baggr")}).
 }
 
 \references{
-Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.21.2. https://mc-stan.org
+Stan Development Team (2024). RStan: the R interface to Stan. R package version 2.32.6. https://mc-stan.org
 }
 \seealso{
 Useful links:

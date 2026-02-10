@@ -1,7 +1,7 @@
 Package: baggr
 Type: Package
 Title: Bayesian Aggregate Treatment Effects
-Version: 0.7.11
+Version: 0.8
 Authors@R: c(person("Witold", "Wiecek", email = "witold.wiecek@gmail.com", role = c("cre", "aut")), 
              person("Rachael", "Meager", role="aut"),
              person("Brice", "Green", role="ctb", comment = "loo_compare, many visuals"),
@@ -29,7 +29,6 @@ Imports:
     gridExtra,
     utils,
     stats,
-    testthat,
     methods
 LinkingTo: 
     StanHeaders (>= 2.26.0), 
@@ -40,12 +39,13 @@ LinkingTo:
     RcppEigen (>= 0.3.3.4.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
     covr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
 URL: https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues

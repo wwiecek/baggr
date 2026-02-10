@@ -1,5 +1,6 @@
 functions {
-#include /functions/prior_increment.stan
+  #include /functions/prior_increment.stan
+  #include /functions/selection.stan
 }
 
 data {
@@ -26,6 +27,13 @@ data {
   vector[K_test] test_theta_hat_k;
   vector<lower=0>[K_test] test_se_theta_k;
   matrix[K_test,Nc] X_test;  //covariate values (design matrix for FE)
+
+  //selection model
+  int<lower=0> M;                   // number of cut-points
+  vector<lower=0>[M] c;             // cut-off values, e.g., (1.96, 2.58), ascending
+  // prior for selection weights (on log-scale!)
+  int prior_sel_fam;
+  vector[3] prior_sel_val;
 }
 
 transformed data {
@@ -38,19 +46,24 @@ parameters {
   array[pooling_type == 1] real<lower=0> tau;
   vector[K_pooled] eta;
   vector[Nc] beta;
+  vector[M] logomega; // log of relative pub. prob. for (0,c1],..., (cM-1,cM]
 }
 transformed parameters {
   /* if there is no pooling then eta's assume role of study means
-     this is done to avoid defining yet another parameter but rather
-     recycle something that already exists */
+  this is done to avoid defining yet another parameter but rather
+  recycle something that already exists */
   vector[K_pooled] theta_k;
   if(pooling_type == 0)
     theta_k = eta;
   else if(pooling_type == 1)
     theta_k = mu[1] + eta*tau[1];
+  vector[M] omega = exp(logomega);
 }
 model {
   vector[K] fe_k;
+
+  if (M > 0)
+    logomega ~ vecprior(prior_sel_fam, prior_sel_val);
 
   if(K > 0){
     if(Nc == 0){
@@ -60,17 +73,41 @@ model {
       beta ~ vecprior(prior_beta_fam, prior_beta_val);
     }
   }
-  if(pooling_type == 0){
+  if (pooling_type == 0) { //none
     eta ~ vecprior(prior_hypermean_fam, prior_hypermean_val);
-    theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
-  }else if(pooling_type == 1){
+    if (M == 0) {
+      theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
+    } else {
+      for (k in 1:K)
+        target += sel_loglik_one(theta_hat_k[k],
+                                 eta[k] + fe_k[k],
+                                 se_theta_k[k],
+                                 c, omega);
+    }
+  } else if (pooling_type == 1) { //partial
+    mu[1]  ~ realprior(prior_hypermean_fam, prior_hypermean_val);
+    tau[1] ~ realprior(prior_hypersd_fam,   prior_hypersd_val);
+    eta    ~ normal(0, 1);
+    if (M == 0) {
+      theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
+    } else {
+      for (k in 1:K)
+        target += sel_loglik_one(theta_hat_k[k],
+                                 theta_k[k] + fe_k[k],
+                                 se_theta_k[k],
+                                 c, omega);
+    }
+  } else { //full
     mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
-    tau[1] ~ realprior(prior_hypersd_fam, prior_hypersd_val);
-    eta ~ normal(0,1);
-    theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
-  }else{
-    mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
-    theta_hat_k ~ normal(mu[1] + fe_k, se_theta_k);
+    if (M == 0) {
+      theta_hat_k ~ normal(mu[1] + fe_k, se_theta_k);
+    } else {
+      for (k in 1:K)
+        target += sel_loglik_one(theta_hat_k[k],
+                                 mu[1] + fe_k[k],
+                                 se_theta_k[k],
+                                 c, omega);
+    }
   }
 
 }

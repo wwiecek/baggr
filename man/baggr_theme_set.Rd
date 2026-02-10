@@ -31,7 +31,7 @@ adding themes to a plot. \code{baggr_theme_set()} assigns a new theme
 for all plots of baggr objects. \code{baggr_theme_update()} edits a specific
 theme element for the current theme while holding the theme's
 other aspects constant. \code{baggr_theme_replace()} is used for
-wholesale replacing aspects of a plot's theme (see \code{\link[ggplot2:theme_get]{ggplot2::theme_get()}}).
+wholesale replacing aspects of a plot's theme (see \code{\link[ggplot2:get_theme]{ggplot2::theme_get()}}).
 }
 \details{
 Under the hood, many of the visualizations rely on the

@@ -9,9 +9,9 @@ prepare_prior(
   data,
   stan_data,
   model,
-  pooling,
-  covariates,
-  quantiles = c(),
+  pooling = c("partial", "none", "full"),
+  covariates = c(),
+  selection = NULL,
   silent = FALSE
 )
 }
@@ -29,7 +29,7 @@ this is already pre-obtained through \link{convert_inputs}}
 
 \item{covariates}{same as in \link{baggr}}
 
-\item{quantiles}{same as in \link{baggr}}
+\item{selection}{same as in \link{baggr}}
 
 \item{silent}{same as in \link{baggr}}
 }

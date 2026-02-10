@@ -21,6 +21,7 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
+#' @param selection same as in [baggr]; vector of cut-offs for |z| value in selection model
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr])
 #' @param silent Whether to print messages when evaluated
@@ -47,6 +48,7 @@ convert_inputs <- function(data,
                            outcome   = "outcome",
                            treatment = "treatment",
                            cluster = NULL,
+                           selection = NULL,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
@@ -115,10 +117,10 @@ convert_inputs <- function(data,
 
   if(model == "rubin" && available_data == "pool_binary"){
     if(is.null(effect) || !(effect %in% c("logOR", "logRR", "RD"))) {
-        message('Automatically summarising binary data with logOR.
+      message('Automatically summarising binary data with logOR.
               In baggr() set effect to one of "logOR", "logRR", "RD".
               Alternatively, use ?prepare_ma to do this manually before running.')
-        effect <- "logOR"
+      effect <- "logOR"
     }
     data <- prepare_ma(data, effect = effect, group = group)
     group <- "group"
@@ -190,7 +192,7 @@ convert_inputs <- function(data,
         out$K_test <- 0
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
-        out$test_treatment <- array(0, dim = 0)
+        out$test_treatment <- array(0, dim =  c(out$N_test, out$P))
         if(model %in% c("rubin_full", "mutau_full"))
           out$test_sigma_y_k <- array(0, dim = 0)
 
@@ -198,7 +200,8 @@ convert_inputs <- function(data,
         out$N_test <- nrow(test_data)
         out$K_test <- max(group_numeric_test)
         out$test_y <- test_data[[outcome]]
-        out$test_treatment <- test_data[[treatment]]
+        # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
+        out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
         # calculate SEs in each test group
         if(model %in% c("rubin_full", "mutau_full")){
@@ -213,45 +216,6 @@ convert_inputs <- function(data,
           out$test_sigma_y_k <- array(se_in_each_group, dim = max(group_numeric_test))
         }
       }
-    }
-    if(model == "quantiles"){
-      # This is currently disabled, together with the quantiles model
-
-      # if((any(quantiles < 0)) ||
-      #    (any(quantiles > 1)))
-      #   stop("quantiles must be between 0 and 1")
-      # if(length(quantiles) < 2)
-      #   stop("cannot model less than 2 quantiles")
-      # data[[group]] <- group_numeric
-      # out <- summarise_quantiles_data(data, quantiles, outcome, group, treatment)
-      # message("Data have been automatically summarised for quantiles model.")
-      #
-      # # Fix for R 3.5.1. on Windows
-      # # https://stackoverflow.com/questions/51343022/
-      # out$temp <- out[["y_0"]]
-      # # out$y_0 <- NULL
-      # out[["y_0"]] <- out$temp
-      # out$temp <- NULL
-      #
-      # # Cross-validation:
-      # if(is.null(test_data)){
-      #   out$K_test <- 0
-      #   out$test_theta_hat_k <- array(0, dim = 0)
-      #   out$test_se_theta_k <- array(0, dim = 0)
-      #   out$test_y_0 <- array(0, dim = c(0, ncol(out$y_0)))
-      #   out$test_y_1 <- array(0, dim = c(0, ncol(out$y_0)))
-      #   out$test_Sigma_y_k_0 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
-      #   out$test_Sigma_y_k_1 <- array(0, dim = c(0, ncol(out$y_0), ncol(out$y_0)))
-      # } else {
-      #   out_test <- summarise_quantiles_data(test_data, quantiles,
-      #                                        outcome, group, treatment)
-      #   out$K_test <- out_test$K #reminder: K is number of sites,
-      #   # N is number of quantiles
-      #   out$test_y_0 <- out_test$y_0
-      #   out$test_y_1 <- out_test$y_1
-      #   out$test_Sigma_y_k_0 <- out_test$Sigma_y_k_0
-      #   out$test_Sigma_y_k_1 <- out_test$Sigma_y_k_1
-      # }
     }
 
     if(model == "sslab") {
@@ -368,15 +332,20 @@ convert_inputs <- function(data,
         stop("NA values present in covariates")
 
     # Test_data preparation
-    cov_bind <- data[,covariates, drop = FALSE]
-    if(!is.null(test_data)){
-      cov_bind <- try(rbind(
-        cov_bind,
-        test_data[,covariates, drop = FALSE]))
-      if(inherits(cov_bind, "try-error"))
-        stop("Cannot bind data and test_data. Ensure that all ",
-             "covariates are present and same levels are used.")
-    }
+    # (sometimes column names may not match in data and test_data, check for it):
+    cov_bind <- tryCatch({
+      cov_bind <- data[, covariates, drop = FALSE]
+      if (!is.null(test_data)) {
+        cov_bind <- rbind(cov_bind, test_data[, covariates, drop = FALSE])
+      }
+      cov_bind
+    },
+    error = function(e) {
+      stop("Cannot bind data and test_data. Ensure that all ",
+           "covariates are present and same levels are used.",
+           call. = FALSE)
+    })
+
     cov_bind$tau <- 0
     cov_bind[] <- lapply(cov_bind, function(x) if(is.character(x)) factor(x) else x)
     cov_mm <- model.matrix(as.formula(
@@ -403,6 +372,19 @@ convert_inputs <- function(data,
     }
   }
 
+
+
+  # 5. Add selection model cut-offs -----
+  if(is.null(selection)){
+    out$M <- 0L
+    out$c <- numeric(0)
+  } else {
+    if(!is.numeric(selection) || any(!is.finite(selection)) || any(selection < 0) || length(selection) < 1)
+      stop("selection input has to be a finite- and positive-valued vector")
+    out$M <- length(selection)
+    out$c <- array(selection, length(selection))
+  }
+
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))
     stop(paste0("baggr() does not allow NA values in inputs (see vectors ",
@@ -422,8 +404,8 @@ convert_inputs <- function(data,
     data_type = available_data,
     data = data,
     columns = c("treatment" = treatment,
-               "group" = group,
-               "outcome" = outcome),
+                "group" = group,
+                "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
     group_label = group_label,

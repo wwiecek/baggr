@@ -42,7 +42,7 @@ treatment_effect <- function(bg, summary = FALSE,
         sigma_tau <- rstan::extract(bg$fit, pars="hypersd[1,2]")[[1]]
       else
         sigma_tau <- rstan::extract(bg$fit, pars="tau")[[1]]
-      if(is.matrix(tau) && ncol(sigma_tau) == 1) sigma_tau <- c(sigma_tau)
+      if(is.matrix(sigma_tau) && ncol(sigma_tau) == 1) sigma_tau <- c(sigma_tau)
     }
     if(bg$pooling == "full")
       sigma_tau <- rep(0, length(bg$effects)) #same dim as tau, but by convention set to 0
