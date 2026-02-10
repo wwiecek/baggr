@@ -439,7 +439,7 @@ baggr <- function(data,
 
   attr(result, "ppd") <- ppd
 
-  if(grepl("individual", attr(stan_data, "data_type")))
+  if(grepl("individual", attr(stan_data, "data_type"))) {
     result$summary_data <- prepare_ma(data,
                                       # rare_event_correction = 0.5,
                                       effect = ifelse(model == "logit", "logOR", "mean"),
@@ -447,6 +447,14 @@ baggr <- function(data,
                                       treatment = attr(data, "treatment"),
                                       outcome = attr(data, "outcome"),
                                       pooling = TRUE)
+
+    mr_covariates <- attr(stan_data, "meta_regression_covariates")
+    if(length(mr_covariates) > 0)
+      result$summary_data <- cbind(result$summary_data,
+                                   data[match(result$summary_data$group, data[[attr(data, "group")]]),
+                                        mr_covariates,
+                                        drop = FALSE])
+  }
 
   if(model == "quantiles")
     result[["quantiles"]]    <- quantiles
