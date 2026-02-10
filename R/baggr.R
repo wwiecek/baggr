@@ -423,6 +423,15 @@ baggr <- function(data,
   if(is.null(stan_args[["refresh"]]) && (model == "rubin") && length(covariates) == 0)
     stan_args[["refresh"]] <- 0
 
+  # Cluster-level random effects are latent nuisance parameters in these full IPD models.
+  # Exclude them from monitored outputs unless user explicitly controls monitored pars.
+  if(model %in% c("rubin_full", "logit") &&
+     is.null(stan_args[["pars"]]) &&
+     is.null(stan_args[["include"]])) {
+    stan_args[["pars"]] <- "eta_cluster"
+    stan_args[["include"]] <- FALSE
+  }
+
   # SAMPLING IS HERE
   fit <- do.call(rstan::sampling, stan_args)
 
