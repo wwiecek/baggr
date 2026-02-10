@@ -15,6 +15,6 @@
 See \link{effect_draw}.
 }
 \description{
-Alias for \link{effect_draw()}, returning draws from the predictive distribution
+Alias for \link{effect_draw}, returning draws from the predictive distribution
 for a \code{baggr} model.
 }
