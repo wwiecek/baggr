@@ -39,13 +39,13 @@ If \code{newdata} are specified, an array is returned instead, where the first d
 corresponds to rows of \code{newdata}.
 }
 \description{
-The function \code{effect_draw} and its alias, \code{posterior_predict}, take the sample
+The function \code{effect_draw} (or its alias \code{predict()} applied to a \code{baggr} model) takes the sample
 of hyperparameters from a \link{baggr} model
 (typically hypermean and hyper-SD, which you can see using \link{treatment_effect})
 and draws values of new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 This can be used for both prior and posterior draws, depending on \link{baggr} model.
 By default this is done for a single new effect, but for meta-regression models
-you can specify values of covariates with the \code{newdata} argument, same as in \link{predict}.
+you can specify values of covariates with the \code{newdata} argument, same as in \link{predict.baggr}.
 }
 \details{
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
@@ -66,7 +66,7 @@ setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
 If the \code{baggr} model used by the function is a meta-regression
 (i.e. a \code{baggr} model with \code{covariates}), by specifying
 the predicted values can be adjusted for known levels of fixed covariates by
-passing \code{newdata} (same as in \link{predict}). If no adjustment is made, the
+passing \code{newdata} (same as in \link{predict.baggr}). If no adjustment is made, the
 returned value should be interpreted as the effect when all covariates are 0.
 }
 \references{

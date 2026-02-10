@@ -63,8 +63,6 @@ Misc:
 * More information when printing models.
 * Baggr automatically checks for a grouping column.
 * For binary data, you can run `baggr()` without any extra steps like `prepare_ma()`, by just defining `effect` when running baggr (or it will default to log OR).
-* I added alias `posterior_predict()` for drawing from posterior
-  sample. This is more consistent with regression modeling and RStan ecosystem.
   
 Bugs:
 
