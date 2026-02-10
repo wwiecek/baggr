@@ -1,4 +1,4 @@
-# baggr 0.8 (late 2025)
+# baggr 0.8 (2026)
 
 * You can fit a "typical" selection model on |z| values (a la Hedges 1992) using 
   `selection` argument, e.g. `selection = c(1.96, 2.58)`.
