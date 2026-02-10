@@ -40,7 +40,7 @@ baggr_kfold <- expect_warning(loocv(schools,
 
 test_that("LOO outputs work", {
   expect_is(baggr_kfold, "baggr_cv")
-  capture_output(print(baggr_kfold))
+  expect_type(testthat::capture_output(print(baggr_kfold)), "character")
   expect_error(plot(baggr_kfold), "must include models")
 
 })
@@ -60,7 +60,7 @@ test_that(desc = "baggr and brms are at least close", {
   expect_equal(comp[,1], 0)
   expect_equal(comp[,2], 0)
   expect_is(comp, "compare_baggr_cv")
-  capture_output(print(comp))
+  expect_type(testthat::capture_output(print(comp)), "character")
 })
 
 

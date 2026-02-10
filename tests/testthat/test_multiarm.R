@@ -20,3 +20,9 @@ bg_f <- expect_warning(baggr(df, outcome = "outcome_cont", pooling = "full", ite
 
 bg_p <- expect_warning(baggr(df, outcome = "outcome_bin", model = "logit",
                              pooling = "partial", iter = 150, refresh=0, cluster = "cl"))
+
+test_that("multi-arm setup produces baggr objects", {
+  expect_s3_class(bg_n, "baggr")
+  expect_s3_class(bg_p, "baggr")
+  expect_s3_class(bg_f, "baggr")
+})

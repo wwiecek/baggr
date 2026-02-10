@@ -178,7 +178,7 @@ comp_mt <- baggr_compare(
 test_that("baggr comparison method works for mu-tau models", {
 
   expect_is(comp_mt, "baggr_compare")
-  expect_output(print(comp_mt))
+  expect_type(testthat::capture_output(print(comp_mt)), "character")
   expect_gt(length(comp_mt), 0)
 
   expect_is(plot(comp_mt), "gg")

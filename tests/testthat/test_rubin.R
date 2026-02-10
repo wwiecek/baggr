@@ -106,7 +106,7 @@ test_that("Pooling metrics", {
   expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
 
   # since all SEs are the same, pooling should be the same for all sites
-  capture_output(print(pp))
+  expect_type(testthat::capture_output(print(pp)), "character")
   # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
   expect_equal(length(unique(pp[2,,1])), 1)
   expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
@@ -161,12 +161,15 @@ test_that("Plotting works", {
 
 
 test_that("printing works", {
-  capture_output(print(bg5_n))
-  capture_output(print(bg5_p))
-  capture_output(print(bg5_p, group = FALSE))
-  expect_error(print(bg5_p, group = "abc"), "logical")
-  capture_output(print(bg5_f))
-  capture_output(print(bg5_ppd))
+  expect_type(testthat::capture_output(print(bg5_n)), "character")
+  expect_type(testthat::capture_output(print(bg5_p)), "character")
+  expect_type(testthat::capture_output(print(bg5_p, group = FALSE)), "character")
+  expect_type(
+    testthat::capture_output(expect_error(print(bg5_p, group = "abc"), "logical")),
+    "character"
+  )
+  expect_type(testthat::capture_output(print(bg5_f)), "character")
+  expect_type(testthat::capture_output(print(bg5_ppd)), "character")
 })
 
 test_that("Forest plots for Rubin model", {
@@ -342,7 +345,7 @@ test_that("loocv", {
 
   loo_model <- expect_warning(loocv(schools, return_models = TRUE, iter = 200, refresh = 0))
   expect_is(loo_model, "baggr_cv")
-  capture_output(print(loo_model))
+  expect_type(testthat::capture_output(print(loo_model)), "character")
 })
 
 
