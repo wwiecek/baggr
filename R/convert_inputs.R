@@ -53,6 +53,11 @@ convert_inputs <- function(data,
                            test_data = NULL,
                            silent = FALSE) {
 
+  # Fail fast for invalid model names before touching data columns.
+  # This avoids spurious column warnings from custom/tibble inputs.
+  if(!is.null(model) && !(model %in% names(model_data_types)))
+    stop("Unrecognised model, can't format data.")
+
   # If lazy users forgot to define their group column,
   # check if the first column is usable
   # group <- find_group_column(data, group)
@@ -89,9 +94,6 @@ convert_inputs <- function(data,
     if(!silent)
       message(paste0("Automatically chose ", crayon::bold(model_names[model]),
                      " based on input data."))
-  } else {
-    if(!(model %in% names(model_data_types)))
-      stop("Unrecognised model, can't format data.")
   }
 
   # Convert mutau data to Rubin model data if requested
