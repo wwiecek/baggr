@@ -113,4 +113,4 @@ Included in baggr v0.8 (2026):
 
 Check [NEWS.md] for more information on recent changes to the package.
 
-- New in v0.8: `meta_power()` for visualising meta-analysis power surfaces across `(mu, tau)`; it accepts standard errors directly, data frames with `se`, or fitted `baggr` objects.
+- New in v0.8: `meta_power()` for visualising random-effects (known heterogeneity) meta-analysis power surfaces across `(mu, tau)`; it accepts standard errors directly, data frames with `se`, or fitted `baggr` objects.

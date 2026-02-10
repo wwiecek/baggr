@@ -27,15 +27,9 @@
 #' @param print_plot Logical; if `TRUE`, prints the plot.
 #'
 #' @details
-#' For each grid point (`mu`, `tau`) this function computes the power of the
-#' random-effects z-test under the working assumption that heterogeneity is known:
-#'
-#' `w_k = 1 / (se_k^2 + tau^2)`,
-#' `Var(mu_hat) = 1 / sum_k w_k`,
-#' `ncp = mu / sqrt(Var(mu_hat))`.
-#'
-#' Power is then computed from the normal tail area with critical value
-#' `qnorm(1 - alpha / sided)`.
+#' For each grid point (`mu`, `tau`), power is computed for a random-effects
+#' z-test using inverse-variance weighting with study variance terms
+#' `se_k^2 + tau^2` (i.e. treating heterogeneity as known).
 #'
 #' This assumes known heterogeneity (`tau`), which is never literally true in
 #' practice. Therefore this assessment should be treated as a supporting,
