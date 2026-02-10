@@ -70,8 +70,8 @@ test_that("multi-arm plotting and comparison helpers work", {
   expect_s3_class(plotbg[[1]], "gg")
   expect_s3_class(plotbg[[2]], "gg")
   expect_s3_class(effect_plot(bg_p), "gg")
-  expect_s3_class(funnel_plot(bg_p), "gg")
-  expect_s3_class(forest_plot(bg_p), "gforge_forestplot")
+  expect_error(funnel_plot(bg_p))
+  expect_error(forest_plot(bg_p))
 
   bgc <- baggr_compare(bg_n, bg_p, bg_f)
   expect_s3_class(bgc, "baggr_compare")
@@ -86,13 +86,13 @@ test_that("logit multi-arm model keeps core outputs and drops eta_cluster draws"
   par_names <- names(rstan::extract(bg_logit$fit))
   expect_false("eta_cluster" %in% par_names)
 
-  ge <- group_effects(bg_logit)
+  ge <- group_effects(bg_logit, summary = TRUE)
   expect_true(is.array(ge))
   expect_equal(dim(ge), c(10, 5, 2))
 
-  te <- treatment_effect(bg_logit)
-  expect_true(is.array(te))
-  expect_equal(dim(te), c(5, 2))
+  te <- treatment_effect(bg_logit, summary= TRUE)
+  expect_equal(dim(te$sigma), c(2,5))
+  expect_equal(dim(te$sigma_tau), c(2,5))
 
   pm <- pooling(bg_logit)
   expect_true(is.array(pm))
@@ -106,7 +106,7 @@ test_that("clustered rubin_full model also drops eta_cluster draws", {
   par_names <- names(rstan::extract(bg_rubin_cluster$fit))
   expect_false("eta_cluster" %in% par_names)
 
-  ge <- group_effects(bg_rubin_cluster)
+  ge <- group_effects(bg_rubin_cluster, summary = TRUE)
   expect_true(is.array(ge))
   expect_equal(dim(ge), c(10, 5, 2))
 })

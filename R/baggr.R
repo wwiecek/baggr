@@ -399,32 +399,15 @@ baggr <- function(data,
       stop("Can't use prior predictive distribution with no pooling.")
     stan_data <- remove_data_for_prior_pred(stan_data)
   }
+
   stan_args$data <- stan_data
-
-
-  # ENTIRELY TEMPORARY CHANGE TO HOW THE FULL RUBIN/LOGIT MODEL OPERATES WITH P==1
-  if(model %in% c("rubin_full", "logit")) {
-    # browser()
-    # stan_args$data$P <- 1
-    # stan_args$data$treatment <- array(stan_args$data$treatment, c(stan_args$data$N, 1))
-    # stan_args$data$test_treatment <- array(stan_args$data$test_treatment, c(stan_args$data$test_N, 1))
-
-    # wip:
-    stan_args$data$test_treatment      <- array(stan_args$data$test_treatment,
-                                                c(stan_args$data$N_test, attr(stan_data, "n_re")))
-
-    # stan_args$data$prior_hypermean_fam <- array(stan_args$data$prior_hypermean_fam, 1)
-    # stan_args$data$prior_hypersd_fam   <- array(stan_args$data$prior_hypersd_fam, 1)
-    # stan_args$data$prior_hypermean_val <- list(stan_args$data$prior_hypermean_val)
-    # stan_args$data$prior_hypersd_val   <- list(stan_args$data$prior_hypersd_val)
-  }
 
   # If data are small, we use Rubin model and no covariates, you can default refresh to 0
   if(is.null(stan_args[["refresh"]]) && (model == "rubin") && length(covariates) == 0)
     stan_args[["refresh"]] <- 0
 
-  # Cluster-level random effects are latent nuisance parameters in these full IPD models.
-  # Exclude them from monitored outputs unless user explicitly controls monitored pars.
+  # Cluster-level random effects are nuisance parameters
+  # Exclude them from monitored outputs unless user explicitly controls monitored pars
   if(model %in% c("rubin_full", "logit") &&
      is.null(stan_args[["pars"]]) &&
      is.null(stan_args[["include"]])) {

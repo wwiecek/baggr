@@ -192,7 +192,7 @@ convert_inputs <- function(data,
         out$K_test <- 0
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
-        out$test_treatment <- array(0, dim = 0)
+        out$test_treatment <- array(0, dim =  c(out$N_test, out$P))
         if(model %in% c("rubin_full", "mutau_full"))
           out$test_sigma_y_k <- array(0, dim = 0)
 
@@ -200,7 +200,8 @@ convert_inputs <- function(data,
         out$N_test <- nrow(test_data)
         out$K_test <- max(group_numeric_test)
         out$test_y <- test_data[[outcome]]
-        out$test_treatment <- test_data[[treatment]]
+        # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
+        out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
         # calculate SEs in each test group
         if(model %in% c("rubin_full", "mutau_full")){
