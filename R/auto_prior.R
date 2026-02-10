@@ -209,11 +209,19 @@ prepare_prior <- function(prior,
           }
         } else if(current_prior == "control") {
           if(model == "logit"){
-            prop_ctrl <- data$c / (data$c + data$d)
-            if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
-              message("Baseline proportion of events is very close to 0 or 1.",
-                      "Consider manually setting prior_control.")
-            special_name <- "log odds of event rate in untreated: mean"
+            if(stan_data$pooling_baseline != 2) {
+              prop_ctrl <- data$c / (data$c + data$d)
+              if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
+                message("Baseline proportion of events is very close to 0 or 1.",
+                        "Consider manually setting prior_control.")
+            }
+
+            if(stan_data$pooling_baseline == 1)
+              special_name <- "log odds of event rate in untreated: mean"
+            else if(stan_data$pooling_baseline == 0)
+              special_name <- "independent prior on control means (group-specific baseline log-odds)"
+            else
+              special_name <- "DNP"
           }
           if(model %in% c("rubin_full", "mutau_full")){
             if(stan_data$pooling_baseline == 1)
