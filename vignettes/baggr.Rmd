@@ -359,17 +359,19 @@ baggr_compare("Default model" = baggr_schools, "normal(10, 2.5)" = baggr_schools
 
 ### Forest plots for the models
 
-Forest plots are typical for reporting meta-analysis results. We adapted the default functionality from _forestplot_ to work with _baggr_ objects. You can choose to display 1) input data for groups, and/or 2) posterior distributions for groups. In both cases these are followed by a display mean treatment effect. The `show = "both"` option displays both the observed group-level inputs and posterior group estimates in a single plot.
+Forest plots are typical for reporting meta-analysis results. We adapted the default functionality from _forestplot_ to work with _baggr_ objects. You can choose to display 1) input data for groups, and/or 2) posterior distributions for groups. In both cases these are followed by a display mean treatment effect. 
 
 The plots can be modified by passing extra arguments -- see `?forestplot`.
 
-```{r, fig.width=8, out.width="100%"}
+```{r, fig.width=8, fig.height = 5.5, out.width="90%"}
 forest_plot(baggr_schools, show = "both")
 ```
 
-For a visual similar to forest plot but more in the default plotting style, you can also try 
+The `show = "both"` option displays both the observed group-level inputs and posterior group estimates in a single plot.
 
-```{r echo=TRUE, fig.width=5}
+You may find this hard to read. For a visual similar to a forest plot but more in the default plotting style, you can also try 
+
+```{r echo=TRUE, fig.width=8, fig.height = 5, out.width="90%"}
 plot(baggr_schools, style = "forest")
 ```
 

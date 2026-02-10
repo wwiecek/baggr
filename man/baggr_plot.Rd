@@ -15,7 +15,7 @@ baggr_plot(
   order = TRUE,
   values_outer = TRUE,
   values_size = 4,
-  values_digits = 1,
+  values_digits = 2,
   ...
 )
 }
