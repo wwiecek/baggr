@@ -27,8 +27,9 @@ baggr_schools <- baggr(schools, model = "rubin", pooling = "partial")
 ```
 
 
-This vignette is written for _baggr_ users who want to learn about (Bayesian) meta-analysis concepts and analyse data on typically continuous variables. If you are looking for information that is more specific to binary data, please read `vignette("baggr_binary")`.
-This article - like the package itself - is still under construction. We encourage your feedback.
+This vignette is written for _baggr_ users who want to learn about (Bayesian) meta-analysis concepts and analyse data on typically continuous variables. If you are looking for information that is more specific to binary data, please read `vignette("baggr_binary")`. We continue to welcome feedback and suggestions.
+
+# What is baggr?
 
 _baggr_ (pronounced "bagger" or "badger" and short for Bayesian Aggregator) is a package for aggregating evidence on causal effects measured in several separate and different instances. These instances may be different studies, groups, locations or "sites" however conceptualised. We refer to these separate pieces of evidence as "groups" for the remainder of this vignette When each group is a study, the model is that of _meta-analysis_, but aggregation of evidence is not limited to this case.
 
@@ -38,6 +39,16 @@ Consider some outcome of interest $y_{ik}$ such as consumption, income or health
 
 Suppose that $y_{ik}$ varies randomly around its mean $\mu_k + \tau_k T_i$. In this setting $\tau_k$ is the treatment effect in group $k$. The random variation in $y_{ik}$ may be the result of sampling variation or measurement error, as in the @rubin_estimation_1981 model, or it may be the result of unmodelled heterogeneity or uncertainty in outcomes for individuals within the group. Allow the variance of the outcome variable $y_{ik}$ to vary across sites, so $\sigma_{y_k}^2$ may differ across $k$. 
 
+
+## Recent features
+
+This vignette has been updated in 2026 for _baggr_ v0.8. Since 2020, _baggr_ has added several user-facing features that are useful in standard applied workflows:
+
+* Selection models for Rubin summary-data models: see `selection()`
+* Funnel-plot diagnostics via `funnel_plot()`. Also new plotting via `bubble()`.
+* Multi-arm treatment handling in individual-level data workflows via `baggr()`.
+* Cluster-level random effects support through the `cluster` argument in `baggr()`.
+* Model comparison and visualization with `baggr_compare()`, `loocv()`, and associated plotting methods.
 
 
 ## Data inputs: reported effects or full individual-level data sets
