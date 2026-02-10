@@ -369,3 +369,30 @@ test_that("Prior specifications for baselines work", {
                      iter = 150, chains = 2, refresh = 0,
                      show_messages = F))
 })
+
+
+test_that("Control priors are hidden when control pooling is removed", {
+
+  skip_on_cran()
+
+  msg <- testthat::capture_messages(
+    expect_warning(
+      baggr(df_binary, "logit", pooling = "none",
+            pooling_control = "remove",
+            iter = 150, chains = 1, refresh = 0,
+            show_messages = TRUE)
+    )
+  )
+
+  bg_remove <- expect_warning(
+    baggr(df_binary, "logit", pooling = "none",
+          pooling_control = "remove",
+          iter = 150, chains = 1, refresh = 0,
+          show_messages = FALSE)
+  )
+
+  expect_false(any(grepl("prior_control", msg, fixed = TRUE)))
+  expect_false(any(grepl("control_sd", msg, fixed = TRUE)))
+  expect_false("control" %in% names(bg_remove$prior_dist))
+  expect_false("control_sd" %in% names(bg_remove$prior_dist))
+})
