@@ -153,8 +153,8 @@ test_that("Plotting works", {
   expect_is(plot(bg5_p, order = TRUE), "gg")
   expect_is(plot(bg5_p, style = "forest"), "gg")
   expect_is(plot(bg5_f, order = FALSE), "gg")
-  expect_is(funnel(bg5_p), "gg")
-  expect_error(funnel(bg5_n), "Need a pooled model")
+  expect_is(funnel_plot(bg5_p), "gg")
+  expect_error(funnel_plot(bg5_n), "Need a pooled model")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "one of")
 })
@@ -258,6 +258,15 @@ test_that("Model with covariates works fine", {
   p2
   expect_is(p1, "gg")
   expect_is(p2, "gg")
+
+  # Funnel plots with optional covariate colouring
+  p3 <- funnel_plot(bg_cov, covariate = "a")
+  expect_is(p3, "gg")
+  expect_false(is.null(p3$layers[[1]]$mapping$colour))
+  expect_warning(
+    funnel_plot(bg_cov, covariate = "does_not_exist"),
+    "covariate column was not found"
+  )
 
   # covariates and test_data
   expect_error(baggr(sa, covariates = c("a", "b"), test_data = sb), "Cannot bind")

@@ -4,7 +4,8 @@
   `selection` argument, e.g. `selection = c(1.96, 2.58)`.
   This is recommended only for sufficiently large datasets and you should set your 
   own priors (on log(relative probability Pr)) when doing this, using `prior_selection`
-* For any baggr object you can also create a funnel plot, e.g. `funnel(bg, label = TRUE, show = "inputs")`
+* For any baggr object you can also create a funnel plot, e.g. `funnel_plot(bg, label = TRUE, show = "inputs")`
+* Funnel plots now use `funnel_plot()` as the primary function name (and support optional `covariate` colouring with warnings if the requested column is unavailable).
 
 # baggr 0.7.11 (late 2024)
 
