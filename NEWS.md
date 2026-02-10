@@ -6,6 +6,7 @@
   own priors (on log(relative probability Pr)) when doing this, using `prior_selection`
 * For any baggr object you can also create a funnel plot, e.g. `funnel_plot(bg, label = TRUE, show = "inputs")`
 * Funnel plots now use `funnel_plot()` as the primary function name (and support optional `covariate` colouring with warnings if the requested column is unavailable).
+* Added `meta_power()` to map fixed/random-effects z-test power over `(mu, tau)` grids, with support for numeric/data-frame/`baggr` inputs and highlighted fitted-point overlays for `baggr` objects.
 
 # baggr 0.7.11 (late 2024)
 
@@ -289,3 +290,4 @@ for all models.
 # baggr 0.1.0
 
 First package version for CRAN. 
+
