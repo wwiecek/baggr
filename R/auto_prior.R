@@ -112,9 +112,8 @@ prepare_prior <- function(prior,
       if(inactive_logit_control_prior) {
         # Placeholder values are still required by Stan data input,
         # but these priors are inactive when control pooling is removed.
-        dist_to_set <- normal(0, 1)
-      } else
-      if(model != "sslab"){
+        default_prior_dist <- normal(0, 1)
+      } else if(model != "sslab") {
         default_prior_dist <- switch(
           current_prior,
           "hypermean"  =
@@ -139,8 +138,7 @@ prepare_prior <- function(prior,
           else
             uniform(0, 10*sd(data$mu))
         )
-      }
-      if(model == "sslab") {
+      } else if(model == "sslab") {
         data_pos <- prepare_ma(data.frame(outcome = stan_data$y_pos,
                                           group = stan_data$site_pos,
                                           treatment = stan_data$treatment_pos),
@@ -169,8 +167,7 @@ prepare_prior <- function(prior,
         )
       }
 
-        dist_to_set <- default_prior_dist
-      }
+      dist_to_set <- default_prior_dist
 
     } else {
       dist_to_set <- prior[[current_prior]]
