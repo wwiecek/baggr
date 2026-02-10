@@ -110,12 +110,15 @@ If you have only few groups, the priors on $V$ will need to be relatively strong
 
 <!-- This is a mess to edit, sorry. But it presents nicely in Markdown -->
 
-|Model (name in `baggr`)              | Input columns       | Level-1 likelihood                              | Level-2 likelihood                      | Default priors   |
-|--------------------|--------------------------------|-------------------------------------------------|-----------------------------------------|------------------|
-| summary data "Rubin" (`"rubin"`)           | `tau` and `se`                 | $\hat{\tau_k} \sim N(\tau_k, \hat{se_k}^2)$     | $\tau_k \sim N(\tau, \sigma_{\tau}^2)$  | $\tau \sim \mathcal{N}(0, 100)$, $\sigma_{\tau} \sim \mathcal{U}(0, 10\tilde{\sigma})$  | 
-| "$\mu$ and $\tau$" (`"mutau"`) | `tau`, `mu`, `se.tau`, `se.mu` | $\hat{\tau_k} \sim N(\tau_k, \hat{se_{\tau,k}}^2)$, $\hat{\mu_k} \sim N(\mu_k, \hat{se_{\mu,k}}^2)$  | $\pmatrix{\mu_k \\ \tau_k} \sim N(\pmatrix{\mu \\ \tau}, V)$ | $V = \theta \Omega \theta'$ where $\theta \sim Cauchy(0,10)$, $\Omega \sim LKJ(3)$, $\pmatrix{\mu \\ \tau} \sim N(0,100^2Id_2 )$ |
-| full data "Rubin" (`"rubin_full"`)          | `outcome`, `treatment`, `group`  | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" | Same as for "$\mu$ and $\tau$" |
-| Logit (`"logit"`)  | `outcome`, `treatment`, `group`  | See `vignette("baggr_binary")` | ... | ... |
+| Model (name in `baggr`) | Required input columns | Likelihood (data model) | Hierarchical structure | Prior knobs (main arguments) |
+|---|---|---|---|---|
+| Rubin summary-data model (`"rubin"`) | `tau`, `se` (optional `group`, optional `covariates`) | $\hat{\tau}_k \sim N(\tau_k, \hat{se}_k^2)$ | With `pooling = "partial"`: $\tau_k \sim N(\tau, \sigma_\tau^2)$. `pooling = "none"` uses independent study effects; `pooling = "full"` uses one common effect. | `prior_hypermean` (for $\tau$), `prior_hypersd` (for $\sigma_\tau$), `prior_beta` (if `covariates` used), `prior_selection` (if `selection` is used). |
+| $\mu$-$\tau$ summary-data model (`"mutau"`) | `mu`, `tau`, `se.mu`, `se.tau` (optional `group`, optional `covariates`) | $\hat{\mu}_k \sim N(\mu_k, \widehat{se_{\mu,k}}^2)$ and $\hat{\tau}_k \sim N(\tau_k, \widehat{se_{\tau,k}}^2)$ | With `pooling = "partial"`: $\begin{pmatrix}\mu_k\\\tau_k\end{pmatrix} \sim N\left(\begin{pmatrix}\mu\\\tau\end{pmatrix}, V\right)$, where $V$ is parameterized via scales and a correlation matrix. `pooling = "none"` and `"full"` follow the same none/full pooling interpretation as above. | `prior_hypermean` (for $(\mu,\tau)$), `prior_hypersd` (scales in $V$), `prior_hypercor` (correlation in $V$), `prior_beta` (if `covariates` used). |
+| Rubin individual-level model (`"rubin_full"`) | `outcome`, `treatment`, `group` (optional individual-level `covariates`, optional `cluster`) | $y_i \sim N(\mu_{k[i]} + \tau_{k[i]} z_i + x_i^\top\beta + u_i, \sigma_{y,k[i]}^2)$ | Treatment effects follow Rubin-style pooling across groups (`none`/`partial`/`full`), with optional baseline pooling via `pooling_control`. | `prior_hypermean` (treatment hypermean), `prior_hypersd` (treatment heterogeneity), `prior_control` and `prior_control_sd` (control arm baseline and its heterogeneity), `prior_sigma` (within-group outcome SD), `prior_beta`, `prior_cluster`. |
+| $\mu$-$\tau$ individual-level model (`"mutau_full"`) | `outcome`, `treatment`, `group` (optional individual-level `covariates`) | $y_i \sim N(\mu_{k[i]} + \tau_{k[i]} z_i + x_i^\top\beta, \sigma_{y,k[i]}^2)$ | Partial-pooling form jointly pools $(\mu_k, \tau_k)$ with a multivariate normal hierarchy and correlation; none/full pooling use the corresponding independent/common parameter special cases. | `prior_hypermean`, `prior_hypersd`, `prior_hypercor`, `prior_control_sd` (for baseline SD under partial baseline pooling), `prior_sigma`, `prior_beta`. |
+| Logistic individual-level model (`"logit"`) | `outcome` (0/1), `treatment`, `group` (optional individual-level `covariates`) | $y_i \sim \text{Bernoulli}(\text{logit}^{-1}(\mu_{k[i]} + \tau_{k[i]} z_i + x_i^\top\beta))$ | Log-odds treatment effects are pooled across groups (`none`/`partial`/`full`); control-arm log-odds can be pooled separately via `pooling_control`. | `prior_hypermean`, `prior_hypersd`, `prior_control`, `prior_control_sd`, `prior_beta`. |
+
+> `selection = ...` (publication selection on $|z| = |\tau / se|$) is currently available only for the summary-data Rubin model (`model = "rubin"`). Use `prior_selection` to set priors on relative publication probabilities across the specified $|z|$ intervals.
 
 <!-- | Quantiles (`"quantiles"`)         | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  | -->
 
@@ -418,4 +421,3 @@ loo_compare(loocv_res, loocv_full)
 ```
 
 ## References
-
