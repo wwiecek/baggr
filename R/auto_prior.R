@@ -1,20 +1,20 @@
 #' Prepare prior values for Stan models in baggr
 #'
-#' This is an internal function called by [baggr]. You can use it for debugging
+#' This is an internal function called by [baggr::baggr()]. You can use it for debugging
 #' or to run modified models.
 #' It extracts and prepares priors passed by the user.
 #' Then, if any necessary priors are missing, it sets them automatically
 #' and notifies user about these automatic choices.
 #'
-#' @param prior `prior` argument passed from [baggr] call
-#' @param data  `data` another argument in [baggr]
+#' @param prior `prior` argument passed from [baggr::baggr()] call
+#' @param data  `data` another argument in [baggr::baggr()]
 #' @param stan_data list of inputs that will be used by sampler
-#'                  this is already pre-obtained through [convert_inputs]
-#' @param model same as in [baggr]
-#' @param pooling same as in [baggr]
-#' @param covariates same as in [baggr]
-#' @param selection  same as in [baggr]
-#' @param silent same as in [baggr]
+#'                  this is already pre-obtained through [baggr::convert_inputs()]
+#' @param model same as in [baggr::baggr()]
+#' @param pooling same as in [baggr::baggr()]
+#' @param covariates same as in [baggr::baggr()]
+#' @param selection  same as in [baggr::baggr()]
+#' @param silent same as in [baggr::baggr()]
 #'
 #' @return A named list with prior values that can be appended to `stan_data`
 #'         and passed to a Stan model.
@@ -103,8 +103,17 @@ prepare_prior <- function(prior,
 
   # Now loop over all priors that need to be specified for a given model
   for(current_prior in names(priors_spec[[model]])) {
+    inactive_logit_control_prior <-
+      model == "logit" &&
+      stan_data$pooling_baseline == 2 &&
+      current_prior %in% c("control", "control_sd")
+
     if(is.null(prior[[current_prior]])) {
-      if(model != "sslab"){
+      if(inactive_logit_control_prior) {
+        # Placeholder values are still required by Stan data input,
+        # but these priors are inactive when control pooling is removed.
+        default_prior_dist <- normal(0, 1)
+      } else if(model != "sslab") {
         default_prior_dist <- switch(
           current_prior,
           "hypermean"  =
@@ -129,8 +138,7 @@ prepare_prior <- function(prior,
           else
             uniform(0, 10*sd(data$mu))
         )
-      }
-      if(model == "sslab") {
+      } else if(model == "sslab") {
         data_pos <- prepare_ma(data.frame(outcome = stan_data$y_pos,
                                           group = stan_data$site_pos,
                                           treatment = stan_data$treatment_pos),
@@ -176,6 +184,13 @@ prepare_prior <- function(prior,
                                 dist_to_set,
                                 p = if(convert_to_array) re_dim else 1,
                                 to_array = convert_to_array)
+
+    if(inactive_logit_control_prior) {
+      if(!silent && !is.null(prior[[current_prior]]))
+        message("Control-group prior supplied, but pooling_control = 'remove'. Ignoring it.")
+      next
+    }
+
     # Also save it in the "dist" format for future reference
     prior_dist_list[[current_prior]] <- dist_to_set
 
@@ -209,11 +224,19 @@ prepare_prior <- function(prior,
           }
         } else if(current_prior == "control") {
           if(model == "logit"){
-            prop_ctrl <- data$c / (data$c + data$d)
-            if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
-              message("Baseline proportion of events is very close to 0 or 1.",
-                      "Consider manually setting prior_control.")
-            special_name <- "log odds of event rate in untreated: mean"
+            if(stan_data$pooling_baseline != 2) {
+              prop_ctrl <- data$c / (data$c + data$d)
+              if(max(prop_ctrl) > .999 | min(prop_ctrl) < .001)
+                message("Baseline proportion of events is very close to 0 or 1.",
+                        "Consider manually setting prior_control.")
+            }
+
+            if(stan_data$pooling_baseline == 1)
+              special_name <- "log odds of event rate in untreated: mean"
+            else if(stan_data$pooling_baseline == 0)
+              special_name <- "independent prior on control means (group-specific baseline log-odds)"
+            else
+              special_name <- "DNP"
           }
           if(model %in% c("rubin_full", "mutau_full")){
             if(stan_data$pooling_baseline == 1)

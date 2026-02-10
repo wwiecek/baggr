@@ -2,7 +2,7 @@
 #'
 #' @description Allows for one-way conversion from full to summary data
 #'              or for calculation of effects for binary data.
-#'              Usually used before calling [baggr].
+#'              Usually used before calling [baggr::baggr()].
 #'              Input must be pre-formatted appropriately.
 #'
 #' @param data __either__ a data.frame of individual-level observations
@@ -44,7 +44,7 @@
 #'
 #' @details
 #' The conversions done by this function are not typically needed and may happen automatically
-#' when `data` is given to [baggr]. However, this function can be used to explicitly
+#' when `data` is given to [baggr::baggr()]. However, this function can be used to explicitly
 #' convert from full to reduced (summarised) data without analysing it in any model.
 #' It can be useful for examining your data and generating summary tables.
 #'
@@ -55,7 +55,7 @@
 #' 3) summarising data (using appropriate `effect`)
 #'
 #' @author Witold Wiecek
-#' @seealso [convert_inputs] for how any type of data is (internally) converted into
+#' @seealso [baggr::convert_inputs()] for how any type of data is (internally) converted into
 #'          a list of Stan inputs; vignette `baggr_binary` for more details about
 #'          rare event corrections
 #' @export

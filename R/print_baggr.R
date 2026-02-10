@@ -1,7 +1,7 @@
 
 #' S3 print method for objects of class `baggr` (model fits)
 #'
-#' This prints a concise summary of the main [baggr] model features.
+#' This prints a concise summary of the main [baggr::baggr()] model features.
 #' More info is included in the summary of the model and its attributes.
 #' When the model supports publication selection (currently `"rubin"`), the
 #' printout also reports the posterior summaries of the relative publication

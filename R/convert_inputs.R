@@ -3,12 +3,12 @@
 #' Converts data to a list of inputs suitable for Stan models,
 #' checks integrity of data and suggests the appropriate default model
 #' if needed. Typically all of this is
-#' done automatically by [baggr], so __this function is included only for debugging__
+#' done automatically by [baggr::baggr()], so __this function is included only for debugging__
 #' or running (custom) models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
-#'              see [baggr] for allowed models
+#'              see [baggr::baggr()] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
 #' @param covariates Character vector with column names in `data`.
@@ -21,14 +21,14 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
-#' @param selection same as in [baggr]; vector of cut-offs for |z| value in selection model
+#' @param selection same as in [baggr::baggr()]; vector of cut-offs for |z| value in selection model
 #' @param test_data same format as `data` argument, gets left aside for
-#'                  testing purposes (see [baggr])
+#'                  testing purposes (see [baggr::baggr()])
 #' @param silent Whether to print messages when evaluated
-#' @return R structure that's appropriate for use by [baggr] Stan models;
+#' @return R structure that's appropriate for use by [baggr::baggr()] Stan models;
 #'         `group_label`, `model`, `effect` and `n_groups` are included as attributes
-#'         and are necessary for [baggr] to work correctly
-#' @details Typically this function is only called within [baggr] and you do
+#'         and are necessary for [baggr::baggr()] to work correctly
+#' @details Typically this function is only called within [baggr::baggr()] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'
@@ -52,6 +52,11 @@ convert_inputs <- function(data,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
+
+  # Fail fast for invalid model names before touching data columns.
+  # This avoids spurious column warnings from custom/tibble inputs.
+  if(!is.null(model) && !(model %in% names(model_data_types)))
+    stop("Unrecognised model, can't format data.")
 
   # If lazy users forgot to define their group column,
   # check if the first column is usable
@@ -89,9 +94,6 @@ convert_inputs <- function(data,
     if(!silent)
       message(paste0("Automatically chose ", crayon::bold(model_names[model]),
                      " based on input data."))
-  } else {
-    if(!(model %in% names(model_data_types)))
-      stop("Unrecognised model, can't format data.")
   }
 
   # Convert mutau data to Rubin model data if requested
@@ -331,6 +333,21 @@ convert_inputs <- function(data,
       if(any(is.na(data[[cov]])))
         stop("NA values present in covariates")
 
+    # For individual-level models, check if covariates are fixed within studies.
+    # This indicates if the model can be interpreted as a meta-regression.
+    if(grepl("individual", required_data)) {
+      covariate_is_fixed <- vapply(covariates, function(cov) {
+        all(tapply(data[[cov]], data[[group]], function(x) length(unique(x)) == 1))
+      }, logical(1))
+      varying_covariates <- covariates[!covariate_is_fixed]
+      for(cov in varying_covariates)
+        message("Covariate ", cov,
+                " varies within studies. Model fitting will work but is not a meta-regression.")
+      meta_regression_covariates <- covariates[covariate_is_fixed]
+    } else {
+      meta_regression_covariates <- covariates
+    }
+
     # Test_data preparation
     # (sometimes column names may not match in data and test_data, check for it):
     cov_bind <- tryCatch({
@@ -365,6 +382,7 @@ convert_inputs <- function(data,
   } else {
     covariate_coding <- c()
     covariate_levels <- c()
+    meta_regression_covariates <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -408,6 +426,7 @@ convert_inputs <- function(data,
                 "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
+    meta_regression_covariates = meta_regression_covariates,
     group_label = group_label,
     n_groups = out[["K"]],
     n_re = out[["P"]],

@@ -1,7 +1,7 @@
 
 #' Effects of covariates on outcome in baggr models
 #'
-#' @param bg a [baggr] model
+#' @param bg a [baggr::baggr()] model
 #' @param summary logical; if `TRUE` returns summary statistic instead of all MCMC samples
 #' @param transform a transformation (R function) to apply to the result;
 #'                  (this is commonly used when calling from other

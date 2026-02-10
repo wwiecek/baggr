@@ -137,7 +137,7 @@ A very good discussion of these choices and intuitive plots are provided by @dee
 
 ## Using differences instead of ratios
 
-Authors of [Cochrane Handbook for Systematic Reviews of Interventions](https://training.cochrane.org/handbook/current/chapter-06) summarise two important differences between using RD versus RR or OR:
+Authors of Cochrane Handbook for Systematic Reviews of Interventions (Chapter 6) summarise two important differences between using RD versus RR or OR:
 
 > However, the clinical importance of a risk difference may depend on the underlying risk of events in the population. For example, a risk difference of 0.02 (or 2%) may represent a small, clinically insignificant change from a risk of 58% to 60% or a proportionally much larger and potentially important change from 1% to 3%.
 
