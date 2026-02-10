@@ -56,7 +56,7 @@ check_group_effect_decomposition <- function(bg) {
   x_group <- baggr:::group_effects_covariate_matrix(bg, n_groups = ncol(ge_random))
   fe_component <- fixed_effects(bg) %*% t(x_group)
 
-  expect_equal(ge_all - ge_random, fe_component, tolerance = 1e-10)
+  expect_equal(unname(ge_all - ge_random), unname(fe_component), tolerance = 1e-10)
   expect_true("x_fixed" %in% colnames(bg$summary_data))
   expect_false("x_varying" %in% colnames(bg$summary_data))
 }
