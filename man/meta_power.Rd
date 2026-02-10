@@ -1,7 +1,7 @@
 % Generated manually
 \name{meta_power}
 \alias{meta_power}
-\title{Power surface for meta-analysis designs}
+\title{Power surface for random-effects meta-analysis designs}
 \usage{
 meta_power(
   x,
@@ -41,16 +41,30 @@ data frame with \code{se} column, or a \code{baggr} object.}
 An invisible list with:
 \itemize{
 \item \code{plot}: a \code{ggplot2} object,
-\item \code{values$grid_wide}: one row per \code{(mu, tau)} with \code{power_FE} and \code{power_RE},
+\item \code{values$grid_wide}: one row per \code{(mu, tau)} with \code{power_RE},
 \item \code{values$grid_long}: long-format version used for plotting.
 }
 }
 \description{
-Computes the frequentist power of fixed-effects and random-effects
-meta-analysis z-tests over a grid of true mean effects (\code{mu}) and
-between-study heterogeneity (\code{tau}), based on study-level standard errors.
+Computes frequentist power of a random-effects meta-analysis z-test,
+over a grid of true mean effects (\code{mu}) and between-study heterogeneity
+(\code{tau}), based on study-level standard errors.
 }
 \details{
+For each grid point \code{(mu, tau)} this function computes the power of the
+random-effects z-test under the working assumption that heterogeneity is known:
+
+\code{w_k = 1 / (se_k^2 + tau^2)},
+\code{Var(mu_hat) = 1 / sum_k w_k},
+\code{ncp = mu / sqrt(Var(mu_hat))}.
+
+Power is then computed from the normal tail area with critical value
+\code{qnorm(1 - alpha / sided)}.
+
+This assumes known heterogeneity (\code{tau}), which is never literally true in
+practice. Therefore this assessment should be treated as a supporting,
+approximate diagnostic and used alongside simulation-based power analysis.
+
 You can supply a numeric vector of standard errors, a data frame with a
 \code{se} column, or a fitted \code{baggr} object (from which \code{se} values are extracted).
 

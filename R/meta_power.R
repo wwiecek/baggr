@@ -1,8 +1,8 @@
-#' Power surface for meta-analysis designs
+#' Power surface for random-effects meta-analysis designs
 #'
-#' Computes the frequentist power of fixed-effects and random-effects
-#' meta-analysis z-tests over a grid of true mean effects (`mu`) and
-#' between-study heterogeneity (`tau`), based on study-level standard errors.
+#' Computes frequentist power of a random-effects meta-analysis z-test,
+#' over a grid of true mean effects (`mu`) and between-study heterogeneity
+#' (`tau`), based on study-level standard errors.
 #'
 #' You can supply:
 #' - a numeric vector of standard errors,
@@ -26,9 +26,24 @@
 #' @param add_contours Logical; if `TRUE`, overlays contour lines.
 #' @param print_plot Logical; if `TRUE`, prints the plot.
 #'
+#' @details
+#' For each grid point (`mu`, `tau`) this function computes the power of the
+#' random-effects z-test under the working assumption that heterogeneity is known:
+#'
+#' `w_k = 1 / (se_k^2 + tau^2)`,
+#' `Var(mu_hat) = 1 / sum_k w_k`,
+#' `ncp = mu / sqrt(Var(mu_hat))`.
+#'
+#' Power is then computed from the normal tail area with critical value
+#' `qnorm(1 - alpha / sided)`.
+#'
+#' This assumes known heterogeneity (`tau`), which is never literally true in
+#' practice. Therefore this assessment should be treated as a supporting,
+#' approximate diagnostic and used alongside simulation-based power analysis.
+#'
 #' @return An invisible list with:
 #' - `plot`: a `ggplot2` object,
-#' - `values$grid_wide`: one row per `(mu, tau)` with `power_FE` and `power_RE`,
+#' - `values$grid_wide`: one row per `(mu, tau)` with `power_RE`,
 #' - `values$grid_long`: long-format version used for plotting.
 #'
 #' @examples
@@ -135,13 +150,6 @@ meta_power <- function(x,
     }
   }
 
-  power_fe <- function(mu, tau) {
-    w <- 1 / se^2
-    denom <- sum(w)
-    var_hat <- sum((w^2) * (se^2 + tau^2)) / (denom^2)
-    z_power(mu / sqrt(var_hat))
-  }
-
   power_re_known_tau <- function(mu, tau) {
     w <- 1 / (se^2 + tau^2)
     var_hat <- 1 / sum(w)
@@ -149,21 +157,13 @@ meta_power <- function(x,
   }
 
   grid <- expand.grid(mu = mu_grid, tau = tau_grid)
-  grid$power_FE <- mapply(power_fe, grid$mu, grid$tau)
   grid$power_RE <- mapply(power_re_known_tau, grid$mu, grid$tau)
 
-  grid_fe <- grid[, c("mu", "tau", "power_FE")]
-  names(grid_fe)[3] <- "power"
-  grid_fe$model <- "Fixed-effects z-test"
-
-  grid_re <- grid[, c("mu", "tau", "power_RE")]
-  names(grid_re)[3] <- "power"
-  grid_re$model <- "Random-effects z-test (known tau)"
-
-  grid_long <- rbind(grid_fe, grid_re)
+  grid_long <- grid[, c("mu", "tau", "power_RE")]
+  names(grid_long)[3] <- "power"
 
   subtitle_txt <- paste0(
-    "K = ", K,
+    "Random effects (known heterogeneity); K = ", K,
     ", alpha = ", alpha,
     if (sided == 2) ", two-sided" else ", one-sided",
     "; SE range = [", signif(min(se), 3), ", ", signif(max(se), 3), "]"
@@ -171,7 +171,6 @@ meta_power <- function(x,
 
   p <- ggplot2::ggplot(grid_long, ggplot2::aes(x = mu, y = tau, fill = power)) +
     ggplot2::geom_tile(color = "white", linewidth = 0.3) +
-    ggplot2::facet_wrap(~ model, nrow = 1) +
     ggplot2::scale_fill_gradient(limits = c(0, 1)) +
     ggplot2::labs(
       x = expression(mu ~ "(true mean effect)"),
@@ -181,10 +180,7 @@ meta_power <- function(x,
       subtitle = subtitle_txt
     ) +
     ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(face = "bold")
-    )
+    ggplot2::theme(panel.grid = ggplot2::element_blank())
 
   if (add_contours && length(contour_breaks) > 0) {
     p <- p +
@@ -197,16 +193,9 @@ meta_power <- function(x,
   }
 
   if (!is.null(baggr_point)) {
-    point_df <- data.frame(
-      mu = baggr_point[["mu"]],
-      tau = baggr_point[["tau"]],
-      model = c("Fixed-effects z-test", "Random-effects z-test (known tau)"),
-      stringsAsFactors = FALSE
-    )
-
     p <- p +
       ggplot2::geom_point(
-        data = point_df,
+        data = data.frame(mu = baggr_point[["mu"]], tau = baggr_point[["tau"]]),
         mapping = ggplot2::aes(x = mu, y = tau),
         shape = 21,
         size = 5,

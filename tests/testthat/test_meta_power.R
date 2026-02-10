@@ -8,7 +8,8 @@ test_that("meta_power works with data frame input", {
   expect_true(is.list(out))
   expect_true(all(c("plot", "values") %in% names(out)))
   expect_equal(nrow(out$values$grid_wide), 49)
-  expect_true(all(c("power_FE", "power_RE") %in% names(out$values$grid_wide)))
+  expect_true("power_RE" %in% names(out$values$grid_wide))
+  expect_false("power_FE" %in% names(out$values$grid_wide))
 })
 
 test_that("meta_power accepts baggr object and adds highlighted point", {
