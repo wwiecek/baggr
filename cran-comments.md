@@ -16,3 +16,5 @@ N checking installed package size ... NOTE
   
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements.
+
+Previous submission had one problematic URL in a vignette. Fixed by removing the hyperlink.
