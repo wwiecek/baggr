@@ -200,10 +200,14 @@ test_that("Within-study varying covariates are reported as not meta-regression",
   sa_vary <- schools_ipd
   sa_vary$ind_cov <- rnorm(nrow(sa_vary))
 
-  expect_message(
-    baggr(sa_vary, covariates = c("ind_cov"), iter = 150, chains = 1, refresh = 0),
+  bg_cov_vary <- expect_message(
+    suppressWarnings(
+      baggr(sa_vary, covariates = c("ind_cov"),
+            iter = 150, chains = 1, refresh = 0, warn = FALSE)
+    ),
     "Covariate ind_cov varies within studies. Model fitting will work but is not a meta-regression."
   )
+  expect_is(bg_cov_vary, "baggr")
 })
 bg_pr <- expect_warning(baggr(schools_ipd,
                               pooling = "partial",
