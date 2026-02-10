@@ -71,6 +71,10 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
       # drop mu if model has mu (baseline/control value)
       if(bg$model %in% c("mutau", "mutau_full"))
         m <- m[,1,2,]
+      # Some full-data models keep a singleton effects dimension.
+      # Reduce to 2D so fixed-effect draws can be added by group.
+      if(length(dim(m)) == 3 && dim(m)[3] == 1)
+        m <- m[,,1]
 
       # If dealing with a meta-regression model, we automatically add effect of covariates
       # unless user requests random_only

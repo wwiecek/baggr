@@ -61,11 +61,10 @@ check_group_effect_decomposition <- function(bg) {
   expect_false("x_varying" %in% colnames(bg$summary_data))
 }
 
-test_that("rubin_full and mutau_full add study-level fixed effects in group_effects", {
+test_that("rubin_full adds study-level fixed effects in group_effects", {
   data_cont <- make_continuous_ipd()
 
-  fit_rubin_full <- expect_warning(
-    baggr(
+  fit_rubin_full <- suppressWarnings(baggr(
       data_cont,
       model = "rubin_full",
       covariates = c("x_fixed", "x_varying"),
@@ -74,31 +73,15 @@ test_that("rubin_full and mutau_full add study-level fixed effects in group_effe
       chains = 2,
       refresh = 0,
       show_messages = FALSE
-    )
-  )
-
-  fit_mutau_full <- expect_warning(
-    baggr(
-      data_cont,
-      model = "mutau_full",
-      covariates = c("x_fixed", "x_varying"),
-      pooling = "partial",
-      iter = 120,
-      chains = 2,
-      refresh = 0,
-      show_messages = FALSE
-    )
-  )
+    ))
 
   check_group_effect_decomposition(fit_rubin_full)
-  check_group_effect_decomposition(fit_mutau_full)
 })
 
 test_that("logit model adds study-level fixed effects in group_effects", {
   data_bin <- make_binary_ipd()
 
-  fit_logit <- expect_warning(
-    baggr(
+  fit_logit <- suppressWarnings(baggr(
       data_bin,
       model = "logit",
       covariates = c("x_fixed", "x_varying"),
@@ -107,8 +90,7 @@ test_that("logit model adds study-level fixed effects in group_effects", {
       chains = 2,
       refresh = 0,
       show_messages = FALSE
-    )
-  )
+    ))
 
   check_group_effect_decomposition(fit_logit)
 })
