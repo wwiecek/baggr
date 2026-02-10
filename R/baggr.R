@@ -382,10 +382,13 @@ baggr <- function(data,
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
+    prior_dist <- NULL
   } else { # extract priors from inputs & fill in missing priors
-    formatted_prior <- prepare_prior(prior, data, stan_data, model,
+    auto_prior <- prepare_prior(prior, data, stan_data, model,
                                      pooling, covariates, selection,
                                      silent = silent)
+    formatted_prior <- auto_prior$stan
+    prior_dist      <- auto_prior$dist
   }
 
   for(nm in names(formatted_prior))
@@ -426,6 +429,7 @@ baggr <- function(data,
     "data" = data,
     "inputs" = stan_data,
     "user_prior" = prior,
+    "prior_dist" = prior_dist,
     "formatted_prior" = formatted_prior,
     "n_groups" = n_groups,
     "n_parameters" = n_parameters,

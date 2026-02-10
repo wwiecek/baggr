@@ -117,10 +117,10 @@ convert_inputs <- function(data,
 
   if(model == "rubin" && available_data == "pool_binary"){
     if(is.null(effect) || !(effect %in% c("logOR", "logRR", "RD"))) {
-        message('Automatically summarising binary data with logOR.
+      message('Automatically summarising binary data with logOR.
               In baggr() set effect to one of "logOR", "logRR", "RD".
               Alternatively, use ?prepare_ma to do this manually before running.')
-        effect <- "logOR"
+      effect <- "logOR"
     }
     data <- prepare_ma(data, effect = effect, group = group)
     group <- "group"
@@ -331,15 +331,20 @@ convert_inputs <- function(data,
         stop("NA values present in covariates")
 
     # Test_data preparation
-    cov_bind <- data[,covariates, drop = FALSE]
-    if(!is.null(test_data)){
-      cov_bind <- try(rbind(
-        cov_bind,
-        test_data[,covariates, drop = FALSE]))
-      if(inherits(cov_bind, "try-error"))
-        stop("Cannot bind data and test_data. Ensure that all ",
-             "covariates are present and same levels are used.")
-    }
+    # (sometimes column names may not match in data and test_data, check for it):
+    cov_bind <- tryCatch({
+      cov_bind <- data[, covariates, drop = FALSE]
+      if (!is.null(test_data)) {
+        cov_bind <- rbind(cov_bind, test_data[, covariates, drop = FALSE])
+      }
+      cov_bind
+    },
+    error = function(e) {
+      stop("Cannot bind data and test_data. Ensure that all ",
+           "covariates are present and same levels are used.",
+           call. = FALSE)
+    })
+
     cov_bind$tau <- 0
     cov_bind[] <- lapply(cov_bind, function(x) if(is.character(x)) factor(x) else x)
     cov_mm <- model.matrix(as.formula(
@@ -398,8 +403,8 @@ convert_inputs <- function(data,
     data_type = available_data,
     data = data,
     columns = c("treatment" = treatment,
-               "group" = group,
-               "outcome" = outcome),
+                "group" = group,
+                "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
     group_label = group_label,
