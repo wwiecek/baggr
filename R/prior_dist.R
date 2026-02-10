@@ -23,14 +23,14 @@
 #'
 #' @details
 #'
-#' The prior choice in [baggr] is done via distinct arguments for each type of prior,
+#' The prior choice in [baggr::baggr()] is done via distinct arguments for each type of prior,
 #' e.g. `prior_hypermean`, or a named list of several passed to `prior`.
 #' See the examples below.
 #'
 #' Notation for priors is "plain-text", in that you can write the distributions as
 #' `normal(5,10)`, `uniform(0,100)` etc.
 #'
-#' Different parameters admit different priors (see [baggr] for explanations of
+#' Different parameters admit different priors (see [baggr::baggr()] for explanations of
 #' what the different `prior_` arguments do):
 #'
 #' * `prior_hypermean`, `prior_control`, and `prior_beta`

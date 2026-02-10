@@ -1,20 +1,20 @@
 #' Prepare prior values for Stan models in baggr
 #'
-#' This is an internal function called by [baggr]. You can use it for debugging
+#' This is an internal function called by [baggr::baggr()]. You can use it for debugging
 #' or to run modified models.
 #' It extracts and prepares priors passed by the user.
 #' Then, if any necessary priors are missing, it sets them automatically
 #' and notifies user about these automatic choices.
 #'
-#' @param prior `prior` argument passed from [baggr] call
-#' @param data  `data` another argument in [baggr]
+#' @param prior `prior` argument passed from [baggr::baggr()] call
+#' @param data  `data` another argument in [baggr::baggr()]
 #' @param stan_data list of inputs that will be used by sampler
-#'                  this is already pre-obtained through [convert_inputs]
-#' @param model same as in [baggr]
-#' @param pooling same as in [baggr]
-#' @param covariates same as in [baggr]
-#' @param selection  same as in [baggr]
-#' @param silent same as in [baggr]
+#'                  this is already pre-obtained through [baggr::convert_inputs()]
+#' @param model same as in [baggr::baggr()]
+#' @param pooling same as in [baggr::baggr()]
+#' @param covariates same as in [baggr::baggr()]
+#' @param selection  same as in [baggr::baggr()]
+#' @param silent same as in [baggr::baggr()]
 #'
 #' @return A named list with prior values that can be appended to `stan_data`
 #'         and passed to a Stan model.

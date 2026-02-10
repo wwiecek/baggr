@@ -2,11 +2,11 @@
 #'
 #' Performs exact leave-one-group-out cross-validation on a baggr model.
 #'
-#' @param data Input data frame - same as for [baggr] function.
+#' @param data Input data frame - same as for [baggr::baggr()] function.
 #' @param return_models logical; if FALSE, summary statistics will be returned and the
 #'                      models discarded;
 #'                      if TRUE, a list of models will be returned alongside summaries
-#' @param ... Additional arguments passed to [baggr].
+#' @param ... Additional arguments passed to [baggr::baggr()].
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
 #' These can be examined by using `attributes()` function.
