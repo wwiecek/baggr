@@ -14,7 +14,7 @@ forest_plot(
 )
 }
 \arguments{
-\item{bg}{a \link{baggr} class object}
+\item{bg}{a \code{\link[=baggr]{baggr()}} class object}
 
 \item{show}{if \code{"inputs"}, then plotted points and lines
 correspond to raw inputs for each group;

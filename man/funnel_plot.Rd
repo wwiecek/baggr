@@ -38,7 +38,6 @@ arise due to unexplained heterogeneity between studies.
 
 For models with group-level covariates, colouring points by a covariate can
 help inspect whether asymmetry is partly explained by meta-regression effects.
-
 }
 \examples{
 bg <- baggr(schools, iter = 500, refresh = 0)
