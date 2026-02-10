@@ -1,5 +1,3 @@
-context("Additional coverage for internal helper functions")
-
 library(baggr)
 
 test_that("detect_input_type() identifies supported formats", {

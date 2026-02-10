@@ -1,4 +1,3 @@
-context("test loo in baggr")
 # brms testing script
 # library(brms)
 library(baggr)
@@ -34,12 +33,15 @@ brms_kfold <- list(estimates = structure(c(-30.9625079222176, NA,
                                          .Dimnames = list(
                                            NULL, "elpd_kfold")))
 
-baggr_kfold <- expect_warning(loocv(schools,
-                                    # control = list(adapt_delta = 0.9),
-                                    iter = 5000))
+baggr_kfold <- NULL
+setup({
+  baggr_kfold <<- expect_warning(loocv(schools,
+                                       # control = list(adapt_delta = 0.9),
+                                       iter = 5000))
+})
 
 test_that("LOO outputs work", {
-  expect_is(baggr_kfold, "baggr_cv")
+  expect_s3_class(baggr_kfold, "baggr_cv")
   expect_type(testthat::capture_output(print(baggr_kfold)), "character")
   expect_error(plot(baggr_kfold), "must include models")
 
@@ -59,7 +61,7 @@ test_that(desc = "baggr and brms are at least close", {
   expect_error(loo_compare(list(baggr_kfold, brms_kfold)))
   expect_equal(comp[,1], 0)
   expect_equal(comp[,2], 0)
-  expect_is(comp, "compare_baggr_cv")
+  expect_s3_class(comp, "compare_baggr_cv")
   expect_type(testthat::capture_output(print(comp)), "character")
 })
 

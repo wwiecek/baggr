@@ -1,4 +1,3 @@
-context("baggr() calls with IPD version of Rubin model")
 library(baggr)
 
 skip_on_cran()
@@ -28,26 +27,54 @@ for(i in 1:8){
 
 
 
-bg_n <- expect_warning(baggr(schools_ipd, pooling = "none", iter = 150, refresh=0))
-bg_p <- expect_warning(baggr(schools_ipd, pooling = "partial", iter = 150, refresh=0))
-bg_f <- expect_warning(baggr(schools_ipd, pooling = "full", iter = 150, refresh=0))
+bg_n <- NULL
+bg_p <- NULL
+bg_f <- NULL
+comp_flpl <- NULL
+comp_flpr <- NULL
+comp_flmdls <- NULL
+bg_pr <- NULL
+bg_pn <- NULL
+
+setup({
+  bg_n <<- expect_warning(baggr(schools_ipd, pooling = "none", iter = 150, refresh=0))
+  bg_p <<- expect_warning(baggr(schools_ipd, pooling = "partial", iter = 150, refresh=0))
+  bg_f <<- expect_warning(baggr(schools_ipd, pooling = "full", iter = 150, refresh=0))
+  comp_flpl <<- expect_warning(baggr_compare(
+    schools, model = "rubin", iter = 150, what = "pooling"
+  ))
+  comp_flpr <<- expect_warning(baggr_compare(
+    schools, model = "rubin", iter = 150, what = "prior"
+  ))
+  comp_flmdls <<- baggr_compare(bg_f, bg_p)
+  bg_pr <<- expect_warning(baggr(schools_ipd,
+                                 pooling = "partial",
+                                 pooling_control = "remove",
+                                 iter = 150,
+                                 refresh=0))
+  bg_pn <<- expect_warning(baggr(schools_ipd,
+                                 pooling = "partial",
+                                 pooling_control = "none",
+                                 iter = 150,
+                                 refresh=0))
+})
 
 
 test_that("Different pooling methods work for the rubin_full model", {
-  expect_is(bg_n, "baggr")
-  expect_is(bg_p, "baggr")
-  expect_is(bg_f, "baggr")
+  expect_s3_class(bg_n, "baggr")
+  expect_s3_class(bg_p, "baggr")
+  expect_s3_class(bg_f, "baggr")
 })
 
 test_that("Basic operations on rubin_full model", {
   expect_error(baggr(schools_ipd, rubbish = 41))
-  expect_is(pooling(bg_p)[,,1], "matrix")
-  expect_is(plot(bg_p), "gg")
-  expect_is(effect_plot(bg_p), "gg")
-  expect_is(funnel(bg_p), "gg")
-  expect_is(forest_plot(bg_p), "gforge_forestplot")
+  expect_true(is.matrix(pooling(bg_p)[,,1]))
+  expect_s3_class(plot(bg_p), "gg")
+  expect_s3_class(effect_plot(bg_p), "gg")
+  expect_s3_class(funnel(bg_p), "gg")
+  expect_s3_class(forest_plot(bg_p), "gforge_forestplot")
   bgc <- try(baggr_compare(bg_n, bg_p, bg_f))
-  expect_is(bgc, "baggr_compare")
+  expect_s3_class(bgc, "baggr_compare")
 
   # No pooling gives sensible results:
   expect_equal(
@@ -60,15 +87,15 @@ test_that("extra pooling stats work", {
   # Extra pooling checks
   # Calculation of I^2 and H^2
   i2 <- pooling(bg_p, metric = "isq")
-  expect_is(i2, "array")
+  expect_true(is.array(i2))
   expect_gte(min(i2), 0)
   expect_lte(max(i2), 1)
   h2 <- pooling(bg_p, metric = "hsq")
-  expect_is(h2, "array")
+  expect_true(is.array(h2))
   expect_gte(min(h2), 1)
   # Calculation of weights makes sense
   wt <- weights(bg_p)
-  expect_is(wt, "array")
+  expect_true(is.array(wt))
   expect_equal(dim(wt), c(3,8,1))
   expect_equal(sum(wt[2,,1]), 1)
   expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
@@ -94,45 +121,35 @@ test_that("Using old syntax (model = full) still works", {
   bg <- expect_warning(expect_message(baggr(schools_ipd,
                                             model = "full",
                                             pooling = "none", iter = 10, refresh=0)))
-  expect_is(bg, "baggr")
+  expect_s3_class(bg, "baggr")
 })
 
 
-comp_flpl <- expect_warning(baggr_compare(
-  schools, model = "rubin", iter = 150, what = "pooling"
-))
-
-comp_flpr <- expect_warning(baggr_compare(
-  schools, model = "rubin", iter = 150, what = "prior"
-))
-
-comp_flmdls <- baggr_compare(bg_f, bg_p)
-
 test_that("baggr comparison method works for rubin_full model", {
 
-  expect_is(comp_flpl, "baggr_compare")
-  expect_is(comp_flpr, "baggr_compare")
-  expect_is(comp_flmdls, "baggr_compare")
+  expect_s3_class(comp_flpl, "baggr_compare")
+  expect_s3_class(comp_flpr, "baggr_compare")
+  expect_s3_class(comp_flmdls, "baggr_compare")
 
-  expect_is(testthat::capture_output(print(comp_flpl)), "character")
-  expect_is(testthat::capture_output(print(comp_flpr)), "character")
-  expect_is(testthat::capture_output(print(comp_flmdls)), "character")
+  expect_type(testthat::capture_output(print(comp_flpl)), "character")
+  expect_type(testthat::capture_output(print(comp_flpr)), "character")
+  expect_type(testthat::capture_output(print(comp_flmdls)), "character")
 
   expect_gt(length(comp_flpl), 0)
   expect_gt(length(comp_flpr), 0)
   expect_gt(length(comp_flmdls), 0)
 
-  expect_is(plot(comp_flpl), "gg")
+  expect_s3_class(plot(comp_flpl), "gg")
 
-  expect_is(plot(comp_flpr), "ggplot")
+  expect_s3_class(plot(comp_flpr), "ggplot")
 
-  expect_is(plot(comp_flmdls), "gg")
+  expect_s3_class(plot(comp_flmdls), "gg")
 
-  expect_is(plot(comp_flpl, grid_models = TRUE), "gtable")
+  expect_s3_class(plot(comp_flpl, grid_models = TRUE), "gtable")
 
-  expect_is(plot(comp_flpr, grid_models = TRUE), "gtable")
+  expect_s3_class(plot(comp_flpr, grid_models = TRUE), "gtable")
 
-  expect_is(plot(comp_flmdls, grid_models = TRUE), "gtable")
+  expect_s3_class(plot(comp_flmdls, grid_models = TRUE), "gtable")
 })
 
 test_that("rubin_full cross-validation works", {
@@ -147,7 +164,7 @@ test_that("rubin_full cross-validation works", {
   # Now repeat without bsl data
   bg <- expect_warning(baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
                              test_data = subset(schools_ipd, group == "School A" & treatment == 1)))
-  expect_is(bg, "baggr")
+  expect_s3_class(bg, "baggr")
   expect_gt(bg$mean_lpd, 0)
 })
 
@@ -167,7 +184,7 @@ test_that("Model with covariates works fine", {
   bg_cov <- expect_warning(
     baggr(sa, covariates = c("a", "b", "c"), iter = 150, chains = 1, refresh = 0))
 
-  expect_is(bg_cov, "baggr")
+  expect_s3_class(bg_cov, "baggr")
   expect_error(baggr(sa, covariates = c("made_up_covariates")), "are not columns")
   expect_error(baggr(sa, covariates = c("a", "b", "made_up_covariates")), "are not columns")
   expect_length(bg_p$covariates, 0)
@@ -175,25 +192,15 @@ test_that("Model with covariates works fine", {
   expect_null(bg_cov$mean_lpd)
 
   # Fixed effects extraction
-  expect_is(fixed_effects(bg_cov), "matrix")
-  expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
+  expect_true(is.matrix(fixed_effects(bg_cov)))
+  expect_true(is.matrix(fixed_effects(bg_cov, transform = exp)))
   expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,5,1))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
 })
 
-bg_pr <- expect_warning(baggr(schools_ipd,
-                              pooling = "partial",
-                              pooling_control = "remove",
-                              iter = 150,
-                              refresh=0))
-bg_pn <- expect_warning(baggr(schools_ipd,
-                              pooling = "partial",
-                              pooling_control = "none",
-                              iter = 150,
-                              refresh=0))
 test_that("You can change pooling on values in control group", {
-  expect_is(bg_pr, "baggr")
-  expect_is(bg_pn, "baggr")
+  expect_s3_class(bg_pr, "baggr")
+  expect_s3_class(bg_pn, "baggr")
   bsl_k <- apply(rstan::extract(bg_pr$fit, "baseline_k")[[1]], 2, mean)
   expect_length(bsl_k, 8)
   expect_equal(bsl_k, rep(0, 8))

@@ -1,4 +1,3 @@
-context("mutau_full")
 library(baggr)
 
 set.seed(1990)

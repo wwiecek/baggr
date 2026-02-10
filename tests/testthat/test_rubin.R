@@ -1,4 +1,3 @@
-context("baggr() calls with Rubin model")
 library(baggr)
 library(testthat)
 
@@ -46,25 +45,46 @@ test_that("Error messages for wrong inputs are in place", {
 })
 
 
-# There will always be a divergent transition / ESS warning produced by Stan
-# at iter = 200.
-bg5_n <- expect_warning(baggr(df_pooled, "rubin", pooling = "none", group = "state",
-                              iter = 200, chains = 2, refresh = 0,
-                              show_messages = F))
-bg5_p <- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "state",
-                              iter = 200, chains = 2, refresh = 0,
-                              show_messages = F))
-bg5_f <- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
-                              iter = 200, chains = 2, refresh = 0,
-                              show_messages = F))
-bg5_ppd <- expect_warning(baggr(df_pooled, "rubin", ppd = TRUE,
-                                iter = 200, chains = 2, refresh = 0,
-                                show_messages = F))
+bg5_n <- NULL
+bg5_p <- NULL
+bg5_f <- NULL
+bg5_ppd <- NULL
+bg_cov <- NULL
+bg_cov_factor <- NULL
+bg_cov_factor2 <- NULL
+bg_cov_test <- NULL
+bg_cov_prior1 <- NULL
+bg_cov_prior2 <- NULL
+comp_rbpl <- NULL
+comp_rbpr <- NULL
+
+setup({
+  # There will always be a divergent transition / ESS warning produced by Stan
+  # at iter = 200.
+  bg5_n <<- expect_warning(baggr(df_pooled, "rubin", pooling = "none", group = "state",
+                                 iter = 200, chains = 2, refresh = 0,
+                                 show_messages = F))
+  bg5_p <<- expect_warning(baggr(df_pooled, "rubin", pooling = "partial", group = "state",
+                                 iter = 200, chains = 2, refresh = 0,
+                                 show_messages = F))
+  bg5_f <<- expect_warning(baggr(df_pooled, "rubin", pooling = "full", group = "state",
+                                 iter = 200, chains = 2, refresh = 0,
+                                 show_messages = F))
+  bg5_ppd <<- expect_warning(baggr(df_pooled, "rubin", ppd = TRUE,
+                                   iter = 200, chains = 2, refresh = 0,
+                                   show_messages = F))
+  comp_rbpl <<- expect_warning(baggr_compare(
+    schools, iter = 200, what = "pooling"
+  ))
+  comp_rbpr <<- expect_warning(baggr_compare(
+    schools, iter = 200, what = "prior"
+  ))
+})
 
 test_that("Different pooling methods work for Rubin model", {
-  expect_is(bg5_n, "baggr")
-  expect_is(bg5_p, "baggr")
-  expect_is(bg5_f, "baggr")
+  expect_s3_class(bg5_n, "baggr")
+  expect_s3_class(bg5_p, "baggr")
+  expect_s3_class(bg5_f, "baggr")
 })
 
 test_that("Extra args to Stan passed via ... work well", {
@@ -80,13 +100,13 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_p$n_groups, 8)
   expect_equal(bg5_p$effects, "mean")
   expect_equal(bg5_p$model, "rubin")
-  expect_is(bg5_p$fit, "stanfit")
+  expect_s3_class(bg5_p$fit, "stanfit")
 })
 
 test_that("Data are available in baggr object", {
-  expect_is(bg5_n$data, "data.frame")
-  expect_is(bg5_p$data, "data.frame")
-  expect_is(bg5_f$data, "data.frame")
+  expect_s3_class(bg5_n$data, "data.frame")
+  expect_s3_class(bg5_p$data, "data.frame")
+  expect_s3_class(bg5_f$data, "data.frame")
 })
 
 test_that("Pooling metrics", {
@@ -100,7 +120,7 @@ test_that("Pooling metrics", {
   expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
 
   pp <- pooling(bg5_p)
-  expect_is(pp, "array")
+  expect_true(is.array(pp))
   expect_gt(min(pp), 0)
   expect_lt(max(pp), 1)
   expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
@@ -113,16 +133,16 @@ test_that("Pooling metrics", {
 
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
-  expect_is(i2, "array")
+  expect_true(is.array(i2))
   expect_gte(min(i2), 0)
   expect_lte(max(i2), 1)
   h2 <- pooling(bg5_p, metric = "hsq")
-  expect_is(h2, "array")
+  expect_true(is.array(h2))
   expect_gt(min(h2), 1)
 
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
-  expect_is(wt, "array")
+  expect_true(is.array(wt))
   expect_equal(dim(wt), c(3,8,1))
   expect_equal(sum(wt[2,,1]), 1)
   expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
@@ -137,8 +157,8 @@ test_that("Pooling metrics", {
 
 
 test_that("Calculation of effects works", {
-  expect_is(group_effects(bg5_p), "array")
-  expect_is(treatment_effect(bg5_p), "list")
+  expect_true(is.array(group_effects(bg5_p)))
+  expect_type(treatment_effect(bg5_p), "list")
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
@@ -148,12 +168,12 @@ test_that("Calculation of effects works", {
 
 
 test_that("Plotting works", {
-  expect_is(plot(bg5_ppd), "gg")
-  expect_is(plot(bg5_n), "gg")
-  expect_is(plot(bg5_p, order = TRUE), "gg")
-  expect_is(plot(bg5_p, style = "forest"), "gg")
-  expect_is(plot(bg5_f, order = FALSE), "gg")
-  expect_is(funnel(bg5_p), "gg")
+  expect_s3_class(plot(bg5_ppd), "gg")
+  expect_s3_class(plot(bg5_n), "gg")
+  expect_s3_class(plot(bg5_p, order = TRUE), "gg")
+  expect_s3_class(plot(bg5_p, style = "forest"), "gg")
+  expect_s3_class(plot(bg5_f, order = FALSE), "gg")
+  expect_s3_class(funnel(bg5_p), "gg")
   expect_error(funnel(bg5_n), "Need a pooled model")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "one of")
@@ -173,12 +193,12 @@ test_that("printing works", {
 })
 
 test_that("Forest plots for Rubin model", {
-  expect_is(forest_plot(bg5_n), "gforge_forestplot")
-  expect_is(forest_plot(bg5_p), "gforge_forestplot")
-  expect_is(forest_plot(bg5_p, show = "posterior"), "gforge_forestplot")
-  expect_is(forest_plot(bg5_p, show = "both"), "gforge_forestplot")
-  expect_is(forest_plot(bg5_f), "gforge_forestplot")
-  expect_is(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_n), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_p), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_p, show = "posterior"), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_p, show = "both"), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_f), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_f, graph.pos = 1), "gforge_forestplot")
   expect_error(forest_plot(cars), "baggr objects")
   expect_error(forest_plot(bg5_p, show = "abc"), "one of")
 })
@@ -196,7 +216,7 @@ test_that("Test data can be used in the Rubin model", {
   # This should work:
   bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],
                                  iter = 500, refresh = 0))
-  expect_is(bg_lpd, "baggr")
+  expect_s3_class(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
   # make sure it's not 0
@@ -215,25 +235,28 @@ sa$bad <- c(rnorm(7), NA)
 
 sb <- sa
 sb$b <- NULL
-bg_cov <- expect_warning(
-  baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0))
-bg_cov_factor <- expect_warning(
-  baggr(sa, covariates = c("f"), iter = 200, refresh = 0))
-bg_cov_factor2 <- expect_warning(
-  baggr(sa, covariates = c("f2"), iter = 200, refresh = 0))
-expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fYes"))
-expect_identical(attr(bg_cov_factor2$inputs, "covariate_coding"), c("f2No", "f2Yes"))
-bg_cov_test <- expect_warning(
-  baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0))
-bg_cov_prior1 <- expect_warning(
-  baggr(sa, covariates = c("a", "b"),
-        iter = 200, refresh = 0, prior_beta = normal(0, 3)))
-bg_cov_prior2 <- expect_warning(
-  baggr(sa, covariates = c("a", "b"),
-        iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5))))
+
+setup({
+  bg_cov <<- expect_warning(
+    baggr(sa, covariates = c("a", "b"), iter = 200, refresh = 0))
+  bg_cov_factor <<- expect_warning(
+    baggr(sa, covariates = c("f"), iter = 200, refresh = 0))
+  bg_cov_factor2 <<- expect_warning(
+    baggr(sa, covariates = c("f2"), iter = 200, refresh = 0))
+  bg_cov_test <<- expect_warning(
+    baggr(sa, covariates = c("a"), test_data = sb, iter = 200, refresh = 0))
+  bg_cov_prior1 <<- expect_warning(
+    baggr(sa, covariates = c("a", "b"),
+          iter = 200, refresh = 0, prior_beta = normal(0, 3)))
+  bg_cov_prior2 <<- expect_warning(
+    baggr(sa, covariates = c("a", "b"),
+          iter = 200, refresh = 0, prior = list("beta" = uniform(-5, 5))))
+})
 
 test_that("Model with covariates works fine", {
-  expect_is(bg_cov, "baggr")
+  expect_s3_class(bg_cov, "baggr")
+  expect_identical(attr(bg_cov_factor$inputs, "covariate_coding"), c("fYes"))
+  expect_identical(attr(bg_cov_factor2$inputs, "covariate_coding"), c("f2No", "f2Yes"))
   expect_equal(bg_cov$formatted_prior$prior_beta_fam, 1)
   expect_equal(bg_cov$formatted_prior$prior_beta_val[1], 0)
   expect_gt(bg_cov$formatted_prior$prior_beta_val[2], 0)
@@ -246,8 +269,8 @@ test_that("Model with covariates works fine", {
   expect_null(bg_cov$mean_lpd)
 
   # Fixed effects extraction
-  expect_is(fixed_effects(bg_cov), "matrix")
-  expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
+  expect_true(is.matrix(fixed_effects(bg_cov)))
+  expect_true(is.matrix(fixed_effects(bg_cov, transform = exp)))
   expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
 
@@ -256,18 +279,18 @@ test_that("Model with covariates works fine", {
   p2 <- bubble(bg_cov_factor, "f")
   p1
   p2
-  expect_is(p1, "gg")
-  expect_is(p2, "gg")
+  expect_s3_class(p1, "gg")
+  expect_s3_class(p2, "gg")
 
   # covariates and test_data
   expect_error(baggr(sa, covariates = c("a", "b"), test_data = sb), "Cannot bind")
   expect_error(baggr(sb, model = "rubin", test_data=sa[1:2,], covariates = c("b")), "are not columns")
-  expect_is(bg_cov_test$mean_lpd, "numeric")
+  expect_type(bg_cov_test$mean_lpd, "double")
   expect_length(bg_cov_test$covariates, 1)
 
   # Setting priors for covariates manually works
-  expect_is(bg_cov_prior1, "baggr")
-  expect_is(bg_cov_prior2, "baggr")
+  expect_s3_class(bg_cov_prior1, "baggr")
+  expect_s3_class(bg_cov_prior2, "baggr")
   expect_equal(bg_cov_prior1$formatted_prior$prior_beta_fam, 1)
   expect_equal(bg_cov_prior1$formatted_prior$prior_beta_val, c(0,3,0))
   expect_equal(bg_cov_prior2$formatted_prior$prior_beta_fam, 0)
@@ -278,15 +301,15 @@ test_that("Model with covariates works fine", {
 
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_pooled))
-  expect_is(treatment_effect(bg5_p), "list")
+  expect_type(treatment_effect(bg5_p), "list")
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
+  expect_type(treatment_effect(bg5_p)$tau, "double") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
   expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
 
   # Drawing values of tau:
   expect_error(effect_draw(cars))
-  expect_is(effect_draw(bg5_p), "numeric")
+  expect_type(effect_draw(bg5_p), "double")
   expect_length(effect_draw(bg5_p), 200)
   expect_length(effect_draw(bg5_p,7), 7)
   eds1 <- effect_draw(bg5_p, summary = T)
@@ -296,9 +319,9 @@ test_that("Extracting treatment/study effects works", {
   expect_warning(effect_draw(bg5_p, 1e05), "more effect draws than there are available samples")
 
   # Plotting tau:
-  expect_is(effect_plot(bg5_p), "gg")
-  expect_is(effect_plot(bg5_p, bg5_f), "gg")
-  expect_is(effect_plot("Model A" = bg5_p, "Model B" = bg5_f), "gg")
+  expect_s3_class(effect_plot(bg5_p), "gg")
+  expect_s3_class(effect_plot(bg5_p, bg5_f), "gg")
+  expect_s3_class(effect_plot("Model A" = bg5_p, "Model B" = bg5_f), "gg")
   # Crashes when passing nonsense
   expect_error(effect_plot(cars), "baggr class")
   expect_error(effect_plot(cars, cars, bg5_f), "baggr class")
@@ -319,20 +342,20 @@ test_that("baggr_compare basic cases work with Rubin", {
   # Run models from baggr_compare:
   bgcomp <- expect_warning(baggr_compare(schools,
                                          iter = 200, refresh = 0))
-  expect_is(bgcomp, "baggr_compare")
+  expect_s3_class(bgcomp, "baggr_compare")
   # Compare prior vs posterior:
   bgcomp <- expect_warning(baggr_compare(schools, iter = 200,
                                          what = "prior", refresh = 0))
-  expect_is(bgcomp, "baggr_compare")
+  expect_s3_class(bgcomp, "baggr_compare")
   # Compare existing models:
   expect_error(baggr_compare("Name" = bg5_p, "Name" = bg5_n), "unique model names")
 
   bgcomp2 <- baggr_compare(bg5_p, bg5_n, bg5_f)
-  expect_is(bgcomp2, "baggr_compare")
+  expect_s3_class(bgcomp2, "baggr_compare")
   p1 <- plot(bgcomp2)
   p2 <- plot(bgcomp2, add_values = TRUE)
-  expect_is(p1, "gg")
-  expect_is(p2, "gg")
+  expect_s3_class(p1, "gg")
+  expect_s3_class(p2, "gg")
 })
 
 test_that("loocv", {
@@ -344,7 +367,7 @@ test_that("loocv", {
   expect_error(loocv(schools, pooling = "none"))
 
   loo_model <- expect_warning(loocv(schools, return_models = TRUE, iter = 200, refresh = 0))
-  expect_is(loo_model, "baggr_cv")
+  expect_s3_class(loo_model, "baggr_cv")
   expect_type(testthat::capture_output(print(loo_model)), "character")
 })
 
@@ -382,32 +405,24 @@ test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
 })
 
 
-comp_rbpl <- expect_warning(baggr_compare(
-  schools, model = "rubin", iter = 200, what = "pooling"
-))
-
-comp_rbpr <- expect_warning(baggr_compare(
-  schools, model = "rubin", iter = 200, what = "prior"
-))
-
 test_that("baggr comparison method works for Rubin model", {
 
-  expect_is(comp_rbpr, "baggr_compare")
-  expect_is(comp_rbpl, "baggr_compare")
+  expect_s3_class(comp_rbpr, "baggr_compare")
+  expect_s3_class(comp_rbpl, "baggr_compare")
 
-  expect_is(testthat::capture_output(print(comp_rbpl)), "character")
-  expect_is(testthat::capture_output(print(comp_rbpr)), "character")
+  expect_type(testthat::capture_output(print(comp_rbpl)), "character")
+  expect_type(testthat::capture_output(print(comp_rbpr)), "character")
 
   expect_gt(length(comp_rbpl), 0)
   expect_gt(length(comp_rbpr), 0)
 
-  expect_is(plot(comp_rbpl), "gg")
+  expect_s3_class(plot(comp_rbpl), "gg")
 
-  expect_is(plot(comp_rbpr), "gg")
+  expect_s3_class(plot(comp_rbpr), "gg")
 
-  expect_is(plot(comp_rbpl, grid_models = TRUE), "gtable")
+  expect_s3_class(plot(comp_rbpl, grid_models = TRUE), "gtable")
 
-  expect_is(plot(comp_rbpr, grid_models = TRUE), "gtable")
+  expect_s3_class(plot(comp_rbpr, grid_models = TRUE), "gtable")
 })
 
 test_that("Plot quantiles", {
@@ -421,10 +436,10 @@ test_that("You can run Rubin model with mutau type inputs", {
                          "se.mu" = rep(1, 8),
                          "state" = datasets::state.name[1:8])
   bg <- expect_warning(baggr(df_mutau, model = "rubin", iter = 20, refresh = 0))
-  expect_is(bg, "baggr")
+  expect_s3_class(bg, "baggr")
   expect_equal(bg$model, "rubin")
   bg <- expect_warning(baggr(df_mutau[1:6,], test_data = df_mutau[7:8,],
                              model = "rubin", iter = 20, refresh = 0))
-  expect_is(bg, "baggr")
+  expect_s3_class(bg, "baggr")
   expect_gt(bg$mean_lpd, 0)
 })

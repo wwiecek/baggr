@@ -1,4 +1,3 @@
-context("baggr() calls with mu and tau model")
 library(baggr)
 library(testthat)
 
@@ -39,17 +38,23 @@ test_that("Error messages for wrong inputs are in place", {
                      "M", "c"))
 })
 
-bg5_n <- expect_warning(baggr(df_mutau, pooling = "none", group = "state",
-               iter = 200, chains = 2, refresh = 0))
-bg5_p <- expect_warning(baggr(df_mutau, pooling = "partial", group = "state",
-               iter = 200, chains = 2, refresh = 0))
-bg5_f <- expect_warning(baggr(df_mutau, pooling = "full", group = "state",
-               iter = 200, chains = 2, refresh = 0))
+bg5_n <- NULL
+bg5_p <- NULL
+bg5_f <- NULL
+
+setup({
+  bg5_n <<- expect_warning(baggr(df_mutau, pooling = "none", group = "state",
+                                 iter = 200, chains = 2, refresh = 0))
+  bg5_p <<- expect_warning(baggr(df_mutau, pooling = "partial", group = "state",
+                                 iter = 200, chains = 2, refresh = 0))
+  bg5_f <<- expect_warning(baggr(df_mutau, pooling = "full", group = "state",
+                                 iter = 200, chains = 2, refresh = 0))
+})
 
 test_that("Different pooling methods work for mu tau model", {
-  expect_is(bg5_n, "baggr")
-  expect_is(bg5_p, "baggr")
-  expect_is(bg5_f, "baggr")
+  expect_s3_class(bg5_n, "baggr")
+  expect_s3_class(bg5_p, "baggr")
+  expect_s3_class(bg5_f, "baggr")
 })
 
 test_that("Extra args to Stan passed via ... work well", {
@@ -65,13 +70,13 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_p$n_groups, 8)
   expect_equal(bg5_p$effects, "mean")
   expect_equal(bg5_p$model, "mutau")
-  expect_is(bg5_p$fit, "stanfit")
+  expect_s3_class(bg5_p$fit, "stanfit")
 })
 
 test_that("Data are available in baggr object", {
-  expect_is(bg5_n$data, "data.frame")
-  expect_is(bg5_p$data, "data.frame")
-  expect_is(bg5_f$data, "data.frame")
+  expect_s3_class(bg5_n$data, "data.frame")
+  expect_s3_class(bg5_p$data, "data.frame")
+  expect_s3_class(bg5_f$data, "data.frame")
 })
 
 test_that("Pooling metrics", {
@@ -85,7 +90,7 @@ test_that("Pooling metrics", {
   expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
 
   pp <- pooling(bg5_p)
-  expect_is(pp, "array")
+  expect_true(is.array(pp))
   expect_gt(min(pp), 0)
   expect_lt(max(pp), 1)
   # since all SEs are the same, pooling should be the same for all sites
@@ -99,15 +104,15 @@ test_that("extra pooling stats work", {
   # Extra pooling checks
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
-  expect_is(i2, "array")
+  expect_true(is.array(i2))
   expect_gte(min(i2), 0)
   expect_lte(max(i2), 1)
   h2 <- pooling(bg5_p, metric = "hsq")
-  expect_is(h2, "array")
+  expect_true(is.array(h2))
   expect_gte(min(h2), 1)
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
-  expect_is(wt, "array")
+  expect_true(is.array(wt))
   expect_equal(dim(wt), c(3,8,1))
   expect_equal(sum(wt[2,,1]), 1)
   expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
@@ -118,8 +123,8 @@ test_that("extra pooling stats work", {
 })
 
 test_that("Calculation of effects works", {
-  expect_is(group_effects(bg5_p), "array")
-  expect_is(treatment_effect(bg5_p), "list")
+  expect_true(is.array(group_effects(bg5_p)))
+  expect_type(treatment_effect(bg5_p), "list")
   expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
   expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
 
@@ -134,14 +139,14 @@ test_that("Calculation of effects works", {
 
 
 test_that("Plotting works", {
-  expect_is(plot(bg5_n), "gg")
-  expect_is(plot(bg5_p, order = TRUE), "gg")
-  expect_is(plot(bg5_p, style = "forest"), "gg")
-  expect_is(plot(bg5_f, order = FALSE), "gg")
-  expect_is(forest_plot(bg5_n), "gforge_forestplot")
-  expect_is(forest_plot(bg5_p), "gforge_forestplot")
-  expect_is(forest_plot(bg5_f), "gforge_forestplot")
-  expect_is(funnel(bg5_p), "gg")
+  expect_s3_class(plot(bg5_n), "gg")
+  expect_s3_class(plot(bg5_p, order = TRUE), "gg")
+  expect_s3_class(plot(bg5_p, style = "forest"), "gg")
+  expect_s3_class(plot(bg5_f, order = FALSE), "gg")
+  expect_s3_class(forest_plot(bg5_n), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_p), "gforge_forestplot")
+  expect_s3_class(forest_plot(bg5_f), "gforge_forestplot")
+  expect_s3_class(funnel(bg5_p), "gg")
   # but we can crash it easily if
   expect_error(plot(bg5_n, style = "rubbish"), "be one of")
 })
@@ -149,7 +154,7 @@ test_that("Plotting works", {
 test_that("Test data can be used in the mu tau model", {
   bg_lpd <- expect_warning(baggr(df_mutau[1:6,], test_data = df_mutau[7:8,],
                   iter = 2000, chains = 2, refresh = 0))
-  expect_is(bg_lpd, "baggr")
+  expect_s3_class(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(2000, 6, 1))
   # make sure it's not 0 but something sensible
@@ -165,9 +170,9 @@ test_that("Test data can be used in the mu tau model", {
 
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_mutau))
-  expect_is(treatment_effect(bg5_p), "list")
+  expect_type(treatment_effect(bg5_p), "list")
   expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric")
+  expect_type(treatment_effect(bg5_p)$tau, "double")
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 })
 
@@ -177,12 +182,12 @@ comp_mt <- baggr_compare(
 
 test_that("baggr comparison method works for mu-tau models", {
 
-  expect_is(comp_mt, "baggr_compare")
+  expect_s3_class(comp_mt, "baggr_compare")
   expect_type(testthat::capture_output(print(comp_mt)), "character")
   expect_gt(length(comp_mt), 0)
 
-  expect_is(plot(comp_mt), "gg")
-  expect_is(plot(comp_mt, grid_models = TRUE), "gtable")
+  expect_s3_class(plot(comp_mt), "gg")
+  expect_s3_class(plot(comp_mt, grid_models = TRUE), "gtable")
 
 })
 

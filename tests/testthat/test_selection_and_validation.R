@@ -1,5 +1,3 @@
-context("coverage for selection and validation helpers")
-
 library(baggr)
 
 test_that("selection() validates inputs before extracting draws", {

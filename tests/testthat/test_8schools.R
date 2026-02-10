@@ -1,6 +1,4 @@
 # tests of 8 schools
-context("test 8 schools model in baggr")
-
 # brms testing script
 # library(brms)
 library(baggr)

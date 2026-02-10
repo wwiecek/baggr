@@ -1,4 +1,3 @@
-context("Specifying priors for baggr models")
 library(baggr)
 library(testthat)
 set.seed(11241)
@@ -54,13 +53,13 @@ test_that("Prior specification via different arguments", {
 })
 
 test_that("All possible prior dist's work", {
-  expect_is(normal(0, 10), "list")
-  expect_is(cauchy(0, 10), "list")
-  expect_is(uniform(0, 10), "list")
-  expect_is(lognormal(1, 2), "list")
-  expect_is(student_t(1, 0, 1), "list")
-  expect_is(multinormal(c(0,0), diag(2)), "list")
-  expect_is(lkj(5), "list")
+  expect_type(normal(0, 10), "list")
+  expect_type(cauchy(0, 10), "list")
+  expect_type(uniform(0, 10), "list")
+  expect_type(lognormal(1, 2), "list")
+  expect_type(student_t(1, 0, 1), "list")
+  expect_type(multinormal(c(0,0), diag(2)), "list")
+  expect_type(lkj(5), "list")
 
   expect_error(multinormal(0, 10))
   expect_error(normal(c(0,0), diag(2)))
@@ -88,9 +87,9 @@ test_that("Different priors for mutau model", {
                               iter = 200, chains = 2, refresh = 0))
   expect_error(baggr(df_mutau, prior_hypermean = multinormal(c(0,0,0), diag(3))))
   expect_error(baggr(df_mutau, prior_hypercor  = multinormal(c(0,0), diag(2))), "lkj")
-  # expect_is(bg1, "baggr")
-  expect_is(bg2, "baggr")
-  expect_is(bg3, "baggr")
+  # expect_s3_class(bg1, "baggr")
+  expect_s3_class(bg2, "baggr")
+  expect_s3_class(bg3, "baggr")
 })
 
 
@@ -101,15 +100,15 @@ test_that("Prior vs posterior and PPD comparisons work", {
   # Typical PPD objects:
   bg_ppd1 <- expect_warning(baggr(schools, ppd = TRUE, refresh = 0, iter = 200))
   bg_ppd2 <- expect_warning(baggr(schools, ppd = TRUE, prior_hypermean = normal(0,10), refresh = 0, iter = 200))
-  expect_is(bg_ppd1, "baggr")
-  expect_is(bg_ppd2, "baggr")
+  expect_s3_class(bg_ppd1, "baggr")
+  expect_s3_class(bg_ppd2, "baggr")
   # Regular comparison (don't have to say compare = "groups")
   bgc <- baggr_compare(bg_ppd1, bg_ppd2)
-  expect_is(bgc, "baggr_compare")
+  expect_s3_class(bgc, "baggr_compare")
 
   # Prior vs posterior
   bgc2 <- expect_warning(baggr_compare(schools, what = "prior", refresh = 0, iter = 200))
-  expect_is(bgc2, "baggr_compare")
+  expect_s3_class(bgc2, "baggr_compare")
 
   # Effect plot of PPD:
   gg <- effect_plot(bg_ppd1)
