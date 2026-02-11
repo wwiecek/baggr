@@ -39,8 +39,8 @@ check_columns_ipd <- function(data, outcome, group, treatment,
   # Treatment has to be dichotomous and include both 0's and 1's
   if(trt_binary && !is.binary(data[[treatment]])) {
     stop("Treatment column has to have values 0 or 1")
-  if(trt_binary && !is.binary(data[[treatment]], both = TRUE))
-    stop("Treatment column has to have both 0's and 1's for baggr to work")
+    if(trt_binary && !is.binary(data[[treatment]], both = TRUE))
+      stop("Treatment column has to have both 0's and 1's for baggr to work")
   }
 }
 
@@ -56,8 +56,19 @@ is.binary <- function(x, both = FALSE, na.rm = TRUE){
 
 
 check_columns_binary <- function(data, stop=TRUE) {
-  if(is.null(data$a) || is.null(data$c) ||
-     ((is.null(data$b) || is.null(data$d)) && (is.null(data$n1) || is.null(data$n2)))){
+  data_cols <- names(data)
+  has_col <- function(col) col %in% data_cols
+
+  if(
+    ((!has_col("a")   || !has_col("c")) &&
+     (!has_col("ai")  || !has_col("ci"))
+    ) ||
+    ((!has_col("b")   || !has_col("d")) &&
+     (!has_col("bi")  || !has_col("di")) &&
+     (!has_col("n1")  || !has_col("n2")) &&
+     (!has_col("n1i") || !has_col("n2i"))
+    )
+  ){
     if(stop)
       stop("Binary data must have columns 'a', 'c' and 'b'/'n1', 'd'/'n2'")
     return(0)
@@ -80,4 +91,3 @@ find_group_column <- function(data, group) {
   }
   return(group)
 }
-
