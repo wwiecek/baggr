@@ -103,8 +103,17 @@ prepare_prior <- function(prior,
 
   # Now loop over all priors that need to be specified for a given model
   for(current_prior in names(priors_spec[[model]])) {
+    inactive_logit_control_prior <-
+      model == "logit" &&
+      stan_data$pooling_baseline == 2 &&
+      current_prior %in% c("control", "control_sd")
+
     if(is.null(prior[[current_prior]])) {
-      if(model != "sslab"){
+      if(inactive_logit_control_prior) {
+        # Placeholder values are still required by Stan data input,
+        # but these priors are inactive when control pooling is removed.
+        default_prior_dist <- normal(0, 1)
+      } else if(model != "sslab") {
         default_prior_dist <- switch(
           current_prior,
           "hypermean"  =
@@ -129,8 +138,7 @@ prepare_prior <- function(prior,
           else
             uniform(0, 10*sd(data$mu))
         )
-      }
-      if(model == "sslab") {
+      } else if(model == "sslab") {
         data_pos <- prepare_ma(data.frame(outcome = stan_data$y_pos,
                                           group = stan_data$site_pos,
                                           treatment = stan_data$treatment_pos),
@@ -176,6 +184,13 @@ prepare_prior <- function(prior,
                                 dist_to_set,
                                 p = if(convert_to_array) re_dim else 1,
                                 to_array = convert_to_array)
+
+    if(inactive_logit_control_prior) {
+      if(!silent && !is.null(prior[[current_prior]]))
+        message("Control-group prior supplied, but pooling_control = 'remove'. Ignoring it.")
+      next
+    }
+
     # Also save it in the "dist" format for future reference
     prior_dist_list[[current_prior]] <- dist_to_set
 

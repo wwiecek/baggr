@@ -1,12 +1,12 @@
 #' Make predictive draws from baggr model
 #'
-#' The function `effect_draw` and its alias, `posterior_predict`, take the sample
-#' of hyperparameters from a [baggr::baggr()] model
+#' The function `effect_draw` (or its alias `predict()` applied to a `baggr` model) takes the sample
+#' of hyperparameters from a [baggr] model
 #' (typically hypermean and hyper-SD, which you can see using [treatment_effect])
 #' and draws values of new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 #' This can be used for both prior and posterior draws, depending on [baggr::baggr()] model.
 #' By default this is done for a single new effect, but for meta-regression models
-#' you can specify values of covariates with the `newdata` argument, same as in [predict].
+#' you can specify values of covariates with the `newdata` argument, same as in [predict.baggr].
 #'
 #' @param object A `baggr` class object.
 #' @param draws How many values to draw? The default is as long as the number of samples
@@ -46,7 +46,7 @@
 #' If the `baggr` model used by the function is a meta-regression
 #' (i.e. a `baggr` model with `covariates`), by specifying
 #' the predicted values can be adjusted for known levels of fixed covariates by
-#' passing `newdata` (same as in [predict]). If no adjustment is made, the
+#' passing `newdata` (same as in [predict.baggr]). If no adjustment is made, the
 #' returned value should be interpreted as the effect when all covariates are 0.
 #'
 #' @references
