@@ -21,7 +21,7 @@ test_that("meta_power accepts baggr object and adds highlighted point", {
               refresh = 0,
               control = list(adapt_delta = 0.95))
 
-  out <- meta_power(bg, n = 6, add_contours = FALSE, print_plot = FALSE)
+  out <- meta_power(bg, n = 6, contours = c(), print_plot = FALSE)
 
   expect_true(inherits(out$plot, "ggplot"))
 

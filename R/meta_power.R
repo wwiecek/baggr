@@ -22,8 +22,8 @@
 #' @param n Number of grid points for each axis (`mu` and `tau`).
 #' @param alpha Significance level for the z-test.
 #' @param sided Number of test sides: `1` (one-sided) or `2` (two-sided).
-#' @param contour_breaks Power levels used to draw contour lines.
-#' @param add_contours Logical; if `TRUE`, overlays contour lines.
+#' @param contours Numeric vector of power levels used to draw contour lines.
+#'   Use `c()` to suppress contours.
 #' @param print_plot Logical; if `TRUE`, prints the plot.
 #'
 #' @details
@@ -43,7 +43,7 @@
 #' @examples
 #' # 8 schools example
 #' data(schools)
-#' out <- meta_power(schools, n = 25, contour_breaks = c(0.5, 0.8))
+#' out <- meta_power(schools, n = 25, contours = c(0.5, 0.8))
 #' head(out$values$grid_wide)
 #'
 #' # You can also pass a baggr object directly.
@@ -52,6 +52,9 @@
 #' meta_power(bg, n = 25)
 #' }
 #'
+#' # No contours:
+#' meta_power(schools, n = 20, contours = c())
+#'
 #' @export
 meta_power <- function(x,
                        max_mu = NULL,
@@ -59,11 +62,11 @@ meta_power <- function(x,
                        n = 10,
                        alpha = 0.05,
                        sided = 2,
-                       contour_breaks = c(0.5, 0.8),
-                       add_contours = TRUE,
+                       contours = c(0.8),
                        print_plot = TRUE) {
 
-  stopifnot(n >= 2, sided %in% c(1, 2), alpha > 0, alpha < 1)
+  stopifnot(n >= 2, sided %in% c(1, 2), alpha > 0, alpha < 1,
+            is.numeric(contours))
 
   extract_se <- function(x) {
     if (is.numeric(x)) return(as.numeric(x))
@@ -157,10 +160,10 @@ meta_power <- function(x,
   names(grid_long)[3] <- "power"
 
   subtitle_txt <- paste0(
-    "Random effects (known heterogeneity); K = ", K,
-    ", alpha = ", alpha,
+    "Random effects (known heterogeneity); alpha = ", alpha,
     if (sided == 2) ", two-sided" else ", one-sided",
-    "; SE range = [", signif(min(se), 3), ", ", signif(max(se), 3), "]"
+    "; SE range = [", signif(min(se), 3), ", ", signif(max(se), 3), "]",
+    ", K = ", K
   )
 
   p <- ggplot2::ggplot(grid_long, ggplot2::aes(x = mu, y = tau, fill = power)) +
@@ -170,17 +173,19 @@ meta_power <- function(x,
       x = expression(mu ~ "(true mean effect)"),
       y = expression(tau ~ "(heterogeneity SD)"),
       fill = "Power",
-      title = "Meta-analysis power over (mu, tau)",
+      title = "Statistical power plot for meta-analysis",
       subtitle = subtitle_txt
     ) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(panel.grid = ggplot2::element_blank())
 
-  if (add_contours && length(contour_breaks) > 0) {
+  if (length(contours) > 0) {
     p <- p +
       ggplot2::geom_contour(
-        ggplot2::aes(z = power),
-        breaks = contour_breaks,
+        data = grid_long,
+        mapping = ggplot2::aes(x = mu, y = tau, z = power),
+        breaks = contours,
+        inherit.aes = FALSE,
         color = "red",
         linewidth = 1.0
       )

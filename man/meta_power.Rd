@@ -10,8 +10,7 @@ meta_power(
   n = 10,
   alpha = 0.05,
   sided = 2,
-  contour_breaks = c(0.5, 0.8),
-  add_contours = TRUE,
+  contours = c(0.8),
   print_plot = TRUE
 )
 }
@@ -31,9 +30,8 @@ data frame with \code{se} column, or a \code{baggr} object.}
 
 \item{sided}{Number of test sides: \code{1} (one-sided) or \code{2} (two-sided).}
 
-\item{contour_breaks}{Power levels used to draw contour lines.}
-
-\item{add_contours}{Logical; if \code{TRUE}, overlays contour lines.}
+\item{contours}{Numeric vector of power levels used to draw contour lines.
+Use \code{c()} to suppress contours.}
 
 \item{print_plot}{Logical; if \code{TRUE}, prints the plot.}
 }
@@ -69,7 +67,7 @@ where the fitted model sits on the power surface.
 \examples{
 # 8 schools example
 data(schools)
-out <- meta_power(schools, n = 25, contour_breaks = c(0.5, 0.8))
+out <- meta_power(schools, n = 25, contours = c(0.5, 0.8))
 head(out$values$grid_wide)
 
 # You can also pass a baggr object directly.
@@ -77,4 +75,7 @@ head(out$values$grid_wide)
 bg <- baggr(schools, iter = 1000)
 meta_power(bg, n = 25)
 }
+
+# No contours:
+meta_power(schools, n = 20, contours = c())
 }
