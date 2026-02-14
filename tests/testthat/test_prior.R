@@ -12,6 +12,24 @@ df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
                        "se.mu" = rep(1, 8),
                        "state" = datasets::state.name[1:8])
 
+test_that("Priors can be recovered from baggr objects", {
+  formatted <- list(
+    prior_sel_fam = prior_dist_fam[["normal"]],
+    prior_sel_val = c(0, 2, 0),
+    prior_hypermean_fam = prior_dist_fam[["uniform"]],
+    prior_hypermean_val = c(-1, 1, 0)
+  )
+
+  bg_stub <- structure(list(formatted_prior = formatted), class = "baggr")
+  priors <- get_prior(bg_stub)
+
+  expect_s3_class(priors, "baggr_prior")
+  expect_equal(names(priors), c("selection", "hypermean"))
+  expect_equal(priors$selection, normal(0, 2))
+  expect_equal(priors$hypermean, uniform(-1, 1))
+  expect_output(print(priors), "\\* selection: normal")
+})
+
 test_that("Wrong prior specifications crash baggr()", {
   expect_error(baggr(df_mutau, prior_hypermean = 2))
   expect_error(baggr(df_mutau, prior_hypermean = normal(2, -100)))
