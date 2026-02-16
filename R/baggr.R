@@ -363,7 +363,7 @@ baggr <- function(data,
                   selection = prior_selection
                   )
   } else {
-    if(!is.null(prior_hypermean) || !is.null(prior_beta) || is.null(prior_cluster) ||
+    if(!is.null(prior_hypermean) || !is.null(prior_beta) || !is.null(prior_cluster) ||
        !is.null(prior_control)   || !is.null(prior_control_sd) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior$' and 'prior_' arguments specified. Using 'prior' only.")
