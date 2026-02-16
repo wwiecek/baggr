@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Guard against hard-coded Codecov tokens
+        shell: bash
         run: |
           if grep -RInE 'covr::codecov\([^)]*token[[:space:]]*=' tools R .github; then
             echo "Hard-coded Codecov token usage detected. Use CODECOV_TOKEN secret."
