@@ -205,17 +205,16 @@ convert_inputs <- function(data,
         # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
         out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
-        # calculate SEs in each test group
+        # calculate outcome SDs in each test group (used in predictive density)
         if(model %in% c("rubin_full", "mutau_full")){
-          se_in_each_group <- sapply(
+          sd_in_each_group <- sapply(
             1:max(group_numeric_test), function(i) {
-              n <- sum(group_numeric_test == i)
-              sd(test_data[[outcome]][group_numeric_test == i])/sqrt(n)
+              sd(test_data[[outcome]][group_numeric_test == i])
             })
-          if(any(is.na(se_in_each_group)))
-            stop("Cannot calculate SE in groups in test data. Each out-of-sample ",
+          if(any(is.na(sd_in_each_group)))
+            stop("Cannot calculate SD in groups in test data. Each out-of-sample ",
                  "group must be of size at least 2.")
-          out$test_sigma_y_k <- array(se_in_each_group, dim = max(group_numeric_test))
+          out$test_sigma_y_k <- array(sd_in_each_group, dim = max(group_numeric_test))
         }
       }
     }
