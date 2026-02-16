@@ -107,6 +107,7 @@ prepare_prior <- function(prior,
       model == "logit" &&
       stan_data$pooling_baseline == 2 &&
       current_prior %in% c("control", "control_sd")
+    inactive_hypersd_prior <- current_prior == "hypersd" && pooling != "partial"
 
     if(is.null(prior[[current_prior]])) {
       if(inactive_logit_control_prior) {
@@ -190,6 +191,11 @@ prepare_prior <- function(prior,
         message("Control-group prior supplied, but pooling_control = 'remove'. Ignoring it.")
       next
     }
+    if(inactive_hypersd_prior) {
+      if(!silent && !is.null(prior[[current_prior]]))
+        message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
+      next
+    }
 
     # Also save it in the "dist" format for future reference
     prior_dist_list[[current_prior]] <- dist_to_set
@@ -213,12 +219,12 @@ prepare_prior <- function(prior,
           if(model != "sslab")
             special_name <- "tau"
         } else if(current_prior == "hypersd") {
-          if(attr(stan_data, "n_groups") == 1)
+          if(pooling == "partial" && attr(stan_data, "n_groups") == 1)
             stop("You must specify hyper-SD prior manually when data has only one row.")
-          if(attr(stan_data, "n_groups") < 5)
+          if(pooling == "partial" && attr(stan_data, "n_groups") < 5)
             message(paste("/Dataset has only", attr(stan_data, "n_groups"),
                           "groups -- consider setting variance prior manually./"))
-          if(model != "sslab"){
+          if(pooling == "partial" && model != "sslab"){
             message("Setting hyper-SD prior using 10 times the naive SD across sites")
             special_name <- "sigma_tau"
           }
@@ -273,9 +279,6 @@ prepare_prior <- function(prior,
                          print_dist(default_prior_dist)))
 
       } else {
-        if(current_prior == "hypersd" &&
-           pooling != "partial")
-          message("Prior for hyper-SD set, but pooling is not partial. Ignoring.")
         if(current_prior == "control_sd" &&
            model %in% c("logit", "rubin_full", "mutau_full") &&
            stan_data$pooling_baseline != 1)

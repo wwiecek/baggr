@@ -45,6 +45,48 @@ test_that("Error messages for wrong inputs are in place", {
 
 })
 
+test_that("Hyper-SD priors are handled correctly outside partial pooling", {
+  msgs_full <- capture.output(
+    fe7n <- suppressWarnings(
+      baggr(schools[1:7, ], pooling = "full",
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    ),
+    type = "message"
+  )
+  expect_false(any(grepl("Setting hyper-SD prior using 10 times the naive SD across sites",
+                         msgs_full, fixed = TRUE)))
+  expect_null(fe7n$prior_dist$hypersd)
+
+  msgs_none <- capture.output(
+    bg_none <- suppressWarnings(
+      baggr(schools[1:7, ], pooling = "none",
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    ),
+    type = "message"
+  )
+  expect_false(any(grepl("Setting hyper-SD prior using 10 times the naive SD across sites",
+                         msgs_none, fixed = TRUE)))
+  expect_null(bg_none$prior_dist$hypersd)
+
+  msgs_partial <- capture.output(
+    bg_partial <- suppressWarnings(
+      baggr(schools[1:7, ], pooling = "partial",
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    ),
+    type = "message"
+  )
+  expect_false(is.null(bg_partial$prior_dist$hypersd))
+
+  fe7n_te <- treatment_effect(fe7n, summary = TRUE)$tau
+  expect_no_error(
+    suppressWarnings(
+      baggr(schools[8, ], pooling = "full",
+            prior_hypermean = normal(fe7n_te[["mean"]], fe7n_te[["sd"]]),
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    )
+  )
+})
+
 
 # There will always be a divergent transition / ESS warning produced by Stan
 # at iter = 200.

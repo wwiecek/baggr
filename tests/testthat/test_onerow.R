@@ -35,6 +35,13 @@ test_that("The thing runs", {
   expect_is(bg_onerow_p, "baggr")
   expect_is(bg_onerow_n, "baggr")
   expect_is(bg_onerow_binary, "baggr")
+  expect_no_error(
+    suppressWarnings(
+      baggr(df_pooled[1,], pooling = "full", group = "state",
+            iter = 50, chains = 1, refresh = 0,
+            show_messages = F)
+    )
+  )
 
   expect_error(baggr(df_pooled[1,], pooling = "partial", group = "state",
                      iter = 200, chains = 2, refresh = 0,
@@ -52,7 +59,6 @@ test_that("The thing runs", {
   expect_is(gg1, "gg")
   expect_is(gg2, "gg")
 })
-
 
 
 
