@@ -151,6 +151,30 @@ test_that("rubin_full cross-validation works", {
   expect_gt(bg$mean_lpd, 0)
 })
 
+test_that("rubin_full CV handles numeric/character groups and K_test is correct", {
+  run_cv_case <- function(df, held_out_groups) {
+    train_data <- subset(df, !(group %in% held_out_groups) | treatment == 0)
+    test_data <- subset(df, group %in% held_out_groups & treatment == 1)
+
+    bg <- expect_warning(
+      baggr(train_data, iter = 20, chains = 1, refresh = 0, test_data = test_data)
+    )
+
+    expect_is(bg, "baggr")
+    expect_true(is.finite(bg$mean_lpd))
+    expect_equal(bg$inputs$K_test, length(unique(test_data$group)))
+    expect_equal(length(unique(bg$inputs$test_site)), bg$inputs$K_test)
+  }
+
+  schools_ipd_num <- schools_ipd
+  schools_ipd_num$group <- as.numeric(factor(schools_ipd_num$group, levels = unique(schools_ipd_num$group)))
+
+  run_cv_case(schools_ipd, "School A")
+  run_cv_case(schools_ipd, c("School A", "School C", "School E"))
+  run_cv_case(schools_ipd_num, 1)
+  run_cv_case(schools_ipd_num, c(1, 3, 5))
+})
+
 
 
 # covariates ------

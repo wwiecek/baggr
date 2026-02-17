@@ -200,7 +200,7 @@ test_that("Test data can be used in the Rubin model", {
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
   # make sure it's not 0
-  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -3.6, tolerance = 1)
+  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -1.8, tolerance = 1)
 
 })
 

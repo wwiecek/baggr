@@ -462,7 +462,7 @@ baggr <- function(data,
     result[["pooling_metric"]] <- pooling(result)
     if(!is.null(test_data)){
       result[["test_data"]]    <- test_data
-      result[["mean_lpd"]]     <- -2*mean(rstan::extract(fit, "logpd[1]")[[1]])
+      result[["mean_lpd"]]     <- -2*mean(extract_logpd_draws(fit))
     }
   }
 
