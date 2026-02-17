@@ -175,6 +175,72 @@ test_that("rubin_full CV handles numeric/character groups and K_test is correct"
   run_cv_case(schools_ipd_num, c(1, 3, 5))
 })
 
+test_that("full-data test sigma uses SD and not SE", {
+  train <- data.frame(
+    group = c(rep("Train", 8), rep(c("TestA", "TestB"), each = 2)),
+    outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5, 0.8, 1.1, 0.3, 0.9),
+    treatment = c(0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0)
+  )
+  test <- data.frame(
+    group = rep(c("TestA", "TestB"), each = 4),
+    outcome = c(1, 2, 3, 4, 0.5, 1.5, 1.7, 2.3),
+    treatment = 1
+  )
+
+  expected_sd <- tapply(test$outcome, test$group, sd)
+
+  inp_rubin <- convert_inputs(train, model = "rubin_full", quantiles = seq(.05, .95, .1),
+                              test_data = test, outcome = "outcome",
+                              group = "group", treatment = "treatment")
+  inp_mutau <- convert_inputs(train, model = "mutau_full", quantiles = seq(.05, .95, .1),
+                              test_data = test, outcome = "outcome",
+                              group = "group", treatment = "treatment")
+
+  expect_equal(as.numeric(inp_rubin$test_sigma_y_k), as.numeric(expected_sd))
+  expect_equal(as.numeric(inp_mutau$test_sigma_y_k), as.numeric(expected_sd))
+})
+
+test_that("rubin_full predictive log density matches analytic Normal density scale", {
+  train <- data.frame(
+    group = c(rep("Train1", 8), rep("Train2", 8), rep("Test", 4)),
+    outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5,
+                -0.3, 0.0, 0.2, 0.6, 1.1, 1.7, 2.0, 2.4,
+                0.2, 0.6, 0.9, 1.1),
+    treatment = c(rep(c(0, 0, 0, 0, 1, 1, 1, 1), 2), 0, 0, 0, 0)
+  )
+  test <- data.frame(
+    group = rep("Test", 4),
+    outcome = c(1, 2, 3, 4),
+    treatment = 1
+  )
+  test_sd <- sd(test$outcome)
+  test_se <- test_sd / sqrt(nrow(test))
+
+  bg <- expect_warning(
+    baggr(train,
+          model = "rubin_full",
+          pooling = "full",
+          pooling_control = "remove",
+          prior_hypermean = normal(0, 5),
+          prior_sigma = uniform(0.1, 5),
+          test_data = test,
+          iter = 250, warmup = 125, chains = 2, refresh = 0, seed = 137)
+  )
+
+  mu_draw <- rstan::extract(bg$fit, "mu")[[1]][,1]
+  logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
+
+  expected_sd_logpd <- vapply(mu_draw, function(m) {
+    sum(dnorm(test$outcome, mean = m, sd = test_sd, log = TRUE))
+  }, numeric(1))
+  expected_se_logpd <- vapply(mu_draw, function(m) {
+    sum(dnorm(test$outcome, mean = m, sd = test_se, log = TRUE))
+  }, numeric(1))
+
+  expect_equal(as.numeric(logpd), as.numeric(expected_sd_logpd), tolerance = 1e-6)
+  expect_gt(mean(abs(logpd - expected_se_logpd)), 0.1)
+})
+
 
 
 # covariates ------

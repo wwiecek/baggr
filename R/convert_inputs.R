@@ -216,27 +216,26 @@ convert_inputs <- function(data,
         # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
         out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
-        # calculate SEs in each test group and map as needed by Stan model
+        # calculate outcome SDs in each test group and map as needed by Stan model
         if(model %in% c("rubin_full", "mutau_full")) {
           test_group_ids <- sort(unique(group_numeric_test))
-          se_in_each_group <- sapply(
+          sd_in_each_group <- sapply(
             test_group_ids,
             function(i) {
-              n <- sum(group_numeric_test == i)
-              sd(test_data[[outcome]][group_numeric_test == i]) / sqrt(n)
+              sd(test_data[[outcome]][group_numeric_test == i])
             }
           )
-          if(any(is.na(se_in_each_group)))
-            stop("Cannot calculate SE in groups in test data. Each out-of-sample ",
+          if(any(is.na(sd_in_each_group)))
+            stop("Cannot calculate SD in groups in test data. Each out-of-sample ",
                  "group must be of size at least 2.")
 
           if(model == "rubin_full") {
-            out$test_sigma_y_i <- array(se_in_each_group[match(group_numeric_test, test_group_ids)],
+            out$test_sigma_y_i <- array(sd_in_each_group[match(group_numeric_test, test_group_ids)],
                                         dim = out$N_test)
-            out$test_sigma_y_k <- as.numeric(se_in_each_group)
+            out$test_sigma_y_k <- as.numeric(sd_in_each_group)
           }
           if(model == "mutau_full")
-            out$test_sigma_y_k <- array(se_in_each_group, dim = out$K_test)
+            out$test_sigma_y_k <- array(sd_in_each_group, dim = out$K_test)
         }
       }
     }

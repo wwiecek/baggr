@@ -23,6 +23,23 @@ test_that("Wrong prior specifications crash baggr()", {
 
 test_that("Prior specification via different arguments", {
   custom_prior <- list(hypermean = normal(0, 10), hypersd = uniform(0, 20))
+  expect_message(
+    suppressWarnings(
+      baggr(df_pooled, "rubin",
+            iter = 20, chains = 1, refresh = 0, seed = 1990,
+            prior = custom_prior)
+    ),
+    NA
+  )
+  expect_message(
+    suppressWarnings(
+      baggr(df_pooled, "rubin",
+            iter = 20, chains = 1, refresh = 0, seed = 1990,
+            prior_hypermean = normal(0, 2),
+            prior = custom_prior)
+    ),
+    "Both 'prior\\$' and 'prior_' arguments specified. Using 'prior' only."
+  )
   bg_prior1 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
                                     prior_hypermean = normal(0, 2),
