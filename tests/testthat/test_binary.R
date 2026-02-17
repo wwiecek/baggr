@@ -200,9 +200,9 @@ test_that("logit test_data uses training group indexing for predictive density",
     ),
     treatment = rep(c(0, 0, 0, 0, 1, 1, 1, 1), 3),
     outcome = c(
-      0, 0, 0, 0, 0, 1, 0, 1,
+      0, 0, 0, 1, 0, 1, 0, 1,
       0, 1, 0, 1, 1, 1, 0, 1,
-      1, 1, 1, 1, 0, 1, 1, 1
+      1, 1, 0, 1, 0, 1, 1, 1
     )
   )
   test <- data.frame(
