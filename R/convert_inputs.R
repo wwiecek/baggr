@@ -204,11 +204,11 @@ convert_inputs <- function(data,
 
       } else {
         out$N_test <- nrow(test_data)
-        if(model == "rubin_full") {
-          # For rubin_full CV, test sites must index training-site parameters.
+        if(model %in% c("logit", "rubin_full")) {
+          # For logit/rubin_full CV, test sites must index training-site parameters.
           group_numeric_test <- match(as.character(test_data[[group]]), group_label)
           if(any(is.na(group_numeric_test)))
-            stop("For rubin_full with test_data, all test groups must be present in ",
+            stop("For ", model, " with test_data, all test groups must be present in ",
                  "training data (typically with treatment == 0 rows).")
         }
         out$K_test <- length(unique(group_numeric_test))

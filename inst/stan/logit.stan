@@ -142,9 +142,9 @@ generated quantities {
       real mu_pred;
 
       if (pooling_type == 1) {
-        matrix[K_test,P] theta_k_test;
+        matrix[K,P] theta_k_test;
         // Generate random effects for each site and treatment
-        for (k in 1:K_test) {
+        for (k in 1:K) {
           for (p in 1:P) {
             theta_k_test[k,p] = normal_rng(mu[p], tau[p]);
           }
@@ -162,5 +162,4 @@ generated quantities {
     }
   }
 }
-
 

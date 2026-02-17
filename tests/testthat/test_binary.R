@@ -191,6 +191,74 @@ test_that("Plotting and printing works", {
 #   expect_error(baggr(df_binary[1:6,], test_data = df_na), "must be of the same format as input")
 # })
 
+test_that("logit test_data uses training group indexing for predictive density", {
+  train <- data.frame(
+    group = c(
+      rep("Trial A", 8),
+      rep("Trial B", 8),
+      rep("Trial C", 8)
+    ),
+    treatment = rep(c(0, 0, 0, 0, 1, 1, 1, 1), 3),
+    outcome = c(
+      0, 0, 0, 0, 0, 1, 0, 1,
+      0, 1, 0, 1, 1, 1, 0, 1,
+      1, 1, 1, 1, 0, 1, 1, 1
+    )
+  )
+  test <- data.frame(
+    group = rep("Trial C", 4),
+    treatment = 1,
+    outcome = c(1, 1, 0, 1)
+  )
+
+  inp <- convert_inputs(train, model = "logit", quantiles = seq(.05, .95, .1),
+                        test_data = test, outcome = "outcome",
+                        group = "group", treatment = "treatment")
+  trial_c_idx <- match("Trial C", unique(train$group))
+  expect_equal(unique(inp$test_site), trial_c_idx)
+  expect_equal(inp$K_test, 1)
+
+  bg <- expect_warning(
+    baggr(train,
+          model = "logit",
+          pooling = "full",
+          pooling_control = "none",
+          prior_hypermean = normal(0, 5),
+          prior_control = normal(0, 5),
+          test_data = test,
+          iter = 120, warmup = 60, chains = 1, refresh = 0, seed = 137)
+  )
+
+  logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
+  baseline_draws <- rstan::extract(bg$fit, "baseline_k")[[1]][, trial_c_idx]
+  mu_draws <- rstan::extract(bg$fit, "mu")[[1]][, 1]
+  expected <- vapply(seq_along(logpd), function(i) {
+    eta <- baseline_draws[i] + mu_draws[i]
+    sum(dbinom(test$outcome, size = 1, prob = plogis(eta), log = TRUE))
+  }, numeric(1))
+  expect_equal(as.numeric(logpd), expected, tolerance = 1e-6)
+})
+
+test_that("logit test_data errors if test groups are absent from training", {
+  train <- data.frame(
+    group = rep(c("Trial A", "Trial B"), each = 6),
+    treatment = rep(c(0, 0, 0, 1, 1, 1), 2),
+    outcome = c(0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1)
+  )
+  test <- data.frame(
+    group = rep("Trial C", 4),
+    treatment = 1,
+    outcome = c(1, 0, 1, 1)
+  )
+
+  expect_error(
+    convert_inputs(train, model = "logit", quantiles = seq(.05, .95, .1),
+                   test_data = test, outcome = "outcome",
+                   group = "group", treatment = "treatment"),
+    "all test groups must be present in training data"
+  )
+})
+
 
 # test helpers -----
 
