@@ -95,7 +95,7 @@ print.baggr <- function(x,
               tot_pool[1], "to", tot_pool[3], "\n")
       }
 
-      if(x$model == "mutau") {
+      if(x$model == "mutau" && x$pooling != "full") {
         mutauc <- format(mutau_cor(x, summary = TRUE, interval=prob),
                          digits = digits, trim = TRUE)
         cat("Correlation of treatment effect and baseline =", mutauc[2], intervaltxt,
