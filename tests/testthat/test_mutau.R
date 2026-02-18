@@ -171,6 +171,12 @@ test_that("Extracting treatment/study effects works", {
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 })
 
+test_that("printing fully pooled mutau omits undefined correlation", {
+  full_print <- capture_output(print(bg5_f))
+  expect_type(full_print, "character")
+  expect_true(!any(grepl("Correlation of treatment effect and baseline", full_print)))
+})
+
 comp_mt <- baggr_compare(
   bg5_p, bg5_f
 )
@@ -185,4 +191,3 @@ test_that("baggr comparison method works for mu-tau models", {
   expect_is(plot(comp_mt, grid_models = TRUE), "gtable")
 
 })
-
