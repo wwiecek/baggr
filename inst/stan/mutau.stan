@@ -98,17 +98,25 @@ model {
 
 generated quantities {
   array[K_test > 0] real logpd;
-  if(K_test > 0) {
+
+  if (K_test > 0) {
     logpd[1] = 0;
-    for(k in 1:K_test){
-      for(p in 1:P) {
-        if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_theta_hat_k[p,k] | mu[1],
-                                sqrt(tau[1][p,p]^2 + test_se_theta_k[p,k]^2));
-        if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_theta_hat_k[p,k] | mu[1],
-                                sqrt(test_se_theta_k[p,k]^2));
+
+    for (k in 1:K_test) {
+      vector[P] y = to_vector(test_theta_hat_k[, k]);
+      vector[P] se = to_vector(test_se_theta_k[, k]);
+
+      if (pooling_type == 1) {
+        matrix[P,P] Sigma = multiply_lower_tri_self_transpose(tau[1]);
+        matrix[P,P] V = Sigma + diag_matrix(square(se));
+        logpd[1] += multi_normal_lpdf(y | mu[1], V);
+      }
+
+      if (pooling_type == 2) {
+        matrix[P,P] V = diag_matrix(square(se));
+        logpd[1] += multi_normal_lpdf(y | mu[1], V);
       }
     }
   }
 }
+
