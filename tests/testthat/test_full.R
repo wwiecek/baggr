@@ -136,26 +136,53 @@ test_that("baggr comparison method works for rubin_full model", {
 })
 
 test_that("rubin_full cross-validation works", {
-  # Run it first with test data that includes baseline, this will gen a message:
-  bg <- expect_warning(expect_message(
+  # Missing held-out site controls in training should now fail clearly.
+  expect_error(
     baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-          test_data = subset(schools_ipd, group == "School A")),
-    "Baselines for all these groups"
-  )
+          test_data = subset(schools_ipd, group == "School A" & treatment == 1)),
+    "all test groups must be present in training data"
   )
 
-  # Now repeat without bsl data
-  bg <- expect_warning(baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-                             test_data = subset(schools_ipd, group == "School A" & treatment == 1)))
+  # Correct CV split: keep controls for held-out site in training,
+  # evaluate treated rows for that site in test_data.
+  bg <- expect_warning(
+    baggr(subset(schools_ipd, group != "School A" | treatment == 0),
+          iter = 20, refresh = 0,
+          test_data = subset(schools_ipd, group == "School A" & treatment == 1))
+  )
   expect_is(bg, "baggr")
   expect_gt(bg$mean_lpd, 0)
 })
 
+test_that("rubin_full CV handles numeric/character groups and K_test is correct", {
+  run_cv_case <- function(df, held_out_groups) {
+    train_data <- subset(df, !(group %in% held_out_groups) | treatment == 0)
+    test_data <- subset(df, group %in% held_out_groups & treatment == 1)
+
+    bg <- expect_warning(
+      baggr(train_data, iter = 20, chains = 1, refresh = 0, test_data = test_data)
+    )
+
+    expect_is(bg, "baggr")
+    expect_true(is.finite(bg$mean_lpd))
+    expect_equal(bg$inputs$K_test, length(unique(test_data$group)))
+    expect_equal(length(unique(bg$inputs$test_site)), bg$inputs$K_test)
+  }
+
+  schools_ipd_num <- schools_ipd
+  schools_ipd_num$group <- as.numeric(factor(schools_ipd_num$group, levels = unique(schools_ipd_num$group)))
+
+  run_cv_case(schools_ipd, "School A")
+  run_cv_case(schools_ipd, c("School A", "School C", "School E"))
+  run_cv_case(schools_ipd_num, 1)
+  run_cv_case(schools_ipd_num, c(1, 3, 5))
+})
+
 test_that("full-data test sigma uses SD and not SE", {
   train <- data.frame(
-    group = rep("Train", 8),
-    outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5),
-    treatment = c(0, 0, 0, 0, 1, 1, 1, 1)
+    group = c(rep("Train", 8), rep(c("TestA", "TestB"), each = 2)),
+    outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5, 0.8, 1.1, 0.3, 0.9),
+    treatment = c(0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0)
   )
   test <- data.frame(
     group = rep(c("TestA", "TestB"), each = 4),
@@ -178,10 +205,11 @@ test_that("full-data test sigma uses SD and not SE", {
 
 test_that("rubin_full predictive log density matches analytic Normal density scale", {
   train <- data.frame(
-    group = c(rep("Train1", 8), rep("Train2", 8)),
+    group = c(rep("Train1", 8), rep("Train2", 8), rep("Test", 4)),
     outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5,
-                -0.3, 0.0, 0.2, 0.6, 1.1, 1.7, 2.0, 2.4),
-    treatment = c(rep(c(0, 0, 0, 0, 1, 1, 1, 1), 2))
+                -0.3, 0.0, 0.2, 0.6, 1.1, 1.7, 2.0, 2.4,
+                0.2, 0.6, 0.9, 1.1),
+    treatment = c(rep(c(0, 0, 0, 0, 1, 1, 1, 1), 2), 0, 0, 0, 0)
   )
   test <- data.frame(
     group = rep("Test", 4),

@@ -195,26 +195,47 @@ convert_inputs <- function(data,
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
         out$test_treatment <- array(0, dim =  c(out$N_test, out$P))
-        if(model %in% c("rubin_full", "mutau_full"))
+        if(model == "rubin_full") {
+          out$test_sigma_y_i <- array(0, dim = 0)
+          out$test_sigma_y_k <- numeric(0) # backward compatibility with precompiled Stan model
+        }
+        if(model == "mutau_full")
           out$test_sigma_y_k <- array(0, dim = 0)
 
       } else {
         out$N_test <- nrow(test_data)
-        out$K_test <- max(group_numeric_test)
+        if(model %in% c("logit", "rubin_full")) {
+          # For logit/rubin_full CV, test sites must index training-site parameters.
+          group_numeric_test <- match(as.character(test_data[[group]]), group_label)
+          if(any(is.na(group_numeric_test)))
+            stop("For ", model, " with test_data, all test groups must be present in ",
+                 "training data (typically with treatment == 0 rows).")
+        }
+        out$K_test <- length(unique(group_numeric_test))
         out$test_y <- test_data[[outcome]]
         # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
         out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
-        # calculate outcome SDs in each test group (used in predictive density)
-        if(model %in% c("rubin_full", "mutau_full")){
+        # calculate outcome SDs in each test group and map as needed by Stan model
+        if(model %in% c("rubin_full", "mutau_full")) {
+          test_group_ids <- sort(unique(group_numeric_test))
           sd_in_each_group <- sapply(
-            1:max(group_numeric_test), function(i) {
+            test_group_ids,
+            function(i) {
               sd(test_data[[outcome]][group_numeric_test == i])
-            })
+            }
+          )
           if(any(is.na(sd_in_each_group)))
             stop("Cannot calculate SD in groups in test data. Each out-of-sample ",
                  "group must be of size at least 2.")
-          out$test_sigma_y_k <- array(sd_in_each_group, dim = max(group_numeric_test))
+
+          if(model == "rubin_full") {
+            out$test_sigma_y_i <- array(sd_in_each_group[match(group_numeric_test, test_group_ids)],
+                                        dim = out$N_test)
+            out$test_sigma_y_k <- as.numeric(sd_in_each_group)
+          }
+          if(model == "mutau_full")
+            out$test_sigma_y_k <- array(sd_in_each_group, dim = out$K_test)
         }
       }
     }

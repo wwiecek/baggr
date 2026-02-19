@@ -113,20 +113,20 @@ model {
 }
 
 generated quantities {
-  array[K_test > 0] real logpd;
+  real logpd = 0;
   vector[K_test] fe_k_test;
   if(K_test > 0){
     if(Nc == 0)
       fe_k_test = rep_vector(0.0, K_test);
     else
       fe_k_test = X_test*beta;
-    logpd[1] = 0;
     for(k in 1:K_test){
       if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(tau[1]^2 + test_var_theta_k));
+        logpd += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test[k],
+                             sqrt(square(tau[1]) + test_var_theta_k[k]));
       if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, test_se_theta_k);
+        logpd += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test[k],
+                             test_se_theta_k[k]);
     }
   }
 }
-

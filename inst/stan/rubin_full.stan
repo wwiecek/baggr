@@ -47,7 +47,7 @@ data {
   // NORMAL specific:
   array[N] real y;
   array[N_test] real test_y;
-  array[K_test] real test_sigma_y_k; // group-level outcome SDs in test data
+  array[N_test] real test_sigma_y_i;
   // priors on noise in regression:
   int prior_sigma_fam;
   vector[3] prior_sigma_val;
@@ -156,11 +156,11 @@ generated quantities {
                 + dot_product(test_treatment[i,], mu)
                 + (Nc > 0 ? dot_product(X_test[i,], beta) : 0.0);
 
-      // Compute the predictive SD (test_sigma_y_k is on outcome scale, not SE scale)
+      // Compute the predictive SD (test_sigma_y_i is on outcome scale, not SE scale)
       if (pooling_type == 1) {
-        sigma_pred = sqrt(dot_product(test_treatment[i,], tau .* tau) + test_sigma_y_k[test_site[i]]^2);
+        sigma_pred = sqrt(dot_product(test_treatment[i,], tau .* tau) + test_sigma_y_i[i]^2);
       } else if (pooling_type == 2) {
-        sigma_pred = test_sigma_y_k[test_site[i]];
+        sigma_pred = test_sigma_y_i[i];
       }
 
       // Accumulate log predictive density
