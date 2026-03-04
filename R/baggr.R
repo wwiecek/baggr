@@ -360,19 +360,20 @@ baggr <- function(data,
                   cluster   = prior_cluster,
                   control   = prior_control,
                   control_sd= prior_control_sd,
+                  sigma     = prior_sigma,
                   selection = prior_selection
                   )
   } else {
     if(!is.null(prior_hypermean) || !is.null(prior_beta) || !is.null(prior_cluster) ||
-       !is.null(prior_control)   || !is.null(prior_control_sd) ||
+       !is.null(prior_control)   || !is.null(prior_control_sd) || !is.null(prior_sigma) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior$' and 'prior_' arguments specified. Using 'prior' only.")
     if(!inherits(prior, "list") ||
        !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'cluster',
-                                'beta', 'control', 'control_sd')))
+                                'beta', 'control', 'control_sd', 'sigma', 'selection')))
       warning(paste("Only names used in the prior argument are:",
                     "'hypermean', 'hypercor', 'hypersd', 'cluster',
-                    'beta', 'control', 'control_sd'"))
+                    'beta', 'control', 'control_sd', 'sigma', 'selection'"))
   }
 
   # If extracting prior from another model, we need to do this switcheroo:
