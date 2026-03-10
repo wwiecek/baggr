@@ -81,3 +81,5 @@ importFrom(utils,setTxtProgressBar)
 importFrom(utils,tail)
 importFrom(utils,txtProgressBar)
 useDynLib(baggr, .registration = TRUE)
+
+export(meta_power)
