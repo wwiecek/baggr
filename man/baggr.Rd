@@ -120,8 +120,11 @@ it will be used as labels for groups when displaying results}
 \item{cluster}{optional; column name in (individual-level) \code{data}; if defined,
 random cluster effects will be fitted in each study}
 
-\item{selection}{optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
-most commonly you'd set this to 1.96 (p=0.05) of \code{c(1.96, 2.58)} (p=0.05 and p=0.01)}
+\item{selection}{optional numeric vector of cut-points for a symmetric
+publication-selection model on absolute z-values, where
+\code{z = tau / se} in Rubin summary-data models. Common choices
+are \code{1.96} (two-sided normal p-value about 0.05) or
+\code{c(1.96, 2.58)} (about 0.05 and 0.01).}
 
 \item{silent}{Whether to silence messages about prior settings and about other automatic behaviour.}
 
@@ -216,20 +219,33 @@ interested in the model's ability to fit heterogeneity in control arms, but
 only heterogeneity in treatment arms.)
 For using aggregate level data, there is no such restriction.
 
-\strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()} fits a symmetric
-selection-on-z-values model (currently only in the \code{"rubin"} summary-data model).
-The values in \code{selection} are cut-points on |z| = |tau / se|; for example,
-\code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)}, \verb{[1.96, 2.58)},
-and \verb{[2.58, Inf)}. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
-(You should also consider defining it to more significant digits in large datasets.)
-Each interval has its own relative publication probability
-(weight), with the highest-|z| interval normalised to 1, and these weights
-are estimated jointly with the usual Rubin parameters.
+\strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()}
+fits a symmetric publication-selection model on z-values (currently only in
+the \code{"rubin"} summary-data model). For each study, the observed z-value is
+the reported estimate divided by its standard error, \code{z = tau / se}, and
+selection is assumed to depend on \verb{|z|}. The numbers passed to \code{selection} are
+cut-points on this absolute z-scale. For example,
+\code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)},
+\verb{[1.96, 2.58)}, and \verb{[2.58, Inf)}. The value 1.96 is the familiar normal
+critical value for a two-sided p-value of about 0.05; 2.58 is approximately
+the corresponding value for p = 0.01.
+
+Each interval has its own relative publication probability (weight), with the
+highest-|z| interval normalised to 1, and these weights are estimated jointly
+with the usual Rubin parameters. A weight of 0.25 for \verb{[0, 1.96)}, for
+instance, means estimates below the conventional two-sided 5\% threshold are
+estimated to be one quarter as likely to be observed as estimates in the
+highest-|z| interval. The weights are positive but not forced to be monotone.
 
 The selection model assumes that publication depends only on |z| (not on the
 sign or other study features). Inference can be very sensitive to the choice of
 cut-points and priors on the selection weights, which you should set manually.
-For more complex cases you should consider using other methods.
+With \code{pooling = "partial"}, the selection correction is applied to the
+marginal random-effects distribution of the observed estimates, integrating
+over study-specific effects. With \code{pooling = "none"}, there is no population
+random-effects distribution to correct, so the selection component should not
+be interpreted as estimating a selection-corrected population mean. For more
+complex cases you should consider using other methods.
 
 \strong{Outputs.} By default, some outputs are printed. There is also a
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).

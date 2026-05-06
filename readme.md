@@ -1,4 +1,4 @@
-# baggr: Bayesian aggregation package for R, v0.8 (2026)
+# baggr: Bayesian aggregation package for R, v0.8.1 (2026)
 
 
 
@@ -96,7 +96,7 @@ data, try `vignette("baggr_binary")`. Compiled vignettes are available
 
 ## Current release
 
-Included in baggr v0.8 (2026):
+Included in baggr v0.8.1 (2026):
 
   - Meta-analysis of continuous and binary outcomes
   - Both full and aggregate data sets can be used
@@ -108,7 +108,8 @@ Included in baggr v0.8 (2026):
   - Calculation of pooling/heterogeneity metrics
   - Cross-validation (leave-one-group-out)
   - Prior and posterior predictive distributions
-  - Selection models based on \|z\| thresholds (`selection = ...`)
+  - Selection models based on publication probabilities across \|z\| =
+    \|estimate / standard error\| intervals (`selection = ...`)
   - Funnel plots for fitted objects via `funnel_plot()`
 
-Check [NEWS.md] for more information on recent changes to the package.
+Check [NEWS.md](NEWS.md) for more information on recent changes to the package.
