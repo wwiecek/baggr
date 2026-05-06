@@ -44,6 +44,7 @@ Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
     covr,
+    mvtnorm,
     rmarkdown,
     testthat
 VignetteBuilder: knitr
