@@ -67,8 +67,11 @@
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
 #' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
-#' @param selection optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
-#'                  most commonly you'd set this to 1.96 (p=0.05) of `c(1.96, 2.58)` (p=0.05 and p=0.01)
+#' @param selection optional numeric vector of cut-points for a symmetric
+#'                  publication-selection model on absolute z-values, where
+#'                  `z = tau / se` in Rubin summary-data models. Common choices
+#'                  are `1.96` (two-sided normal p-value about 0.05) or
+#'                  `c(1.96, 2.58)` (about 0.05 and 0.01).
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -159,20 +162,33 @@
 #' only heterogeneity in treatment arms.)
 #' For using aggregate level data, there is no such restriction.
 #'
-#' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()` fits a symmetric
-#' selection-on-z-values model (currently only in the `"rubin"` summary-data model).
-#' The values in `selection` are cut-points on |z| = |tau / se|; for example,
-#' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`, `[1.96, 2.58)`,
-#' and `[2.58, Inf)`. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
-#' (You should also consider defining it to more significant digits in large datasets.)
-#' Each interval has its own relative publication probability
-#' (weight), with the highest-|z| interval normalised to 1, and these weights
-#' are estimated jointly with the usual Rubin parameters.
+#' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()`
+#' fits a symmetric publication-selection model on z-values (currently only in
+#' the `"rubin"` summary-data model). For each study, the observed z-value is
+#' the reported estimate divided by its standard error, `z = tau / se`, and
+#' selection is assumed to depend on `|z|`. The numbers passed to `selection` are
+#' cut-points on this absolute z-scale. For example,
+#' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`,
+#' `[1.96, 2.58)`, and `[2.58, Inf)`. The value 1.96 is the familiar normal
+#' critical value for a two-sided p-value of about 0.05; 2.58 is approximately
+#' the corresponding value for p = 0.01.
+#'
+#' Each interval has its own relative publication probability (weight), with the
+#' highest-|z| interval normalised to 1, and these weights are estimated jointly
+#' with the usual Rubin parameters. A weight of 0.25 for `[0, 1.96)`, for
+#' instance, means estimates below the conventional two-sided 5% threshold are
+#' estimated to be one quarter as likely to be observed as estimates in the
+#' highest-|z| interval. The weights are positive but not forced to be monotone.
 #'
 #' The selection model assumes that publication depends only on |z| (not on the
 #' sign or other study features). Inference can be very sensitive to the choice of
 #' cut-points and priors on the selection weights, which you should set manually.
-#' For more complex cases you should consider using other methods.
+#' With `pooling = "partial"`, the selection correction is applied to the
+#' marginal random-effects distribution of the observed estimates, integrating
+#' over study-specific effects. With `pooling = "none"`, there is no population
+#' random-effects distribution to correct, so the selection component should not
+#' be interpreted as estimating a selection-corrected population mean. For more
+#' complex cases you should consider using other methods.
 #'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).

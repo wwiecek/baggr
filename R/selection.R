@@ -2,6 +2,10 @@
 #'
 #' Extracts the posterior draws (or summaries) of the selection-model parameters
 #' that describe the relative publication probabilities across |z|-intervals.
+#' In Rubin summary-data models, `z = tau / se`; for example,
+#' `selection = 1.96` estimates the relative publication probability below the
+#' conventional two-sided 5% normal threshold compared with the implicit
+#' highest-|z| interval.
 #'
 #' @param bg a [baggr::baggr()] model fitted with a selection-enabled likelihood
 #'   (currently `model = "rubin"`).
@@ -10,8 +14,10 @@
 #' @param interval uncertainty interval width (numeric between 0 and 1),
 #'   used only when `summary = TRUE`.
 #' @return If `summary = FALSE`, a matrix of posterior draws where each column
-#'   corresponds to a |z|-interval. Otherwise, a matrix with one row per interval
-#'   and columns containing the mean and bounds of the uncertainty interval.
+#'   corresponds to one non-reference |z|-interval. Otherwise, a matrix with one
+#'   row per interval and columns containing the mean and bounds of the
+#'   uncertainty interval. The final highest-|z| interval is fixed to relative
+#'   probability 1 and is therefore not returned.
 #' @export
 #' @importFrom rstan extract
 selection <- function(bg, summary = TRUE, interval = 0.95) {

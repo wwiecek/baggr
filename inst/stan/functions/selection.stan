@@ -1,34 +1,63 @@
-  // Pr( |Z| in [a,b) ) for Z ~ Normal(mu, 1); b may be +inf
-  real prob_absz_interval(real mu, real a, real b) {
-    real ppos = normal_cdf(b, mu, 1) - normal_cdf(a, mu, 1);
+  // Pr(|Z| in [a,b)) for Z ~ Normal(mu_z, sd_z); b may be +inf.
+  real prob_absz_interval_general(real mu_z, real sd_z, real a, real b) {
+    real ppos;
     real pneg;
-    if (is_inf(b)) pneg = normal_cdf(-a, mu, 1);
-    else           pneg = normal_cdf(-a, mu, 1) - normal_cdf(-b, mu, 1);
+
+    if (is_inf(b)) {
+      ppos = 1.0 - normal_cdf(a, mu_z, sd_z);
+      pneg = normal_cdf(-a, mu_z, sd_z);
+    } else {
+      ppos = normal_cdf(b,  mu_z, sd_z) -
+             normal_cdf(a,  mu_z, sd_z);
+      pneg = normal_cdf(-a, mu_z, sd_z) -
+             normal_cdf(-b, mu_z, sd_z);
+    }
+
     return ppos + pneg;
   }
 
-  // Selection-adjusted log-likelihood for one observation
-  real sel_loglik_one(real y, real m, real se,
-  vector c,            // length M, ascending > 0
-  vector omega) {      // length M, w_{M+1} = 1 (implicit)
-  int M = num_elements(c);
-  real zabs = fabs(y) / se;
+  // Selection-adjusted log-likelihood for one observation.
+  real sel_loglik_general(real y, real m,
+                          real outcome_sd, real z_se,
+                          vector c, vector omega) {
+    int M = num_elements(c);
+    real zabs;
+    int j;
+    real w_obs;
+    real mu_z;
+    real sd_z;
+    real p;
+    real a;
 
-  // determine observed interval j with [a,b) convention
-  int j = 1;
-  while (j <= M && zabs >= c[j]) j += 1; // if zabs < c[1] -> j=1; ...; else j=M+1
-  real w_obs = (j <= M) ? omega[j] : 1.0;
+    if (M == 0)
+      return normal_lpdf(y | m, outcome_sd);
 
-  // total reporting probability under current mean
-  real muz = m / se;
-  real p = 0.0;
-  real a = 0.0;
-  for (i in 1:M) {
-    real b = c[i];
-    p += omega[i] * prob_absz_interval(muz, a, b);
-    a = b;
+    zabs = fabs(y) / z_se;
+
+    // Determine observed interval j with [a,b) convention.
+    j = 1;
+    while (j <= M && zabs >= c[j])
+      j += 1;
+    w_obs = (j <= M) ? omega[j] : 1.0;
+
+    mu_z = m / z_se;
+    sd_z = outcome_sd / z_se;
+    p = 0.0;
+    a = 0.0;
+
+    for (i in 1:M) {
+      real b = c[i];
+      p += omega[i] * prob_absz_interval_general(mu_z, sd_z, a, b);
+      a = b;
+    }
+    p += prob_absz_interval_general(mu_z, sd_z,
+                                    c[M], positive_infinity());
+
+    return normal_lpdf(y | m, outcome_sd) + log(w_obs) - log(p);
   }
-  p += 1.0 * prob_absz_interval(muz, c[M], positive_infinity());
 
-  return normal_lpdf(y | m, se) + log(w_obs) - log(p);
+  // Backwards-compatible wrapper for the previous one-scale likelihood.
+  real sel_loglik_one(real y, real m, real se,
+                      vector c, vector omega) {
+    return sel_loglik_general(y, m, se, se, c, omega);
   }
