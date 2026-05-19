@@ -30,6 +30,8 @@ data {
 
   //selection model
   int<lower=0> M;                   // number of cut-points
+  int<lower=0, upper = 1> symmetric; // 1 if symmetric cutoffs, 0 if not
+  int<lower=0, upper = 1> possible_selection[K]; // estimates with 0 are never not published
   vector<lower=0>[M] c;             // cut-off values, e.g., (1.96, 2.58), ascending
   // prior for selection weights (on log-scale!)
   int prior_sel_fam;
@@ -82,7 +84,8 @@ model {
         target += sel_loglik_one(theta_hat_k[k],
                                  eta[k] + fe_k[k],
                                  se_theta_k[k],
-                                 c, omega);
+                                 c, omega,
+                                 symmetric, possible_selection[k]);
     }
   } else if (pooling_type == 1) { //partial
     mu[1]  ~ realprior(prior_hypermean_fam, prior_hypermean_val);
@@ -95,9 +98,11 @@ model {
         real pred_sd = sqrt(square(tau[1]) + square(se_theta_k[k]));
         target += sel_loglik_general(theta_hat_k[k],
                                      mu[1] + fe_k[k],
+                                     theta_k[k] + fe_k[k],
                                      pred_sd,
                                      se_theta_k[k],
-                                     c, omega);
+                                     c, omega,
+                                     symmetric, possible_selection[k]);
       }
     }
   } else { //full
@@ -108,9 +113,11 @@ model {
       for (k in 1:K)
         target += sel_loglik_general(theta_hat_k[k],
                                      mu[1] + fe_k[k],
+                                     mu[1] + fe_k[k],
                                      se_theta_k[k],
                                      se_theta_k[k],
-                                     c, omega);
+                                     c, omega,
+                                     symmetric, possible_selection[k]);
     }
   }
 
@@ -133,9 +140,11 @@ generated quantities {
         else
           logpd += sel_loglik_general(test_theta_hat_k[k],
                                       mu[1] + fe_k_test[k],
+                                      theta_k[k] + fe_k_test[k],
                                       pred_sd,
                                       test_se_theta_k[k],
-                                      c, omega);
+                                      c, omega,
+                                      symmetric, possible_selection[k]);
       }
       if(pooling_type == 2) {
         if (M == 0)
@@ -144,9 +153,11 @@ generated quantities {
         else
           logpd += sel_loglik_general(test_theta_hat_k[k],
                                       mu[1] + fe_k_test[k],
+                                      mu[1] + fe_k_test[k],
                                       test_se_theta_k[k],
                                       test_se_theta_k[k],
-                                      c, omega);
+                                      c, omega,
+                                      symmetric, possible_selection[k]);
       }
     }
   }

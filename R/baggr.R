@@ -72,6 +72,10 @@
 #'                  `z = tau / se` in Rubin summary-data models. Common choices
 #'                  are `1.96` (two-sided normal p-value about 0.05) or
 #'                  `c(1.96, 2.58)` (about 0.05 and 0.01).
+#' @param symmetric 0 if cut-points are nonsymmetric. That is, you're interested in the region
+#'                  (-inf, 1.96) for example. 1 if cut-points are symmetric; ie (-1.96, 1.96)
+#' @param possible_selection vector where studies where selection is possible are labeled 1
+#'                           and studies which you think would be published regardless are labeled 0.
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -248,6 +252,8 @@ baggr <- function(data,
                   outcome = "outcome", group = "group", treatment = "treatment",
                   cluster = NULL,
                   selection = NULL,
+                  symmetric = 0,
+                  possible_selection = NULL,
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
@@ -290,6 +296,8 @@ baggr <- function(data,
                               treatment = treatment,
                               cluster = cluster,
                               selection = selection,
+                              symmetric = symmetric,
+                              possible_selection = possible_selection,
                               test_data = test_data,
                               silent = silent)
 

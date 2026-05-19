@@ -23,6 +23,10 @@
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
 #' @param selection same as in [baggr::baggr()]; vector of cut-points for
 #'                  absolute z-values in the selection model
+#' @param symmetric 0 if cut-points are nonsymmetric. That is, you're interested in the region
+#'                  (-inf, 1.96) for example. 1 if cut-points are symmetric; ie (-1.96, 1.96)
+#' @param possible_selection vector where studies where selection is possible are labeled 1
+#'                           and studies which you think would be published regardless are labeled 0.
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr::baggr()])
 #' @param silent Whether to print messages when evaluated
@@ -50,6 +54,8 @@ convert_inputs <- function(data,
                            treatment = "treatment",
                            cluster = NULL,
                            selection = NULL,
+                           symmetric = 0,
+                           possible_selection = NULL,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
@@ -417,11 +423,18 @@ convert_inputs <- function(data,
   if(is.null(selection)){
     out$M <- 0L
     out$c <- numeric(0)
+    out$symmetric <- 0L
+    out$possible_selection <- array(1L, dim = out$K)
   } else {
     if(!is.numeric(selection) || any(!is.finite(selection)) || any(selection < 0) || length(selection) < 1)
       stop("selection input has to be a finite- and positive-valued vector")
     out$M <- length(selection)
     out$c <- array(selection, length(selection))
+    out$symmetric <- symmetric
+    if (is.null(possible_selection)) {
+      possible_selection = array(1, dim = out$K)
+    }
+    out$possible_selection = possible_selection
   }
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
