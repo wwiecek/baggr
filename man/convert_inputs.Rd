@@ -7,8 +7,8 @@
 convert_inputs(
   data,
   model,
-  quantiles,
   effect = NULL,
+  quantiles = seq(0.05, 0.95, 0.1),
   group = "group",
   outcome = "outcome",
   treatment = "treatment",
@@ -40,8 +40,9 @@ See \link{prepare_ma} for details.}
 
 \item{cluster}{name of the column with clustering variable for analysing c-RCTs}
 
-\item{selection}{same as in \code{\link[=baggr]{baggr()}}; vector of cut-points for
-absolute z-values in the selection model}
+\item{selection}{same as in \code{\link[=baggr]{baggr()}}; either a numeric vector of
+absolute z-value cut-points or a named list with elements
+\code{z}, \code{symmetrical} and \code{possible}}
 
 \item{covariates}{Character vector with column names in \code{data}.
 The corresponding columns are used as

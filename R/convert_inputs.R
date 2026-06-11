@@ -21,12 +21,9 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
-#' @param selection same as in [baggr::baggr()]; vector of cut-points for
-#'                  absolute z-values in the selection model
-#' @param symmetric 0 if cut-points are nonsymmetric. That is, you're interested in the region
-#'                  (-inf, 1.96) for example. 1 if cut-points are symmetric; ie (-1.96, 1.96)
-#' @param possible_selection vector where studies where selection is possible are labeled 1
-#'                           and studies which you think would be published regardless are labeled 0.
+#' @param selection same as in [baggr::baggr()]; either a numeric vector of
+#'                  absolute z-value cut-points or a named list with elements
+#'                  `z`, `symmetrical` and `possible`
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr::baggr()])
 #' @param silent Whether to print messages when evaluated
@@ -47,15 +44,13 @@
 
 convert_inputs <- function(data,
                            model,
-                           quantiles,
                            effect = NULL,
+                           quantiles = seq(.05, .95, .1),
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
                            cluster = NULL,
                            selection = NULL,
-                           symmetric = 0,
-                           possible_selection = NULL,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
@@ -102,6 +97,9 @@ convert_inputs <- function(data,
       message(paste0("Automatically chose ", crayon::bold(model_names[model]),
                      " based on input data."))
   }
+
+  if(!is.null(selection) && model != "rubin")
+    stop("Selection models are currently available only for model = 'rubin'.")
 
   # Convert mutau data to Rubin model data if requested
   if(model == "rubin" && available_data == "pool_wide"){
@@ -420,22 +418,11 @@ convert_inputs <- function(data,
 
 
   # 5. Add selection model cut-offs -----
-  if(is.null(selection)){
-    out$M <- 0L
-    out$c <- numeric(0)
-    out$symmetric <- 0L
-    out$possible_selection <- array(1L, dim = out$K)
-  } else {
-    if(!is.numeric(selection) || any(!is.finite(selection)) || any(selection < 0) || length(selection) < 1)
-      stop("selection input has to be a finite- and positive-valued vector")
-    out$M <- length(selection)
-    out$c <- array(selection, length(selection))
-    out$symmetric <- symmetric
-    if (is.null(possible_selection)) {
-      possible_selection = array(1, dim = out$K)
-    }
-    out$possible_selection = possible_selection
-  }
+  selection_input <- normalise_selection(selection, out$K)
+  out$M <- length(selection_input$z)
+  out$c <- array(selection_input$z, dim = out$M)
+  out$symmetric <- as.integer(selection_input$symmetrical)
+  out$possible_selection <- array(selection_input$possible, dim = out$K)
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))
@@ -471,4 +458,46 @@ convert_inputs <- function(data,
     effect = effect)
 
   return(out_structure)
+}
+
+normalise_selection <- function(selection, K) {
+  default <- list(z = numeric(0), symmetrical = FALSE, possible = rep(1L, K))
+  if(is.null(selection))
+    return(default)
+
+  # Numeric input is the public shorthand for symmetric cut-offs applying to
+  # every study; list input is the explicit API used when either flag differs.
+  if(is.numeric(selection)) {
+    z <- selection
+    symmetrical <- TRUE
+    possible <- rep(1L, K)
+  } else if(is.list(selection)) {
+    required_names <- c("z", "symmetrical", "possible")
+    if(is.null(names(selection)) ||
+       !setequal(names(selection), required_names) ||
+       length(selection) != length(required_names))
+      stop("selection list must have named elements z, symmetrical and possible.")
+
+    z <- selection$z
+    symmetrical <- selection$symmetrical
+    possible <- selection$possible
+  } else {
+    stop("selection must be a numeric vector or a named list.")
+  }
+
+  # Keep this validation close to the API normalisation so Stan only sees
+  # positive cut-offs, one symmetry flag, and one 0/1 possible flag per study.
+  if(!is.numeric(z) || length(z) < 1 || any(!is.finite(z)) || any(z <= 0))
+    stop("selection z-values must be a positive finite numeric vector.")
+  if(is.unsorted(z, strictly = TRUE))
+    stop("selection z-values must be strictly increasing.")
+  if(!is.logical(symmetrical) || length(symmetrical) != 1 || is.na(symmetrical))
+    stop("selection$symmetrical must be TRUE or FALSE.")
+  if(!(is.logical(possible) || is.numeric(possible)) ||
+     length(possible) != K ||
+     any(is.na(possible)) ||
+     any(!(possible %in% c(0, 1, FALSE, TRUE))))
+    stop("selection$possible must be a 0/1 or logical vector with one value per study.")
+
+  list(z = z, symmetrical = symmetrical, possible = as.integer(possible))
 }

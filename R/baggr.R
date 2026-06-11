@@ -67,15 +67,13 @@
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
 #' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
-#' @param selection optional numeric vector of cut-points for a symmetric
-#'                  publication-selection model on absolute z-values, where
-#'                  `z = tau / se` in Rubin summary-data models. Common choices
-#'                  are `1.96` (two-sided normal p-value about 0.05) or
-#'                  `c(1.96, 2.58)` (about 0.05 and 0.01).
-#' @param symmetric 0 if cut-points are nonsymmetric. That is, you're interested in the region
-#'                  (-inf, 1.96) for example. 1 if cut-points are symmetric; ie (-1.96, 1.96)
-#' @param possible_selection vector where studies where selection is possible are labeled 1
-#'                           and studies which you think would be published regardless are labeled 0.
+#' @param selection optional publication-selection specification for Rubin
+#'                  summary-data models. A numeric vector is treated as z-value
+#'                  cut-points on the absolute z-scale, where `z = tau / se`.
+#'                  A list must have named elements `z` (positive cut-points),
+#'                  `symmetrical` (`TRUE`/`FALSE`) and `possible` (0/1 or logical
+#'                  vector with one value per study, where 1 means selection is
+#'                  possible and 0 means the study would be published regardless).
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -167,13 +165,14 @@
 #' For using aggregate level data, there is no such restriction.
 #'
 #' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()`
-#' fits a symmetric publication-selection model on z-values (currently only in
-#' the `"rubin"` summary-data model). For each study, the observed z-value is
-#' the reported estimate divided by its standard error, `z = tau / se`, and
-#' selection is assumed to depend on `|z|`. The numbers passed to `selection` are
-#' cut-points on this absolute z-scale. For example,
+#' fits a publication-selection model on z-values (currently only in the
+#' `"rubin"` summary-data model). For each study, the observed z-value is the
+#' reported estimate divided by its standard error, `z = tau / se`. A numeric
+#' `selection` input gives cut-points on the absolute z-scale. For example,
 #' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`,
-#' `[1.96, 2.58)`, and `[2.58, Inf)`. The value 1.96 is the familiar normal
+#' `[1.96, 2.58)`, and `[2.58, Inf)`. This is equivalent to
+#' `selection = list(z = c(1.96, 2.58), symmetrical = TRUE,
+#' possible = rep(1, nrow(data)))`. The value 1.96 is the familiar normal
 #' critical value for a two-sided p-value of about 0.05; 2.58 is approximately
 #' the corresponding value for p = 0.01.
 #'
@@ -184,15 +183,17 @@
 #' estimated to be one quarter as likely to be observed as estimates in the
 #' highest-|z| interval. The weights are positive but not forced to be monotone.
 #'
-#' The selection model assumes that publication depends only on |z| (not on the
-#' sign or other study features). Inference can be very sensitive to the choice of
-#' cut-points and priors on the selection weights, which you should set manually.
-#' With `pooling = "partial"`, the selection correction is applied to the
-#' marginal random-effects distribution of the observed estimates, integrating
-#' over study-specific effects. With `pooling = "none"`, there is no population
-#' random-effects distribution to correct, so the selection component should not
-#' be interpreted as estimating a selection-corrected population mean. For more
-#' complex cases you should consider using other methods.
+#' By default, selection is symmetrical and depends only on `|z|`, not on the
+#' sign or other study features. Use list input with `symmetrical = FALSE` for
+#' one-sided cut-points, or set `possible` to 0 for studies where publication is
+#' assumed not to be selected on z-values. Inference can be very sensitive to the
+#' choice of cut-points and priors on the selection weights, which you should set
+#' manually. With `pooling = "partial"`, the selection correction is applied to
+#' the marginal random-effects distribution of the observed estimates,
+#' integrating over study-specific effects. With `pooling = "none"`, there is no
+#' population random-effects distribution to correct, so the selection component
+#' should not be interpreted as estimating a selection-corrected population mean.
+#' For more complex cases you should consider using other methods.
 #'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
@@ -252,8 +253,6 @@ baggr <- function(data,
                   outcome = "outcome", group = "group", treatment = "treatment",
                   cluster = NULL,
                   selection = NULL,
-                  symmetric = 0,
-                  possible_selection = NULL,
                   silent = FALSE, warn = TRUE, ...) {
 
   # check that it is data.frame of at least 1 row
@@ -288,7 +287,7 @@ baggr <- function(data,
 
   stan_data <- convert_inputs(data,
                               model,
-                              effect,
+                              effect = effect,
                               covariates = covariates,
                               quantiles = quantiles,
                               outcome = outcome,
@@ -296,8 +295,6 @@ baggr <- function(data,
                               treatment = treatment,
                               cluster = cluster,
                               selection = selection,
-                              symmetric = symmetric,
-                              possible_selection = possible_selection,
                               test_data = test_data,
                               silent = silent)
 
@@ -518,7 +515,8 @@ remove_data_for_prior_pred <- function(data) {
                          # specific to sslab
                          "treatment_neg", "treatment_pos", "cat",
                          "site_neg", "site_pos", "y_neg", "y_pos",
-                         "X")
+                         "X",
+                         "possible_selection")
 
   # Specific to quantiles:
   matrices_to_rescale <- c("y_0", "y_1")

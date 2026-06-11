@@ -22,7 +22,7 @@ test_that("Error messages for wrong inputs are in place", {
                      "clustered", "cluster", "Ncluster",
                      "N_test", "K_test",
                      "test_y", "test_site", "test_treatment", "Nc", "X", "X_test",
-                     "M", "c"))
+                     "M", "c", "symmetric", "possible_selection"))
 })
 
 bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",

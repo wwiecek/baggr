@@ -42,7 +42,7 @@
     real p;
     real a;
 
-    if (M == 0)
+    if (M == 0 || possible_selection == 0)
       return normal_lpdf(y | theta, z_se);
 
     real z = y / z_se;
