@@ -88,7 +88,9 @@ test_that("selection input is validated", {
 })
 
 test_that("possible selection flag is used by Stan selection likelihood", {
-  stan_file <- test_path("../../inst/stan/functions/selection.stan")
+  stan_file <- system.file("stan/functions/selection.stan", package = "baggr")
+  if(!nzchar(stan_file))
+    stan_file <- test_path("../../inst/stan/functions/selection.stan")
   stan_code <- paste(readLines(stan_file), collapse = "\n")
 
   expect_match(stan_code, "possible_selection == 0", fixed = TRUE)
