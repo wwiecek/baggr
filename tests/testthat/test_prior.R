@@ -70,6 +70,48 @@ test_that("Prior specification via different arguments", {
                  "names used in the prior")
 })
 
+test_that("prior_sigma is wired via prior_ arguments and sigma/selection names are accepted", {
+  df_full <- data.frame(
+    group = c("A", "A", "A", "A", "B", "B", "B", "B"),
+    treatment = c(0, 0, 1, 1, 0, 0, 1, 1),
+    outcome = c(0.1, 0.2, 0.4, 0.5, -0.2, -0.1, 0.2, 0.3),
+    stringsAsFactors = FALSE
+  )
+
+  expect_message(
+    expect_error(
+      baggr(df_full,
+            model = "rubin_full",
+            prior = list(hypermean = lkj(2)),
+            prior_sigma = uniform(0.1, 1),
+            iter = 10, chains = 1, refresh = 0, seed = 19),
+      "Prior for hypermean must be one of the following"
+    ),
+    "Both 'prior\\$' and 'prior_' arguments specified. Using 'prior' only."
+  )
+
+  expect_warning(
+    expect_error(
+      baggr(df_full,
+            model = "rubin_full",
+            prior = list(hypermean = lkj(2), sigma = uniform(0.1, 1), selection = normal(0, 1)),
+            iter = 10, chains = 1, refresh = 0, seed = 19),
+      "Prior for hypermean must be one of the following"
+    ),
+    NA
+  )
+
+  expect_error(
+    baggr(df_full,
+          model = "rubin_full",
+          prior_hypermean = normal(0, 1),
+          prior_hypersd = normal(0, 1),
+          prior_sigma = lkj(2),
+          iter = 10, chains = 1, refresh = 0, seed = 19),
+    "Prior for sigma must be one of the following"
+  )
+})
+
 test_that("All possible prior dist's work", {
   expect_is(normal(0, 10), "list")
   expect_is(cauchy(0, 10), "list")

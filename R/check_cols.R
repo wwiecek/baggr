@@ -3,7 +3,7 @@
 check_columns_numeric <- function(data) {
   numcols <- unlist(lapply(data, is.numeric))
   if(sum(!numcols) > 0)
-    stop(paste("Column(s)", paste(names(numcols)[numcols], collapse = ","), "are not numeric"))
+    stop(paste("Column(s)", paste(names(numcols)[!numcols], collapse = ","), "are not numeric"))
 }
 
 check_columns_ipd <- function(data, outcome, group, treatment,

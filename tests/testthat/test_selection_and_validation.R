@@ -187,6 +187,20 @@ test_that("check_columns_ipd() validates columns and argument types", {
   )
 })
 
+test_that("check_columns_numeric() reports non-numeric columns", {
+  dat <- data.frame(
+    ok = c(1, 2),
+    bad_chr = c("x", "y"),
+    bad_lgl = c(TRUE, FALSE),
+    stringsAsFactors = FALSE
+  )
+
+  expect_error(
+    baggr:::check_columns_numeric(dat),
+    "Column\\(s\\) bad_chr,bad_lgl are not numeric"
+  )
+})
+
 test_that("loo_compare and print methods work with synthetic baggr_cv objects", {
   mk_cv <- function(pointwise) {
     structure(list(
