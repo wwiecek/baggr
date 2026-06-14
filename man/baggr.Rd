@@ -195,7 +195,10 @@ model. It can be modelled on summary-level data.
 \item In \code{"logit"} and \code{"rubin_full"} models, covariates that \strong{change according to individual unit}.
 Then, such a model is often referred to as a mixed model. It has to be
 fitted to individual-level data. Note that meta-regression is a special
-case of a mixed model for individual-level data.
+case of a mixed model for individual-level data. For \code{"rubin_full"},
+covariates that are constant within every site are aliased with
+site-specific baselines and should be removed or handled by changing
+baseline pooling.
 }
 
 \strong{Priors.} It is optional to specify priors yourself,

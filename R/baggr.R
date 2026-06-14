@@ -138,7 +138,10 @@
 #' * In `"logit"` and `"rubin_full"` models, covariates that __change according to individual unit__.
 #'   Then, such a model is often referred to as a mixed model. It has to be
 #'   fitted to individual-level data. Note that meta-regression is a special
-#'   case of a mixed model for individual-level data.
+#'   case of a mixed model for individual-level data. For `"rubin_full"`,
+#'   covariates that are constant within every site are aliased with
+#'   site-specific baselines and should be removed or handled by changing
+#'   baseline pooling.
 #'
 #'
 #' __Priors.__ It is optional to specify priors yourself,
