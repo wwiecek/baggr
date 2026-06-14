@@ -25,27 +25,26 @@ knitr::opts_chunk$set(
 library(baggr)
 ```
 
-This vignette shows a short workflow for assessing and adjusting for publication
-bias in a meta-analysis. We use the vitamin A supplementation and child mortality
+This vignette shows a short worked example of assessing and adjusting for publication
+bias in a meta-analysis using _baggr_. It assumes that users are already familiar with
+publication bias, funnel plots, and selection models.
+
+# Data
+
+We use the vitamin A supplementation and child mortality
 data from @imdad_vitamin_2022, included in _baggr_ as `vitamin_a`.
 
-The outcome is the log risk ratio for all-cause child mortality. Negative values
-indicate lower mortality in the vitamin A supplementation arm.
+For this example, the outcome is the log risk ratio for all-cause child mortality.
+Negative values indicate lower mortality in the vitamin A supplementation arm.
 
 ```{r}
 head(vitamin_a)
 summary(exp(vitamin_a$tau))
 ```
 
-The studies are heterogeneous and vary substantially in precision. This is the
-setting where small-study effects are especially important: if smaller studies
-with favourable or statistically significant estimates are more likely to be
-published, an ordinary random-effects model can overstate the average effect.
-However, funnel asymmetry can also reflect genuine differences between study
-settings, so the checks below should be read as sensitivity analyses rather than
-automatic corrections.
+See `?vitamin_a` for more information.
 
-# Funnel plot
+The studies are heterogeneous and vary substantially in precision.
 
 First fit the usual Rubin summary-data model. We label the estimand as a log
 risk ratio so that plots and summaries are easier to read.
@@ -64,6 +63,8 @@ bg_va <- baggr(vitamin_a, effect = "log risk ratio")
 bg_va
 ```
 
+# Funnel plot
+
 A funnel plot compares study-level effects with their standard errors. In the
 absence of small-study effects or unexplained heterogeneity, points should be
 roughly symmetric around the pooled estimate.
@@ -73,15 +74,36 @@ funnel(bg_va)
 ```
 
 The dashed lines include both sampling uncertainty and the estimated
-between-study heterogeneity. The plot is therefore a visual diagnostic, not a
-test of publication bias by itself.
+between-study heterogeneity. If we fitted a fixed-effects model (`pooling = "full"`),
+the funnel shape would have been a triangle; partial pooling gives it
+more of a funnel shape.
 
 # Selection adjustment
 
-Selection models make the publication process explicit. In _baggr_, `selection`
-sets cut-points on the study z-statistic. The shorthand
-`selection = 1.96` fits a symmetric two-sided model, splitting studies at the
-usual 5 percent normal threshold, $|z| = 1.96$.
+Selection models make the publication process explicit. The argument in
+@hedges_modeling_1992 is that publication selection changes the distribution of
+estimates we get to observe, not just our interpretation of a funnel plot.
+@andrews_identification_2019 frame the same problem in terms of relative
+publication probabilities for different regions of the test statistic. In
+_baggr_, if $y_k$ is the reported estimate and $s_k$ is its standard error, then
+$z_k = y_k / s_k$, and the probability a study is observed can vary by the
+interval containing $z_k$. The shorthand `selection = 1.96` fits a symmetric
+two-sided model, splitting studies at the usual 5 percent normal threshold,
+$|z_k| = 1.96$.
+
+The fitted selection parameters are relative publication probabilities. With
+one cut-point, _baggr_ estimates one weight for $|z_k| < 1.96$ and normalises
+the reference interval, $|z_k| \ge 1.96$, to 1. For an observed study, the usual
+normal likelihood is multiplied by the weight for the interval containing
+$z_k$. It is then divided by the model-implied probability that a result would
+be observed at all, summing over all z-intervals and their weights.
+
+For the partial-pooling Rubin model this normalising term is calculated using
+the marginal distribution of the observed estimate,
+$y_k \sim N(\mu + x_k^\top\beta, \tau^2 + s_k^2)$ when covariates are present,
+not by conditioning on the latent study effect. This matters because selection
+is a statement about which estimates enter the observed literature, not only
+about sampling variation around a fixed latent effect.
 
 ```{r fit-selection-simple, include = FALSE}
 set.seed(1991)
@@ -102,13 +124,12 @@ selection(bg_va_sel)
 
 The `selection()` output reports the relative publication probability for the
 lower `|z|` interval. The highest `|z|` interval is the reference category, fixed
-to 1. Values below 1 mean that less statistically striking estimates are inferred
+to 1. Values below 1 mean that less statistically significant estimates are inferred
 to be less likely to appear in the observed literature.
 
-The same idea can be made more flexible by adding more thresholds. For example,
-the following model separates results below 10 percent, between 10 and 5 percent,
-between 5 and 1 percent, and beyond 1 percent on the usual two-sided normal
-scale.
+More thresholds can be used. For example, the following model separates
+two-sided p-values below 10 percent, between 10 and 5 percent, between 5 and
+1 percent, and beyond 1 percent.
 
 ```{r fit-selection-multi, include = FALSE}
 set.seed(1992)
@@ -126,10 +147,10 @@ bg_va_sel_multi <- baggr(vitamin_a, selection = c(1.64, 1.96, 2.58),
 selection(bg_va_sel_multi)
 ```
 
-For explicit control, pass a list with the z cut-points, whether the model is
+For explicit control, users can pass a list with the z cut-points, whether the model is
 symmetric, and which studies could have been selected. Here the model uses
 one-sided z intervals. This is mainly useful when the direction of selection is
-part of the substantive assumption.
+part of the substantive assumption:
 
 ```{r fit-selection-list, include = FALSE}
 set.seed(1993)
@@ -158,11 +179,10 @@ bg_va_sel_one_sided <- baggr(vitamin_a, selection = selection_one_sided,
 selection(bg_va_sel_one_sided)
 ```
 
-The important modelling choice is not the syntax, but the assumed selection
-mechanism. With only a modest number of studies, selection models can be weakly
-identified. In the vitamin A example, the adjustment is useful because it shows
-how much the random-effects result depends on possible preferential publication
-of more significant or favourable small-study estimates; it should not be treated
-as definitive evidence about the exact publication process.
+With only a modest number of studies, selection models can be weakly
+identified. In this example, the adjustment should be read as a sensitivity
+analysis for possible preferential publication of more statistically significant
+or favourable small-study estimates, not as definitive evidence about the exact
+publication process.
 
 # References

@@ -31,3 +31,9 @@ In Rubin summary-data models, \code{z = tau / se}; for example,
 conventional two-sided 5\% normal threshold compared with the implicit
 highest-|z| interval.
 }
+\details{
+\code{selection()} returns draws or summaries of the selection weights only. These
+are relative publication probabilities, not treatment effects or corrected
+treatment effects. The highest-|z| interval is the reference category and is
+fixed to 1, so it is not returned.
+}
