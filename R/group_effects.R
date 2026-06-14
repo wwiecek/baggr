@@ -71,12 +71,19 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
       # drop mu if model has mu (baseline/control value)
       if(bg$model %in% c("mutau", "mutau_full"))
         m <- m[,1,2,]
+      # Some full-data models keep a singleton effects dimension.
+      # Reduce to 2D so fixed-effect draws can be added by group.
+      if(length(dim(m)) == 3 && dim(m)[3] == 1)
+        m <- m[,,1]
 
       # If dealing with a meta-regression model, we automatically add effect of covariates
       # unless user requests random_only
-      if(bg$model == "rubin" && !random_only && !is.null(bg$covariates)) {
-        m_fe <- fixed_effects(bg) %*% t(bg$inputs$X)
-        m <- m + m_fe
+      if(!random_only) {
+        x_group <- group_effects_covariate_matrix(bg, n_groups = ncol(m))
+        if(!is.null(x_group) && ncol(x_group) > 0) {
+          m_fe <- fixed_effects(bg) %*% t(x_group)
+          m <- m + m_fe
+        }
       }
 
     } else if(bg$model == "quantiles") {
@@ -117,6 +124,61 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
 
   return(m)
 }
+
+
+# Group-level design matrix for adding fixed effects to random group effects
+# in meta-regression models.
+group_effects_covariate_matrix <- function(bg, n_groups) {
+  if(length(bg$covariates) == 0)
+    return(NULL)
+
+  covariate_coding <- attr(bg$inputs, "covariate_coding")
+  if(is.null(covariate_coding) || length(covariate_coding) == 0)
+    return(NULL)
+
+  # Summary-data models already have one row per group.
+  if(bg$model == "rubin") {
+    x_group <- bg$inputs$X
+    if(is.null(dim(x_group)))
+      return(NULL)
+    if(nrow(x_group) != n_groups)
+      stop("Unable to align covariate matrix and group effects.")
+    return(x_group)
+  }
+
+  if(is.null(bg$summary_data))
+    return(NULL)
+
+  # For individual-data models, summary_data includes only meta-regression
+  # covariates that are fixed within studies.
+  mr_covariates <- intersect(bg$covariates, names(bg$summary_data))
+  if(length(mr_covariates) == 0)
+    return(NULL)
+
+  mm <- model.matrix(
+    as.formula(paste("~", paste(mr_covariates, collapse = "+"))),
+    data = bg$summary_data[, mr_covariates, drop = FALSE]
+  )
+
+  x_group <- mm[, colnames(mm) != "(Intercept)", drop = FALSE]
+  x_group <- x_group[, intersect(covariate_coding, colnames(x_group)), drop = FALSE]
+
+  if(length(covariate_coding) > 0) {
+    missing_cols <- setdiff(covariate_coding, colnames(x_group))
+    if(length(missing_cols) > 0) {
+      zeros <- matrix(0, nrow = nrow(x_group), ncol = length(missing_cols))
+      colnames(zeros) <- missing_cols
+      x_group <- cbind(x_group, zeros)
+    }
+    x_group <- x_group[, covariate_coding, drop = FALSE]
+  }
+
+  if(nrow(x_group) != n_groups)
+    stop("Unable to align group-level covariates and group effects.")
+
+  x_group
+}
+
 
 # Grabbing labels for group/study names
 group_names <- function(bg) {
