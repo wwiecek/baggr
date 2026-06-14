@@ -243,14 +243,21 @@ instance, means estimates below the conventional two-sided 5\% threshold are
 estimated to be one quarter as likely to be observed as estimates in the
 highest-|z| interval. The weights are positive but not forced to be monotone.
 
+The selection likelihood is the usual normal likelihood for the observed
+estimate multiplied by the relative publication probability for the observed
+z-interval, and divided by the model-implied probability of observation across
+all z-intervals. With \code{pooling = "partial"}, this normalising probability is
+calculated under the marginal random-effects distribution of the observed
+estimate, integrating over study-specific effects. Studies with
+\code{possible = 0} use the ordinary likelihood contribution, with no selection
+correction.
+
 By default, selection is symmetrical and depends only on \verb{|z|}, not on the
 sign or other study features. Use list input with \code{symmetrical = FALSE} for
 one-sided cut-points, or set \code{possible} to 0 for studies where publication is
 assumed not to be selected on z-values. Inference can be very sensitive to the
 choice of cut-points and priors on the selection weights, which you should set
-manually. With \code{pooling = "partial"}, the selection correction is applied to
-the marginal random-effects distribution of the observed estimates,
-integrating over study-specific effects. With \code{pooling = "none"}, there is no
+manually. With \code{pooling = "none"}, there is no
 population random-effects distribution to correct, so the selection component
 should not be interpreted as estimating a selection-corrected population mean.
 For more complex cases you should consider using other methods.

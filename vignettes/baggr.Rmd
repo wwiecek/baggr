@@ -459,4 +459,16 @@ We can compare those fits with `loo_compare`, which gives use the differences in
 loo_compare(loocv_res, loocv_full)
 ```
 
+## Publication bias assessment
+
+_Baggr_ includes basic tools for assessing publication bias and small-study
+effects. `funnel_plot()` provides a graphical check of how study-level effects
+vary with precision, while the `selection` argument in `baggr()` fits selection
+models for Rubin summary-data meta-analyses. The fitted relative publication
+probabilities can be summarised with `selection()`.
+
+These tools are described in more detail in `vignette("baggr_selection")`.
+Funnel asymmetry and selection-model adjustments should be interpreted with
+care: they may reflect publication bias, genuine heterogeneity, or both.
+
 ## References

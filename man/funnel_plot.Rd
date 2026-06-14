@@ -2,6 +2,7 @@
 % Please edit documentation in R/funnel.R
 \name{funnel_plot}
 \alias{funnel_plot}
+\alias{funnel}
 \title{Funnel plots for baggr models}
 \usage{
 funnel_plot(
@@ -11,6 +12,8 @@ funnel_plot(
   label = FALSE,
   covariate = NULL
 )
+
+funnel(...)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}
@@ -24,6 +27,8 @@ posterior summaries (\code{"posterior"})}
 
 \item{covariate}{optional name of a column in the model input data used to
 colour points.}
+
+\item{...}{arguments passed to \code{\link[=funnel_plot]{funnel_plot()}}}
 }
 \value{
 A ggplot funnel plot for the supplied model
@@ -38,6 +43,10 @@ arise due to unexplained heterogeneity between studies.
 
 For models with group-level covariates, colouring points by a covariate can
 help inspect whether asymmetry is partly explained by meta-regression effects.
+In Rubin summary-data meta-regression models (\code{model = "rubin"} with
+\code{covariates}), \code{show = "posterior"} plots posterior study effects from
+\code{\link[=group_effects]{group_effects()}}, which include the fitted covariate contribution. By
+contrast, \code{show = "inputs"} plots the original study-level estimates.
 }
 \examples{
 bg <- baggr(schools, iter = 500, refresh = 0)

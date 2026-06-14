@@ -7,6 +7,11 @@
 #' conventional two-sided 5% normal threshold compared with the implicit
 #' highest-|z| interval.
 #'
+#' `selection()` returns draws or summaries of the selection weights only. These
+#' are relative publication probabilities, not treatment effects or corrected
+#' treatment effects. The highest-|z| interval is the reference category and is
+#' fixed to 1, so it is not returned.
+#'
 #' @param bg a [baggr::baggr()] model fitted with a selection-enabled likelihood
 #'   (currently `model = "rubin"`).
 #' @param summary logical; if `TRUE`, returns summary statistics (mean and
