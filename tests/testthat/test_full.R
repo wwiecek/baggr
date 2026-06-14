@@ -255,6 +255,64 @@ sa$c <- sample(c("A", "B", "C"), nrow(schools_ipd), replace = T)
 sb <- sa
 sb$b <- NULL
 
+test_that("rubin_full warns about covariates constant within every site", {
+  site_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, 0, 1, 1)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(site_cov, "x", "group"),
+    "covariates x are constant within every site"
+  )
+})
+
+test_that("rubin_full does not warn when covariate varies within a site", {
+  individual_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, 1, 1, 1)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(individual_cov, "x", "group"),
+    NA
+  )
+})
+
+test_that("rubin_full constant within-site covariate warning names only bad covariates", {
+  mixed_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, 0, 1, 1),
+    z = c(0, 1, 1, 1)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(mixed_cov, c("x", "z"), "group"),
+    regexp = "covariates x are constant within every site"
+  )
+  warning_msg <- NULL
+  withCallingHandlers(
+    .warn_constant_within_site_covariates(mixed_cov, c("x", "z"), "group"),
+    warning = function(w) {
+      warning_msg <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_match(warning_msg, "covariates x are constant within every site")
+  expect_false(grepl("z", warning_msg, fixed = TRUE))
+})
+
+test_that("rubin_full constant within-site covariate warning ignores missing values", {
+  missing_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, NA, 1, NA)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(missing_cov, "x", "group"),
+    "covariates x are constant within every site"
+  )
+})
 
 test_that("Model with covariates works fine", {
   bg_cov <- expect_warning(

@@ -354,6 +354,9 @@ convert_inputs <- function(data,
                   paste(covariates[!(covariates %in% names(data))], collapse=","),
                   " are not columns in input data"))
 
+    if(model == "rubin_full")
+      .warn_constant_within_site_covariates(data, covariates, group)
+
     for(cov in covariates)
       if(any(is.na(data[[cov]])))
         stop("NA values present in covariates")
@@ -362,7 +365,7 @@ convert_inputs <- function(data,
     # This indicates if the model can be interpreted as a meta-regression.
     if(grepl("individual", required_data)) {
       covariate_is_fixed <- vapply(covariates, function(cov) {
-        all(tapply(data[[cov]], data[[group]], function(x) length(unique(x)) == 1))
+        all(tapply(data[[cov]], data[[group]], function(x) length(unique(x[!is.na(x)])) <= 1))
       }, logical(1))
       varying_covariates <- covariates[!covariate_is_fixed]
       for(cov in varying_covariates)
@@ -458,6 +461,26 @@ convert_inputs <- function(data,
     effect = effect)
 
   return(out_structure)
+}
+
+.warn_constant_within_site_covariates <- function(data, covariates, group) {
+  if(length(covariates) == 0)
+    return(invisible(character(0)))
+
+  constant_covariates <- vapply(covariates, function(cov) {
+    distinct_by_site <- tapply(data[[cov]], data[[group]], function(x) {
+      length(unique(x[!is.na(x)]))
+    })
+    all(distinct_by_site <= 1)
+  }, logical(1))
+
+  flagged_covariates <- covariates[constant_covariates]
+  if(length(flagged_covariates) > 0)
+    warning("covariates ", paste(flagged_covariates, collapse = ", "),
+            " are constant within every site, please adjust pooling baseline behaviour or remove covariates",
+            call. = FALSE)
+
+  invisible(flagged_covariates)
 }
 
 normalise_selection <- function(selection, K) {
