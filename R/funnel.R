@@ -110,6 +110,7 @@ funnel_plot <- function(bg,
 }
 
 #' @rdname funnel_plot
+#' @param ... arguments passed to [funnel_plot()]
 #' @export
 funnel <- function(...) {
   funnel_plot(...)

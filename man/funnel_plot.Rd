@@ -27,6 +27,8 @@ posterior summaries (\code{"posterior"})}
 
 \item{covariate}{optional name of a column in the model input data used to
 colour points.}
+
+\item{...}{arguments passed to \code{\link[=funnel_plot]{funnel_plot()}}}
 }
 \value{
 A ggplot funnel plot for the supplied model
