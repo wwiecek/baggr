@@ -2,6 +2,7 @@
 % Please edit documentation in R/funnel.R
 \name{funnel_plot}
 \alias{funnel_plot}
+\alias{funnel}
 \title{Funnel plots for baggr models}
 \usage{
 funnel_plot(
@@ -11,6 +12,8 @@ funnel_plot(
   label = FALSE,
   covariate = NULL
 )
+
+funnel(...)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}

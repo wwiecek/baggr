@@ -104,3 +104,9 @@ funnel_plot <- function(bg,
                   y = "Standard error") +
     baggr_theme_get()
 }
+
+#' @rdname funnel_plot
+#' @export
+funnel <- function(...) {
+  funnel_plot(...)
+}

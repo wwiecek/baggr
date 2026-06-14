@@ -1,0 +1,168 @@
+---
+title: "Publication bias and selection models with baggr"
+author: "Witold Wiecek"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Publication bias and selection models with baggr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: baggr.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 7,
+  fig.height = 4.5,
+  fig.path = "fig/selection-",
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+library(baggr)
+```
+
+This vignette shows a short workflow for assessing and adjusting for publication
+bias in a meta-analysis. We use the vitamin A supplementation and child mortality
+data from @imdad_vitamin_2022, included in _baggr_ as `vitamin_a`.
+
+The outcome is the log risk ratio for all-cause child mortality. Negative values
+indicate lower mortality in the vitamin A supplementation arm.
+
+```{r}
+head(vitamin_a)
+summary(exp(vitamin_a$tau))
+```
+
+The studies are heterogeneous and vary substantially in precision. This is the
+setting where small-study effects are especially important: if smaller studies
+with favourable or statistically significant estimates are more likely to be
+published, an ordinary random-effects model can overstate the average effect.
+However, funnel asymmetry can also reflect genuine differences between study
+settings, so the checks below should be read as sensitivity analyses rather than
+automatic corrections.
+
+# Funnel plot
+
+First fit the usual Rubin summary-data model. We label the estimand as a log
+risk ratio so that plots and summaries are easier to read.
+
+```{r fit-unadjusted, include = FALSE}
+set.seed(1990)
+bg_va <- baggr(vitamin_a, effect = "log risk ratio",
+               iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-unadjusted-code, eval = FALSE}
+bg_va <- baggr(vitamin_a, effect = "log risk ratio")
+```
+
+```{r}
+bg_va
+```
+
+A funnel plot compares study-level effects with their standard errors. In the
+absence of small-study effects or unexplained heterogeneity, points should be
+roughly symmetric around the pooled estimate.
+
+```{r}
+funnel(bg_va)
+```
+
+The dashed lines include both sampling uncertainty and the estimated
+between-study heterogeneity. The plot is therefore a visual diagnostic, not a
+test of publication bias by itself.
+
+# Selection adjustment
+
+Selection models make the publication process explicit. In _baggr_, `selection`
+sets cut-points on the study z-statistic. The shorthand
+`selection = 1.96` fits a symmetric two-sided model, splitting studies at the
+usual 5 percent normal threshold, $|z| = 1.96$.
+
+```{r fit-selection-simple, include = FALSE}
+set.seed(1991)
+bg_va_sel <- baggr(vitamin_a, selection = 1.96,
+                   effect = "log risk ratio",
+                   iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-selection-simple-code, eval = FALSE}
+bg_va_sel <- baggr(vitamin_a, selection = 1.96,
+                   effect = "log risk ratio")
+```
+
+```{r}
+bg_va_sel
+selection(bg_va_sel)
+```
+
+The `selection()` output reports the relative publication probability for the
+lower `|z|` interval. The highest `|z|` interval is the reference category, fixed
+to 1. Values below 1 mean that less statistically striking estimates are inferred
+to be less likely to appear in the observed literature.
+
+The same idea can be made more flexible by adding more thresholds. For example,
+the following model separates results below 10 percent, between 10 and 5 percent,
+between 5 and 1 percent, and beyond 1 percent on the usual two-sided normal
+scale.
+
+```{r fit-selection-multi, include = FALSE}
+set.seed(1992)
+bg_va_sel_multi <- baggr(vitamin_a, selection = c(1.64, 1.96, 2.58),
+                         effect = "log risk ratio",
+                         iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-selection-multi-code, eval = FALSE}
+bg_va_sel_multi <- baggr(vitamin_a, selection = c(1.64, 1.96, 2.58),
+                         effect = "log risk ratio")
+```
+
+```{r}
+selection(bg_va_sel_multi)
+```
+
+For explicit control, pass a list with the z cut-points, whether the model is
+symmetric, and which studies could have been selected. Here the model uses
+one-sided z intervals. This is mainly useful when the direction of selection is
+part of the substantive assumption.
+
+```{r fit-selection-list, include = FALSE}
+set.seed(1993)
+selection_one_sided <- list(
+  z = c(1.64, 1.96),
+  symmetrical = FALSE,
+  possible = rep(1, nrow(vitamin_a))
+)
+bg_va_sel_one_sided <- baggr(vitamin_a, selection = selection_one_sided,
+                             effect = "log risk ratio",
+                             iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-selection-list-code, eval = FALSE}
+selection_one_sided <- list(
+  z = c(1.64, 1.96),
+  symmetrical = FALSE,
+  possible = rep(1, nrow(vitamin_a))
+)
+
+bg_va_sel_one_sided <- baggr(vitamin_a, selection = selection_one_sided,
+                             effect = "log risk ratio")
+```
+
+```{r}
+selection(bg_va_sel_one_sided)
+```
+
+The important modelling choice is not the syntax, but the assumed selection
+mechanism. With only a modest number of studies, selection models can be weakly
+identified. In the vitamin A example, the adjustment is useful because it shows
+how much the random-effects result depends on possible preferential publication
+of more significant or favourable small-study estimates; it should not be treated
+as definitive evidence about the exact publication process.
+
+# References
