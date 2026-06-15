@@ -1,4 +1,4 @@
-## cran-comments for baggr v0.8 (Feb 2026)
+## cran-comments for baggr v0.8.2 (June 2026)
 
 Test environments, now implemented via GitHub Actions via new version of rhub
 
@@ -16,5 +16,3 @@ N checking installed package size ... NOTE
   
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements.
-
-Previous submission had one problematic URL in a vignette. Fixed by removing the hyperlink.

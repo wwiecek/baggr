@@ -1,7 +1,25 @@
-# baggr 0.8.1 (May 2026)
+# baggr 0.8.2 (June 2026)
+
+Functionality:
+
+- Improved funnel plot function
+- Faster logit model via bernoulli_logit_glm
+- Added predict.baggr() alias
+
+
+Documentation:
+
+- Added a vignette `baggr_selection` that has examples of how to do selection models
+
+Fixes: 
 
 - Fix to selection model: I did marginalisation of likelihood wrong and the previous
   results were biased towards the "uncorrected" hypermeans in presence of heterogeneity.
+- Fixed some inconsistencies in how predicted effects were handled in models with
+  individual-level data (with covariates that change within study)
+- Fixed some bugs in predictive density calculations in cross-validation
+- Specification of prior for sigma (SD) in rubin_full model
+
 
 # baggr 0.8 (2026)
 
