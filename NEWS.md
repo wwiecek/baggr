@@ -19,6 +19,8 @@ Fixes:
   individual-level data (with covariates that change within study)
 - Fixed some bugs in predictive density calculations in cross-validation
 - Specification of prior for sigma (SD) in rubin_full model
+- Log-predictive density for "mu & tau" model was wrong; new version relies on
+  multivariate
 
 
 # baggr 0.8 (2026)
