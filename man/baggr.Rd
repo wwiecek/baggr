@@ -231,8 +231,7 @@ reported estimate divided by its standard error, \code{z = tau / se}. A numeric
 \code{selection} input gives cut-points on the absolute z-scale. For example,
 \code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)},
 \verb{[1.96, 2.58)}, and \verb{[2.58, Inf)}. This is equivalent to
-\code{selection = list(z = c(1.96, 2.58), symmetrical = TRUE,
-possible = rep(1, nrow(data)))}. The value 1.96 is the familiar normal
+\code{selection = list(z = c(1.96, 2.58), symmetrical = TRUE, possible = rep(1, nrow(data)))}. The value 1.96 is the familiar normal
 critical value for a two-sided p-value of about 0.05; 2.58 is approximately
 the corresponding value for p = 0.01.
 

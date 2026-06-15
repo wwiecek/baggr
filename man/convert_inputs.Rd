@@ -27,10 +27,10 @@ see \code{\link[=baggr]{baggr()}} for allowed models
 if \code{model = NULL}, this function will try to find appropriate model
 automatically}
 
-\item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
-
 \item{effect}{Only matters for binary data, use \code{logOR}, \code{logRR}, or \code{RD}. Otherwise ignore.
 See \link{prepare_ma} for details.}
+
+\item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
 
 \item{group}{name of the column with grouping variable}
 
