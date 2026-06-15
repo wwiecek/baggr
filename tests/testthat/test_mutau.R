@@ -152,8 +152,27 @@ test_that("Test data can be used in the mu tau model", {
   expect_is(bg_lpd, "baggr")
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(2000, 6, 1))
-  # make sure it's not 0 but something sensible
-  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -13, tolerance = 1)
+
+  log_mvn <- function(y, mean, V) {
+    R <- chol(V)
+    z <- backsolve(R, y - mean, transpose = TRUE)
+    -0.5 * (length(y) * log(2 * pi) +
+              2 * sum(log(diag(R))) + sum(z^2))
+  }
+
+  draws <- rstan::extract(bg_lpd$fit, pars = c("logpd", "mu", "tau"))
+  y_test <- rbind(df_mutau$mu[7:8], df_mutau$tau[7:8])
+  se_test <- rbind(df_mutau$se.mu[7:8], df_mutau$se.tau[7:8])
+  manual_logpd <- vapply(seq_len(dim(draws$mu)[1]), function(s) {
+    mu_s <- draws$mu[s, 1, ]
+    Sigma_s <- tcrossprod(draws$tau[s, 1, , ])
+    sum(vapply(seq_len(ncol(y_test)), function(k) {
+      V_k <- Sigma_s + diag(se_test[, k]^2)
+      log_mvn(y_test[, k], mu_s, V_k)
+    }, numeric(1)))
+  }, numeric(1))
+
+  expect_equal(as.vector(draws$logpd), manual_logpd, tolerance = 1e-6)
 
   # wrong test_data
   df_na <- df_mutau[7:8,]; df_na$tau <- NULL
@@ -185,4 +204,3 @@ test_that("baggr comparison method works for mu-tau models", {
   expect_is(plot(comp_mt, grid_models = TRUE), "gtable")
 
 })
-
