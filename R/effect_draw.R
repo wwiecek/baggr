@@ -2,7 +2,8 @@
 #'
 #' The function `effect_draw` (or its alias `predict()` applied to a `baggr` model) takes the sample
 #' of hyperparameters from a [baggr] model
-#' (typically hypermean and hyper-SD, which you can see using [treatment_effect])
+#' (typically hypermean and hyper-SD, which you can see using [treatment_effect],
+#' or directly with [hypermean] and [hypersd])
 #' and draws values of new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 #' This can be used for both prior and posterior draws, depending on [baggr::baggr()] model.
 #' By default this is done for a single new effect, but for meta-regression models
@@ -25,7 +26,8 @@
 #' @export
 #'
 #' @seealso [treatment_effect] returns samples from hypermean(s) and hyper-SD(s)
-#'          which are used by this function
+#'          which are used by this function; [hypermean] and [hypersd] are
+#'          shorthands for these components
 #'
 #' @details
 #' The predictive distribution can be used to "combine" heterogeneity between treatment effects and

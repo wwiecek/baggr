@@ -41,7 +41,8 @@ corresponds to rows of \code{newdata}.
 \description{
 The function \code{effect_draw} (or its alias \code{predict()} applied to a \code{baggr} model) takes the sample
 of hyperparameters from a \link{baggr} model
-(typically hypermean and hyper-SD, which you can see using \link{treatment_effect})
+(typically hypermean and hyper-SD, which you can see using \link{treatment_effect},
+or directly with \link{hypermean} and \link{hypersd})
 and draws values of new realisations of treatment effect, i.e. an additional draw from the "population of studies".
 This can be used for both prior and posterior draws, depending on \code{\link[=baggr]{baggr()}} model.
 By default this is done for a single new effect, but for meta-regression models
@@ -76,5 +77,6 @@ Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 }
 \seealso{
 \link{treatment_effect} returns samples from hypermean(s) and hyper-SD(s)
-which are used by this function
+which are used by this function; \link{hypermean} and \link{hypersd} are
+shorthands for these components
 }
