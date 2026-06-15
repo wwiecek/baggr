@@ -85,17 +85,6 @@ transformed parameters {
 }
 
 model {
-  //fixed effects:
-  vector[N] fe;
-  if(N > 0){
-    if(Nc == 0){
-      fe = rep_vector(0.0, N);
-    } else {
-      fe = X*beta;
-      beta ~ vecprior(prior_beta_fam, prior_beta_val);
-    }
-  }
-
   //cluster REs
   vector[N] re = rep_vector(0, N);
   if(clustered) {
@@ -113,23 +102,40 @@ model {
     tau_baseline[1] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
   }
 
+  if(Nc > 0)
+    beta ~ vecprior(prior_beta_fam, prior_beta_val);
+
   //priors for trt effect and Bernoulli-logit link likelihood
   if(pooling_type == 0){
+    vector[N] alpha =
+      baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + re;
     //each column of eta_matrix should use a different "P-specific" distribution
     for (p in 1:P)
       eta_matrix[:, p] ~ vecprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
-    y ~ bernoulli_logit(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re);
+    if(Nc > 0)
+      y ~ bernoulli_logit_glm(X, alpha, beta);
+    else
+      y ~ bernoulli_logit(alpha);
   } else if(pooling_type == 1) {
+    vector[N] alpha =
+      baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + re;
     eta ~ normal(0,1);
     for(p in 1:P){
       tau[p] ~ realprior(prior_hypersd_fam[p], prior_hypersd_val[p]);
       mu[p]  ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
     }
-    y   ~ bernoulli_logit(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re);
+    if(Nc > 0)
+      y ~ bernoulli_logit_glm(X, alpha, beta);
+    else
+      y ~ bernoulli_logit(alpha);
   } else {
+    vector[N] alpha = baseline_k[site] + treatment * mu + re;
     for(p in 1:P)
       mu[p] ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
-    y ~ bernoulli_logit(baseline_k[site] + treatment * mu + fe + re);
+    if(Nc > 0)
+      y ~ bernoulli_logit_glm(X, alpha, beta);
+    else
+      y ~ bernoulli_logit(alpha);
   }
 
 }
@@ -162,4 +168,3 @@ generated quantities {
     }
   }
 }
-

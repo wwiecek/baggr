@@ -317,6 +317,34 @@ test_that("Model with covariates works fine", {
 })
 
 
+df_binary_group_cov <- df_binary
+df_binary_group_cov$x_group <- rep(seq(-1, 1, length.out = 5), each = 80)
+
+test_that("logit covariate likelihood works for all pooling modes", {
+  for(pooling_method in c("none", "partial", "full")) {
+    bg_cov_pooling <- suppressWarnings(
+      baggr(df_binary_group_cov,
+            model = "logit",
+            covariates = "x_group",
+            pooling = pooling_method,
+            iter = 100,
+            chains = 1,
+            refresh = 0,
+            show_messages = FALSE)
+    )
+
+    expect_is(bg_cov_pooling, "baggr")
+    expect_equal(bg_cov_pooling$model, "logit")
+    expect_equal(bg_cov_pooling$pooling, pooling_method)
+    expect_equal(bg_cov_pooling$covariates, "x_group")
+    expect_equal(
+      dim(fixed_effects(bg_cov_pooling, summary = TRUE)),
+      c(1, 5, 1)
+    )
+  }
+})
+
+
 # covariates, group-level ------
 df_cov <- df_summ
 df_cov$somecov <- rnorm(5)
