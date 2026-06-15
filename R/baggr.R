@@ -133,8 +133,8 @@
 #' * In `"rubin"` and `"mutau"` models, covariates that __change according to group unit__.
 #'   In that case, the model accounting
 #'   for the group covariates is a
-#'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
-#'   model. It can be modelled on summary-level data.
+#'   meta-regression model, as described in Chapter 10 of the Cochrane
+#'   Handbook. It can be modelled on summary-level data.
 #' * In `"logit"` and `"rubin_full"` models, covariates that __change according to individual unit__.
 #'   Then, such a model is often referred to as a mixed model. It has to be
 #'   fitted to individual-level data. Note that meta-regression is a special

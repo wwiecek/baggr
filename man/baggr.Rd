@@ -190,8 +190,8 @@ Two types of covariates may be present in your data:
 \item In \code{"rubin"} and \code{"mutau"} models, covariates that \strong{change according to group unit}.
 In that case, the model accounting
 for the group covariates is a
-\href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
-model. It can be modelled on summary-level data.
+meta-regression model, as described in Chapter 10 of the Cochrane
+Handbook. It can be modelled on summary-level data.
 \item In \code{"logit"} and \code{"rubin_full"} models, covariates that \strong{change according to individual unit}.
 Then, such a model is often referred to as a mixed model. It has to be
 fitted to individual-level data. Note that meta-regression is a special
