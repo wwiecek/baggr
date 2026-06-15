@@ -211,6 +211,25 @@ print(baggr_schools)
 
 <!-- This is quite similar to the output from the version of the model suggested in ["How to use rstan"](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started) tutorial, the small difference probably arising from the different default priors. -->
 
+### Examining treatment and study effects
+
+The overall treatment effect and heterogeneity parameters are available with
+`treatment_effect()`. If you only need the mean effect or its hyper-SD, use the
+shorter `hypermean()` and `hypersd()` functions.
+
+```{r}
+hypermean(baggr_schools)
+hypersd(baggr_schools)
+```
+
+Study-level posterior effects are available with `group_effects()`; the alias
+`study_effects()` returns the same object.
+
+```{r}
+head(group_effects(baggr_schools, summary = TRUE))
+treatment_effect(baggr_schools, summary = TRUE)
+```
+
 ### Choosing priors 
 
 It is possible to fit the Rubin model without specifying any priors, in which case the user is notified about the automatic prior choice that _baggr_ performs. But the priors can also be easily customised by using `prior_` arguments to `baggr()`. The Rubin model performs univariate shrinkage so we will not need to specify a hyper-correlation prior, but we can specify some custom priors on the hyper-mean and hyper-sd. If desired, the user can specify only some priors as custom distributions - the rest will be chosen automatically and the user will be notified of this in the output. 

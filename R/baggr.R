@@ -209,7 +209,8 @@
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
 #' Other standard functions for working with `baggr` object are
 #'
-#' * [treatment_effect] for distribution of hyperparameters
+#' * [treatment_effect] for distribution of hyperparameters; you can also use
+#'   shorthands [hypermean] for mean and [hypersd] for SD
 #' * [group_effects] for distributions of group-specific parameters (alias: [study_effects], we use the two interchangeably)
 #' * [fixed_effects] for coefficients in (meta-)regression
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions

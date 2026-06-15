@@ -266,7 +266,8 @@ For more complex cases you should consider using other methods.
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).
 Other standard functions for working with \code{baggr} object are
 \itemize{
-\item \link{treatment_effect} for distribution of hyperparameters
+\item \link{treatment_effect} for distribution of hyperparameters; you can also use
+shorthands \link{hypermean} for mean and \link{hypersd} for SD
 \item \link{group_effects} for distributions of group-specific parameters (alias: \link{study_effects}, we use the two interchangeably)
 \item \link{fixed_effects} for coefficients in (meta-)regression
 \item \link{effect_draw} and \link{effect_plot} for posterior predictive distributions
