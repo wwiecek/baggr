@@ -10,6 +10,8 @@ Functionality:
 Documentation:
 
 - Added a vignette `baggr_selection` that has examples of how to do selection models
+- Clarified how `transform` is applied in `treatment_effect()`, `hypermean()`,
+  `hypersd()`, and `effect_draw()` (#143)
 
 Fixes: 
 

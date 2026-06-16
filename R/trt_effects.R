@@ -4,6 +4,17 @@
 #' The most general `treatment_effect` displays
 #' both hypermean and hyperSD (as a list of length 2),
 #' whereas `hypermean` and `hypersd` can be used as shorthands.
+#' The `transform` argument applies to posterior draws of model parameters:
+#' for example, `hypermean(bg, transform = exp)` exponentiates only the
+#' posterior distribution of the mean treatment effect. This is useful when a
+#' model was fit on a transformed scale, such as a log risk ratio or log odds
+#' ratio scale. It is different from [effect_draw()], which first draws from
+#' the posterior predictive distribution of a new treatment effect, including
+#' heterogeneity or uncertainty around the mean, and then applies the
+#' transformation. Because a transformed hyper-SD is not generally
+#' interpretable, `treatment_effect()` returns `sigma_tau = NA` when
+#' `transform` is supplied; this is also what `hypersd(bg, transform = ...)`
+#' returns.
 #'
 #' @param bg a [baggr::baggr()] model
 #' @param summary logical; if TRUE returns summary statistics as explained below.
@@ -19,6 +30,15 @@
 #'         `interval`
 #' @export
 #' @importFrom rstan extract
+#' @examples
+#' \donttest{
+#' # Fit on a log scale, then exponentiate the hypermean draws to obtain ratios.
+#' log_rr <- data.frame(tau = log(c(0.7, 0.9, 1.1, 1.3)),
+#'                      se = c(0.2, 0.25, 0.3, 0.35))
+#' bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+#'
+#' hypermean(bg_log, transform = exp)
+#' }
 
 
 treatment_effect <- function(bg, summary = FALSE,
@@ -134,4 +154,3 @@ mutau_cor <- function(bg,
     return(m[,2])
 
 }
-

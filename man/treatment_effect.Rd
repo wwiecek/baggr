@@ -42,6 +42,17 @@ no pooling models}
 The most general \code{treatment_effect} displays
 both hypermean and hyperSD (as a list of length 2),
 whereas \code{hypermean} and \code{hypersd} can be used as shorthands.
+The \code{transform} argument applies to posterior draws of model parameters:
+for example, \code{hypermean(bg, transform = exp)} exponentiates only the
+posterior distribution of the mean treatment effect. This is useful when a
+model was fit on a transformed scale, such as a log risk ratio or log odds
+ratio scale. It is different from \code{\link[=effect_draw]{effect_draw()}}, which first draws from
+the posterior predictive distribution of a new treatment effect, including
+heterogeneity or uncertainty around the mean, and then applies the
+transformation. Because a transformed hyper-SD is not generally
+interpretable, \code{treatment_effect()} returns \code{sigma_tau = NA} when
+\code{transform} is supplied; this is also what \code{hypersd(bg, transform = ...)}
+returns.
 }
 \section{Functions}{
 \itemize{
@@ -55,3 +66,13 @@ both vectors are summarised as mean and lower/upper bounds according to
 \item \code{hypersd()}: The hyper-SD of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[2]]}
 
 }}
+\examples{
+\donttest{
+# Fit on a log scale, then exponentiate the hypermean draws to obtain ratios.
+log_rr <- data.frame(tau = log(c(0.7, 0.9, 1.1, 1.3)),
+                     se = c(0.2, 0.25, 0.3, 0.35))
+bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+
+hypermean(bg_log, transform = exp)
+}
+}
