@@ -8,6 +8,11 @@
 #' This can be used for both prior and posterior draws, depending on [baggr::baggr()] model.
 #' By default this is done for a single new effect, but for meta-regression models
 #' you can specify values of covariates with the `newdata` argument, same as in [predict.baggr].
+#' If `transform` is supplied, it is applied after drawing from this predictive
+#' distribution. For example, `effect_draw(bg, transform = exp)` for a model fit
+#' on a log scale returns predictive draws on the ratio scale. This is not the
+#' same object as `hypermean(bg, transform = exp)`: `effect_draw()` also includes
+#' the uncertainty or heterogeneity around the mean treatment effect.
 #'
 #' @param object A `baggr` class object.
 #' @param draws How many values to draw? The default is as long as the number of samples
@@ -50,6 +55,16 @@
 #' the predicted values can be adjusted for known levels of fixed covariates by
 #' passing `newdata` (same as in [predict.baggr]). If no adjustment is made, the
 #' returned value should be interpreted as the effect when all covariates are 0.
+#'
+#' @examples
+#' \donttest{
+#' # Fit on a log scale, then exponentiate predictive draws to obtain ratios.
+#' log_rr <- data.frame(tau = log(c(0.7, 0.9, 1.1, 1.3)),
+#'                      se = c(0.2, 0.25, 0.3, 0.35))
+#' bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+#'
+#' effect_draw(bg_log, transform = exp)
+#' }
 #'
 #' @references
 #' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.

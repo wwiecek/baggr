@@ -47,6 +47,11 @@ and draws values of new realisations of treatment effect, i.e. an additional dra
 This can be used for both prior and posterior draws, depending on \code{\link[=baggr]{baggr()}} model.
 By default this is done for a single new effect, but for meta-regression models
 you can specify values of covariates with the \code{newdata} argument, same as in \link{predict.baggr}.
+If \code{transform} is supplied, it is applied after drawing from this predictive
+distribution. For example, \code{effect_draw(bg, transform = exp)} for a model fit
+on a log scale returns predictive draws on the ratio scale. This is not the
+same object as \code{hypermean(bg, transform = exp)}: \code{effect_draw()} also includes
+the uncertainty or heterogeneity around the mean treatment effect.
 }
 \details{
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
@@ -69,6 +74,17 @@ If the \code{baggr} model used by the function is a meta-regression
 the predicted values can be adjusted for known levels of fixed covariates by
 passing \code{newdata} (same as in \link{predict.baggr}). If no adjustment is made, the
 returned value should be interpreted as the effect when all covariates are 0.
+}
+\examples{
+\donttest{
+# Fit on a log scale, then exponentiate predictive draws to obtain ratios.
+log_rr <- data.frame(tau = log(c(0.7, 0.9, 1.1, 1.3)),
+                     se = c(0.2, 0.25, 0.3, 0.35))
+bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+
+effect_draw(bg_log, transform = exp)
+}
+
 }
 \references{
 Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
