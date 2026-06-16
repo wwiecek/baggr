@@ -57,14 +57,14 @@ passing on the arguments, their only other role is to perform a rudimentary chec
 if the distribution is specified correctly.
 }
 \details{
-The prior choice in \link{baggr} is done via distinct arguments for each type of prior,
+The prior choice in \code{\link[=baggr]{baggr()}} is done via distinct arguments for each type of prior,
 e.g. \code{prior_hypermean}, or a named list of several passed to \code{prior}.
 See the examples below.
 
 Notation for priors is "plain-text", in that you can write the distributions as
 \code{normal(5,10)}, \code{uniform(0,100)} etc.
 
-Different parameters admit different priors (see \link{baggr} for explanations of
+Different parameters admit different priors (see \code{\link[=baggr]{baggr()}} for explanations of
 what the different \code{prior_} arguments do):
 \itemize{
 \item \code{prior_hypermean}, \code{prior_control}, and \code{prior_beta}

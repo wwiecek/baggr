@@ -136,19 +136,112 @@ test_that("baggr comparison method works for rubin_full model", {
 })
 
 test_that("rubin_full cross-validation works", {
-  # Run it first with test data that includes baseline, this will gen a message:
-  bg <- expect_warning(expect_message(
+  # Missing held-out site controls in training should now fail clearly.
+  expect_error(
     baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-          test_data = subset(schools_ipd, group == "School A")),
-    "Baselines for all these groups"
-  )
+          test_data = subset(schools_ipd, group == "School A" & treatment == 1)),
+    "all test groups must be present in training data"
   )
 
-  # Now repeat without bsl data
-  bg <- expect_warning(baggr(subset(schools_ipd, group != "School A"), iter = 20, refresh = 0,
-                             test_data = subset(schools_ipd, group == "School A" & treatment == 1)))
+  # Correct CV split: keep controls for held-out site in training,
+  # evaluate treated rows for that site in test_data.
+  bg <- expect_warning(
+    baggr(subset(schools_ipd, group != "School A" | treatment == 0),
+          iter = 20, refresh = 0,
+          test_data = subset(schools_ipd, group == "School A" & treatment == 1))
+  )
   expect_is(bg, "baggr")
   expect_gt(bg$mean_lpd, 0)
+})
+
+test_that("rubin_full CV handles numeric/character groups and K_test is correct", {
+  run_cv_case <- function(df, held_out_groups) {
+    train_data <- subset(df, !(group %in% held_out_groups) | treatment == 0)
+    test_data <- subset(df, group %in% held_out_groups & treatment == 1)
+
+    bg <- expect_warning(
+      baggr(train_data, iter = 20, chains = 1, refresh = 0, test_data = test_data)
+    )
+
+    expect_is(bg, "baggr")
+    expect_true(is.finite(bg$mean_lpd))
+    expect_equal(bg$inputs$K_test, length(unique(test_data$group)))
+    expect_equal(length(unique(bg$inputs$test_site)), bg$inputs$K_test)
+  }
+
+  schools_ipd_num <- schools_ipd
+  schools_ipd_num$group <- as.numeric(factor(schools_ipd_num$group, levels = unique(schools_ipd_num$group)))
+
+  run_cv_case(schools_ipd, "School A")
+  run_cv_case(schools_ipd, c("School A", "School C", "School E"))
+  run_cv_case(schools_ipd_num, 1)
+  run_cv_case(schools_ipd_num, c(1, 3, 5))
+})
+
+test_that("full-data test sigma uses SD and not SE", {
+  train <- data.frame(
+    group = c(rep("Train", 8), rep(c("TestA", "TestB"), each = 2)),
+    outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5, 0.8, 1.1, 0.3, 0.9),
+    treatment = c(0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0)
+  )
+  test <- data.frame(
+    group = rep(c("TestA", "TestB"), each = 4),
+    outcome = c(1, 2, 3, 4, 0.5, 1.5, 1.7, 2.3),
+    treatment = 1
+  )
+
+  expected_sd <- tapply(test$outcome, test$group, sd)
+
+  inp_rubin <- convert_inputs(train, model = "rubin_full", quantiles = seq(.05, .95, .1),
+                              test_data = test, outcome = "outcome",
+                              group = "group", treatment = "treatment")
+  inp_mutau <- convert_inputs(train, model = "mutau_full", quantiles = seq(.05, .95, .1),
+                              test_data = test, outcome = "outcome",
+                              group = "group", treatment = "treatment")
+
+  expect_equal(as.numeric(inp_rubin$test_sigma_y_k), as.numeric(expected_sd))
+  expect_equal(as.numeric(inp_mutau$test_sigma_y_k), as.numeric(expected_sd))
+})
+
+test_that("rubin_full predictive log density matches analytic Normal density scale", {
+  train <- data.frame(
+    group = c(rep("Train1", 8), rep("Train2", 8), rep("Test", 4)),
+    outcome = c(-0.5, -0.2, 0.1, 0.4, 1.4, 1.8, 2.2, 2.5,
+                -0.3, 0.0, 0.2, 0.6, 1.1, 1.7, 2.0, 2.4,
+                0.2, 0.6, 0.9, 1.1),
+    treatment = c(rep(c(0, 0, 0, 0, 1, 1, 1, 1), 2), 0, 0, 0, 0)
+  )
+  test <- data.frame(
+    group = rep("Test", 4),
+    outcome = c(1, 2, 3, 4),
+    treatment = 1
+  )
+  test_sd <- sd(test$outcome)
+  test_se <- test_sd / sqrt(nrow(test))
+
+  bg <- expect_warning(
+    baggr(train,
+          model = "rubin_full",
+          pooling = "full",
+          pooling_control = "remove",
+          prior_hypermean = normal(0, 5),
+          prior_sigma = uniform(0.1, 5),
+          test_data = test,
+          iter = 250, warmup = 125, chains = 2, refresh = 0, seed = 137)
+  )
+
+  mu_draw <- rstan::extract(bg$fit, "mu")[[1]][,1]
+  logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
+
+  expected_sd_logpd <- vapply(mu_draw, function(m) {
+    sum(dnorm(test$outcome, mean = m, sd = test_sd, log = TRUE))
+  }, numeric(1))
+  expected_se_logpd <- vapply(mu_draw, function(m) {
+    sum(dnorm(test$outcome, mean = m, sd = test_se, log = TRUE))
+  }, numeric(1))
+
+  expect_equal(as.numeric(logpd), as.numeric(expected_sd_logpd), tolerance = 1e-6)
+  expect_gt(mean(abs(logpd - expected_se_logpd)), 0.1)
 })
 
 
@@ -162,6 +255,64 @@ sa$c <- sample(c("A", "B", "C"), nrow(schools_ipd), replace = T)
 sb <- sa
 sb$b <- NULL
 
+test_that("rubin_full warns about covariates constant within every site", {
+  site_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, 0, 1, 1)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(site_cov, "x", "group"),
+    "covariates x are constant within every site"
+  )
+})
+
+test_that("rubin_full does not warn when covariate varies within a site", {
+  individual_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, 1, 1, 1)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(individual_cov, "x", "group"),
+    NA
+  )
+})
+
+test_that("rubin_full constant within-site covariate warning names only bad covariates", {
+  mixed_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, 0, 1, 1),
+    z = c(0, 1, 1, 1)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(mixed_cov, c("x", "z"), "group"),
+    regexp = "covariates x are constant within every site"
+  )
+  warning_msg <- NULL
+  withCallingHandlers(
+    .warn_constant_within_site_covariates(mixed_cov, c("x", "z"), "group"),
+    warning = function(w) {
+      warning_msg <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_match(warning_msg, "covariates x are constant within every site")
+  expect_false(grepl("z", warning_msg, fixed = TRUE))
+})
+
+test_that("rubin_full constant within-site covariate warning ignores missing values", {
+  missing_cov <- data.frame(
+    group = rep(1:2, each = 2),
+    x = c(0, NA, 1, NA)
+  )
+
+  expect_warning(
+    .warn_constant_within_site_covariates(missing_cov, "x", "group"),
+    "covariates x are constant within every site"
+  )
+})
 
 test_that("Model with covariates works fine", {
   bg_cov <- expect_warning(
@@ -181,6 +332,34 @@ test_that("Model with covariates works fine", {
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
 })
 
+
+
+test_that("Fixed within-study covariates are added to summary_data", {
+  sa_fixed <- schools_ipd
+  sa_fixed$site_cov <- as.numeric(factor(sa_fixed$group))
+  bg_cov_fixed <- expect_warning(
+    baggr(sa_fixed, covariates = c("site_cov"), iter = 150, chains = 1, refresh = 0)
+  )
+
+  expect_true("site_cov" %in% names(bg_cov_fixed$summary_data))
+  expected <- sa_fixed$site_cov[match(bg_cov_fixed$summary_data$group, sa_fixed$group)]
+  expect_equal(bg_cov_fixed$summary_data$site_cov, expected)
+})
+
+
+test_that("Within-study varying covariates are reported as not meta-regression", {
+  sa_vary <- schools_ipd
+  sa_vary$ind_cov <- rnorm(nrow(sa_vary))
+
+  bg_cov_vary <- expect_message(
+    suppressWarnings(
+      baggr(sa_vary, covariates = c("ind_cov"),
+            iter = 150, chains = 1, refresh = 0, warn = FALSE)
+    ),
+    "Covariate ind_cov varies within studies. Model fitting will work but is not a meta-regression."
+  )
+  expect_is(bg_cov_vary, "baggr")
+})
 bg_pr <- expect_warning(baggr(schools_ipd,
                               pooling = "partial",
                               pooling_control = "remove",

@@ -7,13 +7,13 @@
 loocv(data, return_models = FALSE, ...)
 }
 \arguments{
-\item{data}{Input data frame - same as for \link{baggr} function.}
+\item{data}{Input data frame - same as for \code{\link[=baggr]{baggr()}} function.}
 
 \item{return_models}{logical; if FALSE, summary statistics will be returned and the
 models discarded;
 if TRUE, a list of models will be returned alongside summaries}
 
-\item{...}{Additional arguments passed to \link{baggr}.}
+\item{...}{Additional arguments passed to \code{\link[=baggr]{baggr()}}.}
 }
 \value{
 log predictive density value, an object of class \code{baggr_cv};

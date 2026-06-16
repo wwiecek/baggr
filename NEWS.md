@@ -1,11 +1,36 @@
+# baggr 0.8.2 (June 2026)
+
+Functionality:
+
+- Improved funnel plot function
+- Faster logit model via bernoulli_logit_glm
+- Added predict.baggr() alias
+
+
+Documentation:
+
+- Added a vignette `baggr_selection` that has examples of how to do selection models
+
+Fixes: 
+
+- Fix to selection model: I did marginalisation of likelihood wrong and the previous
+  results were biased towards the "uncorrected" hypermeans in presence of heterogeneity.
+- Fixed some inconsistencies in how predicted effects were handled in models with
+  individual-level data (with covariates that change within study)
+- Fixed some bugs in predictive density calculations in cross-validation
+- Specification of prior for sigma (SD) in rubin_full model
+- Log-predictive density for "mu & tau" model was wrong; new version relies on
+  multivariate
+
+
 # baggr 0.8 (2026)
 
-* You can fit a "typical" selection model on |z| values (a la Hedges 1992) using 
+- You can fit a "typical" selection model on |z| values (a la Hedges 1992) using 
   `selection` argument, e.g. `selection = c(1.96, 2.58)`.
   This is recommended only for sufficiently large datasets and you should set your 
   own priors (on log(relative probability Pr)) when doing this, using `prior_selection`
-* For any baggr object you can also create a funnel plot, e.g. `funnel_plot(bg, label = TRUE, show = "inputs")`
-* Funnel plots now use `funnel_plot()` as the primary function name (and support optional `covariate` colouring with warnings if the requested column is unavailable).
+- For any baggr object you can also create a funnel plot, e.g. `funnel_plot(bg, label = TRUE, show = "inputs")`
+- Funnel plots now use `funnel_plot()` as the primary function name (and support optional `covariate` colouring with warnings if the requested column is unavailable).
 
 # baggr 0.7.11 (late 2024)
 
@@ -63,8 +88,6 @@ Misc:
 * More information when printing models.
 * Baggr automatically checks for a grouping column.
 * For binary data, you can run `baggr()` without any extra steps like `prepare_ma()`, by just defining `effect` when running baggr (or it will default to log OR).
-* I added alias `posterior_predict()` for drawing from posterior
-  sample. This is more consistent with regression modeling and RStan ecosystem.
   
 Bugs:
 

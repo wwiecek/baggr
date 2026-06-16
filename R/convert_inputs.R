@@ -3,12 +3,12 @@
 #' Converts data to a list of inputs suitable for Stan models,
 #' checks integrity of data and suggests the appropriate default model
 #' if needed. Typically all of this is
-#' done automatically by [baggr], so __this function is included only for debugging__
+#' done automatically by [baggr::baggr()], so __this function is included only for debugging__
 #' or running (custom) models "by hand".
 #'
 #' @param data `data.frame`` with desired modelling input
 #' @param model valid model name used by baggr;
-#'              see [baggr] for allowed models
+#'              see [baggr::baggr()] for allowed models
 #'              if `model = NULL`, this function will try to find appropriate model
 #'              automatically
 #' @param covariates Character vector with column names in `data`.
@@ -21,14 +21,16 @@
 #' @param outcome name of column with outcome variable (designated as string)
 #' @param treatment name of column with treatment variable
 #' @param cluster name of the column with clustering variable for analysing c-RCTs
-#' @param selection same as in [baggr]; vector of cut-offs for |z| value in selection model
+#' @param selection same as in [baggr::baggr()]; either a numeric vector of
+#'                  absolute z-value cut-points or a named list with elements
+#'                  `z`, `symmetrical` and `possible`
 #' @param test_data same format as `data` argument, gets left aside for
-#'                  testing purposes (see [baggr])
+#'                  testing purposes (see [baggr::baggr()])
 #' @param silent Whether to print messages when evaluated
-#' @return R structure that's appropriate for use by [baggr] Stan models;
+#' @return R structure that's appropriate for use by [baggr::baggr()] Stan models;
 #'         `group_label`, `model`, `effect` and `n_groups` are included as attributes
-#'         and are necessary for [baggr] to work correctly
-#' @details Typically this function is only called within [baggr] and you do
+#'         and are necessary for [baggr::baggr()] to work correctly
+#' @details Typically this function is only called within [baggr::baggr()] and you do
 #'          not need to use it yourself. It can be useful to understand inputs
 #'          or to run models which you modified yourself.
 #'
@@ -42,8 +44,8 @@
 
 convert_inputs <- function(data,
                            model,
-                           quantiles,
                            effect = NULL,
+                           quantiles = seq(.05, .95, .1),
                            group  = "group",
                            outcome   = "outcome",
                            treatment = "treatment",
@@ -52,6 +54,11 @@ convert_inputs <- function(data,
                            covariates = c(),
                            test_data = NULL,
                            silent = FALSE) {
+
+  # Fail fast for invalid model names before touching data columns.
+  # This avoids spurious column warnings from custom/tibble inputs.
+  if(!is.null(model) && !(model %in% names(model_data_types)))
+    stop("Unrecognised model, can't format data.")
 
   # If lazy users forgot to define their group column,
   # check if the first column is usable
@@ -89,10 +96,10 @@ convert_inputs <- function(data,
     if(!silent)
       message(paste0("Automatically chose ", crayon::bold(model_names[model]),
                      " based on input data."))
-  } else {
-    if(!(model %in% names(model_data_types)))
-      stop("Unrecognised model, can't format data.")
   }
+
+  if(!is.null(selection) && model != "rubin")
+    stop("Selection models are currently available only for model = 'rubin'.")
 
   # Convert mutau data to Rubin model data if requested
   if(model == "rubin" && available_data == "pool_wide"){
@@ -193,27 +200,47 @@ convert_inputs <- function(data,
         out$test_y <- array(0, dim = 0)
         out$test_site <- array(0, dim = 0)
         out$test_treatment <- array(0, dim =  c(out$N_test, out$P))
-        if(model %in% c("rubin_full", "mutau_full"))
+        if(model == "rubin_full") {
+          out$test_sigma_y_i <- array(0, dim = 0)
+          out$test_sigma_y_k <- numeric(0) # backward compatibility with precompiled Stan model
+        }
+        if(model == "mutau_full")
           out$test_sigma_y_k <- array(0, dim = 0)
 
       } else {
         out$N_test <- nrow(test_data)
-        out$K_test <- max(group_numeric_test)
+        if(model %in% c("logit", "rubin_full")) {
+          # For logit/rubin_full CV, test sites must index training-site parameters.
+          group_numeric_test <- match(as.character(test_data[[group]]), group_label)
+          if(any(is.na(group_numeric_test)))
+            stop("For ", model, " with test_data, all test groups must be present in ",
+                 "training data (typically with treatment == 0 rows).")
+        }
+        out$K_test <- length(unique(group_numeric_test))
         out$test_y <- test_data[[outcome]]
         # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
         out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
-        # calculate SEs in each test group
-        if(model %in% c("rubin_full", "mutau_full")){
-          se_in_each_group <- sapply(
-            1:max(group_numeric_test), function(i) {
-              n <- sum(group_numeric_test == i)
-              sd(test_data[[outcome]][group_numeric_test == i])/sqrt(n)
-            })
-          if(any(is.na(se_in_each_group)))
-            stop("Cannot calculate SE in groups in test data. Each out-of-sample ",
+        # calculate outcome SDs in each test group and map as needed by Stan model
+        if(model %in% c("rubin_full", "mutau_full")) {
+          test_group_ids <- sort(unique(group_numeric_test))
+          sd_in_each_group <- sapply(
+            test_group_ids,
+            function(i) {
+              sd(test_data[[outcome]][group_numeric_test == i])
+            }
+          )
+          if(any(is.na(sd_in_each_group)))
+            stop("Cannot calculate SD in groups in test data. Each out-of-sample ",
                  "group must be of size at least 2.")
-          out$test_sigma_y_k <- array(se_in_each_group, dim = max(group_numeric_test))
+
+          if(model == "rubin_full") {
+            out$test_sigma_y_i <- array(sd_in_each_group[match(group_numeric_test, test_group_ids)],
+                                        dim = out$N_test)
+            out$test_sigma_y_k <- as.numeric(sd_in_each_group)
+          }
+          if(model == "mutau_full")
+            out$test_sigma_y_k <- array(sd_in_each_group, dim = out$K_test)
         }
       }
     }
@@ -327,9 +354,27 @@ convert_inputs <- function(data,
                   paste(covariates[!(covariates %in% names(data))], collapse=","),
                   " are not columns in input data"))
 
+    if(model == "rubin_full")
+      .warn_constant_within_site_covariates(data, covariates, group)
+
     for(cov in covariates)
       if(any(is.na(data[[cov]])))
         stop("NA values present in covariates")
+
+    # For individual-level models, check if covariates are fixed within studies.
+    # This indicates if the model can be interpreted as a meta-regression.
+    if(grepl("individual", required_data)) {
+      covariate_is_fixed <- vapply(covariates, function(cov) {
+        all(tapply(data[[cov]], data[[group]], function(x) length(unique(x[!is.na(x)])) <= 1))
+      }, logical(1))
+      varying_covariates <- covariates[!covariate_is_fixed]
+      for(cov in varying_covariates)
+        message("Covariate ", cov,
+                " varies within studies. Model fitting will work but is not a meta-regression.")
+      meta_regression_covariates <- covariates[covariate_is_fixed]
+    } else {
+      meta_regression_covariates <- covariates
+    }
 
     # Test_data preparation
     # (sometimes column names may not match in data and test_data, check for it):
@@ -365,6 +410,7 @@ convert_inputs <- function(data,
   } else {
     covariate_coding <- c()
     covariate_levels <- c()
+    meta_regression_covariates <- c()
     out$Nc <- 0
     if(model != "quantiles"){
       out$X <- array(0, dim=c(nrow(data), 0))
@@ -375,15 +421,11 @@ convert_inputs <- function(data,
 
 
   # 5. Add selection model cut-offs -----
-  if(is.null(selection)){
-    out$M <- 0L
-    out$c <- numeric(0)
-  } else {
-    if(!is.numeric(selection) || any(!is.finite(selection)) || any(selection < 0) || length(selection) < 1)
-      stop("selection input has to be a finite- and positive-valued vector")
-    out$M <- length(selection)
-    out$c <- array(selection, length(selection))
-  }
+  selection_input <- normalise_selection(selection, out$K)
+  out$M <- length(selection_input$z)
+  out$c <- array(selection_input$z, dim = out$M)
+  out$symmetric <- as.integer(selection_input$symmetrical)
+  out$possible_selection <- array(selection_input$possible, dim = out$K)
 
   na_cols <- unlist(lapply(out, function(x) any(is.na(x))))
   if(any(na_cols))
@@ -408,6 +450,7 @@ convert_inputs <- function(data,
                 "outcome" = outcome),
     covariate_coding = covariate_coding,
     covariate_levels = covariate_levels,
+    meta_regression_covariates = meta_regression_covariates,
     group_label = group_label,
     n_groups = out[["K"]],
     n_re = out[["P"]],
@@ -418,4 +461,66 @@ convert_inputs <- function(data,
     effect = effect)
 
   return(out_structure)
+}
+
+.warn_constant_within_site_covariates <- function(data, covariates, group) {
+  if(length(covariates) == 0)
+    return(invisible(character(0)))
+
+  constant_covariates <- vapply(covariates, function(cov) {
+    distinct_by_site <- tapply(data[[cov]], data[[group]], function(x) {
+      length(unique(x[!is.na(x)]))
+    })
+    all(distinct_by_site <= 1)
+  }, logical(1))
+
+  flagged_covariates <- covariates[constant_covariates]
+  if(length(flagged_covariates) > 0)
+    warning("covariates ", paste(flagged_covariates, collapse = ", "),
+            " are constant within every site, please adjust pooling baseline behaviour or remove covariates",
+            call. = FALSE)
+
+  invisible(flagged_covariates)
+}
+
+normalise_selection <- function(selection, K) {
+  default <- list(z = numeric(0), symmetrical = FALSE, possible = rep(1L, K))
+  if(is.null(selection))
+    return(default)
+
+  # Numeric input is the public shorthand for symmetric cut-offs applying to
+  # every study; list input is the explicit API used when either flag differs.
+  if(is.numeric(selection)) {
+    z <- selection
+    symmetrical <- TRUE
+    possible <- rep(1L, K)
+  } else if(is.list(selection)) {
+    required_names <- c("z", "symmetrical", "possible")
+    if(is.null(names(selection)) ||
+       !setequal(names(selection), required_names) ||
+       length(selection) != length(required_names))
+      stop("selection list must have named elements z, symmetrical and possible.")
+
+    z <- selection$z
+    symmetrical <- selection$symmetrical
+    possible <- selection$possible
+  } else {
+    stop("selection must be a numeric vector or a named list.")
+  }
+
+  # Keep this validation close to the API normalisation so Stan only sees
+  # positive cut-offs, one symmetry flag, and one 0/1 possible flag per study.
+  if(!is.numeric(z) || length(z) < 1 || any(!is.finite(z)) || any(z <= 0))
+    stop("selection z-values must be a positive finite numeric vector.")
+  if(is.unsorted(z, strictly = TRUE))
+    stop("selection z-values must be strictly increasing.")
+  if(!is.logical(symmetrical) || length(symmetrical) != 1 || is.na(symmetrical))
+    stop("selection$symmetrical must be TRUE or FALSE.")
+  if(!(is.logical(possible) || is.numeric(possible)) ||
+     length(possible) != K ||
+     any(is.na(possible)) ||
+     any(!(possible %in% c(0, 1, FALSE, TRUE))))
+    stop("selection$possible must be a 0/1 or logical vector with one value per study.")
+
+  list(z = z, symmetrical = symmetrical, possible = as.integer(possible))
 }

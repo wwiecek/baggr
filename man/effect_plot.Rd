@@ -7,7 +7,7 @@
 effect_plot(..., transform = NULL)
 }
 \arguments{
-\item{...}{Object(s) of class \link{baggr}. If there is more than one,
+\item{...}{Object(s) of class \code{\link[=baggr]{baggr()}}. If there is more than one,
 a comparison will be plotted and  names of objects
 will be used as a plot legend (see examples).}
 
@@ -24,9 +24,9 @@ This function plots values from \link{effect_draw}, the predictive distribution
 for one or more \code{baggr} objects.
 }
 \details{
-Under default settings in \link{baggr} posterior predictive is obtained. But
+Under default settings in \code{\link[=baggr]{baggr()}} posterior predictive is obtained. But
 \code{effect_plot} can also be used for \emph{prior} predictive distributions when
-setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same, but
+setting \code{ppd=T} in \code{\link[=baggr]{baggr()}}. The two outputs work exactly the same, but
 labels will change to indicate this difference.
 }
 \examples{

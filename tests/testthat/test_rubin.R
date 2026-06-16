@@ -38,11 +38,53 @@ test_that("Error messages for wrong inputs are in place", {
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
                    c("K", "theta_hat_k", "se_theta_k", "K_test",
                      "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
-                     "M", "c"))
+                     "M", "c", "symmetric", "possible_selection"))
 
   expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
 
+})
+
+test_that("Hyper-SD priors are handled correctly outside partial pooling", {
+  msgs_full <- capture.output(
+    fe7n <- suppressWarnings(
+      baggr(schools[1:7, ], pooling = "full",
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    ),
+    type = "message"
+  )
+  expect_false(any(grepl("Setting hyper-SD prior using 10 times the naive SD across sites",
+                         msgs_full, fixed = TRUE)))
+  expect_null(fe7n$prior_dist$hypersd)
+
+  msgs_none <- capture.output(
+    bg_none <- suppressWarnings(
+      baggr(schools[1:7, ], pooling = "none",
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    ),
+    type = "message"
+  )
+  expect_false(any(grepl("Setting hyper-SD prior using 10 times the naive SD across sites",
+                         msgs_none, fixed = TRUE)))
+  expect_null(bg_none$prior_dist$hypersd)
+
+  msgs_partial <- capture.output(
+    bg_partial <- suppressWarnings(
+      baggr(schools[1:7, ], pooling = "partial",
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    ),
+    type = "message"
+  )
+  expect_false(is.null(bg_partial$prior_dist$hypersd))
+
+  fe7n_te <- treatment_effect(fe7n, summary = TRUE)$tau
+  expect_no_error(
+    suppressWarnings(
+      baggr(schools[8, ], pooling = "full",
+            prior_hypermean = normal(fe7n_te[["mean"]], fe7n_te[["sd"]]),
+            iter = 50, chains = 1, refresh = 0, seed = 1990)
+    )
+  )
 })
 
 
@@ -200,7 +242,7 @@ test_that("Test data can be used in the Rubin model", {
   # make sure that we have 6 sites, not 8:
   expect_equal(dim(group_effects(bg_lpd)), c(1000, 6, 1))
   # make sure it's not 0
-  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd[1]")[[1]]), -3.6, tolerance = 1)
+  expect_equal(mean(rstan::extract(bg_lpd$fit, "logpd")[[1]]), -1.8, tolerance = 1)
 
 })
 
@@ -303,6 +345,9 @@ test_that("Extracting treatment/study effects works", {
   expect_length(eds1, 5)
   expect_gt(eds2[1], eds1[1]) #narrower interval
   expect_warning(effect_draw(bg5_p, 1e05), "more effect draws than there are available samples")
+  set.seed(1); pred1 <- predict(bg5_p, draws = 7)
+  set.seed(1); pred2 <- effect_draw(bg5_p, draws = 7)
+  expect_equal(pred1, pred2)
 
   # Plotting tau:
   expect_is(effect_plot(bg5_p), "gg")

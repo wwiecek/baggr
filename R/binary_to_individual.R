@@ -1,7 +1,7 @@
 #' Generate individual-level binary outcome data from an aggregate statistics
 #'
 #' This is a helper function that is typically used automatically by some of _baggr_ functions,
-#' such as when running `model="logit"` in [baggr], when summary-level data are supplied.
+#' such as when running `model="logit"` in [baggr::baggr()], when summary-level data are supplied.
 #'
 #' @param data A data frame with columns `a`, `c` and `b`/`n1`, `d`/`n2`.
 #'             (You can also use `ai`, `ci`, `n1i`, `n2i` instead.)
@@ -9,7 +9,7 @@
 #' @param covariates Column names in `data` that contain group-level variables
 #'                   to retain when expanding into individual-level `data.frame`
 #' @param rename_group If `TRUE` (default), this will rename the grouping variable
-#'                     to `"group"`, making it easier to work with [baggr]
+#'                     to `"group"`, making it easier to work with [baggr::baggr()]
 #'
 #' See `vignette("baggr_binary")` for an example of use and notation details.
 #'

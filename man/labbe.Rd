@@ -18,7 +18,7 @@ labbe(
 
 \item{group}{a character string specifying group names (e.g. study names), used for labels;}
 
-\item{plot_model}{if \code{TRUE}, then odds ratios and risk ratios \link{baggr} models are estimated (using default
+\item{plot_model}{if \code{TRUE}, then odds ratios and risk ratios \code{\link[=baggr]{baggr()}} models are estimated (using default
 settings) and their mean estimates of effects are plotted as lines}
 
 \item{labels}{if \code{TRUE}, names from the \code{group} column are displayed}

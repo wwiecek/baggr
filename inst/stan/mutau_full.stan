@@ -52,7 +52,7 @@ data {
   // NORMAL specific:
   vector[N] y;
   vector[N_test] test_y;
-  vector[K_test] test_sigma_y_k;
+  vector[K_test] test_sigma_y_k; // group-level outcome SDs in test data
 }
 
 transformed data {
@@ -134,7 +134,7 @@ model {
 }
 
 generated quantities {
-  // to do this, we must first (outside of Stan) calculate SEs in each test group,
+  // to do this, we must first (outside of Stan) calculate SDs in each test group,
   // i.e. test_sigma_y_k
   array[K_test > 0] real logpd;
   vector[N_test] fe_test;
@@ -154,4 +154,3 @@ generated quantities {
     }
   }
 }
-

@@ -120,8 +120,13 @@ it will be used as labels for groups when displaying results}
 \item{cluster}{optional; column name in (individual-level) \code{data}; if defined,
 random cluster effects will be fitted in each study}
 
-\item{selection}{optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
-most commonly you'd set this to 1.96 (p=0.05) of \code{c(1.96, 2.58)} (p=0.05 and p=0.01)}
+\item{selection}{optional publication-selection specification for Rubin
+summary-data models. A numeric vector is treated as z-value
+cut-points on the absolute z-scale, where \code{z = tau / se}.
+A list must have named elements \code{z} (positive cut-points),
+\code{symmetrical} (\code{TRUE}/\code{FALSE}) and \code{possible} (0/1 or logical
+vector with one value per study, where 1 means selection is
+possible and 0 means the study would be published regardless).}
 
 \item{silent}{Whether to silence messages about prior settings and about other automatic behaviour.}
 
@@ -185,12 +190,15 @@ Two types of covariates may be present in your data:
 \item In \code{"rubin"} and \code{"mutau"} models, covariates that \strong{change according to group unit}.
 In that case, the model accounting
 for the group covariates is a
-\href{https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm}{meta-regression}
-model. It can be modelled on summary-level data.
+meta-regression model, as described in Chapter 10 of the Cochrane
+Handbook. It can be modelled on summary-level data.
 \item In \code{"logit"} and \code{"rubin_full"} models, covariates that \strong{change according to individual unit}.
 Then, such a model is often referred to as a mixed model. It has to be
 fitted to individual-level data. Note that meta-regression is a special
-case of a mixed model for individual-level data.
+case of a mixed model for individual-level data. For \code{"rubin_full"},
+covariates that are constant within every site are aliased with
+site-specific baselines and should be removed or handled by changing
+baseline pooling.
 }
 
 \strong{Priors.} It is optional to specify priors yourself,
@@ -216,26 +224,49 @@ interested in the model's ability to fit heterogeneity in control arms, but
 only heterogeneity in treatment arms.)
 For using aggregate level data, there is no such restriction.
 
-\strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()} fits a symmetric
-selection-on-z-values model (currently only in the \code{"rubin"} summary-data model).
-The values in \code{selection} are cut-points on |z| = |tau / se|; for example,
-\code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)}, \verb{[1.96, 2.58)},
-and \verb{[2.58, Inf)}. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
-(You should also consider defining it to more significant digits in large datasets.)
-Each interval has its own relative publication probability
-(weight), with the highest-|z| interval normalised to 1, and these weights
-are estimated jointly with the usual Rubin parameters.
+\strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()}
+fits a publication-selection model on z-values (currently only in the
+\code{"rubin"} summary-data model). For each study, the observed z-value is the
+reported estimate divided by its standard error, \code{z = tau / se}. A numeric
+\code{selection} input gives cut-points on the absolute z-scale. For example,
+\code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)},
+\verb{[1.96, 2.58)}, and \verb{[2.58, Inf)}. This is equivalent to
+\code{selection = list(z = c(1.96, 2.58), symmetrical = TRUE, possible = rep(1, nrow(data)))}. The value 1.96 is the familiar normal
+critical value for a two-sided p-value of about 0.05; 2.58 is approximately
+the corresponding value for p = 0.01.
 
-The selection model assumes that publication depends only on |z| (not on the
-sign or other study features). Inference can be very sensitive to the choice of
-cut-points and priors on the selection weights, which you should set manually.
+Each interval has its own relative publication probability (weight), with the
+highest-|z| interval normalised to 1, and these weights are estimated jointly
+with the usual Rubin parameters. A weight of 0.25 for \verb{[0, 1.96)}, for
+instance, means estimates below the conventional two-sided 5\% threshold are
+estimated to be one quarter as likely to be observed as estimates in the
+highest-|z| interval. The weights are positive but not forced to be monotone.
+
+The selection likelihood is the usual normal likelihood for the observed
+estimate multiplied by the relative publication probability for the observed
+z-interval, and divided by the model-implied probability of observation across
+all z-intervals. With \code{pooling = "partial"}, this normalising probability is
+calculated under the marginal random-effects distribution of the observed
+estimate, integrating over study-specific effects. Studies with
+\code{possible = 0} use the ordinary likelihood contribution, with no selection
+correction.
+
+By default, selection is symmetrical and depends only on \verb{|z|}, not on the
+sign or other study features. Use list input with \code{symmetrical = FALSE} for
+one-sided cut-points, or set \code{possible} to 0 for studies where publication is
+assumed not to be selected on z-values. Inference can be very sensitive to the
+choice of cut-points and priors on the selection weights, which you should set
+manually. With \code{pooling = "none"}, there is no
+population random-effects distribution to correct, so the selection component
+should not be interpreted as estimating a selection-corrected population mean.
 For more complex cases you should consider using other methods.
 
 \strong{Outputs.} By default, some outputs are printed. There is also a
 plot method for \emph{baggr} objects which you can access via \link{baggr_plot} (or simply \code{plot()}).
 Other standard functions for working with \code{baggr} object are
 \itemize{
-\item \link{treatment_effect} for distribution of hyperparameters
+\item \link{treatment_effect} for distribution of hyperparameters; you can also use
+shorthands \link{hypermean} for mean and \link{hypersd} for SD
 \item \link{group_effects} for distributions of group-specific parameters (alias: \link{study_effects}, we use the two interchangeably)
 \item \link{fixed_effects} for coefficients in (meta-)regression
 \item \link{effect_draw} and \link{effect_plot} for posterior predictive distributions

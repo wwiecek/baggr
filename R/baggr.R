@@ -67,8 +67,13 @@
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
 #' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
-#' @param selection optional vector of z-values which implements symmetrical selection (relative probability of publication) model;
-#'                  most commonly you'd set this to 1.96 (p=0.05) of `c(1.96, 2.58)` (p=0.05 and p=0.01)
+#' @param selection optional publication-selection specification for Rubin
+#'                  summary-data models. A numeric vector is treated as z-value
+#'                  cut-points on the absolute z-scale, where `z = tau / se`.
+#'                  A list must have named elements `z` (positive cut-points),
+#'                  `symmetrical` (`TRUE`/`FALSE`) and `possible` (0/1 or logical
+#'                  vector with one value per study, where 1 means selection is
+#'                  possible and 0 means the study would be published regardless).
 #' @param quantiles if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
@@ -128,12 +133,15 @@
 #' * In `"rubin"` and `"mutau"` models, covariates that __change according to group unit__.
 #'   In that case, the model accounting
 #'   for the group covariates is a
-#'   [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm)
-#'   model. It can be modelled on summary-level data.
+#'   meta-regression model, as described in Chapter 10 of the Cochrane
+#'   Handbook. It can be modelled on summary-level data.
 #' * In `"logit"` and `"rubin_full"` models, covariates that __change according to individual unit__.
 #'   Then, such a model is often referred to as a mixed model. It has to be
 #'   fitted to individual-level data. Note that meta-regression is a special
-#'   case of a mixed model for individual-level data.
+#'   case of a mixed model for individual-level data. For `"rubin_full"`,
+#'   covariates that are constant within every site are aliased with
+#'   site-specific baselines and should be removed or handled by changing
+#'   baseline pooling.
 #'
 #'
 #' __Priors.__ It is optional to specify priors yourself,
@@ -159,26 +167,50 @@
 #' only heterogeneity in treatment arms.)
 #' For using aggregate level data, there is no such restriction.
 #'
-#' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()` fits a symmetric
-#' selection-on-z-values model (currently only in the `"rubin"` summary-data model).
-#' The values in `selection` are cut-points on |z| = |tau / se|; for example,
-#' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`, `[1.96, 2.58)`,
-#' and `[2.58, Inf)`. Note how inequality works: 1.96 is "already" treated as more significant than 1.95.
-#' (You should also consider defining it to more significant digits in large datasets.)
-#' Each interval has its own relative publication probability
-#' (weight), with the highest-|z| interval normalised to 1, and these weights
-#' are estimated jointly with the usual Rubin parameters.
+#' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()`
+#' fits a publication-selection model on z-values (currently only in the
+#' `"rubin"` summary-data model). For each study, the observed z-value is the
+#' reported estimate divided by its standard error, `z = tau / se`. A numeric
+#' `selection` input gives cut-points on the absolute z-scale. For example,
+#' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`,
+#' `[1.96, 2.58)`, and `[2.58, Inf)`. This is equivalent to
+#' `selection = list(z = c(1.96, 2.58), symmetrical = TRUE,
+#' possible = rep(1, nrow(data)))`. The value 1.96 is the familiar normal
+#' critical value for a two-sided p-value of about 0.05; 2.58 is approximately
+#' the corresponding value for p = 0.01.
 #'
-#' The selection model assumes that publication depends only on |z| (not on the
-#' sign or other study features). Inference can be very sensitive to the choice of
-#' cut-points and priors on the selection weights, which you should set manually.
+#' Each interval has its own relative publication probability (weight), with the
+#' highest-|z| interval normalised to 1, and these weights are estimated jointly
+#' with the usual Rubin parameters. A weight of 0.25 for `[0, 1.96)`, for
+#' instance, means estimates below the conventional two-sided 5% threshold are
+#' estimated to be one quarter as likely to be observed as estimates in the
+#' highest-|z| interval. The weights are positive but not forced to be monotone.
+#'
+#' The selection likelihood is the usual normal likelihood for the observed
+#' estimate multiplied by the relative publication probability for the observed
+#' z-interval, and divided by the model-implied probability of observation across
+#' all z-intervals. With `pooling = "partial"`, this normalising probability is
+#' calculated under the marginal random-effects distribution of the observed
+#' estimate, integrating over study-specific effects. Studies with
+#' `possible = 0` use the ordinary likelihood contribution, with no selection
+#' correction.
+#'
+#' By default, selection is symmetrical and depends only on `|z|`, not on the
+#' sign or other study features. Use list input with `symmetrical = FALSE` for
+#' one-sided cut-points, or set `possible` to 0 for studies where publication is
+#' assumed not to be selected on z-values. Inference can be very sensitive to the
+#' choice of cut-points and priors on the selection weights, which you should set
+#' manually. With `pooling = "none"`, there is no
+#' population random-effects distribution to correct, so the selection component
+#' should not be interpreted as estimating a selection-corrected population mean.
 #' For more complex cases you should consider using other methods.
 #'
 #' __Outputs.__ By default, some outputs are printed. There is also a
 #' plot method for _baggr_ objects which you can access via [baggr_plot] (or simply `plot()`).
 #' Other standard functions for working with `baggr` object are
 #'
-#' * [treatment_effect] for distribution of hyperparameters
+#' * [treatment_effect] for distribution of hyperparameters; you can also use
+#'   shorthands [hypermean] for mean and [hypersd] for SD
 #' * [group_effects] for distributions of group-specific parameters (alias: [study_effects], we use the two interchangeably)
 #' * [fixed_effects] for coefficients in (meta-)regression
 #' * [effect_draw] and [effect_plot] for posterior predictive distributions
@@ -266,7 +298,7 @@ baggr <- function(data,
 
   stan_data <- convert_inputs(data,
                               model,
-                              effect,
+                              effect = effect,
                               covariates = covariates,
                               quantiles = quantiles,
                               outcome = outcome,
@@ -360,19 +392,20 @@ baggr <- function(data,
                   cluster   = prior_cluster,
                   control   = prior_control,
                   control_sd= prior_control_sd,
+                  sigma     = prior_sigma,
                   selection = prior_selection
                   )
   } else {
-    if(!is.null(prior_hypermean) || !is.null(prior_beta) || is.null(prior_cluster) ||
-       !is.null(prior_control)   || !is.null(prior_control_sd) ||
+    if(!is.null(prior_hypermean) || !is.null(prior_beta) || !is.null(prior_cluster) ||
+       !is.null(prior_control)   || !is.null(prior_control_sd) || !is.null(prior_sigma) ||
        !is.null(prior_hypercor)  || !is.null(prior_hypersd))
       message("Both 'prior$' and 'prior_' arguments specified. Using 'prior' only.")
     if(!inherits(prior, "list") ||
        !all(names(prior) %in% c('hypermean', 'hypercor', 'hypersd', 'cluster',
-                                'beta', 'control', 'control_sd')))
+                                'beta', 'control', 'control_sd', 'sigma', 'selection')))
       warning(paste("Only names used in the prior argument are:",
                     "'hypermean', 'hypercor', 'hypersd', 'cluster',
-                    'beta', 'control', 'control_sd'"))
+                    'beta', 'control', 'control_sd', 'sigma', 'selection'"))
   }
 
   # If extracting prior from another model, we need to do this switcheroo:
@@ -439,7 +472,7 @@ baggr <- function(data,
 
   attr(result, "ppd") <- ppd
 
-  if(grepl("individual", attr(stan_data, "data_type")))
+  if(grepl("individual", attr(stan_data, "data_type"))) {
     result$summary_data <- prepare_ma(data,
                                       # rare_event_correction = 0.5,
                                       effect = ifelse(model == "logit", "logOR", "mean"),
@@ -448,13 +481,21 @@ baggr <- function(data,
                                       outcome = attr(data, "outcome"),
                                       pooling = TRUE)
 
+    mr_covariates <- attr(stan_data, "meta_regression_covariates")
+    if(length(mr_covariates) > 0)
+      result$summary_data <- cbind(result$summary_data,
+                                   data[match(result$summary_data$group, data[[attr(data, "group")]]),
+                                        mr_covariates,
+                                        drop = FALSE])
+  }
+
   if(model == "quantiles")
     result[["quantiles"]]    <- quantiles
   if(!ppd){
     result[["pooling_metric"]] <- pooling(result)
     if(!is.null(test_data)){
       result[["test_data"]]    <- test_data
-      result[["mean_lpd"]]     <- -2*mean(rstan::extract(fit, "logpd[1]")[[1]])
+      result[["mean_lpd"]]     <- -2*mean(extract_logpd_draws(fit))
     }
   }
 
@@ -486,7 +527,8 @@ remove_data_for_prior_pred <- function(data) {
                          # specific to sslab
                          "treatment_neg", "treatment_pos", "cat",
                          "site_neg", "site_pos", "y_neg", "y_pos",
-                         "X")
+                         "X",
+                         "possible_selection")
 
   # Specific to quantiles:
   matrices_to_rescale <- c("y_0", "y_1")

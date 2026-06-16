@@ -25,7 +25,7 @@ hypermean(
 hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
 }
 \arguments{
-\item{bg}{a \link{baggr} model}
+\item{bg}{a \code{\link[=baggr]{baggr()}} model}
 
 \item{summary}{logical; if TRUE returns summary statistics as explained below.}
 

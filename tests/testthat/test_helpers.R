@@ -133,6 +133,12 @@ test_that("convert_inputs()", {
   expect_is(convert_inputs(schools, "rubin"), "list")
   expect_error(convert_inputs(schools, "mutau"))
   expect_is(convert_inputs(schools, "rubin", test_data = schools[7:8,]), "list")
+
+  # Invalid model should fail cleanly, without unrelated column warnings.
+  expect_warning(
+    expect_error(convert_inputs(schools, "rubbish"), "Unrecognised model"),
+    NA
+  )
 })
 
 test_that("mint()", {

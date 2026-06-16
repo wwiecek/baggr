@@ -16,7 +16,7 @@ baggr_compare(
 \arguments{
 \item{...}{Either some (at least 1) objects of class \code{baggr}
 (you should name your objects, see the example below)
-or the same arguments you'd pass to \link{baggr}.
+or the same arguments you'd pass to \code{\link[=baggr]{baggr()}}.
 In the latter case you must specify \code{what} to compare.}
 
 \item{what}{One of \code{"pooling"} (comparison between no, partial and
@@ -45,9 +45,9 @@ transform = identity}
 an object of class \code{baggr_compare}
 }
 \description{
-Compare multiple \link{baggr} models by either
+Compare multiple \code{\link[=baggr]{baggr()}} models by either
 providing multiple already existing models as (named) arguments or
-passing parameters necessary to run a \link{baggr} model.
+passing parameters necessary to run a \code{\link[=baggr]{baggr()}} model.
 }
 \details{
 If you pass parameters to the function you must specify
@@ -55,7 +55,7 @@ what kind of comparison you want, either \code{"pooling"}, which
 will run fully/partially/un-pooled models and then compare them,
 or \code{"prior"} which will generate estimates without the data
 and compare them to the model with the full data. For more
-details see \link{baggr}, specifically the \code{ppd} argument.
+details see \code{\link[=baggr]{baggr()}}, specifically the \code{ppd} argument.
 }
 \examples{
 \donttest{

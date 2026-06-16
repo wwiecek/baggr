@@ -7,7 +7,7 @@
 #'
 #' _Baggr_ package provides a suite of models that work with both summary data and full data sets,
 #' to synthesise evidence collected from different groups, contexts or time periods.
-#' The [baggr] command automatically detects the data type and, by default, fits a partial
+#' The [baggr::baggr()] command automatically detects the data type and, by default, fits a partial
 #' pooling model (which some users may know as random effects models)
 #' with weakly informative priors by calling [Stan](https://mc-stan.org/) to carry
 #' out Bayesian inference. Modelling of variances or quantiles, standardisation and
@@ -17,7 +17,7 @@
 #' @section Getting help:
 #'
 #' This is only a simple package help file.
-#' For documentation of the main function for conducting analyses see [baggr].
+#' For documentation of the main function for conducting analyses see [baggr::baggr()].
 #' For description of models, data types and priors available in the package,
 #' try the built-in vignette (`vignette("baggr")`).
 #'

@@ -1,13 +1,13 @@
 #' Pooling metrics and related statistics for baggr
 #'
 #' Compute statistics relating to
-#' `pooling` in a given [baggr] meta-analysis model returns statistics, for
+#' `pooling` in a given [baggr::baggr()] meta-analysis model returns statistics, for
 #' either the entire model or individual groups, such as
 #' pooling statistic by Gelman & Pardoe (2006), _I-squared_, _H-squared_, or study weights;
 #' `heterogeneity` is a shorthand for `pooling(type = "total")`
 #' `weights` is shorthand for `pooling(metric = "weights")`
 #'
-#' @param bg a [baggr] model
+#' @param bg a [baggr::baggr()] model
 #' @param metric `"pooling"` for Gelman & Pardoe statistic _P_,
 #'               `"isq"` for I-squared statistic (_1-P_, Higgins & Thompson, 2002)
 #'               `"hsq"` for H squared statistic (_1/P_, ibid.);
@@ -23,7 +23,7 @@
 #' Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
 #' group-level estimates of treatment
 #' effect are "pooled" toward average treatment effect in the meta-analysis model.
-#' If `pooling = "none"` or `"full"` (which you specify when calling [baggr]),
+#' If `pooling = "none"` or `"full"` (which you specify when calling [baggr::baggr()]),
 #' then the values are always 0 or 1, respectively.
 #' If `pooling = "partial"`, the value is somewhere between 0 and 1.
 #' We can distinguish between pooling of individual groups and overall pooling in
@@ -41,7 +41,7 @@
 #' @section Group pooling:
 #'
 #' This is the calculation done by `pooling()` if `type = "groups"` (default).
-#' In a partial pooling model (see [baggr] and above), group _k_ (e.g. study) has
+#' In a partial pooling model (see [baggr::baggr()] and above), group _k_ (e.g. study) has
 #' standard error of treatment effect estimate, \eqn{se_k}.
 #' The treatment effect (across _k_ groups) is variable across groups, with
 #' hyper-SD parameter \eqn{\sigma_(\tau)}.
@@ -251,7 +251,7 @@ heterogeneity <- function(
   pooling(bg, metric, type = "total", summary = summary)
 
 #' @rdname pooling
-#' @param object [baggr] model for which to calculate group (study) weights
+#' @param object [baggr::baggr()] model for which to calculate group (study) weights
 #' @param ... Unused, please ignore.
 #' @export
 #' @importFrom stats weights

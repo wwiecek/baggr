@@ -6,3 +6,13 @@ paste3_formatter <- function(m, l, u, d){
          format(u,digits=d),
          "]")
 }
+
+extract_logpd_draws <- function(fit) {
+  out <- tryCatch(
+    rstan::extract(fit, "logpd[1]")[[1]],
+    error = function(e) NULL
+  )
+  if(is.null(out))
+    out <- rstan::extract(fit, "logpd")[[1]]
+  as.numeric(out)
+}

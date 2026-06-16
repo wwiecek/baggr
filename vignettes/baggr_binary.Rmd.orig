@@ -38,7 +38,8 @@ Here, we will show how to:
 There are certain aspects of modelling binary data that are not yet covered by _baggr_, but may be important for your data:
 
 * Directly modelling parameters relating to proportions (see "Model 3" in this [comprehensive tutorial with Stan](https://mc-stan.org/users/documentation/case-studies/pool-binary-trials.html))
-* [Understanding biases in reporting](https://handbook-5-1.cochrane.org/chapter_10/10_addressing_reporting_biases.htm)
+* Understanding biases in reporting; see Chapter 13 of the Cochrane Handbook
+  [@page_chapter_2024].
 * Modelling data on rates, ordered categorical data and more with generalised linear models. A good overview and examples are provided by [NICE DSU at University of Sheffield](https://nicedsu.sites.sheffield.ac.uk/).
 
 
@@ -343,7 +344,7 @@ df_rare_logor
 
 
 
-Note how the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. It is typical to [correct for rare events](https://handbook-5-1.cochrane.org/chapter_16/16_9_rare_events_including_zero_frequencies.htm) when analysing summary level data. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting the `rare_event_correction` argument.
+Note how the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. Corrections for rare events are discussed in Chapter 10 of the Cochrane Handbook [@deeks_chapter_2024]. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting the `rare_event_correction` argument.
 
 ```{r}
 pma01 <- prepare_ma(df_rare, effect = "logOR",
@@ -493,7 +494,7 @@ This section provides only a short example. To learn more about meta-regression 
 
 Two types of covariates may be present in your data:
 
-* Covariates that __change according to group unit__. In that case, the model accounting for the group covariates is a [meta-regression](https://handbook-5-1.cochrane.org/chapter_9/9_6_4_meta_regression.htm) model. It can be modelled on summary-level data.
+* Covariates that __change according to group unit__. In that case, the model accounting for the group covariates is a meta-regression model, as described in Chapter 10 of the Cochrane Handbook [@deeks_chapter_2024]. It can be modelled on summary-level data.
 * Covariates that __change according to individual unit__. Then, the model can be called a [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888). It has to be fitted to individual-level data. Note that the first case can also be accounted for by using a mixed model.
 
 In both cases we only need to name one extra argument to `baggr`: `covariates=`, followed by a vector of column names in input data. You should remember that your treatment effect estimate will vary a lot not only with choice of covariates, but also the contrasts that you use.

@@ -22,7 +22,7 @@ test_that("Error messages for wrong inputs are in place", {
                      "clustered", "cluster", "Ncluster",
                      "N_test", "K_test",
                      "test_y", "test_site", "test_treatment", "Nc", "X", "X_test",
-                     "M", "c"))
+                     "M", "c", "symmetric", "possible_selection"))
 })
 
 bg5_n <- expect_warning(baggr(df_binary, "logit", pooling = "none",
@@ -190,6 +190,74 @@ test_that("Plotting and printing works", {
 #   df_na <- df_binary[7:8,]; df_na$tau <- NULL
 #   expect_error(baggr(df_binary[1:6,], test_data = df_na), "must be of the same format as input")
 # })
+
+test_that("logit test_data uses training group indexing for predictive density", {
+  train <- data.frame(
+    group = c(
+      rep("Trial A", 8),
+      rep("Trial B", 8),
+      rep("Trial C", 8)
+    ),
+    treatment = rep(c(0, 0, 0, 0, 1, 1, 1, 1), 3),
+    outcome = c(
+      0, 0, 0, 1, 0, 1, 0, 1,
+      0, 1, 0, 1, 1, 1, 0, 1,
+      1, 1, 0, 1, 0, 1, 1, 1
+    )
+  )
+  test <- data.frame(
+    group = rep("Trial C", 4),
+    treatment = 1,
+    outcome = c(1, 1, 0, 1)
+  )
+
+  inp <- convert_inputs(train, model = "logit", quantiles = seq(.05, .95, .1),
+                        test_data = test, outcome = "outcome",
+                        group = "group", treatment = "treatment")
+  trial_c_idx <- match("Trial C", unique(train$group))
+  expect_equal(unique(inp$test_site), trial_c_idx)
+  expect_equal(inp$K_test, 1)
+
+  bg <- expect_warning(
+    baggr(train,
+          model = "logit",
+          pooling = "full",
+          pooling_control = "none",
+          prior_hypermean = normal(0, 5),
+          prior_control = normal(0, 5),
+          test_data = test,
+          iter = 120, warmup = 60, chains = 1, refresh = 0, seed = 137)
+  )
+
+  logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
+  baseline_draws <- rstan::extract(bg$fit, "baseline_k")[[1]][, trial_c_idx]
+  mu_draws <- rstan::extract(bg$fit, "mu")[[1]][, 1]
+  expected <- vapply(seq_along(logpd), function(i) {
+    eta <- baseline_draws[i] + mu_draws[i]
+    sum(dbinom(test$outcome, size = 1, prob = plogis(eta), log = TRUE))
+  }, numeric(1))
+  expect_equal(as.numeric(logpd), expected, tolerance = 1e-6)
+})
+
+test_that("logit test_data errors if test groups are absent from training", {
+  train <- data.frame(
+    group = rep(c("Trial A", "Trial B"), each = 6),
+    treatment = rep(c(0, 0, 0, 1, 1, 1), 2),
+    outcome = c(0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1)
+  )
+  test <- data.frame(
+    group = rep("Trial C", 4),
+    treatment = 1,
+    outcome = c(1, 0, 1, 1)
+  )
+
+  expect_error(
+    convert_inputs(train, model = "logit", quantiles = seq(.05, .95, .1),
+                   test_data = test, outcome = "outcome",
+                   group = "group", treatment = "treatment"),
+    "all test groups must be present in training data"
+  )
+})
 
 
 # test helpers -----
@@ -368,4 +436,31 @@ test_that("Prior specifications for baselines work", {
                      prior_control = multinormal(c(0,0), diag(2)),
                      iter = 150, chains = 2, refresh = 0,
                      show_messages = F))
+})
+
+
+test_that("Control priors are hidden when control pooling is removed", {
+
+  skip_on_cran()
+
+  msg <- testthat::capture_messages(
+    expect_warning(
+      baggr(df_binary, "logit", pooling = "none",
+            pooling_control = "remove",
+            iter = 150, chains = 1, refresh = 0,
+            show_messages = TRUE)
+    )
+  )
+
+  bg_remove <- expect_warning(
+    baggr(df_binary, "logit", pooling = "none",
+          pooling_control = "remove",
+          iter = 150, chains = 1, refresh = 0,
+          show_messages = FALSE)
+  )
+
+  expect_false(any(grepl("prior_control", msg, fixed = TRUE)))
+  expect_false(any(grepl("control_sd", msg, fixed = TRUE)))
+  expect_false("control" %in% names(bg_remove$prior_dist))
+  expect_false("control_sd" %in% names(bg_remove$prior_dist))
 })

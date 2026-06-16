@@ -23,6 +23,23 @@ test_that("Wrong prior specifications crash baggr()", {
 
 test_that("Prior specification via different arguments", {
   custom_prior <- list(hypermean = normal(0, 10), hypersd = uniform(0, 20))
+  expect_message(
+    suppressWarnings(
+      baggr(df_pooled, "rubin",
+            iter = 20, chains = 1, refresh = 0, seed = 1990,
+            prior = custom_prior)
+    ),
+    NA
+  )
+  expect_message(
+    suppressWarnings(
+      baggr(df_pooled, "rubin",
+            iter = 20, chains = 1, refresh = 0, seed = 1990,
+            prior_hypermean = normal(0, 2),
+            prior = custom_prior)
+    ),
+    "Both 'prior\\$' and 'prior_' arguments specified. Using 'prior' only."
+  )
   bg_prior1 <- expect_warning(baggr(df_pooled, "rubin",
                                     iter = 200, chains = 2, refresh = 0, seed = 1990,
                                     prior_hypermean = normal(0, 2),
@@ -51,6 +68,48 @@ test_that("Prior specification via different arguments", {
                                     hypermean = normal(0,5)),
                        refresh = 0),
                  "names used in the prior")
+})
+
+test_that("prior_sigma is wired via prior_ arguments and sigma/selection names are accepted", {
+  df_full <- data.frame(
+    group = c("A", "A", "A", "A", "B", "B", "B", "B"),
+    treatment = c(0, 0, 1, 1, 0, 0, 1, 1),
+    outcome = c(0.1, 0.2, 0.4, 0.5, -0.2, -0.1, 0.2, 0.3),
+    stringsAsFactors = FALSE
+  )
+
+  expect_message(
+    expect_error(
+      baggr(df_full,
+            model = "rubin_full",
+            prior = list(hypermean = lkj(2)),
+            prior_sigma = uniform(0.1, 1),
+            iter = 10, chains = 1, refresh = 0, seed = 19),
+      "Prior for hypermean must be one of the following"
+    ),
+    "Both 'prior\\$' and 'prior_' arguments specified. Using 'prior' only."
+  )
+
+  expect_warning(
+    expect_error(
+      baggr(df_full,
+            model = "rubin_full",
+            prior = list(hypermean = lkj(2), sigma = uniform(0.1, 1), selection = normal(0, 1)),
+            iter = 10, chains = 1, refresh = 0, seed = 19),
+      "Prior for hypermean must be one of the following"
+    ),
+    NA
+  )
+
+  expect_error(
+    baggr(df_full,
+          model = "rubin_full",
+          prior_hypermean = normal(0, 1),
+          prior_hypersd = normal(0, 1),
+          prior_sigma = lkj(2),
+          iter = 10, chains = 1, refresh = 0, seed = 19),
+    "Prior for sigma must be one of the following"
+  )
 })
 
 test_that("All possible prior dist's work", {

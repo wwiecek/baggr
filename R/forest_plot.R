@@ -6,7 +6,7 @@
 #' estimate underneath. This behaviour can be modified to display pooled
 #' group estimates.
 #'
-#' @param bg a [baggr] class object
+#' @param bg a [baggr::baggr()] class object
 #' @param show if `"inputs"`, then plotted points and lines
 #'             correspond to raw inputs for each group;
 #'             if `"posterior"` -- to posterior distribution;

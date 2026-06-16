@@ -7,7 +7,7 @@
 selection(bg, summary = TRUE, interval = 0.95)
 }
 \arguments{
-\item{bg}{a \link{baggr} model fitted with a selection-enabled likelihood
+\item{bg}{a \code{\link[=baggr]{baggr()}} model fitted with a selection-enabled likelihood
 (currently \code{model = "rubin"}).}
 
 \item{summary}{logical; if \code{TRUE}, returns summary statistics (mean and
@@ -18,10 +18,22 @@ used only when \code{summary = TRUE}.}
 }
 \value{
 If \code{summary = FALSE}, a matrix of posterior draws where each column
-corresponds to a |z|-interval. Otherwise, a matrix with one row per interval
-and columns containing the mean and bounds of the uncertainty interval.
+corresponds to one non-reference |z|-interval. Otherwise, a matrix with one
+row per interval and columns containing the mean and bounds of the
+uncertainty interval. The final highest-|z| interval is fixed to relative
+probability 1 and is therefore not returned.
 }
 \description{
 Extracts the posterior draws (or summaries) of the selection-model parameters
 that describe the relative publication probabilities across |z|-intervals.
+In Rubin summary-data models, \code{z = tau / se}; for example,
+\code{selection = 1.96} estimates the relative publication probability below the
+conventional two-sided 5\% normal threshold compared with the implicit
+highest-|z| interval.
+}
+\details{
+\code{selection()} returns draws or summaries of the selection weights only. These
+are relative publication probabilities, not treatment effects or corrected
+treatment effects. The highest-|z| interval is the reference category and is
+fixed to 1, so it is not returned.
 }

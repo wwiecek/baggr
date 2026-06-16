@@ -7,7 +7,7 @@
 fixed_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
 }
 \arguments{
-\item{bg}{a \link{baggr} model}
+\item{bg}{a \code{\link[=baggr]{baggr()}} model}
 
 \item{summary}{logical; if \code{TRUE} returns summary statistic instead of all MCMC samples}
 

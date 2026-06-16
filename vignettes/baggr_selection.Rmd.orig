@@ -1,0 +1,187 @@
+---
+title: "Publication bias and selection models with baggr"
+author: "Witold Wiecek"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Publication bias and selection models with baggr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: baggr.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 7,
+  fig.height = 4.5,
+  fig.path = "fig/selection-",
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+library(baggr)
+```
+
+This vignette shows a short worked example of assessing and adjusting for publication
+bias in a meta-analysis using _baggr_. It assumes that users are already familiar with
+publication bias, funnel plots, and selection models.
+
+# Data
+
+We use the vitamin A supplementation and child mortality
+data from @imdad_vitamin_2022, included in _baggr_ as `vitamin_a`.
+
+For this example, the outcome is the log risk ratio for all-cause child mortality.
+Negative values indicate lower mortality in the vitamin A supplementation arm.
+
+```{r}
+head(vitamin_a)
+summary(exp(vitamin_a$tau))
+```
+
+See `?vitamin_a` for more information.
+
+The studies are heterogeneous and vary substantially in precision.
+
+First fit the usual Rubin summary-data model. We label the estimand as a log
+risk ratio so that plots and summaries are easier to read.
+
+```{r fit-unadjusted, include = FALSE}
+set.seed(1990)
+bg_va <- baggr(vitamin_a, effect = "log risk ratio",
+               iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-unadjusted-code, eval = FALSE}
+bg_va <- baggr(vitamin_a, effect = "log risk ratio")
+```
+
+```{r}
+bg_va
+```
+
+# Funnel plot
+
+A funnel plot compares study-level effects with their standard errors. In the
+absence of small-study effects or unexplained heterogeneity, points should be
+roughly symmetric around the pooled estimate.
+
+```{r}
+funnel(bg_va)
+```
+
+The dashed lines include both sampling uncertainty and the estimated
+between-study heterogeneity. If we fitted a fixed-effects model (`pooling = "full"`),
+the funnel shape would have been a triangle; partial pooling gives it
+more of a funnel shape.
+
+# Selection adjustment
+
+Selection models make the publication process explicit. For the canonical treatment,
+see @hedges_modeling_1992 and @andrews_identification_2019 for framing of the same
+problem in econometric literature.
+In _baggr_, a selection model like in the above publications is implemented within
+the Bayesian posterior calculation, using custom Stan functions. 
+
+Briefly, but more concretely: 
+if $y_k$ is the reported estimate and $s_k$ is its standard error, then
+$z_k = y_k / s_k$, and the probability a study is observed can vary by the
+interval containing $z_k$. The shorthand `selection = 1.96` fits a symmetric
+two-sided model, splitting studies at the usual 5 percent normal threshold,
+$|z_k| = 1.96$.
+
+The fitted selection parameters are relative publication probabilities. With
+one cut-point, _baggr_ estimates one weight for $|z_k| < 1.96$ and normalises
+the reference interval, $|z_k| \ge 1.96$, to 1. For an observed study, the usual
+normal likelihood is multiplied by the weight for the interval containing
+$z_k$. It is then divided by the model-implied probability that a result would
+be observed at all, summing over all z-intervals and their weights.
+
+For the partial-pooling Rubin model this normalising term is calculated using
+the _marginal_ distribution of the observed estimate,
+$y_k \sim N(\mu + x_k^\top\beta, \tau^2 + s_k^2)$ when covariates are present.
+
+
+```{r fit-selection-simple, include = FALSE}
+set.seed(1991)
+bg_va_sel <- baggr(vitamin_a, selection = 1.96,
+                   effect = "log risk ratio",
+                   iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-selection-simple-code, eval = FALSE}
+bg_va_sel <- baggr(vitamin_a, selection = 1.96,
+                   effect = "log risk ratio")
+```
+
+```{r}
+bg_va_sel
+selection(bg_va_sel)
+```
+
+The `selection()` output reports the relative publication probability for the
+lower `|z|` interval. The highest `|z|` interval is the reference category, fixed
+to 1. Values below 1 mean that less statistically significant estimates are inferred
+to be less likely to appear in the observed literature.
+
+More thresholds can be used. For example, the following model separates
+two-sided p-values below 10 percent, between 10 and 5 percent, between 5 and
+1 percent, and beyond 1 percent.
+
+However, please note that with only a modest number of studies, selection models can be weakly
+identified. Choice of three cut-off points is done for demonstration only.
+
+```{r fit-selection-multi, include = FALSE}
+set.seed(1992)
+bg_va_sel_multi <- baggr(vitamin_a, selection = c(1.64, 1.96, 2.58),
+                         effect = "log risk ratio",
+                         iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-selection-multi-code, eval = FALSE}
+bg_va_sel_multi <- baggr(vitamin_a, selection = c(1.64, 1.96, 2.58),
+                         effect = "log risk ratio")
+```
+
+```{r}
+selection(bg_va_sel_multi)
+```
+
+For explicit control, users can pass a list with the z cut-points, whether the model is
+symmetric, and which studies could have been selected. Here the model uses
+one-sided z intervals. This is mainly useful when the direction of selection is
+part of the substantive assumption:
+
+```{r fit-selection-list, include = FALSE}
+set.seed(1993)
+selection_one_sided <- list(
+  z = c(1.64, 1.96),
+  symmetrical = FALSE,
+  possible = rep(1, nrow(vitamin_a))
+)
+bg_va_sel_one_sided <- baggr(vitamin_a, selection = selection_one_sided,
+                             effect = "log risk ratio",
+                             iter = 1000, chains = 2, refresh = 0)
+```
+
+```{r fit-selection-list-code, eval = FALSE}
+selection_one_sided <- list(
+  z = c(1.64, 1.96),
+  symmetrical = FALSE,
+  possible = rep(1, nrow(vitamin_a))
+)
+
+bg_va_sel_one_sided <- baggr(vitamin_a, selection = selection_one_sided,
+                             effect = "log risk ratio")
+```
+
+```{r}
+selection(bg_va_sel_one_sided)
+```
+
+
+
+# References

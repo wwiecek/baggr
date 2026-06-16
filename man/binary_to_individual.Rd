@@ -21,7 +21,7 @@ binary_to_individual(
 to retain when expanding into individual-level \code{data.frame}}
 
 \item{rename_group}{If \code{TRUE} (default), this will rename the grouping variable
-to \code{"group"}, making it easier to work with \link{baggr}
+to \code{"group"}, making it easier to work with \code{\link[=baggr]{baggr()}}
 
 See \code{vignette("baggr_binary")} for an example of use and notation details.}
 }
@@ -30,7 +30,7 @@ A data frame with columns \code{group}, \code{outcome} and \code{treatment}.
 }
 \description{
 This is a helper function that is typically used automatically by some of \emph{baggr} functions,
-such as when running \code{model="logit"} in \link{baggr}, when summary-level data are supplied.
+such as when running \code{model="logit"} in \code{\link[=baggr]{baggr()}}, when summary-level data are supplied.
 }
 \examples{
 df_yusuf <- read.table(text="

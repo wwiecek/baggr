@@ -73,12 +73,12 @@ some columns may be renamed or transformed (see the arguments above).
 \description{
 Allows for one-way conversion from full to summary data
 or for calculation of effects for binary data.
-Usually used before calling \link{baggr}.
+Usually used before calling \code{\link[=baggr]{baggr()}}.
 Input must be pre-formatted appropriately.
 }
 \details{
 The conversions done by this function are not typically needed and may happen automatically
-when \code{data} is given to \link{baggr}. However, this function can be used to explicitly
+when \code{data} is given to \code{\link[=baggr]{baggr()}}. However, this function can be used to explicitly
 convert from full to reduced (summarised) data without analysing it in any model.
 It can be useful for examining your data and generating summary tables.
 
@@ -106,7 +106,7 @@ prepare_ma(df_rare_ind, effect = "logOR",
            rare_event_correction = 0.5)
 }
 \seealso{
-\link{convert_inputs} for how any type of data is (internally) converted into
+\code{\link[=convert_inputs]{convert_inputs()}} for how any type of data is (internally) converted into
 a list of Stan inputs; vignette \code{baggr_binary} for more details about
 rare event corrections
 }

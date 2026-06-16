@@ -39,13 +39,14 @@ If \code{newdata} are specified, an array is returned instead, where the first d
 corresponds to rows of \code{newdata}.
 }
 \description{
-The function \code{effect_draw} and its alias, \code{posterior_predict}, take the sample
+The function \code{effect_draw} (or its alias \code{predict()} applied to a \code{baggr} model) takes the sample
 of hyperparameters from a \link{baggr} model
-(typically hypermean and hyper-SD, which you can see using \link{treatment_effect})
+(typically hypermean and hyper-SD, which you can see using \link{treatment_effect},
+or directly with \link{hypermean} and \link{hypersd})
 and draws values of new realisations of treatment effect, i.e. an additional draw from the "population of studies".
-This can be used for both prior and posterior draws, depending on \link{baggr} model.
+This can be used for both prior and posterior draws, depending on \code{\link[=baggr]{baggr()}} model.
 By default this is done for a single new effect, but for meta-regression models
-you can specify values of covariates with the \code{newdata} argument, same as in \link{predict}.
+you can specify values of covariates with the \code{newdata} argument, same as in \link{predict.baggr}.
 }
 \details{
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
@@ -54,19 +55,19 @@ heterogeneity (see Riley et al, 2011, for a simple introduction) and for study d
 as priors in analysis of future data (since the draws can be seen as an expected treatment effect
 in a hypothetical study).
 
-The default number of samples is the same as what is returned by Stan model implemented in \link{baggr},
+The default number of samples is the same as what is returned by Stan model implemented in \code{\link[=baggr]{baggr()}},
 (depending on such options as \code{iter}, \code{chains}, \code{thin}). If \code{n} is larger than what is available
 in Stan model, we draw values with replacement. This is not recommended and warning is printed in
 these cases.
 
-Under default settings in \link{baggr}, a \emph{posterior} predictive distribution is obtained. But
+Under default settings in \code{\link[=baggr]{baggr()}}, a \emph{posterior} predictive distribution is obtained. But
 \code{effect_draw} can also be used for \emph{prior} predictive distributions when
-setting \code{ppd=T} in \link{baggr}. The two outputs work exactly the same way.
+setting \code{ppd=T} in \code{\link[=baggr]{baggr()}}. The two outputs work exactly the same way.
 
 If the \code{baggr} model used by the function is a meta-regression
 (i.e. a \code{baggr} model with \code{covariates}), by specifying
 the predicted values can be adjusted for known levels of fixed covariates by
-passing \code{newdata} (same as in \link{predict}). If no adjustment is made, the
+passing \code{newdata} (same as in \link{predict.baggr}). If no adjustment is made, the
 returned value should be interpreted as the effect when all covariates are 0.
 }
 \references{
@@ -76,5 +77,6 @@ Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 }
 \seealso{
 \link{treatment_effect} returns samples from hypermean(s) and hyper-SD(s)
-which are used by this function
+which are used by this function; \link{hypermean} and \link{hypersd} are
+shorthands for these components
 }

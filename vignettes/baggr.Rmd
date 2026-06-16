@@ -159,7 +159,7 @@ For individual-level data (`outcome`, `treatment`, `group`), _baggr_ supports th
 | $\mu$-$\tau$ individual-level model (`"mutau_full"`) | `outcome`, `treatment`, `group` (optional individual-level `covariates`) | Partial-pooling form jointly pools $(\mu_k, \tau_k)$ with a multivariate normal hierarchy and correlation; none/full pooling use the corresponding independent/common parameter special cases. | `prior_hypermean`, `prior_hypersd`, `prior_hypercor`, `prior_control_sd` (for baseline SD under partial baseline pooling), `prior_sigma`, `prior_beta`. |
 | Logistic individual-level model (`"logit"`) | `outcome` (0/1), `treatment`, `group` (optional individual-level `covariates`) | Log-odds treatment effects are pooled across groups (`none`/`partial`/`full`); control-arm log-odds can be pooled separately via `pooling_control`. | `prior_hypermean`, `prior_hypersd`, `prior_control`, `prior_control_sd`, `prior_beta`. |
 
-> `selection = ...` (publication selection on $|z| = |\tau / se|$) is currently available only for the summary-data Rubin model (`model = "rubin"`). Use `prior_selection` to set priors on relative publication probabilities across the specified $|z|$ intervals.
+> `selection = ...` is currently available only for the summary-data Rubin model (`model = "rubin"`). It models publication selection on absolute z-values, $|z| = |\tau / se|$, where $\tau$ is the reported estimate and `se` is its standard error. For example, `selection = 1.96` splits studies at the conventional two-sided 5% normal threshold, and `selection = c(1.96, 2.58)` adds an approximate 1% threshold. Use `prior_selection` to set priors on the relative publication probabilities across the specified $|z|$ intervals.
 
 <!-- | Quantiles (`"quantiles"`)         | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  | -->
 
@@ -210,6 +210,25 @@ print(baggr_schools)
 ```
 
 <!-- This is quite similar to the output from the version of the model suggested in ["How to use rstan"](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started) tutorial, the small difference probably arising from the different default priors. -->
+
+### Examining treatment and study effects
+
+The overall treatment effect and heterogeneity parameters are available with
+`treatment_effect()`. If you only need the mean effect or its hyper-SD, use the
+shorter `hypermean()` and `hypersd()` functions.
+
+```{r}
+hypermean(baggr_schools)
+hypersd(baggr_schools)
+```
+
+Study-level posterior effects are available with `group_effects()`; the alias
+`study_effects()` returns the same object.
+
+```{r}
+head(group_effects(baggr_schools, summary = TRUE))
+treatment_effect(baggr_schools, summary = TRUE)
+```
 
 ### Choosing priors 
 
@@ -458,5 +477,17 @@ We can compare those fits with `loo_compare`, which gives use the differences in
 ```{r}
 loo_compare(loocv_res, loocv_full)
 ```
+
+## Publication bias assessment
+
+_Baggr_ includes basic tools for assessing publication bias and small-study
+effects. `funnel_plot()` provides a graphical check of how study-level effects
+vary with precision, while the `selection` argument in `baggr()` fits selection
+models for Rubin summary-data meta-analyses. The fitted relative publication
+probabilities can be summarised with `selection()`.
+
+These tools are described in more detail in `vignette("baggr_selection")`.
+Funnel asymmetry and selection-model adjustments should be interpreted with
+care: they may reflect publication bias, genuine heterogeneity, or both.
 
 ## References

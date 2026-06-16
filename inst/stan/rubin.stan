@@ -10,7 +10,7 @@ data {
   //data
   int<lower=0> K; // number of groups
   vector[K] theta_hat_k;
-  vector<lower=0>[K] se_theta_k;
+  vector<lower=1e-12>[K] se_theta_k;
   int<lower=0> Nc; //number of covariates (fixed effects)
   matrix[K,Nc] X;  //covariate values (design matrix for FE)
 
@@ -25,11 +25,13 @@ data {
   //test data (cross-validation)
   int<lower=0> K_test;
   vector[K_test] test_theta_hat_k;
-  vector<lower=0>[K_test] test_se_theta_k;
+  vector<lower=1e-12>[K_test] test_se_theta_k;
   matrix[K_test,Nc] X_test;  //covariate values (design matrix for FE)
 
   //selection model
   int<lower=0> M;                   // number of cut-points
+  int<lower=0, upper = 1> symmetric; // 1 if symmetric cutoffs, 0 if not
+  int<lower=0, upper = 1> possible_selection[K]; // estimates with 0 are never not published
   vector<lower=0>[M] c;             // cut-off values, e.g., (1.96, 2.58), ascending
   // prior for selection weights (on log-scale!)
   int prior_sel_fam;
@@ -82,7 +84,8 @@ model {
         target += sel_loglik_one(theta_hat_k[k],
                                  eta[k] + fe_k[k],
                                  se_theta_k[k],
-                                 c, omega);
+                                 c, omega,
+                                 symmetric, possible_selection[k]);
     }
   } else if (pooling_type == 1) { //partial
     mu[1]  ~ realprior(prior_hypermean_fam, prior_hypermean_val);
@@ -91,11 +94,16 @@ model {
     if (M == 0) {
       theta_hat_k ~ normal(theta_k + fe_k, se_theta_k);
     } else {
-      for (k in 1:K)
-        target += sel_loglik_one(theta_hat_k[k],
-                                 theta_k[k] + fe_k[k],
-                                 se_theta_k[k],
-                                 c, omega);
+      for (k in 1:K) {
+        real pred_sd = sqrt(square(tau[1]) + square(se_theta_k[k]));
+        target += sel_loglik_general(theta_hat_k[k],
+                                     mu[1] + fe_k[k],
+                                     theta_k[k] + fe_k[k],
+                                     pred_sd,
+                                     se_theta_k[k],
+                                     c, omega,
+                                     symmetric, possible_selection[k]);
+      }
     }
   } else { //full
     mu[1] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
@@ -103,30 +111,54 @@ model {
       theta_hat_k ~ normal(mu[1] + fe_k, se_theta_k);
     } else {
       for (k in 1:K)
-        target += sel_loglik_one(theta_hat_k[k],
-                                 mu[1] + fe_k[k],
-                                 se_theta_k[k],
-                                 c, omega);
+        target += sel_loglik_general(theta_hat_k[k],
+                                     mu[1] + fe_k[k],
+                                     mu[1] + fe_k[k],
+                                     se_theta_k[k],
+                                     se_theta_k[k],
+                                     c, omega,
+                                     symmetric, possible_selection[k]);
     }
   }
 
 }
 
 generated quantities {
-  array[K_test > 0] real logpd;
+  real logpd = 0;
   vector[K_test] fe_k_test;
   if(K_test > 0){
     if(Nc == 0)
       fe_k_test = rep_vector(0.0, K_test);
     else
       fe_k_test = X_test*beta;
-    logpd[1] = 0;
     for(k in 1:K_test){
-      if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, sqrt(tau[1]^2 + test_var_theta_k));
-      if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test, test_se_theta_k);
+      if(pooling_type == 1) {
+        real pred_sd = sqrt(square(tau[1]) + test_var_theta_k[k]);
+        if (M == 0)
+          logpd += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test[k],
+                               pred_sd);
+        else
+          logpd += sel_loglik_general(test_theta_hat_k[k],
+                                      mu[1] + fe_k_test[k],
+                                      theta_k[k] + fe_k_test[k],
+                                      pred_sd,
+                                      test_se_theta_k[k],
+                                      c, omega,
+                                      symmetric, possible_selection[k]);
+      }
+      if(pooling_type == 2) {
+        if (M == 0)
+          logpd += normal_lpdf(test_theta_hat_k[k] | mu[1] + fe_k_test[k],
+                               test_se_theta_k[k]);
+        else
+          logpd += sel_loglik_general(test_theta_hat_k[k],
+                                      mu[1] + fe_k_test[k],
+                                      mu[1] + fe_k_test[k],
+                                      test_se_theta_k[k],
+                                      test_se_theta_k[k],
+                                      c, omega,
+                                      symmetric, possible_selection[k]);
+      }
     }
   }
 }
-

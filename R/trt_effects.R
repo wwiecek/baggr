@@ -5,7 +5,7 @@
 #' both hypermean and hyperSD (as a list of length 2),
 #' whereas `hypermean` and `hypersd` can be used as shorthands.
 #'
-#' @param bg a [baggr] model
+#' @param bg a [baggr::baggr()] model
 #' @param summary logical; if TRUE returns summary statistics as explained below.
 #' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
 #' @param transform a transformation to apply to the result, should be an R function;
@@ -110,7 +110,7 @@ hypersd <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRU
 
 #' Correlation between mu and tau in a baggr model
 #'
-#' @param bg  a [baggr] model where `model = "mutau"`
+#' @param bg  a [baggr::baggr()] model where `model = "mutau"`
 #' @param summary logical; if TRUE returns summary statistics as explained below.
 #' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
 #' @return a vector of values

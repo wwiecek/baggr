@@ -7,8 +7,8 @@
 convert_inputs(
   data,
   model,
-  quantiles,
   effect = NULL,
+  quantiles = seq(0.05, 0.95, 0.1),
   group = "group",
   outcome = "outcome",
   treatment = "treatment",
@@ -23,14 +23,14 @@ convert_inputs(
 \item{data}{`data.frame`` with desired modelling input}
 
 \item{model}{valid model name used by baggr;
-see \link{baggr} for allowed models
+see \code{\link[=baggr]{baggr()}} for allowed models
 if \code{model = NULL}, this function will try to find appropriate model
 automatically}
 
-\item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
-
 \item{effect}{Only matters for binary data, use \code{logOR}, \code{logRR}, or \code{RD}. Otherwise ignore.
 See \link{prepare_ma} for details.}
+
+\item{quantiles}{vector of quantiles to use (only applicable if \code{model = "quantiles"})}
 
 \item{group}{name of the column with grouping variable}
 
@@ -40,31 +40,33 @@ See \link{prepare_ma} for details.}
 
 \item{cluster}{name of the column with clustering variable for analysing c-RCTs}
 
-\item{selection}{same as in \link{baggr}; vector of cut-offs for |z| value in selection model}
+\item{selection}{same as in \code{\link[=baggr]{baggr()}}; either a numeric vector of
+absolute z-value cut-points or a named list with elements
+\code{z}, \code{symmetrical} and \code{possible}}
 
 \item{covariates}{Character vector with column names in \code{data}.
 The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model.}
 
 \item{test_data}{same format as \code{data} argument, gets left aside for
-testing purposes (see \link{baggr})}
+testing purposes (see \code{\link[=baggr]{baggr()}})}
 
 \item{silent}{Whether to print messages when evaluated}
 }
 \value{
-R structure that's appropriate for use by \link{baggr} Stan models;
+R structure that's appropriate for use by \code{\link[=baggr]{baggr()}} Stan models;
 \code{group_label}, \code{model}, \code{effect} and \code{n_groups} are included as attributes
-and are necessary for \link{baggr} to work correctly
+and are necessary for \code{\link[=baggr]{baggr()}} to work correctly
 }
 \description{
 Converts data to a list of inputs suitable for Stan models,
 checks integrity of data and suggests the appropriate default model
 if needed. Typically all of this is
-done automatically by \link{baggr}, so \strong{this function is included only for debugging}
+done automatically by \code{\link[=baggr]{baggr()}}, so \strong{this function is included only for debugging}
 or running (custom) models "by hand".
 }
 \details{
-Typically this function is only called within \link{baggr} and you do
+Typically this function is only called within \code{\link[=baggr]{baggr()}} and you do
 not need to use it yourself. It can be useful to understand inputs
 or to run models which you modified yourself.
 }

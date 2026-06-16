@@ -1,12 +1,12 @@
 #' (Run and) compare multiple baggr models
 #'
-#' @description Compare multiple [baggr] models by either
+#' @description Compare multiple [baggr::baggr()] models by either
 #' providing multiple already existing models as (named) arguments or
-#' passing parameters necessary to run a [baggr] model.
+#' passing parameters necessary to run a [baggr::baggr()] model.
 #'
 #' @param ... Either some (at least 1) objects of class `baggr`
 #'            (you should name your objects, see the example below)
-#'            or the same arguments you'd pass to [baggr].
+#'            or the same arguments you'd pass to [baggr::baggr()].
 #'            In the latter case you must specify `what` to compare.
 #' @param what  One of `"pooling"` (comparison between no, partial and
 #'              full pooling) or `"prior"` (comparison between prior and
@@ -37,7 +37,7 @@
 #' will run fully/partially/un-pooled models and then compare them,
 #' or `"prior"` which will generate estimates without the data
 #' and compare them to the model with the full data. For more
-#' details see [baggr], specifically the `ppd` argument.
+#' details see [baggr::baggr()], specifically the `ppd` argument.
 #' @examples \donttest{
 #' # Most basic comparison between no, partial and full pooling
 #' # (This will run the models)

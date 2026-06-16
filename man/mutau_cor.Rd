@@ -7,7 +7,7 @@
 mutau_cor(bg, summary = FALSE, interval = 0.95)
 }
 \arguments{
-\item{bg}{a \link{baggr} model where \code{model = "mutau"}}
+\item{bg}{a \code{\link[=baggr]{baggr()}} model where \code{model = "mutau"}}
 
 \item{summary}{logical; if TRUE returns summary statistics as explained below.}
 
