@@ -1,0 +1,83 @@
+url: https://wwiecek.github.io/baggr/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+
+articles:
+- title: Tutorials
+  navbar: ~
+  contents:
+  - baggr
+  - baggr_binary
+  - baggr_selection
+
+reference:
+- title: Model fitting
+  contents:
+  - baggr
+- title: Data preparation
+  contents:
+  - prepare_ma
+  - convert_inputs
+  - binary_to_individual
+- title: Priors and selection models
+  contents:
+  - priors
+  - selection
+- title: Effect summaries and prediction
+  contents:
+  - group_effects
+  - treatment_effect
+  - fixed_effects
+  - random_effects
+  - effect_draw
+  - predict.baggr
+  - mutau_cor
+  - print.baggr
+- title: Plotting
+  contents:
+  - plot.baggr
+  - baggr_plot
+  - effect_plot
+  - forest_plot
+  - funnel_plot
+  - bubble
+  - labbe
+  - mint
+  - plot_quantiles
+  - baggr_theme_set
+  - single_comp_plot
+- title: Model comparison and pooling
+  contents:
+  - baggr_compare
+  - loocv
+  - loo_compare
+  - pooling
+  - plot.baggr_compare
+  - plot.baggr_cv
+  - print.baggr_compare
+  - print.baggr_cv
+  - print.compare_baggr_cv
+- title: Example datasets
+  contents:
+  - schools
+  - microcredit
+  - microcredit_simplified
+  - vitamin_a
+  - yusuf
+  - chicks
+  - data_spike
+- title: internal
+  contents:
+  - baggr-package
+  - add_color_to_plot
+  - get_order
+  - is.baggr_cv
+  - prepare_prior
+  - print_dist
+  - set_prior_val

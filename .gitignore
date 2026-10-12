@@ -19,3 +19,4 @@ src/*.h
 src/Makevars
 src/Makevars.win
 *.so
+/docs/

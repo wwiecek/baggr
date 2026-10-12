@@ -89,14 +89,20 @@ for leave-one-group-out cross-validation, allowing us to then compare
 and select models via `loo_compare()`. Forest plots and plots of
 treatment effects are available.
 
+See the [documentation website](https://wwiecek.github.io/baggr/) for the
+function reference and tutorials.
+
 Try `vignette('baggr')` for an overview of these functions and an
-example of meta-analysis workflow with `baggr`. If working with binary
-data, try `vignette("baggr_binary")`. Compiled vignettes are available
+example of meta-analysis workflow with `baggr`
+([read online](https://wwiecek.github.io/baggr/articles/baggr.html)).
+If working with binary data, try `vignette("baggr_binary")`
+([read online](https://wwiecek.github.io/baggr/articles/baggr_binary.html)).
+Compiled vignettes are available
 [on CRAN](https://cran.r-project.org/web/packages/baggr/index.html).
 
 ## Current release
 
-# Included in baggr v0.8.2 (2026):
+### Included in baggr v0.8.2 (2026):
 
   - Meta-analysis of continuous and binary outcomes
   - Both full and aggregate data sets can be used
@@ -112,4 +118,5 @@ data, try `vignette("baggr_binary")`. Compiled vignettes are available
     \|estimate / standard error\| intervals (`selection = ...`)
   - Funnel plots for fitted objects via `funnel_plot()`
 
-Check [NEWS.md](NEWS.md) for more information on recent changes to the package.
+Check the [release notes](https://wwiecek.github.io/baggr/news/index.html)
+for more information on recent changes to the package.
