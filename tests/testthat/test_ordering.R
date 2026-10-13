@@ -1,6 +1,6 @@
 df_groups <- data.frame(model = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L,
                                    1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L),
-                                 .Label = c("Model 1", "Model 2"
+                                 levels = c("Model 1", "Model 2"
                                    ), class = "factor"),
                lci = c(1.49244645034209, -2.27232133279528,
                        -10.195627730385, -3.42331519154288, -7.2582175791452, -7.50889239357948,
