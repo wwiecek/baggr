@@ -340,3 +340,44 @@ test_that("forest annotations follow the selected input or posterior quantity", 
   }
   expect_error(forest_plot(bg,show="covariates",print="inputs"), "require")
 })
+
+test_that("forest plots draw means outside narrow central intervals", {
+  mock_interval_extract()
+  bg <- interval_fixture()
+  mu <- attr(bg$fit, "draws")$mu
+  drawn <- list()
+  drawn_positions <- numeric()
+  draw_ci <- function(lower_limit, estimate, upper_limit, ...) {
+    drawn[[length(drawn) + 1]] <<- c(lower = lower_limit, mean = estimate,
+                                    upper = upper_limit)
+    drawn_positions <<- c(drawn_positions, grid::convertX(
+      grid::unit(estimate, "native"), "npc", valueOnly = TRUE))
+    forestplot::fpDrawNormalCI(lower_limit, estimate, upper_limit, ...)
+  }
+  plot_path <- tempfile(fileext = ".pdf")
+  grDevices::pdf(plot_path)
+  tryCatch({
+    for(xlog in c(FALSE, TRUE)) {
+      drawn <- list()
+      drawn_positions <- numeric()
+      fp <- forest_plot(bg, show = "posterior", prob = .05,
+                        fn.ci_norm = draw_ci, boxsize = .15, xlog = xlog)
+      expected <- c(lower = unname(quantile(mu, .475)), mean = mean(mu),
+                    upper = unname(quantile(mu, .525)))
+      if(xlog) expected <- log(expected)
+      expect_gt(expected["mean"], expected["upper"])
+      expect_equal(unname(fp$estimates[5,c("lower","mean","upper"),1]),
+                   unname(expected))
+      expect_gte(max(fp$xticks), expected["mean"])
+      print(fp)
+      expect_length(drawn, bg$n_groups + 1)
+      expect_true(all(drawn_positions >= 0 & drawn_positions <= 1))
+      expect_equal(unname(drawn[[length(drawn)]]), unname(expected))
+    }
+    expect_error(forest_plot(bg, prob = .05, xlog = TRUE, clip = c(-1, 2)),
+                 "exponential form")
+  }, finally = {
+    grDevices::dev.off()
+    unlink(plot_path)
+  })
+})

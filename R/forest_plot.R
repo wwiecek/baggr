@@ -4,7 +4,8 @@
 #' calling \link[forestplot]{forestplot} By default the forest plot
 #' displays raw (unpooled) estimates for groups and the treatment effect
 #' estimate underneath. This behaviour can be modified to display pooled
-#' group estimates.
+#' group estimates. Posterior intervals are central credible intervals; for
+#' skewed draws, the posterior mean may lie outside a narrow interval.
 #'
 #' @param bg a [baggr::baggr()] class object
 #' @param show if `"inputs"`, then plotted points and lines
@@ -95,6 +96,7 @@ forest_plot <- function(bg,
     n_ge_rows <- nrow(ge_raw)
 
   te <- treatment_effect(bg)$tau
+  te_summary <- interval_stats(mint(te, prob = prob), prob)
 
   te_printed <- paste0(format(mean(te), digits = digits), " (",
                        format(sd(te), digits = digits), ")")
@@ -118,15 +120,19 @@ forest_plot <- function(bg,
 
   # Fix to make X ticks bigger
   # (solving the world hunger this ain't)
-  custom_xticks <- pretty(c(ge$lci, ge$uci), n = 8)
+  custom_xticks <- pretty(c(ge$lci, ge$uci, ge$mean,
+                           te_summary[c("mean", "lci", "uci")]), n = 8)
   # custom_xticks[which.min(abs(custom_xticks))] <- 0
-  if(!("xticks" %in% names(l)))
-    l[["xticks"]] <- round(sort(c(0, custom_xticks)))
+  if(!("xticks" %in% names(l))) {
+    l[["xticks"]] <- sort(unique(c(0, custom_xticks)))
+    if(isTRUE(l$xlog))
+      l[["xticks"]] <- l[["xticks"]][l[["xticks"]] > 0]
+  }
   l[["txt_gp"]]  <- fpTxtGp(ticks = grid::gpar(cex = 0.85))
 
-  l[["mean"]]  <- rbind(NA, as.matrix(ge$mean),NA, mint(te, prob = prob)["mean"])
-  l[["lower"]] <- rbind(NA, as.matrix(ge$lci), NA, mint(te, prob = prob)[interval_names(prob)[1]])
-  l[["upper"]] <- rbind(NA, as.matrix(ge$uci), NA, mint(te, prob = prob)[interval_names(prob)[2]])
+  l[["mean"]]  <- rbind(NA, as.matrix(ge$mean),NA, te_summary["mean"])
+  l[["lower"]] <- rbind(NA, as.matrix(ge$lci), NA, te_summary["lci"])
+  l[["upper"]] <- rbind(NA, as.matrix(ge$uci), NA, te_summary["uci"])
   if(show == "both"){
     l[["fn.ci_norm"]]  <- c(fpDrawCircleCI, fpDrawNormalCI)
     l[["legend"]]      <- c("Input", "Estimate")
@@ -139,5 +145,14 @@ forest_plot <- function(bg,
     l[["xlab"]] <- bg$effects
 
 
-  do.call(forestplot::forestplot, l)
+  # A posterior mean can lie outside a central credible interval. forestplot
+  # 3.2 requires points inside their intervals during construction; restore
+  # the actual means afterwards so the plot retains both quantities.
+  point_means <- l$mean
+  if(!is.null(l$xlog) && l$xlog && any(point_means < 0, na.rm = TRUE))
+    stop("Means must be non-negative when xlog = TRUE")
+  l$mean <- pmax(l$lower, pmin(l$upper, point_means))
+  fp <- do.call(forestplot::forestplot, l)
+  fp$estimates[, "mean", ] <- if(fp$xlog) log(point_means) else point_means
+  fp
 }

@@ -39,7 +39,8 @@ The forest plot functionality in \emph{baggr} is a simple interface for
 calling \link[forestplot]{forestplot} By default the forest plot
 displays raw (unpooled) estimates for groups and the treatment effect
 estimate underneath. This behaviour can be modified to display pooled
-group estimates.
+group estimates. Posterior intervals are central credible intervals; for
+skewed draws, the posterior mean may lie outside a narrow interval.
 }
 \examples{
 bg <- baggr(schools, iter = 500)

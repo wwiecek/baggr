@@ -1,4 +1,4 @@
-# Shared probability validation and named summary selection for output methods.
+# Resolve the old argument name and check the interval probability.
 interval_prob <- function(prob, legacy = NULL, prob_missing = TRUE,
                           legacy_missing = TRUE, legacy_name = "interval") {
   if(!legacy_missing) {
@@ -12,11 +12,12 @@ interval_prob <- function(prob, legacy = NULL, prob_missing = TRUE,
   prob
 }
 
+# Name the two interval endpoints using R's quantile labels.
 interval_names <- function(prob) {
   names(stats::quantile(c(0, 1), c((1 - prob)/2, (1 + prob)/2)))
 }
 
-# Returned summaries keep their original names; output methods normalise locally.
+# Select summary statistics by name and label the bounds lci and uci.
 interval_stats <- function(x, prob) {
   labels <- interval_names(prob)
   cols <- if(is.null(dim(x))) names(x) else colnames(x)
@@ -33,6 +34,7 @@ interval_stats <- function(x, prob) {
   x
 }
 
+# Arrange printed statistics and label the bounds with their percentages.
 interval_table <- function(x, prob, include_sd = TRUE) {
   if(is.null(dim(x)))
     x <- matrix(x, nrow = 1, dimnames = list(NULL, names(x)))
@@ -43,7 +45,7 @@ interval_table <- function(x, prob, include_sd = TRUE) {
   x
 }
 
-# Preserve rows and statistic names when either dimension has length one.
+# Extract one effect while retaining row and statistic names.
 effect_slice <- function(x, effect) {
   matrix(x[,,effect], nrow = dim(x)[1], dimnames = dimnames(x)[1:2])
 }

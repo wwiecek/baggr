@@ -23,6 +23,8 @@ Fixes:
   (#130). Group summaries now transform draws before calculating statistics,
   and comparison covariates retain the correct model names. Forest plot
   annotations now honour the `print` argument.
+- Forest plots retain posterior means outside narrow central intervals with
+  forestplot 3.2, and keep those points within the default axis range.
 
 - Fix to selection model: I did marginalisation of likelihood wrong and the previous
   results were biased towards the "uncorrected" hypermeans in presence of heterogeneity.
