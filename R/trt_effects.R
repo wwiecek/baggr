@@ -18,7 +18,8 @@
 #'
 #' @param bg a [baggr::baggr()] model
 #' @param summary logical; if TRUE returns summary statistics as explained below.
-#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `treatment_effect` from other
 #'                  plotting or printing functions)
@@ -27,7 +28,7 @@
 #' @describeIn treatment_effect A list with 2 vectors (corresponding to MCMC samples)
 #'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
 #'         both vectors are summarised as mean and lower/upper bounds according to
-#'         `interval`
+#'         `prob`
 #' @export
 #' @importFrom rstan extract
 #' @examples
@@ -42,8 +43,9 @@
 
 
 treatment_effect <- function(bg, summary = FALSE,
-                             transform = NULL, interval = .95,
-                             message = TRUE) {
+                             transform = NULL, prob = .95,
+                             message = TRUE, interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   check_if_baggr(bg)
 
   if(bg$pooling == "none"){
@@ -92,12 +94,12 @@ treatment_effect <- function(bg, summary = FALSE,
   }
   if(!is.null(transform)){
     tau <- do.call(transform, list(tau))
-    sigma_tau <- NA # by convention we set it to NA so that people don't transform
+    sigma_tau <- NA_real_ # by convention we set it to NA so that people don't transform
     # and then do operations on it by accident
   }
   if(summary) {
-    tau <- mint(tau, int=interval, median=TRUE, sd = TRUE)
-    sigma_tau <- mint(sigma_tau, int=interval, median=TRUE, sd = TRUE)
+    tau <- mint(tau, prob=prob, median=TRUE, sd = TRUE)
+    sigma_tau <- mint(sigma_tau, prob=prob, median=TRUE, sd = TRUE)
   }
 
   return(list(tau = tau, sigma_tau = sigma_tau))
@@ -107,10 +109,12 @@ treatment_effect <- function(bg, summary = FALSE,
 
 #' @describeIn treatment_effect The hypermean of a `baggr` model, shorthand for `treatment_effect(x, s=T)[[1]]`
 #' @export
-hypermean <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRUE) {
-  t <- treatment_effect(bg,summary=summary,transform=transform,interval=interval,message=FALSE)
+hypermean <- function(bg, transform = NULL, prob = 0.95, message = FALSE,
+                      summary = TRUE, interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
+  t <- treatment_effect(bg,summary=summary,transform=transform,prob=prob,message=FALSE)
   if(message){
-    cat(paste0("Hypermean of ",bg$effects," with ",interval*100,"% interval:\n"))
+    cat(paste0("Hypermean of ",bg$effects," with ",prob*100,"% interval:\n"))
     print(t[[1]])
   } else
     t[[1]]
@@ -118,10 +122,12 @@ hypermean <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=T
 
 #' @describeIn treatment_effect The hyper-SD of a `baggr` model, shorthand for `treatment_effect(x, s=T)[[2]]`
 #' @export
-hypersd <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRUE) {
-  t <- treatment_effect(bg,summary=summary,transform=transform,interval=interval,message=FALSE)
+hypersd <- function(bg, transform = NULL, prob = 0.95, message = FALSE,
+                    summary = TRUE, interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
+  t <- treatment_effect(bg,summary=summary,transform=transform,prob=prob,message=FALSE)
   if(message){
-    cat(paste0("Hyper SD of ",bg$effects," with ",interval*100,"% interval:\n"))
+    cat(paste0("Hyper SD of ",bg$effects," with ",prob*100,"% interval:\n"))
     print(t[[2]])
   } else
     t[[2]]
@@ -132,12 +138,14 @@ hypersd <- function(bg,transform=NULL,interval = 0.95,message=FALSE, summary=TRU
 #'
 #' @param bg  a [baggr::baggr()] model where `model = "mutau"`
 #' @param summary logical; if TRUE returns summary statistics as explained below.
-#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @return a vector of values
 #' @export
 mutau_cor <- function(bg,
                       summary = FALSE,
-                      interval = 0.95) {
+                      prob = 0.95, interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   # m <- matrix(apply(as.matrix(bg$fit, "L_Omega"), 2, mean), 2, 2)
   # h <- apply(as.matrix(bg$fit, "hypersd"), 2, mean)
   # (m %*% t(m))[2,1]
@@ -149,7 +157,7 @@ mutau_cor <- function(bg,
   if(!all(m[,1] == 1))
     warning("Error with correlation matrix in the mu&tau model. Inspect L_Omega parameters.")
   if(summary)
-    return(mint(m[,2], int=interval, median=TRUE, sd = TRUE))
+    return(mint(m[,2], prob=prob, median=TRUE, sd = TRUE))
   else
     return(m[,2])
 

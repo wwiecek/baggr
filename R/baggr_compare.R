@@ -23,7 +23,7 @@
 #'                  exponent transform is used automatically,
 #'                  you can plot on log scale by setting
 #'                  transform = identity
-#' @param prob  Width of uncertainty interval (defaults to 95%)
+#' @param prob Probability mass of the central interval (defaults to 0.95).
 #' @param plot logical; calls [plot.baggr_compare] when running `baggr_compare`
 #' @return an object of class `baggr_compare`
 #' @seealso [plot.baggr_compare] and [print.baggr_compare]
@@ -99,6 +99,7 @@ baggr_compare <- function(...,
                           transform = NULL,
                           prob = 0.95,
                           plot = FALSE) {
+  prob <- interval_prob(prob)
   l <- list(...)
   if(length(l) == 0)
     stop("Must provide baggr models or model specification.")
@@ -183,29 +184,27 @@ baggr_compare <- function(...,
   # else if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
   if(length(effect_names) == 1 && length(unique(unlist(covs))) > 0) {
     # Grab covariates, if there are any:
-    cov_effects <- lapply(models, function(x) {
+    cov_effects <- lapply(seq_along(models), function(i) {
+      x <- models[[i]]
       est <- fixed_effects(x, transform = transform,
-                           summary = TRUE)
+                           summary = TRUE, prob = prob)
       if(dim(est)[1] == 0)
         # return(c(NA, NA))
         return(NULL)
       else
         return(
           data.frame(
-            model = "",
+            model = names(models)[i],
             covariate = rownames(est),
             mean = est[, "mean", 1],
             sd = est[, "sd", 1],
             lci = est[, "lci", 1],
-            uci = est[, "uci", 1]
+            uci = est[, "uci", 1],
+            median = est[, "median", 1]
           )
         )
     })
     cov_effects <- cov_effects[!unlist(lapply(cov_effects, is.null))]
-    for(i in 1:length(cov_effects)){
-      cov_effects[[i]]$model <- names(models)[i]
-      # rownames(cov_effects[[i]]) <- NULL
-    }
     cov_effects <- do.call(rbind, cov_effects)
     rownames(cov_effects) <- NULL
   }
@@ -214,7 +213,7 @@ baggr_compare <- function(...,
   mean_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
-                              interval = prob,
+                              prob = prob,
                               summary = TRUE, message = FALSE)$tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -224,7 +223,7 @@ baggr_compare <- function(...,
   sd_trt_effects <- do.call(rbind, (
     lapply(models, function(x) {
       est <- treatment_effect(x, transform = transform,
-                              interval = prob,
+                              prob = prob,
                               summary = TRUE, message = FALSE)$sigma_tau
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -234,7 +233,7 @@ baggr_compare <- function(...,
   posteriorpd_trt <- do.call(rbind, (
     lapply(models, function(x) {
       est <- effect_draw(x, transform = transform,
-                         interval = prob,
+                         prob = prob,
                          summary = TRUE)
       if(is.matrix(est)) {
         if(nrow(est) == 1) est <- est[1,]
@@ -267,24 +266,22 @@ baggr_compare <- function(...,
 #' @param digits number of significant digits for effect estimates
 #' @param ... other parameters passed to print
 #' @export
-print.baggr_compare <- function(x, digits, ...){
+print.baggr_compare <- function(x, digits = 2, ...){
   cat("\nMean treatment effects:\n")
-  print(signif(x$mean_trt, digits = digits))
+  print(signif(interval_table(x$mean_trt, x$prob), digits = digits))
   cat("\nSD for treatment effects:\n")
-  print(signif(x$sd_trt, digits = digits))
+  print(signif(interval_table(x$sd_trt, x$prob), digits = digits))
   cat("\nPosterior predictive effects:\n")
-  print(signif(x$posteriorpd_trt, digits = digits))
+  print(signif(interval_table(x$posteriorpd_trt, x$prob), digits = digits))
 
   if(!is.null(x$covariates)){
-    cat("\nMean (SD) for covariates:\n")
+    cat("\nCovariate effects:\n")
     mcov <- x$covariates
-    mcov$meansd <- paste0(signif(mcov$mean, digits = digits), " (",
-                          signif(mcov$sd, digits = digits), ")",
-                          sep = "")
-    mcov <- mcov[, c("model", "covariate", "meansd")]
-    ycov <- reshape(mcov, idvar = "model", timevar = "covariate", direction = "wide")
-    colnames(ycov) <- gsub("meansd.", "", colnames(ycov))
-    print(ycov, row.names = FALSE)
+    stats <- intersect(c("mean", "sd", "median", "lci", "uci"), names(mcov))
+    tab <- interval_table(as.matrix(mcov[, stats, drop = FALSE]), x$prob)
+    print(data.frame(model = mcov$model, covariate = mcov$covariate, tab,
+                     check.names = FALSE), digits = digits, row.names = FALSE)
+
   }
 
   if(!is.null(x$transform))
@@ -308,7 +305,7 @@ print.baggr_compare <- function(x, digits, ...){
 #'                        if `FALSE`, returns separate plot for each parameter
 #' @param style What kind of plot to display (if `grid_models = TRUE`),
 #'              passed to the `style` argument in [baggr_plot].
-#' @param prob  Width of uncertainty interval (defaults to 95%)
+#' @param prob Probability mass of the central interval (defaults to 0.95).
 #' @param hyper Whether to plot pooled treatment effect
 #'              in addition to group treatment effects when `compare = "groups"`
 #' @param transform a function (e.g. exp(), log())
@@ -350,6 +347,7 @@ plot.baggr_compare <- function(x,
   if(is.null(transform))
     transform <- x$transform
 
+  prob <- interval_prob(prob)
   models <- x$models
   effect_names <- x$effect_names
 
@@ -360,6 +358,7 @@ plot.baggr_compare <- function(x,
       stop("Cannot plot models with more than 1 effect in a grid")
     plots <- lapply(models, baggr_plot,
                     style = style,
+                    prob = min(0.5, prob), prob_outer = prob,
                     order = FALSE,
                     transform = transform,
                     vline = vline)
@@ -384,10 +383,10 @@ plot.baggr_compare <- function(x,
       # Note: pipe operators or dplyr not used here anymore
       # to reduce dependencies
       effects_list <- lapply(models, function(cmodel) {
-        m <- as.data.frame(group_effects(cmodel,
-                                         interval = prob,
+        m <- as.data.frame(effect_slice(group_effects(cmodel,
+                                         prob = prob,
                                          summary = TRUE,
-                                         transform = transform)[,,i])
+                                         transform = transform), i))
         m$group <- rownames(m)
 
         if(cmodel$pooling != "none" && hyper) {

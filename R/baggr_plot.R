@@ -8,7 +8,7 @@
 #'              alternatively you can pass colour for the hypermean row,
 #'              e.g. `hyper = "red"`
 #' @param style `"forest_plot"` imitates the visual style of forest plots
-#'              and also prints means and intervals next to each row;
+#'              and also prints point estimates (medians by default) and intervals;
 #'              `"intervals"` (default) or `"areas"` use package `bayesplot` styles
 #' @param transform a function (e.g. `exp()`, `log()`) to apply to the
 #'                  values of group (and hyper, if `hyper=TRUE`) effects
@@ -51,6 +51,10 @@ baggr_plot <- function(bg, hyper=FALSE,
                        values_size = 4,
                        values_digits = 2,
                        ...) {
+  prob <- interval_prob(prob)
+  prob_outer <- interval_prob(prob_outer)
+  if(prob > prob_outer)
+    stop("prob must not exceed prob_outer")
   if(attr(bg, "ppd")){
     message("Baggr model is prior predictive; returning effect_plot().")
     return(effect_plot(bg))

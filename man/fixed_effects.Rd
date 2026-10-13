@@ -4,7 +4,13 @@
 \alias{fixed_effects}
 \title{Effects of covariates on outcome in baggr models}
 \usage{
-fixed_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
+fixed_effects(
+  bg,
+  summary = FALSE,
+  transform = NULL,
+  prob = 0.95,
+  interval = NULL
+)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}
@@ -15,7 +21,9 @@ fixed_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
 (this is commonly used when calling from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
 A matrix: columns are covariate coefficients and rows are draws from the posterior distribution.

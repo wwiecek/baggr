@@ -15,6 +15,7 @@
 #'               also see _Details_
 #' @param type In `pooling` calculation is done for each of the `"groups"`
 #'            (default) or for `"total"` hypereffect(s).
+#' @param prob Probability mass of the central interval, on the 0--1 scale.
 #' @param summary logical; if `FALSE` a whole vector of pooling values is returned,
 #'                otherwise only the means and intervals
 #'
@@ -126,7 +127,8 @@
 pooling <- function(bg,
                     metric = c("pooling", "isq", "hsq", "weights"),
                     type = c("groups", "total"),
-                    summary = TRUE) {
+                    summary = TRUE, prob = 0.95) {
+  prob <- interval_prob(prob)
 
   type <- match.arg(type, c("groups", "total"))
   metric <- match.arg(metric, c("pooling", "isq", "hsq", "weights"))
@@ -134,9 +136,13 @@ pooling <- function(bg,
   # we have to rig it for no pooling cases
   # because sigma_tau parameter might be meaningless then
   if(bg$pooling == "none")
-    return(array(0, c(3, bg$n_groups, bg$n_parameters)))
+    return(array(0, c(3, bg$n_groups, bg$n_parameters),
+                 dimnames = list(c(interval_names(prob)[1], "mean",
+                                   interval_names(prob)[2]), NULL, NULL)))
   if(bg$pooling == "full")
-    return(array(1, c(3, bg$n_groups, bg$n_parameters)))
+    return(array(1, c(3, bg$n_groups, bg$n_parameters),
+                 dimnames = list(c(interval_names(prob)[1], "mean",
+                                   interval_names(prob)[2]), NULL, NULL)))
 
   if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension
@@ -236,7 +242,7 @@ pooling <- function(bg,
   if(metric == "h")   ret <- sqrt(1/ret)
 
   if(summary)
-    ret <- apply(ret, c(2,3), mint)
+    ret <- apply(ret, c(2,3), mint, prob = prob)
 
   return(ret)
 
@@ -247,8 +253,8 @@ pooling <- function(bg,
 heterogeneity <- function(
     bg,
     metric = c("pooling", "isq", "hsq", "weights"),
-    summary = TRUE)
-  pooling(bg, metric, type = "total", summary = summary)
+    summary = TRUE, prob = 0.95)
+  pooling(bg, metric, type = "total", summary = summary, prob = prob)
 
 #' @rdname pooling
 #' @param object [baggr::baggr()] model for which to calculate group (study) weights

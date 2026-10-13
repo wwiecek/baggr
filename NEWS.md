@@ -2,6 +2,9 @@
 
 Functionality:
 
+- Standardised central interval arguments to `prob`, retaining `interval` and
+  `int` as compatibility aliases. Pooling summaries also accept `prob` (#130).
+
 - Improved funnel plot function
 - Faster logit model via bernoulli_logit_glm
 - Added predict.baggr() alias
@@ -14,6 +17,12 @@ Documentation:
   `hypersd()`, and `effect_draw()` (#143)
 
 Fixes: 
+
+- Fixed interval propagation in printing, forest plots and model comparisons;
+  printed summaries select statistics by name and use consistent column order
+  (#130). Group summaries now transform draws before calculating statistics,
+  and comparison covariates retain the correct model names. Forest plot
+  annotations now honour the `print` argument.
 
 - Fix to selection model: I did marginalisation of likelihood wrong and the previous
   results were biased towards the "uncorrected" hypermeans in presence of heterogeneity.

@@ -6,7 +6,8 @@
 #' @param transform a transformation (R function) to apply to the result;
 #'                  (this is commonly used when calling from other
 #'                  plotting or printing functions)
-#' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @return A matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
 #'         Number of rows depends on iterations in the MCMC (i.e. `x` in baggr(..., iter = x`)
 #' @seealso [treatment_effect] for overall treatment effect across groups,
@@ -18,7 +19,8 @@
 
 
 fixed_effects <- function(bg, summary = FALSE,
-                             transform = NULL, interval = .95) {
+                             transform = NULL, prob = .95, interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   check_if_baggr(bg)
   if(length(bg$covariates) == 0)
     return(array(0, dim = c(0,0,1)))
@@ -31,7 +33,7 @@ fixed_effects <- function(bg, summary = FALSE,
     beta <- do.call(transform, list(beta))
 
   if(summary){
-    beta <- t(apply(beta, 2, mint, int=interval, median=TRUE, sd = TRUE))
+    beta <- t(apply(beta, 2, mint, prob=prob, median=TRUE, sd = TRUE))
     colnames(beta) <- c("lci", "mean", "uci", "median", "sd")
     beta <- replicate(1, beta) #by the convention where 3rd dimension is effect
   }

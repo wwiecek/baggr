@@ -4,17 +4,19 @@
 \alias{selection}
 \title{Relative publication probabilities of a baggr model}
 \usage{
-selection(bg, summary = TRUE, interval = 0.95)
+selection(bg, summary = TRUE, prob = 0.95, interval = NULL)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model fitted with a selection-enabled likelihood
 (currently \code{model = "rubin"}).}
 
 \item{summary}{logical; if \code{TRUE}, returns summary statistics (mean and
-the uncertainty interval defined by \code{interval}).}
+the uncertainty interval defined by \code{prob}).}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1),
-used only when \code{summary = TRUE}.}
+\item{prob}{Probability mass of the central uncertainty interval, on the
+0--1 scale; used only when \code{summary = TRUE}.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one argument.}
 }
 \value{
 If \code{summary = FALSE}, a matrix of posterior draws where each column

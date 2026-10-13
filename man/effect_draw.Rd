@@ -11,7 +11,8 @@ effect_draw(
   transform = NULL,
   summary = FALSE,
   message = TRUE,
-  interval = 0.95
+  prob = 0.95,
+  interval = NULL
 )
 }
 \arguments{
@@ -30,7 +31,9 @@ that were used when fitting the \code{baggr} model}
 \item{message}{logical; use to disable messages prompted by using this function with
 no pooling models}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
 A vector (with \code{draws} values) for models with one treatment effect parameter,

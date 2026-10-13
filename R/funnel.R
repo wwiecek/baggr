@@ -3,7 +3,7 @@
 #' @param bg a [baggr()] model
 #' @param show whether to plot raw study-level inputs (`"inputs"`) or
 #'   posterior summaries (`"posterior"`)
-#' @param level confidence level for reference lines
+#' @param level Confidence level for normal reference lines, on the 0--1 scale.
 #' @param label logical: add study/group labels?
 #' @param covariate optional name of a column in the model input data used to
 #'   colour points.
@@ -33,6 +33,7 @@ funnel_plot <- function(bg,
                         level = 0.95,
                         label = FALSE,
                         covariate = NULL) {
+  level <- interval_prob(level)
   stopifnot(inherits(bg, "baggr"))
   if(length(bg$effects) != 1)
     stop("Funnel plot currently defined for 1-dimensional effects.")
@@ -62,7 +63,7 @@ funnel_plot <- function(bg,
 
   # posterior summaries (mean & SD) for partial/full pooling outputs
   post_df <- as.data.frame(group_effects(bg, summary = TRUE,
-                                         interval = level)[,,1])
+                                         prob = level)[,,1])
   post_df$group <- group_names(bg)
   post_df <- post_df[, c("group", "mean", "sd")]
   names(post_df) <- c("group", "effect", "se")

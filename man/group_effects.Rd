@@ -9,18 +9,20 @@ group_effects(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   random_only = FALSE,
-  rename_int = FALSE
+  rename_int = FALSE,
+  interval = NULL
 )
 
 study_effects(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   random_only = FALSE,
-  rename_int = FALSE
+  rename_int = FALSE,
+  interval = NULL
 )
 }
 \arguments{
@@ -32,7 +34,7 @@ study_effects(
 (this is commonly used when calling \code{group_effects} from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
 
 \item{random_only}{logical; for meta-regression models, should \link{fixed_effects} be included in the
 returned group effect?}
@@ -40,6 +42,8 @@ returned group effect?}
 \item{rename_int}{logical; if \code{TRUE} then rather than returning \code{median}, \code{lci} and \code{uci}
 columns they are renamed to e.g. \verb{50\%}, \verb{2.5\%}, \verb{97.5\%}; this only
 works if \code{summary=TRUE}}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
 Either an array with MCMC samples (if \code{summary = FALSE})
@@ -61,12 +65,12 @@ If \code{summary = TRUE}, the returned object contains, for each study
 or group, the following 5 values:
 the posterior medians, the lower and upper bounds of the
 uncertainty intervals using the central posterior credible interval
-of width specified in the argument \code{interval}, the posterior mean, and
+of width specified in the argument \code{prob}, the posterior mean, and
 the posterior standard deviation.
 }
 \examples{
 fit1 <- baggr(schools)
-group_effects(fit1, summary = TRUE, interval = 0.5)
+group_effects(fit1, summary = TRUE, prob = 0.5)
 }
 \seealso{
 \link{fixed_effects} for effects of covariates on outcome. To extract random effects

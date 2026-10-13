@@ -10,13 +10,15 @@ pooling(
   bg,
   metric = c("pooling", "isq", "hsq", "weights"),
   type = c("groups", "total"),
-  summary = TRUE
+  summary = TRUE,
+  prob = 0.95
 )
 
 heterogeneity(
   bg,
   metric = c("pooling", "isq", "hsq", "weights"),
-  summary = TRUE
+  summary = TRUE,
+  prob = 0.95
 )
 
 \method{weights}{baggr}(object, ...)
@@ -35,6 +37,8 @@ also see \emph{Details}}
 
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
+
+\item{prob}{Probability mass of the central interval, on the 0--1 scale.}
 
 \item{object}{\code{\link[=baggr]{baggr()}} model for which to calculate group (study) weights}
 

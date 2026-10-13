@@ -10,7 +10,7 @@
 #' @param x object of class `baggr`
 #' @param exponent if `TRUE`, results (for means) are converted to exp scale
 #' @param digits Number of significant digits to print.
-#' @param prob  Width of uncertainty interval (defaults to 95%)
+#' @param prob Probability mass of the central interval (defaults to 0.95).
 #' @param group logical; print group effects? If unspecified,
 #'              they are printed only if
 #'              less than 20 groups are present
@@ -32,6 +32,7 @@ print.baggr <- function(x,
                         prob = 0.95,
                         group,
                         fixed = TRUE, ...) {
+  prob <- interval_prob(prob)
   ppd <- attr(x, "ppd")
   is_selection_model <- x$model %in% c("rubin") &&
     !is.null(x$inputs$M) && x$inputs$M > 0 && !is.null(x$inputs$c)
@@ -79,32 +80,39 @@ print.baggr <- function(x,
 
     #trim=T avoids whitespace in place of minus sign
     if(length(x$effects) == 1){
-      tau       <- format(mint(te[[1]], int=prob), digits = digits, trim = TRUE)
-      sigma_tau <- format(mint(te[[2]], int=prob), digits = digits, trim = TRUE)
-      posteriorpred <- format(mint(de,  int=prob), digits = digits, trim = TRUE)
-      cat(" = ", tau[2], intervaltxt, tau[1], "to", tau[3], "\n")
+      tau <- format(interval_stats(mint(te$tau, prob = prob), prob),
+                         digits = digits, trim = TRUE)
+      sigma_tau <- format(interval_stats(mint(te$sigma_tau, prob = prob), prob),
+                         digits = digits, trim = TRUE)
+      posteriorpred <- format(interval_stats(mint(de,  prob = prob), prob),
+                         digits = digits, trim = TRUE)
+      cat(" = ", tau["mean"], intervaltxt, tau["lci"], "to", tau["uci"], "\n")
       if(x$pooling == "partial"){
         if(!exponent)
-          cat("Hyper-SD (sigma_tau) =", sigma_tau[2], intervaltxt,
-            sigma_tau[1], "to", sigma_tau[3], "\n")
-        cat("Posterior predictive effect =", posteriorpred[2], intervaltxt,
-            posteriorpred[1], "to", posteriorpred[3], "\n")
-        tot_pool <- format(heterogeneity(x)[,,1], digits = digits, trim = TRUE)
+          cat("Hyper-SD (sigma_tau) =", sigma_tau["mean"], intervaltxt,
+            sigma_tau["lci"], "to", sigma_tau["uci"], "\n")
+        cat("Posterior predictive effect =", posteriorpred["mean"], intervaltxt,
+            posteriorpred["lci"], "to", posteriorpred["uci"], "\n")
+        tot_pool <- format(interval_stats(heterogeneity(x, prob = prob)[,,1], prob),
+                           digits = digits, trim = TRUE)
         if(!ppd)
-          cat("Total pooling (1 - I^2) =", tot_pool[2], intervaltxt,
-              tot_pool[1], "to", tot_pool[3], "\n")
+          cat("Total pooling (1 - I^2) =", tot_pool["mean"], intervaltxt,
+              tot_pool["lci"], "to", tot_pool["uci"], "\n")
       }
 
       if(x$model == "mutau" && x$pooling != "full") {
-        mutauc <- format(mutau_cor(x, summary = TRUE, interval=prob),
+        mutauc <- format(interval_stats(mutau_cor(x, summary = TRUE, prob = prob), prob),
                          digits = digits, trim = TRUE)
-        cat("Correlation of treatment effect and baseline =", mutauc[2], intervaltxt,
-            mutauc[1], "to", mutauc[3], "\n")
+        cat("Correlation of treatment effect and baseline =", mutauc["mean"], intervaltxt,
+            mutauc["lci"], "to", mutauc["uci"], "\n")
       }
 
     } else {
-      tau       <- mint(te[[1]], int=prob)
-      sigma_tau <- mint(te[[2]], int=prob)
+      cat("\n")
+      tau <- interval_stats(
+        mint(te$tau, prob = prob, median = TRUE, sd = TRUE), prob)
+      sigma_tau <- interval_stats(
+        mint(te$sigma_tau, prob = prob, median = TRUE, sd = TRUE), prob)
 
       if(x$model == "quantiles"){
         rownames(tau) <- paste0(100*x$quantiles, "% quantile")
@@ -116,10 +124,10 @@ print.baggr <- function(x,
           rownames(sigma_tau) <- x$effects
       }
 
-      print(tau, digits = digits)
+      print(interval_table(tau, prob, include_sd = !exponent), digits = digits)
       if(!exponent && x$pooling == "partial"){
         cat(crayon::bold("\nSD of treatement effects:"))
-        print(sigma_tau, digits = digits)
+        print(interval_table(sigma_tau, prob), digits = digits)
 
 
       }
@@ -130,26 +138,21 @@ print.baggr <- function(x,
   cat("\n")
 
   if(is_selection_model) {
-    omega_summary <- selection(x, interval = prob)
+    omega_summary <- selection(x, prob = prob)
     if(is.null(dim(omega_summary)))
       omega_summary <- matrix(omega_summary, nrow = 1, dimnames = list(NULL, names(omega_summary)))
     cuts <- x$inputs$c
     fmt_cut <- function(val) formatC(val, format = "f", digits = 2, drop0trailing = TRUE)
     lower_bounds <- c(0, utils::head(cuts, -1))
     upper_bounds <- cuts
-    mean_col <- which(colnames(omega_summary) == "mean")
-    if(length(mean_col) != 1) mean_col <- 2L
-    lower_col <- if(ncol(omega_summary) >= 1) 1L else NA_integer_
-    upper_col <- if(ncol(omega_summary) >= 3) 3L else NA_integer_
+    omega_summary <- interval_stats(omega_summary, prob)
     intervaltxt_selection <- paste0("with ", as.character(100*prob), "% interval")
     cat("Publication probability relative to |z| in (", fmt_cut(utils::tail(cuts, 1)),
         ", Inf):\n", sep = "")
     for(i in seq_len(nrow(omega_summary))) {
-      mean_val <- format(omega_summary[i, mean_col], digits = digits, trim = TRUE)
-      lower_val <- if(!is.na(lower_col))
-        format(omega_summary[i, lower_col], digits = digits, trim = TRUE) else NA
-      upper_val <- if(!is.na(upper_col))
-        format(omega_summary[i, upper_col], digits = digits, trim = TRUE) else NA
+      mean_val <- format(omega_summary[i, "mean"], digits = digits, trim = TRUE)
+      lower_val <- format(omega_summary[i, "lci"], digits = digits, trim = TRUE)
+      upper_val <- format(omega_summary[i, "uci"], digits = digits, trim = TRUE)
       cat("* |z| in (", fmt_cut(lower_bounds[i]), ", ", fmt_cut(upper_bounds[i]), "] = ",
           mean_val, " ", intervaltxt_selection, " ", lower_val, " to ",
           upper_val, "\n", sep = "")
@@ -175,15 +178,15 @@ print.baggr <- function(x,
     if(x$pooling != "full") {
       # study_eff_tab <- apply(group_effects(x), c(2,3),
       # function(x) c("mean" = mean(x), "sd" = sd(x)))
-      pooling_tab <- pooling(x, summary = TRUE)
+      pooling_tab <- pooling(x, summary = TRUE, prob = prob)
       if(exponent)
         study_eff_tab <- group_effects(x, summary = TRUE,
-                                       transform=exp, interval = prob,
-                                       rename_int = TRUE)
+                                       transform=exp, prob = prob,
+                                       rename_int = FALSE)
       else
         study_eff_tab <- group_effects(x, summary = TRUE,
-                                       interval = prob,
-                                       rename_int = TRUE)
+                                       prob = prob,
+                                       rename_int = FALSE)
       if(dim(study_eff_tab)[3] == 1 && x$n_groups > 1)
         cat(paste0("Group-specific treatment effects"))
 
@@ -195,24 +198,14 @@ print.baggr <- function(x,
             cat(paste0("Treatment effects on ", x$effects[i]))
         }
 
-        if(exponent){
-          # This is very bad, it depends on ordering of group_effects(). Fix it!
+        if(exponent)
           cat(" (converted to exp scale):\n")
-          if(x$n_groups == 1)
-            tab <- c(study_eff_tab[,c(4, 1, 2, 3),i],
-                     "pooling" = as.numeric(pooling_tab[2,,i]))
-          else
-            tab <- cbind(study_eff_tab[,c(4, 1, 2, 3),i],
-                         pooling = pooling_tab[2,,i])
-        } else{
+        else
           cat(":\n")
-          if(x$n_groups == 1)
-            tab <- c(study_eff_tab[,c(4, 5, 1, 2, 3),i],
-                     "pooling" =  as.numeric(pooling_tab[2,,i]))
-          else
-            tab <- cbind(study_eff_tab[,c(4, 5, 1, 2, 3),i],
-                         pooling = pooling_tab[2,,i])
-        }
+        # Keep the study dimension even for a single study.
+        tab <- effect_slice(study_eff_tab, i)
+        tab <- interval_table(tab, prob, include_sd = !exponent)
+        tab <- cbind(tab, pooling = pooling_tab["mean",,i])
         print(tab, digits = digits)
       }
       cat("\n")
@@ -223,29 +216,21 @@ print.baggr <- function(x,
   }
 
   if(fixed && length(x$covariates) > 0) {
-    # fe <- fixed_effects(x, summary = TRUE)
+    # fe <- fixed_effects(x, summary = TRUE, prob = prob)
 
     if(exponent)
-      fixed_eff_tab <- fixed_effects(x, summary = TRUE, transform=exp)
+      fixed_eff_tab <- fixed_effects(x, summary = TRUE, transform=exp, prob = prob)
     else
-      fixed_eff_tab <- fixed_effects(x, summary = TRUE)
-
-    cov_names <- dimnames(fixed_eff_tab)[[1]]
+      fixed_eff_tab <- fixed_effects(x, summary = TRUE, prob = prob)
 
     for(i in 1:dim(fixed_eff_tab)[3]){
       cat(paste0("Covariate (fixed) effects on ", x$effects[i]))
-      if(exponent){
+      if(exponent)
         cat(" (converted to exp scale):\n")
-        tab <- cbind(fixed_eff_tab[,c("mean", "lci", "uci"),i])
-      } else{
+      else
         cat(":\n")
-        tab <- cbind(fixed_eff_tab[,c("mean", "sd"),i])
-      }
-      # Just in case the names were dropped due to dim=1
-      if(dim(fixed_eff_tab)[[1]] == 1){
-        colnames(tab) <- dimnames(fixed_eff_tab)[[1]]
-        tab <- t(tab)
-      }
+      tab <- effect_slice(fixed_eff_tab, i)
+      tab <- interval_table(tab, prob, include_sd = !exponent)
       print(tab, digits = digits)
       cat("\n")
     }

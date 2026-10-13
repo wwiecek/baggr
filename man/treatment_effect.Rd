@@ -10,19 +10,28 @@ treatment_effect(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
-  message = TRUE
+  prob = 0.95,
+  message = TRUE,
+  interval = NULL
 )
 
 hypermean(
   bg,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   message = FALSE,
-  summary = TRUE
+  summary = TRUE,
+  interval = NULL
 )
 
-hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
+hypersd(
+  bg,
+  transform = NULL,
+  prob = 0.95,
+  message = FALSE,
+  summary = TRUE,
+  interval = NULL
+)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}
@@ -33,10 +42,12 @@ hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
 (this is commonly used when calling \code{treatment_effect} from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
 
 \item{message}{logical; use to disable messages prompted by using with
 no pooling models}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \description{
 The most general \code{treatment_effect} displays
@@ -59,7 +70,7 @@ returns.
 \item \code{treatment_effect()}: A list with 2 vectors (corresponding to MCMC samples)
 \code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
 both vectors are summarised as mean and lower/upper bounds according to
-\code{interval}
+\code{prob}
 
 \item \code{hypermean()}: The hypermean of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[1]]}
 

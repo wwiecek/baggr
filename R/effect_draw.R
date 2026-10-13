@@ -21,7 +21,8 @@
 #'                that were used when fitting the `baggr` model
 #' @param transform a transformation (an R function) to apply to the result of a draw.
 #' @param summary logical; if TRUE returns summary statistics rather than samples from the distribution;
-#' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @param message logical; use to disable messages prompted by using this function with
 #'                no pooling models
 #' @return A vector (with `draws` values) for models with one treatment effect parameter,
@@ -75,7 +76,9 @@ effect_draw <- function(object,
                         draws = NULL,
                         newdata = NULL,
                         transform = NULL,
-                        summary = FALSE, message = TRUE, interval = .95) {
+                        summary = FALSE, message = TRUE, prob = .95,
+                        interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   x <- object
   check_if_baggr(x)
 
@@ -163,7 +166,7 @@ effect_draw <- function(object,
     new_tau_array <- apply(new_tau_array, c(1,2,3), transform)
 
   if(summary)
-    new_tau_array <- apply(new_tau_array, c(1, 2), mint, int=interval, median=TRUE, sd = TRUE)
+    new_tau_array <- apply(new_tau_array, c(1, 2), mint, prob=prob, median=TRUE, sd = TRUE)
 
   if(dim(new_tau_array)[2] == 1)
     return(new_tau_array[,1,])

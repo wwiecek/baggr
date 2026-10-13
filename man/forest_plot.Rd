@@ -24,9 +24,10 @@ if \code{"covariates"}, then fixed effect coefficients are plotted}
 
 \item{print}{which values to print next to the plot: values of \code{"inputs"}
 or \code{"posterior"} means?
-(if \code{show="covariates"}, it must be \code{"posterior"})}
+(if \code{show="covariates"}, it must be \code{"posterior"});
+the default for \code{show="both"} prints posterior values.}
 
-\item{prob}{width of the intervals (lines) for the plot}
+\item{prob}{Probability mass of the central intervals, on the 0--1 scale.}
 
 \item{digits}{number of digits to display when printing out mean and SD
 in the plot}

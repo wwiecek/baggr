@@ -4,18 +4,22 @@
 \alias{mint}
 \title{"Mean and interval" function, including other summaries, calculated for matrix (by column) or vector}
 \usage{
-mint(y, int = 0.95, digits = NULL, median = FALSE, sd = FALSE)
+mint(y, prob = 0.95, digits = NULL, median = FALSE, sd = FALSE, int = NULL)
 }
 \arguments{
 \item{y}{matrix or a vector; for matrices, \code{mint} is done by-column}
 
-\item{int}{probability interval (default is 95 percent) to calculate}
+\item{prob}{Probability mass of the central interval, on the 0--1 scale.
+A probability of zero returns the median as both endpoints; a probability
+of one returns the minimum and maximum draws.}
 
 \item{digits}{number of significant digits to \link{round} values by.}
 
 \item{median}{return median value?}
 
 \item{sd}{return SD?}
+
+\item{int}{Compatibility alias for \code{prob}; supply only one argument.}
 }
 \description{
 This function is just a convenient shorthand for getting typical summary statistics.
