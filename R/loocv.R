@@ -309,12 +309,15 @@ print.baggr_cv <- function(x, digits = 3, ...) {
 #' @param x output from [loocv] that has `return_models = TRUE`
 #' @param y Unused, ignore
 #' @param ... Unused, ignore
-#' @param add_values logical; if `TRUE`, values of _elpd_ are printed next to each
-#'                   study
+#' @param add_values logical; if `TRUE`, estimates and their 95% intervals
+#'                   are printed next to each study
+#' @param values_digits number of significant digits to use when printing values
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @return `ggplot2` plot in similar style to [baggr_compare] default plots
 #' @export
 #'
-plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
+plot.baggr_cv <- function(x, y, ..., add_values = TRUE,
+                          values_digits = 1, values_size = 4){
   loo_model <- x
   input_data <- loo_model$full_model$summary_data
   if(is.null(input_data))
@@ -328,37 +331,13 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
   df1 <- data.frame(
     setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
     model = "LOOCV estimate",
-    elpd = loo_model$pointwise,
     group = input_data$group)
   df2 <- data.frame(lci = input_data$tau - 1.96*input_data$se,
                     median = input_data$tau,
                     uci = input_data$tau + 1.96*input_data$se,
                     group = input_data$group,
-                    elpd = NA,
                     model = "Test data (out-of-sample)")
   df <- rbind(df1, df2)
-  pl <- single_comp_plot(df)
-
-  fmti <- function(x, digits = values_digits) {
-    format(round(x, digits), nsmall = digits)
-  }
-
-  # add_values
-  if(add_values){
-    group <- median <- lci <- uci <- model <- elpd <- NULL
-    values_digits <- 2
-    values_size <- 2.5
-
-    pl <- pl +
-      ggplot2::geom_text(
-        aes(label = fmti(elpd, values_digits),
-            hjust = 1,
-            y = 1.1*max(uci)),
-        position = ggplot2::position_dodge(width = .5),
-        size = values_size) +
-      ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
-      ggplot2::coord_flip(clip = "off")
-  }
-
-  pl
+  single_comp_plot(df, add_values = add_values,
+                   values_digits = values_digits, values_size = values_size)
 }
