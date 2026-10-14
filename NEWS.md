@@ -1,29 +1,18 @@
 # devel (work in progress)
 
-- Standardised numeric model summaries to columns `mean`, `median`, `sd`,
-  `lower`, `upper`, `width`, in that order. Single-effect summaries are now
-  rows by statistics matrices with an `effect` attribute; multiple-effect
-  summaries are rows by statistics by effects arrays with labelled effects.
-  Aggregate quantities have one row; conditional predictions have one row per
-  observation. Unavailable estimates retain the known interval `width`.
-- `mint()` uses named `lower` and `upper` bounds and includes `width`, while
-  retaining its optional median/SD and vector/matrix interfaces.
-- `rename_int = TRUE` in group and treatment summaries (including hypermean
-  and hyper-SD wrappers) renames only bounds to percentages and omits `width`.
-  Raw posterior draw interfaces and numerical definitions are unchanged.
+- New notation for group and treatment effect (and some other) summaries: 
+  note `lower`, `upper`, `width` columns. You can switch to e.g. 2.5% and 97.5% 
+  column name notation via `rename_int = TRUE`. Sorted out some array to matrix
+  automatic conversions.
+-  Interval arguments are now called `prob`; you can still use `interval` and
+  `int` as aliases.
 
-- Standardised central interval arguments to `prob`, retaining `interval` and
-  `int` as compatibility aliases. Pooling summaries also accept `prob` (#130).
+Fixes: 
 
-- Fixed interval propagation in printing, forest plots and model comparisons;
-  printed summaries select statistics by name and use consistent column order
-  (#130). Group summaries now transform draws before calculating statistics,
-  and comparison covariates retain the correct model names. Forest plot
-  annotations now honour the `print` argument.
-- LOO plots retain estimate/interval labels and their formatting controls
-  when using the standardised summary layout.
-- Forest plots retain posterior means outside narrow central intervals with
-  forestplot 3.2, and keep those points within the default axis range.
+- Fixed interval propagation in printing, forest plots and model comparisons.
+  Previously setting to something else than 0.95 was sometimes ignored.
+- Rendering of LOO plots was improved.
+
 
 # baggr 0.8.2 (June 2026)
 
