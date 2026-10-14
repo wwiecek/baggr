@@ -309,12 +309,15 @@ print.baggr_cv <- function(x, digits = 3, ...) {
 #' @param x output from [loocv] that has `return_models = TRUE`
 #' @param y Unused, ignore
 #' @param ... Unused, ignore
-#' @param add_values logical; if `TRUE`, values of _elpd_ are printed next to each
-#'                   study
+#' @param add_values logical; if `TRUE`, estimates and their 95% intervals
+#'                   are printed next to each study
+#' @param values_digits number of significant digits to use when printing values
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @return `ggplot2` plot in similar style to [baggr_compare] default plots
 #' @export
 #'
-plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
+plot.baggr_cv <- function(x, y, ..., add_values = TRUE,
+                          values_digits = 1, values_size = 4){
   loo_model <- x
   input_data <- loo_model$full_model$summary_data
   if(is.null(input_data))
@@ -336,36 +339,14 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
     inputs <- inputs[match(groups, inputs$group),,drop = FALSE]
     df1 <- data.frame(effect_slice(mm1, i)[,
       c("lower", "median", "upper"), drop = FALSE],
-      model = "LOOCV estimate", elpd = loo_model$pointwise, group = groups)
+      model = "LOOCV estimate", group = groups)
     df2 <- data.frame(lower = inputs$tau - 1.96*inputs$se,
                       median = inputs$tau,
                       upper = inputs$tau + 1.96*inputs$se,
-                      group = groups, elpd = NA,
+                      group = groups,
                       model = "Test data (out-of-sample)")
     data.frame(rbind(df1, df2), parameter = effects[i])
   }))
-  pl <- single_comp_plot(df, grid = length(effects) > 1)
-
-  fmti <- function(x, digits = values_digits) {
-    format(round(x, digits), nsmall = digits)
-  }
-
-  # add_values
-  if(add_values){
-    group <- median <- lower <- upper <- model <- elpd <- NULL
-    values_digits <- 2
-    values_size <- 2.5
-
-    pl <- pl +
-      ggplot2::geom_text(
-        aes(label = fmti(elpd, values_digits),
-            hjust = 1,
-            y = 1.1*max(upper)),
-        position = ggplot2::position_dodge(width = .5),
-        size = values_size) +
-      ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
-      ggplot2::coord_flip(clip = "off")
-  }
-
-  pl
+  single_comp_plot(df, grid = length(effects) > 1, add_values = add_values,
+                   values_digits = values_digits, values_size = values_size)
 }

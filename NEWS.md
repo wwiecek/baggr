@@ -20,6 +20,8 @@
   (#130). Group summaries now transform draws before calculating statistics,
   and comparison covariates retain the correct model names. Forest plot
   annotations now honour the `print` argument.
+- LOO plots retain estimate/interval labels and their formatting controls
+  when using the standardised summary layout.
 - Forest plots retain posterior means outside narrow central intervals with
   forestplot 3.2, and keep those points within the default axis range.
 

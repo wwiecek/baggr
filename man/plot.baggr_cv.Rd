@@ -4,7 +4,7 @@
 \alias{plot.baggr_cv}
 \title{Plotting method for results of baggr LOO analyses}
 \usage{
-\method{plot}{baggr_cv}(x, y, ..., add_values = TRUE)
+\method{plot}{baggr_cv}(x, y, ..., add_values = TRUE, values_digits = 1, values_size = 4)
 }
 \arguments{
 \item{x}{output from \link{loocv} that has \code{return_models = TRUE}}
@@ -13,8 +13,12 @@
 
 \item{...}{Unused, ignore}
 
-\item{add_values}{logical; if \code{TRUE}, values of \emph{elpd} are printed next to each
-study}
+\item{add_values}{logical; if \code{TRUE}, estimates and their 95\% intervals
+are printed next to each study}
+
+\item{values_digits}{number of significant digits to use when printing values}
+
+\item{values_size}{size of font for the values, if \code{add_values == TRUE}}
 }
 \value{
 \code{ggplot2} plot in similar style to \link{baggr_compare} default plots

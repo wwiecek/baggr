@@ -18,8 +18,8 @@ brms_kfold <- list(estimates = structure(c(-30.9625079222176, NA,
                                            61.9250158444352,
                                            1.00614837109732, NA,
                                            2.01229674219465),
-                                         .Dim = 3:2,
-                                         .Dimnames = list(
+                                         dim = 3:2,
+                                         dimnames = list(
                                c("elpd_kfold", "p_kfold", "kfoldic"),
                                c("Estimate", "SE"))),
                    pointwise = structure(c(-4.60651920550889,
@@ -30,8 +30,8 @@ brms_kfold <- list(estimates = structure(c(-30.9625079222176, NA,
                                            -3.68970464199433,
                                            -3.92034704268037,
                                            -3.91643733380024),
-                                         .Dim = c(8L, 1L),
-                                         .Dimnames = list(
+                                         dim = c(8L, 1L),
+                                         dimnames = list(
                                            NULL, "elpd_kfold")))
 
 baggr_kfold <- expect_warning(loocv(schools,
