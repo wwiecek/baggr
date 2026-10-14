@@ -11,7 +11,8 @@ effect_draw(
   transform = NULL,
   summary = FALSE,
   message = TRUE,
-  interval = 0.95
+  prob = 0.95,
+  interval = NULL
 )
 }
 \arguments{
@@ -30,7 +31,9 @@ that were used when fitting the \code{baggr} model}
 \item{message}{logical; use to disable messages prompted by using this function with
 no pooling models}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
 A vector (with \code{draws} values) for models with one treatment effect parameter,
@@ -54,6 +57,16 @@ same object as \code{hypermean(bg, transform = exp)}: \code{effect_draw()} also 
 the uncertainty or heterogeneity around the mean treatment effect.
 }
 \details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
 uncertainty in the mean treatment effect. This is useful both in understanding impact of
 heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.

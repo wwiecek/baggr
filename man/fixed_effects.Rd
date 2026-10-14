@@ -4,7 +4,13 @@
 \alias{fixed_effects}
 \title{Effects of covariates on outcome in baggr models}
 \usage{
-fixed_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
+fixed_effects(
+  bg,
+  summary = FALSE,
+  transform = NULL,
+  prob = 0.95,
+  interval = NULL
+)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}
@@ -15,14 +21,25 @@ fixed_effects(bg, summary = FALSE, transform = NULL, interval = 0.95)
 (this is commonly used when calling from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
-A matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
+With \code{summary = TRUE}, one row per covariate coefficient in the
+summary layout described here. Otherwise a matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
 Number of rows depends on iterations in the MCMC (i.e. \code{x} in baggr(..., iter = x`)
 }
 \description{
-Effects of covariates on outcome in baggr models
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }
 \seealso{
 \link{treatment_effect} for overall treatment effect across groups,

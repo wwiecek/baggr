@@ -25,11 +25,11 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
 
   data <- bg$data
   data$dotsize <- 1/(data$se^2)
-  data$mean <- as.data.frame(group_effects(bg, summary = TRUE)[,,1])$mean
+  data$mean <- as.data.frame(effect_slice(group_effects(bg, summary = TRUE), 1))$mean
   group <- NULL
   data$.covariate <- data[[covariate]]
-  fe <- fixed_effects(bg, summary=TRUE)[,"mean",1]
-  te <- treatment_effect(bg,summary=TRUE)$tau[["mean"]]
+  fe <- effect_slice(fixed_effects(bg, summary=TRUE), 1)[,"mean"]
+  te <- effect_slice(treatment_effect(bg,summary=TRUE)$tau, 1)[1,"mean"]
   if(is.null(data$group))
     data$group <- group_names(bg)
   data$.group <- data$group

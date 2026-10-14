@@ -40,7 +40,7 @@ side-by-side.}
 with many parameters (especially \code{"quantiles"}, \code{"sslab"});
 if \code{FALSE}, returns separate plot for each parameter}
 
-\item{prob}{Width of uncertainty interval (defaults to 95\%)}
+\item{prob}{Probability mass of the central interval (defaults to 0.95).}
 
 \item{hyper}{Whether to plot pooled treatment effect
 in addition to group treatment effects when \code{compare = "groups"}}

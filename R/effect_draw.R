@@ -14,6 +14,16 @@
 #' same object as `hypermean(bg, transform = exp)`: `effect_draw()` also includes
 #' the uncertainty or heterogeneity around the mean treatment effect.
 #'
+#' With `summary = TRUE`, summaries are numeric matrices with rows for
+#' the quantities being summarised and columns `mean`, `median`, `sd`,
+#' `lower`, `upper`, `width`, in that order. The bounds form a central
+#' interval; `width` is its requested probability mass, even when estimates
+#' are unavailable. For multiple effects, the result is a rows by statistics
+#' by effects array, with effect names in the third dimension. A single-effect
+#' matrix stores its effect name in the `effect` attribute. Row names are
+#' preserved. Aggregate summaries have one row; predictions conditional on
+#' `newdata` have one row per observation.
+#'
 #' @param object A `baggr` class object.
 #' @param draws How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
@@ -21,7 +31,8 @@
 #'                that were used when fitting the `baggr` model
 #' @param transform a transformation (an R function) to apply to the result of a draw.
 #' @param summary logical; if TRUE returns summary statistics rather than samples from the distribution;
-#' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @param message logical; use to disable messages prompted by using this function with
 #'                no pooling models
 #' @return A vector (with `draws` values) for models with one treatment effect parameter,
@@ -75,7 +86,9 @@ effect_draw <- function(object,
                         draws = NULL,
                         newdata = NULL,
                         transform = NULL,
-                        summary = FALSE, message = TRUE, interval = .95) {
+                        summary = FALSE, message = TRUE, prob = .95,
+                        interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   x <- object
   check_if_baggr(x)
 
@@ -86,7 +99,11 @@ effect_draw <- function(object,
   if(x$pooling == "none"){
     if(message)
       message("There is no predicted effect when pooling = 'none'.")
-    new_tau <- return(as.numeric(c(NA)))
+    if(summary)
+      return(summary_draws(array(NA_real_,
+        c(1, if(is.null(newdata)) 1 else nrow(newdata), neffects)),
+        prob, x$effects, rows = rownames(newdata)))
+    return(as.numeric(c(NA)))
   }
 
   te <- treatment_effect(x, message = FALSE)
@@ -163,7 +180,8 @@ effect_draw <- function(object,
     new_tau_array <- apply(new_tau_array, c(1,2,3), transform)
 
   if(summary)
-    new_tau_array <- apply(new_tau_array, c(1, 2), mint, int=interval, median=TRUE, sd = TRUE)
+    return(summary_draws(aperm(new_tau_array, c(3, 2, 1)), prob,
+                         x$effects, rows = rownames(newdata)))
 
   if(dim(new_tau_array)[2] == 1)
     return(new_tau_array[,1,])

@@ -41,7 +41,7 @@ test_that("Different pooling methods work for the rubin_full model", {
 
 test_that("Basic operations on rubin_full model", {
   expect_error(baggr(schools_ipd, rubbish = 41))
-  expect_is(pooling(bg_p)[,,1], "matrix")
+  expect_is(pooling(bg_p), "matrix")
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
   expect_is(funnel_plot(bg_p), "gg")
@@ -51,7 +51,7 @@ test_that("Basic operations on rubin_full model", {
 
   # No pooling gives sensible results:
   expect_equal(
-    as.numeric(group_effects(bg_n,s=T)[,"mean",1]),
+    as.numeric(group_effects(bg_n,s=T)[,"mean"]),
     schools$tau, tolerance = 1)
 
 })
@@ -61,19 +61,19 @@ test_that("extra pooling stats work", {
   # Calculation of I^2 and H^2
   i2 <- pooling(bg_p, metric = "isq")
   expect_is(i2, "array")
-  expect_gte(min(i2), 0)
-  expect_lte(max(i2), 1)
+  expect_gte(min(i2[,c("mean","median","lower","upper")]), 0)
+  expect_lte(max(i2[,c("mean","median","lower","upper")]), 1)
   h2 <- pooling(bg_p, metric = "hsq")
   expect_is(h2, "array")
-  expect_gte(min(h2), 1)
+  expect_gte(min(h2[,c("mean","median","lower","upper")]), 1)
   # Calculation of weights makes sense
   wt <- weights(bg_p)
   expect_is(wt, "array")
-  expect_equal(dim(wt), c(3,8,1))
-  expect_equal(sum(wt[2,,1]), 1)
-  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[1,,1]), 0)
+  expect_equal(dim(wt), c(8,6))
+  expect_equal(sum(wt[,"mean"]), 1)
+  expect_lte(sum(wt[,"lower"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"upper"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"lower"]), 0)
   wt2 <- pooling(bg_p, metric = "weights")
   expect_identical(wt, wt2)
 })
@@ -328,7 +328,7 @@ test_that("Model with covariates works fine", {
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov), "matrix")
   expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
-  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,6))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
 })
 

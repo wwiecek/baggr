@@ -27,7 +27,7 @@ alternatively you can pass colour for the hypermean row,
 e.g. \code{hyper = "red"}}
 
 \item{style}{\code{"forest_plot"} imitates the visual style of forest plots
-and also prints means and intervals next to each row;
+and also prints point estimates (medians by default) and intervals;
 \code{"intervals"} (default) or \code{"areas"} use package \code{bayesplot} styles}
 
 \item{transform}{a function (e.g. \code{exp()}, \code{log()}) to apply to the

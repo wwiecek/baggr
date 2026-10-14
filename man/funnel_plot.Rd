@@ -21,7 +21,7 @@ funnel(...)
 \item{show}{whether to plot raw study-level inputs (\code{"inputs"}) or
 posterior summaries (\code{"posterior"})}
 
-\item{level}{confidence level for reference lines}
+\item{level}{Confidence level for normal reference lines, on the 0--1 scale.}
 
 \item{label}{logical: add study/group labels?}
 

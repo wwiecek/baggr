@@ -230,6 +230,26 @@ head(group_effects(baggr_schools, summary = TRUE))
 treatment_effect(baggr_schools, summary = TRUE)
 ```
 
+### Summary names and dimensions
+
+Model summaries use numeric columns `mean`, `median`, `sd`, `lower`, `upper`,
+and `width`, in that order. `width` records the requested central interval
+probability, including when an estimate is unavailable. A single effect gives
+a matrix with one row per quantity and its name in the `effect` attribute;
+multiple effects give an array with named effects in the third dimension.
+Aggregate summaries have one row, and predictions conditional on `newdata`
+have one row per observation. Raw draws retain their existing layout.
+
+```{r}
+group_summary <- group_effects(baggr_schools, summary = TRUE, prob = 0.8)
+colnames(group_summary)
+attr(group_summary, "effect")
+```
+
+For percentage labels, `group_effects(..., rename_int = TRUE)` and
+`treatment_effect(..., rename_int = TRUE)` rename only the bounds and omit
+`width`; the `median` column keeps its name.
+
 ### Choosing priors 
 
 It is possible to fit the Rubin model without specifying any priors, in which case the user is notified about the automatic prior choice that _baggr_ performs. But the priors can also be easily customised by using `prior_` arguments to `baggr()`. The Rubin model performs univariate shrinkage so we will not need to specify a hyper-correlation prior, but we can specify some custom priors on the hyper-mean and hyper-sd. If desired, the user can specify only some priors as custom distributions - the rest will be chosen automatically and the user will be notified of this in the output. 

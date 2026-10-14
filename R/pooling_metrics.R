@@ -7,6 +7,16 @@
 #' `heterogeneity` is a shorthand for `pooling(type = "total")`
 #' `weights` is shorthand for `pooling(metric = "weights")`
 #'
+#' With `summary = TRUE`, summaries are numeric matrices with rows for
+#' the quantities being summarised and columns `mean`, `median`, `sd`,
+#' `lower`, `upper`, `width`, in that order. The bounds form a central
+#' interval; `width` is its requested probability mass, even when estimates
+#' are unavailable. For multiple effects, the result is a rows by statistics
+#' by effects array, with effect names in the third dimension. A single-effect
+#' matrix stores its effect name in the `effect` attribute. Row names are
+#' preserved. Aggregate summaries have one row; predictions conditional on
+#' `newdata` have one row per observation.
+#'
 #' @param bg a [baggr::baggr()] model
 #' @param metric `"pooling"` for Gelman & Pardoe statistic _P_,
 #'               `"isq"` for I-squared statistic (_1-P_, Higgins & Thompson, 2002)
@@ -15,6 +25,7 @@
 #'               also see _Details_
 #' @param type In `pooling` calculation is done for each of the `"groups"`
 #'            (default) or for `"total"` hypereffect(s).
+#' @param prob Probability mass of the central interval, on the 0--1 scale.
 #' @param summary logical; if `FALSE` a whole vector of pooling values is returned,
 #'                otherwise only the means and intervals
 #'
@@ -126,17 +137,30 @@
 pooling <- function(bg,
                     metric = c("pooling", "isq", "hsq", "weights"),
                     type = c("groups", "total"),
-                    summary = TRUE) {
+                    summary = TRUE, prob = 0.95) {
+  prob <- interval_prob(prob)
 
   type <- match.arg(type, c("groups", "total"))
   metric <- match.arg(metric, c("pooling", "isq", "hsq", "weights"))
 
-  # we have to rig it for no pooling cases
-  # because sigma_tau parameter might be meaningless then
-  if(bg$pooling == "none")
-    return(array(0, c(3, bg$n_groups, bg$n_parameters)))
-  if(bg$pooling == "full")
-    return(array(1, c(3, bg$n_groups, bg$n_parameters)))
+  n_rows <- if(type == "total") 1L else bg$n_groups
+  row_labels <- if(type == "groups") group_names(bg) else NULL
+  if(bg$pooling %in% c("none", "full")) {
+    value <- if(bg$pooling == "full") 1 else 0
+    if(summary)
+      return(summary_draws(array(value, c(1, n_rows, bg$n_parameters)),
+                           prob, bg$effects, rows = row_labels))
+    return(array(value, c(3, bg$n_groups, bg$n_parameters),
+                 dimnames = list(c(interval_names(prob)[1], "mean",
+                                   interval_names(prob)[2]), NULL, NULL)))
+  }
+  if(type == "total" && bg$model %in% c("quantiles", "sslab")) {
+    warning("Total pooling not implemented for this model")
+    if(summary)
+      return(summary_draws(array(NA_real_, c(1, 1, bg$n_parameters)),
+                           prob, bg$effects))
+    return(array(NA, c(3, bg$n_groups, bg$n_parameters)))
+  }
 
   if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension
@@ -166,16 +190,7 @@ pooling <- function(bg,
     # now we can just do the operation on arrays and preserve dimensions:
     ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
 
-    if(type == "total"){
-      warning("Total pooling not implemented for quantiles model")
-      return(array(NA, c(3, bg$n_groups, bg$n_parameters)))
-    }
   } else if(bg$model == "sslab") {
-    if(type == "total"){
-      warning("Total pooling not implemented for spike & slab model")
-      return(array(NA, c(3, bg$n_groups, bg$n_parameters)))
-    }
-
     # Must calculate pooling for each effect vector?
     te <- treatment_effect(bg)$sigma_tau
     warning("In this version of baggr calculations of pooling for spike & slab may be wrong")
@@ -221,7 +236,7 @@ pooling <- function(bg,
       }
       if(metric == "weights" && type == "groups"){
         precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma_tau^2))
-        ret_i <- t(apply(precisions, 1, function(x) x/sum(x)))
+        ret_i <- precisions / rowSums(precisions)
       }
       if(metric == "weights" && type == "total")
         stop("Weights can be calculated only for type = 'groups'")
@@ -236,7 +251,7 @@ pooling <- function(bg,
   if(metric == "h")   ret <- sqrt(1/ret)
 
   if(summary)
-    ret <- apply(ret, c(2,3), mint)
+    ret <- summary_draws(ret, prob, bg$effects, rows = row_labels)
 
   return(ret)
 
@@ -247,8 +262,8 @@ pooling <- function(bg,
 heterogeneity <- function(
     bg,
     metric = c("pooling", "isq", "hsq", "weights"),
-    summary = TRUE)
-  pooling(bg, metric, type = "total", summary = summary)
+    summary = TRUE, prob = 0.95)
+  pooling(bg, metric, type = "total", summary = summary, prob = prob)
 
 #' @rdname pooling
 #' @param object [baggr::baggr()] model for which to calculate group (study) weights

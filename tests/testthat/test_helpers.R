@@ -143,12 +143,12 @@ test_that("convert_inputs()", {
 
 test_that("mint()", {
   # Rubin model
-  expect_length(mint(rnorm(100)), 3)
-  expect_length(mint(rnorm(100), sd = TRUE), 4)
-  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE), 5)
-  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5), 5)
+  expect_length(mint(rnorm(100)), 4)
+  expect_length(mint(rnorm(100), sd = TRUE), 5)
+  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE), 6)
+  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5), 6)
   expect_identical(names(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5)),
-                   c("25%", "mean", "75%", "median", "sd"))
+                   c("mean", "median", "sd", "lower", "upper", "width"))
 })
 
 test_that("We can set and get baggr theme", {

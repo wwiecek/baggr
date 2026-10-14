@@ -10,19 +10,31 @@ treatment_effect(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
-  message = TRUE
+  prob = 0.95,
+  message = TRUE,
+  interval = NULL,
+  rename_int = FALSE
 )
 
 hypermean(
   bg,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   message = FALSE,
-  summary = TRUE
+  summary = TRUE,
+  interval = NULL,
+  rename_int = FALSE
 )
 
-hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
+hypersd(
+  bg,
+  transform = NULL,
+  prob = 0.95,
+  message = FALSE,
+  summary = TRUE,
+  interval = NULL,
+  rename_int = FALSE
+)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}
@@ -33,10 +45,16 @@ hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
 (this is commonly used when calling \code{treatment_effect} from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
 
 \item{message}{logical; use to disable messages prompted by using with
 no pooling models}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
+
+\item{rename_int}{logical; with \code{summary = TRUE}, rename only \code{lower}
+and \code{upper} to endpoint percentages and omit \code{width}. \code{median} retains
+its name. Defaults to \code{FALSE}.}
 }
 \description{
 The most general \code{treatment_effect} displays
@@ -54,12 +72,22 @@ interpretable, \code{treatment_effect()} returns \code{sigma_tau = NA} when
 \code{transform} is supplied; this is also what \code{hypersd(bg, transform = ...)}
 returns.
 }
+\details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+}
 \section{Functions}{
 \itemize{
-\item \code{treatment_effect()}: A list with 2 vectors (corresponding to MCMC samples)
+\item \code{treatment_effect()}: A list with 2 components (posterior draws)
 \code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
-both vectors are summarised as mean and lower/upper bounds according to
-\code{interval}
+each component follows the summary layout described here.
 
 \item \code{hypermean()}: The hypermean of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[1]]}
 
