@@ -26,11 +26,20 @@ plotting or printing functions)}
 \item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
-A matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
+With \code{summary = TRUE}, one row per covariate coefficient in the
+summary layout described here. Otherwise a matrix: columns are covariate coefficients and rows are draws from the posterior distribution.
 Number of rows depends on iterations in the MCMC (i.e. \code{x} in baggr(..., iter = x`)
 }
 \description{
-Effects of covariates on outcome in baggr models
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }
 \seealso{
 \link{treatment_effect} for overall treatment effect across groups,

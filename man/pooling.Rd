@@ -53,6 +53,16 @@ pooling statistic by Gelman & Pardoe (2006), \emph{I-squared}, \emph{H-squared},
 \code{weights} is shorthand for \code{pooling(metric = "weights")}
 }
 \details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+
 Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
 group-level estimates of treatment
 effect are "pooled" toward average treatment effect in the meta-analysis model.

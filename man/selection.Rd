@@ -21,8 +21,8 @@ the uncertainty interval defined by \code{prob}).}
 \value{
 If \code{summary = FALSE}, a matrix of posterior draws where each column
 corresponds to one non-reference |z|-interval. Otherwise, a matrix with one
-row per interval and columns containing the mean and bounds of the
-uncertainty interval. The final highest-|z| interval is fixed to relative
+row per interval in the summary layout described here, labelled with
+\code{effect = "selection"}. The final highest-|z| interval is fixed to relative
 probability 1 and is therefore not returned.
 }
 \description{
@@ -38,4 +38,14 @@ highest-|z| interval.
 are relative publication probabilities, not treatment effects or corrected
 treatment effects. The highest-|z| interval is the reference category and is
 fixed to 1, so it is not returned.
+
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }

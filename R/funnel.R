@@ -62,8 +62,8 @@ funnel_plot <- function(bg,
   }
 
   # posterior summaries (mean & SD) for partial/full pooling outputs
-  post_df <- as.data.frame(group_effects(bg, summary = TRUE,
-                                         prob = level)[,,1])
+  post_df <- as.data.frame(effect_slice(group_effects(bg, summary = TRUE,
+                                         prob = level), 1))
   post_df$group <- group_names(bg)
   post_df <- post_df[, c("group", "mean", "sd")]
   names(post_df) <- c("group", "effect", "se")
@@ -75,8 +75,8 @@ funnel_plot <- function(bg,
   # hyper-mean + heterogeneity
   if(bg$pooling == "none")
     stop("Need a pooled model to plot average treatment effect for the funnel.")
-  hypermean <- hypermean(bg)[["mean"]]
-  hetero <- if(bg$pooling == "partial") hypersd(bg)[["mean"]] else 0
+  hypermean <- hypermean(bg)[1,"mean"]
+  hetero <- if(bg$pooling == "partial") hypersd(bg)[1,"mean"] else 0
 
   crit <- stats::qnorm(1 - (1 - level)/2)
   se_grid <- seq(0, max(plot_df$se), length.out = 200)

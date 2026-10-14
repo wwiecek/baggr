@@ -21,6 +21,12 @@ of one returns the minimum and maximum draws.}
 
 \item{int}{Compatibility alias for \code{prob}; supply only one argument.}
 }
+\value{
+A named numeric vector for vector input, or a numeric matrix
+with one row per input column for matrix input. Statistics are ordered
+as \code{mean}, optional \code{median} and \code{sd}, \code{lower}, \code{upper}, \code{width}.
+\code{width} records \code{prob} even when all draws are unavailable.
+}
 \description{
 This function is just a convenient shorthand for getting typical summary statistics.
 }

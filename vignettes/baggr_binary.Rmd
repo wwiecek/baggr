@@ -210,14 +210,14 @@ bg_model_agg
 #> Total pooling (1 - I^2) = 0.78 with 95% interval 0.21 to 1.00 
 #> 
 #> Treatment effects on logarithm of odds ratio:
-#>               mean   sd  2.5%    50% 97.5% pooling
-#> Balcon      -0.133 0.25 -0.63 -0.138  0.37    0.76
-#> Clausen     -0.153 0.25 -0.64 -0.150  0.35    0.73
-#> Multicentre -0.064 0.27 -0.55 -0.081  0.52    0.75
-#> Barber      -0.211 0.28 -0.82 -0.196  0.30    0.79
-#> Norris      -0.152 0.22 -0.58 -0.153  0.28    0.67
-#> Kahler      -0.267 0.34 -1.10 -0.223  0.28    0.88
-#> Ledwich     -0.193 0.35 -1.00 -0.171  0.44    0.91
+#>               mean median   sd  2.5% 97.5% pooling
+#> Balcon      -0.133 -0.138 0.25 -0.63  0.37    0.76
+#> Clausen     -0.153 -0.150 0.25 -0.64  0.35    0.73
+#> Multicentre -0.064 -0.081 0.27 -0.55  0.52    0.75
+#> Barber      -0.211 -0.196 0.28 -0.82  0.30    0.79
+#> Norris      -0.152 -0.153 0.22 -0.58  0.28    0.67
+#> Kahler      -0.267 -0.223 0.34 -1.10  0.28    0.88
+#> Ledwich     -0.193 -0.171 0.35 -1.00  0.44    0.91
 ```
 
 Default plot (`plot(bg_model_agg)`) will show pooled group results. If you prefer a typical forest plot style, you can use `forest_plot`, which can also plot comparison with source data (via `print` argument):
@@ -348,19 +348,19 @@ Therefore, the result we get from the two models will be close (albeit with some
 baggr_compare(bg_model_agg, bg_model_ind)
 #> 
 #> Mean treatment effects:
-#>              2.5%      mean    97.5%    median       sd
-#> Model 1 -0.676378 -0.178309 0.216140 -0.168606 0.228784
-#> Model 2 -0.591938 -0.168874 0.255116 -0.166212 0.215986
+#>              mean    median       sd      2.5%    97.5%
+#> Model 1 -0.178309 -0.168606 0.228784 -0.676378 0.216140
+#> Model 2 -0.168874 -0.166212 0.215986 -0.591938 0.255116
 #> 
 #> SD for treatment effects:
-#>               2.5%     mean    97.5%   median       sd
-#> Model 1 0.00885086 0.256308 0.905122 0.187025 0.252931
-#> Model 2 0.00931181 0.254885 0.899649 0.185259 0.242173
+#>             mean   median       sd       2.5%    97.5%
+#> Model 1 0.256308 0.187025 0.252931 0.00885086 0.905122
+#> Model 2 0.254885 0.185259 0.242173 0.00931181 0.899649
 #> 
 #> Posterior predictive effects:
-#>             2.5%     mean    97.5%    median       sd
-#> Model 1 -1.06702 -0.17638 0.594144 -0.158556 0.420455
-#> Model 2 -1.07007 -0.17034 0.645039 -0.156770 0.408368
+#>             mean    median       sd     2.5%    97.5%
+#> Model 1 -0.17638 -0.158556 0.420455 -1.06702 0.594144
+#> Model 2 -0.17034 -0.156770 0.408368 -1.07007 0.645039
 ```
 
 There will be difference in speed -- in our example logistic model has to work with 1101 rows of data, while the summary level model only had 7 datapoints. Therefore in "standard" cases you are better off summarising your data and using the faster aggregate data model.
@@ -491,25 +491,25 @@ bgc1 <- baggr_compare(
 bgc1
 #> 
 #> Mean treatment effects:
-#>                     2.5%      mean    97.5%    median       sd
-#> Correct by .10  -2.23302 -0.676312 0.743550 -0.651132 0.748400
-#> Correct by .25  -2.19922 -0.688957 0.862837 -0.702436 0.754231
-#> Correct by 1.0  -1.99862 -0.674965 0.627155 -0.667651 0.631653
-#> Individual data -2.84815 -0.969296 0.822638 -0.926458 0.864047
+#>                      mean    median       sd     2.5%    97.5%
+#> Correct by .10  -0.676312 -0.651132 0.748400 -2.23302 0.743550
+#> Correct by .25  -0.688957 -0.702436 0.754231 -2.19922 0.862837
+#> Correct by 1.0  -0.674965 -0.667651 0.631653 -1.99862 0.627155
+#> Individual data -0.969296 -0.926458 0.864047 -2.84815 0.822638
 #> 
 #> SD for treatment effects:
-#>                      2.5%     mean   97.5%   median       sd
-#> Correct by .10  0.0329695 1.201240 4.71467 0.765106 1.662980
-#> Correct by .25  0.0310607 1.203540 6.15245 0.799620 1.444410
-#> Correct by 1.0  0.0238649 0.806168 2.99630 0.598175 0.761054
-#> Individual data 0.0466459 1.311940 4.79798 0.963777 1.238470
+#>                     mean   median       sd      2.5%   97.5%
+#> Correct by .10  1.201240 0.765106 1.662980 0.0329695 4.71467
+#> Correct by .25  1.203540 0.799620 1.444410 0.0310607 6.15245
+#> Correct by 1.0  0.806168 0.598175 0.761054 0.0238649 2.99630
+#> Individual data 1.311940 0.963777 1.238470 0.0466459 4.79798
 #> 
 #> Posterior predictive effects:
-#>                     2.5%      mean   97.5%    median      sd
-#> Correct by .10  -4.56300 -0.632432 3.04614 -0.649115 2.24564
-#> Correct by .25  -4.38997 -0.697637 3.28813 -0.707071 2.00664
-#> Correct by 1.0  -3.50090 -0.684390 1.88305 -0.646239 1.29757
-#> Individual data -5.46903 -0.995414 2.97378 -0.903370 1.97591
+#>                      mean    median      sd     2.5%   97.5%
+#> Correct by .10  -0.632432 -0.649115 2.24564 -4.56300 3.04614
+#> Correct by .25  -0.697637 -0.707071 2.00664 -4.38997 3.28813
+#> Correct by 1.0  -0.684390 -0.646239 1.29757 -3.50090 1.88305
+#> Individual data -0.995414 -0.903370 1.97591 -5.46903 2.97378
 plot(bgc1) + theme(legend.position = "right")
 ```
 
@@ -556,19 +556,19 @@ bgc2 <- baggr_compare(
 bgc2
 #> 
 #> Mean treatment effects:
-#>                                          2.5%      mean    97.5%    median       sd
-#> Summary-level (Rubin model on logOR) -2.02986 -0.608230 0.755365 -0.606898 0.684658
-#> Individual-level (logistic model)    -3.62767 -0.810261 0.686309 -0.720548 0.895789
+#>                                           mean    median       sd     2.5%    97.5%
+#> Summary-level (Rubin model on logOR) -0.608230 -0.606898 0.684658 -2.02986 0.755365
+#> Individual-level (logistic model)    -0.810261 -0.720548 0.895789 -3.62767 0.686309
 #> 
 #> SD for treatment effects:
-#>                                           2.5%    mean   97.5%   median       sd
-#> Summary-level (Rubin model on logOR) 0.0296311 0.84085 3.27987 0.593070 0.846950
-#> Individual-level (logistic model)    0.0383252 1.00042 3.48474 0.732055 0.915191
+#>                                         mean   median       sd      2.5%   97.5%
+#> Summary-level (Rubin model on logOR) 0.84085 0.593070 0.846950 0.0296311 3.27987
+#> Individual-level (logistic model)    1.00042 0.732055 0.915191 0.0383252 3.48474
 #> 
 #> Posterior predictive effects:
-#>                                          2.5%      mean   97.5%    median      sd
-#> Summary-level (Rubin model on logOR) -3.26276 -0.585702 2.27612 -0.590107 1.40043
-#> Individual-level (logistic model)    -4.42009 -0.817129 2.18869 -0.713853 1.59739
+#>                                           mean    median      sd     2.5%   97.5%
+#> Summary-level (Rubin model on logOR) -0.585702 -0.590107 1.40043 -3.26276 2.27612
+#> Individual-level (logistic model)    -0.817129 -0.713853 1.59739 -4.42009 2.18869
 plot(bgc2)
 ```
 
@@ -618,25 +618,25 @@ bgc3 <- baggr_compare(
 bgc3
 #> 
 #> Mean treatment effects:
-#>                                2.5%      mean    97.5%    median       sd
-#> Rubin model                -2.02986 -0.608230 0.755365 -0.606898 0.684658
-#> Independent N(0,10^2)      -3.62767 -0.810261 0.686309 -0.720548 0.895789
-#> Hierarchical prior         -1.98819 -0.686223 0.454052 -0.667927 0.621197
-#> Independent N(-4.59, 10^2) -3.41717 -0.778947 0.853450 -0.706826 1.013460
+#>                                 mean    median       sd     2.5%    97.5%
+#> Rubin model                -0.608230 -0.606898 0.684658 -2.02986 0.755365
+#> Independent N(0,10^2)      -0.810261 -0.720548 0.895789 -3.62767 0.686309
+#> Hierarchical prior         -0.686223 -0.667927 0.621197 -1.98819 0.454052
+#> Independent N(-4.59, 10^2) -0.778947 -0.706826 1.013460 -3.41717 0.853450
 #> 
 #> SD for treatment effects:
-#>                                 2.5%     mean   97.5%   median       sd
-#> Rubin model                0.0296311 0.840850 3.27987 0.593070 0.846950
-#> Independent N(0,10^2)      0.0383252 1.000420 3.48474 0.732055 0.915191
-#> Hierarchical prior         0.0177607 0.675636 2.54531 0.475771 0.726157
-#> Independent N(-4.59, 10^2) 0.0345881 1.039860 4.02034 0.710351 1.066950
+#>                                mean   median       sd      2.5%   97.5%
+#> Rubin model                0.840850 0.593070 0.846950 0.0296311 3.27987
+#> Independent N(0,10^2)      1.000420 0.732055 0.915191 0.0383252 3.48474
+#> Hierarchical prior         0.675636 0.475771 0.726157 0.0177607 2.54531
+#> Independent N(-4.59, 10^2) 1.039860 0.710351 1.066950 0.0345881 4.02034
 #> 
 #> Posterior predictive effects:
-#>                                2.5%      mean   97.5%    median      sd
-#> Rubin model                -3.47727 -0.614096 2.29151 -0.610400 1.44826
-#> Independent N(0,10^2)      -4.64276 -0.821637 2.10816 -0.703896 1.58941
-#> Hierarchical prior         -3.05701 -0.672248 1.59197 -0.651758 1.15323
-#> Independent N(-4.59, 10^2) -5.01152 -0.813682 2.59469 -0.713356 1.82096
+#>                                 mean    median      sd     2.5%   97.5%
+#> Rubin model                -0.614096 -0.610400 1.44826 -3.47727 2.29151
+#> Independent N(0,10^2)      -0.821637 -0.703896 1.58941 -4.64276 2.10816
+#> Hierarchical prior         -0.672248 -0.651758 1.15323 -3.05701 1.59197
+#> Independent N(-4.59, 10^2) -0.813682 -0.713356 1.82096 -5.01152 2.59469
 plot(bgc3) + theme(legend.position = "right")
 ```
 
@@ -679,19 +679,19 @@ baggr_compare("No covariate" = bg_model_agg,
 #> Compared models use different covariates. Hyperparameters are not directly comparable.
 #> 
 #> Mean treatment effects:
-#>                                  2.5%      mean    97.5%    median       sd
-#> No covariate                -0.676378 -0.178309 0.216140 -0.168606 0.228784
-#> With covariates, 0-1 coding -0.983304 -0.341271 0.252122 -0.333130 0.311910
+#>                                  mean    median       sd      2.5%    97.5%
+#> No covariate                -0.178309 -0.168606 0.228784 -0.676378 0.216140
+#> With covariates, 0-1 coding -0.341271 -0.333130 0.311910 -0.983304 0.252122
 #> 
 #> SD for treatment effects:
-#>                                   2.5%     mean    97.5%   median       sd
-#> No covariate                0.00885086 0.256308 0.905122 0.187025 0.252931
-#> With covariates, 0-1 coding 0.00954359 0.287942 0.997505 0.212520 0.274785
+#>                                 mean   median       sd       2.5%    97.5%
+#> No covariate                0.256308 0.187025 0.252931 0.00885086 0.905122
+#> With covariates, 0-1 coding 0.287942 0.212520 0.274785 0.00954359 0.997505
 #> 
 #> Posterior predictive effects:
-#>                                 2.5%      mean    97.5%    median       sd
-#> No covariate                -1.03299 -0.179489 0.650847 -0.163442 0.434541
-#> With covariates, 0-1 coding -1.35930 -0.339569 0.648485 -0.340654 0.519976
+#>                                  mean    median       sd     2.5%    97.5%
+#> No covariate                -0.179489 -0.163442 0.434541 -1.03299 0.650847
+#> With covariates, 0-1 coding -0.339569 -0.340654 0.519976 -1.35930 0.648485
 #> 
 #> Mean (SD) for covariates:
 #>         model      study_grouping
@@ -712,14 +712,14 @@ bg_cov1
 #> Total pooling (1 - I^2) = 0.74 with 95% interval 0.18 to 1.00 
 #> 
 #> Treatment effects on logarithm of odds ratio:
-#>               mean   sd  2.5%     50% 97.5% pooling
-#> Balcon      -0.007 0.30 -0.62 -0.0033  0.58    0.73
-#> Clausen     -0.039 0.29 -0.64 -0.0271  0.51    0.70
-#> Multicentre  0.051 0.30 -0.54  0.0480  0.68    0.72
-#> Barber      -0.344 0.32 -1.01 -0.3446  0.26    0.76
-#> Norris      -0.259 0.28 -0.78 -0.2587  0.30    0.64
-#> Kahler      -0.436 0.39 -1.31 -0.4086  0.25    0.85
-#> Ledwich     -0.348 0.41 -1.24 -0.3394  0.44    0.90
+#>               mean  median   sd  2.5% 97.5% pooling
+#> Balcon      -0.007 -0.0033 0.30 -0.62  0.58    0.73
+#> Clausen     -0.039 -0.0271 0.29 -0.64  0.51    0.70
+#> Multicentre  0.051  0.0480 0.30 -0.54  0.68    0.72
+#> Barber      -0.344 -0.3446 0.32 -1.01  0.26    0.76
+#> Norris      -0.259 -0.2587 0.28 -0.78  0.30    0.64
+#> Kahler      -0.436 -0.4086 0.39 -1.31  0.25    0.85
+#> Ledwich     -0.348 -0.3394 0.41 -1.24  0.44    0.90
 #> 
 #> Covariate (fixed) effects on logarithm of odds ratio:
 #>                mean   sd

@@ -12,7 +12,8 @@ treatment_effect(
   transform = NULL,
   prob = 0.95,
   message = TRUE,
-  interval = NULL
+  interval = NULL,
+  rename_int = FALSE
 )
 
 hypermean(
@@ -21,7 +22,8 @@ hypermean(
   prob = 0.95,
   message = FALSE,
   summary = TRUE,
-  interval = NULL
+  interval = NULL,
+  rename_int = FALSE
 )
 
 hypersd(
@@ -30,7 +32,8 @@ hypersd(
   prob = 0.95,
   message = FALSE,
   summary = TRUE,
-  interval = NULL
+  interval = NULL,
+  rename_int = FALSE
 )
 }
 \arguments{
@@ -48,6 +51,10 @@ plotting or printing functions)}
 no pooling models}
 
 \item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
+
+\item{rename_int}{logical; with \code{summary = TRUE}, rename only \code{lower}
+and \code{upper} to endpoint percentages and omit \code{width}. \code{median} retains
+its name. Defaults to \code{FALSE}.}
 }
 \description{
 The most general \code{treatment_effect} displays
@@ -65,12 +72,22 @@ interpretable, \code{treatment_effect()} returns \code{sigma_tau = NA} when
 \code{transform} is supplied; this is also what \code{hypersd(bg, transform = ...)}
 returns.
 }
+\details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+}
 \section{Functions}{
 \itemize{
-\item \code{treatment_effect()}: A list with 2 vectors (corresponding to MCMC samples)
+\item \code{treatment_effect()}: A list with 2 components (posterior draws)
 \code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
-both vectors are summarised as mean and lower/upper bounds according to
-\code{prob}
+each component follows the summary layout described here.
 
 \item \code{hypermean()}: The hypermean of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[1]]}
 

@@ -76,23 +76,23 @@ test_that("Data are available in baggr object", {
 
 test_that("Pooling metrics", {
   # all pooling metric are the same as SE's are the same
-  expect_equal(length(unique(bg5_p$pooling_metric[1,,1])), 1) #expect_length()
-  expect_equal(length(unique(bg5_p$pooling_metric[2,,1])), 1)
-  expect_equal(length(unique(bg5_p$pooling_metric[3,,1])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[,"lower"])), 1) #expect_length()
+  expect_equal(length(unique(bg5_p$pooling_metric[,"mean"])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[,"upper"])), 1)
   # all pooling stats are 0 if no pooling
-  expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
+  expect_equal(unique(as.numeric(bg5_n$pooling_metric[,c("mean","median","lower","upper")])), 0)
   # full pooling means 1's everywhere
-  expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
+  expect_equal(unique(as.numeric(bg5_f$pooling_metric[,c("mean","median","lower","upper")])), 1)
 
   pp <- pooling(bg5_p)
   expect_is(pp, "array")
-  expect_gt(min(pp), 0)
-  expect_lt(max(pp), 1)
+  expect_gt(min(pp[,c("mean","median","lower","upper")]), 0)
+  expect_lt(max(pp[,c("mean","median","lower","upper")]), 1)
   # since all SEs are the same, pooling should be the same for all sites
   capture_output(pp)
-  # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
-  expect_equal(length(unique(pp[2,,1])), 1)
-  expect_equal(as.numeric(pp[2,1,1]), .7, tolerance = .2)
+  # expect_equal(pp[,"mean"], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
+  expect_equal(length(unique(pp[,"mean"])), 1)
+  expect_equal(as.numeric(pp[1,"mean"]), .7, tolerance = .2)
 })
 
 test_that("extra pooling stats work", {
@@ -100,19 +100,19 @@ test_that("extra pooling stats work", {
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
   expect_is(i2, "array")
-  expect_gte(min(i2), 0)
-  expect_lte(max(i2), 1)
+  expect_gte(min(i2[,c("mean","median","lower","upper")]), 0)
+  expect_lte(max(i2[,c("mean","median","lower","upper")]), 1)
   h2 <- pooling(bg5_p, metric = "hsq")
   expect_is(h2, "array")
-  expect_gte(min(h2), 1)
+  expect_gte(min(h2[,c("mean","median","lower","upper")]), 1)
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
   expect_is(wt, "array")
-  expect_equal(dim(wt), c(3,8,1))
-  expect_equal(sum(wt[2,,1]), 1)
-  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[1,,1]), 0)
+  expect_equal(dim(wt), c(8,6))
+  expect_equal(sum(wt[,"mean"]), 1)
+  expect_lte(sum(wt[,"lower"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"upper"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"lower"]), 0)
   wt2 <- pooling(bg5_p, metric = "weights")
   expect_identical(wt, wt2)
 })
@@ -120,8 +120,8 @@ test_that("extra pooling stats work", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 6)
 
   expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau,hypermean(bg5_p,message=FALSE))
   expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau,hypersd(bg5_p,message=FALSE))

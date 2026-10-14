@@ -14,6 +14,16 @@
 #' same object as `hypermean(bg, transform = exp)`: `effect_draw()` also includes
 #' the uncertainty or heterogeneity around the mean treatment effect.
 #'
+#' With `summary = TRUE`, summaries are numeric matrices with rows for
+#' the quantities being summarised and columns `mean`, `median`, `sd`,
+#' `lower`, `upper`, `width`, in that order. The bounds form a central
+#' interval; `width` is its requested probability mass, even when estimates
+#' are unavailable. For multiple effects, the result is a rows by statistics
+#' by effects array, with effect names in the third dimension. A single-effect
+#' matrix stores its effect name in the `effect` attribute. Row names are
+#' preserved. Aggregate summaries have one row; predictions conditional on
+#' `newdata` have one row per observation.
+#'
 #' @param object A `baggr` class object.
 #' @param draws How many values to draw? The default is as long as the number of samples
 #'          in the `baggr` object (see _Details_).
@@ -89,7 +99,11 @@ effect_draw <- function(object,
   if(x$pooling == "none"){
     if(message)
       message("There is no predicted effect when pooling = 'none'.")
-    new_tau <- return(as.numeric(c(NA)))
+    if(summary)
+      return(summary_draws(array(NA_real_,
+        c(1, if(is.null(newdata)) 1 else nrow(newdata), neffects)),
+        prob, x$effects, rows = rownames(newdata)))
+    return(as.numeric(c(NA)))
   }
 
   te <- treatment_effect(x, message = FALSE)
@@ -166,7 +180,8 @@ effect_draw <- function(object,
     new_tau_array <- apply(new_tau_array, c(1,2,3), transform)
 
   if(summary)
-    new_tau_array <- apply(new_tau_array, c(1, 2), mint, prob=prob, median=TRUE, sd = TRUE)
+    return(summary_draws(aperm(new_tau_array, c(3, 2, 1)), prob,
+                         x$effects, rows = rownames(newdata)))
 
   if(dim(new_tau_array)[2] == 1)
     return(new_tau_array[,1,])

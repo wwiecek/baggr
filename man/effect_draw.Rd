@@ -57,6 +57,16 @@ same object as \code{hypermean(bg, transform = exp)}: \code{effect_draw()} also 
 the uncertainty or heterogeneity around the mean treatment effect.
 }
 \details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
 uncertainty in the mean treatment effect. This is useful both in understanding impact of
 heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.

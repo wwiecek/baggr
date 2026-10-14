@@ -186,8 +186,8 @@ baggr_compare <- function(...,
     # Grab covariates, if there are any:
     cov_effects <- lapply(seq_along(models), function(i) {
       x <- models[[i]]
-      est <- fixed_effects(x, transform = transform,
-                           summary = TRUE, prob = prob)
+      est <- effect_slice(fixed_effects(x, transform = transform,
+                           summary = TRUE, prob = prob), 1)
       if(dim(est)[1] == 0)
         # return(c(NA, NA))
         return(NULL)
@@ -196,11 +196,12 @@ baggr_compare <- function(...,
           data.frame(
             model = names(models)[i],
             covariate = rownames(est),
-            mean = est[, "mean", 1],
-            sd = est[, "sd", 1],
-            lci = est[, "lci", 1],
-            uci = est[, "uci", 1],
-            median = est[, "median", 1]
+            mean = est[, "mean"],
+            median = est[, "median"],
+            sd = est[, "sd"],
+            lower = est[, "lower"],
+            upper = est[, "upper"],
+            width = est[, "width"]
           )
         )
     })
@@ -210,36 +211,15 @@ baggr_compare <- function(...,
   }
 
   # Return treatment effects, hyperSDs, predicted effects
-  mean_trt_effects <- do.call(rbind, (
-    lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform,
-                              prob = prob,
-                              summary = TRUE, message = FALSE)$tau
-      if(is.matrix(est)) {
-        if(nrow(est) == 1) est <- est[1,]
-      }
-      est
-    })))
-  sd_trt_effects <- do.call(rbind, (
-    lapply(models, function(x) {
-      est <- treatment_effect(x, transform = transform,
-                              prob = prob,
-                              summary = TRUE, message = FALSE)$sigma_tau
-      if(is.matrix(est)) {
-        if(nrow(est) == 1) est <- est[1,]
-      }
-      est
-    })))
-  posteriorpd_trt <- do.call(rbind, (
-    lapply(models, function(x) {
-      est <- effect_draw(x, transform = transform,
-                         prob = prob,
-                         summary = TRUE)
-      if(is.matrix(est)) {
-        if(nrow(est) == 1) est <- est[1,]
-      }
-      est
-    })))
+  mean_trt_effects <- comparison_summary(lapply(models, function(x)
+    treatment_effect(x, transform = transform, prob = prob,
+                     summary = TRUE, message = FALSE)$tau), names(models), effect_names)
+  sd_trt_effects <- comparison_summary(lapply(models, function(x)
+    treatment_effect(x, transform = transform, prob = prob,
+                     summary = TRUE, message = FALSE)$sigma_tau), names(models), effect_names)
+  posteriorpd_trt <- comparison_summary(lapply(models, function(x)
+    effect_draw(x, transform = transform, prob = prob, summary = TRUE)),
+    names(models), effect_names)
 
   bgc <- structure(
     list(
@@ -267,17 +247,21 @@ baggr_compare <- function(...,
 #' @param ... other parameters passed to print
 #' @export
 print.baggr_compare <- function(x, digits = 2, ...){
-  cat("\nMean treatment effects:\n")
-  print(signif(interval_table(x$mean_trt, x$prob), digits = digits))
-  cat("\nSD for treatment effects:\n")
-  print(signif(interval_table(x$sd_trt, x$prob), digits = digits))
-  cat("\nPosterior predictive effects:\n")
-  print(signif(interval_table(x$posteriorpd_trt, x$prob), digits = digits))
+  for(i in seq_along(x$models[[1]]$effects)) {
+    if(length(x$models[[1]]$effects) > 1)
+      cat("\nEffect:", x$models[[1]]$effects[i], "\n")
+    cat("\nMean treatment effects:\n")
+    print(signif(interval_table(effect_slice(x$mean_trt, i), x$prob), digits))
+    cat("\nSD for treatment effects:\n")
+    print(signif(interval_table(effect_slice(x$sd_trt, i), x$prob), digits))
+    cat("\nPosterior predictive effects:\n")
+    print(signif(interval_table(effect_slice(x$posteriorpd_trt, i), x$prob), digits))
+  }
 
   if(!is.null(x$covariates)){
     cat("\nCovariate effects:\n")
     mcov <- x$covariates
-    stats <- intersect(c("mean", "sd", "median", "lci", "uci"), names(mcov))
+    stats <- intersect(c("mean", "sd", "median", "lower", "upper"), names(mcov))
     tab <- interval_table(as.matrix(mcov[, stats, drop = FALSE]), x$prob)
     print(data.frame(model = mcov$model, covariate = mcov$covariate, tab,
                      check.names = FALSE), digits = digits, row.names = FALSE)
@@ -340,7 +324,7 @@ plot.baggr_compare <- function(x,
   # Refer to global variables outside of ggplot context to pass CMD CHECK, see:
   # https://stackoverflow.com/questions/9439256/
   #   how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
-  lci <- uci <- model <- group <- NULL
+  lower <- upper <- model <- group <- NULL
 
   compare <- match.arg(compare, c("groups", "hyperpars", "effects"))
 
@@ -390,22 +374,10 @@ plot.baggr_compare <- function(x,
         m$group <- rownames(m)
 
         if(cmodel$pooling != "none" && hyper) {
-          if(length(effect_names) == 1)
-            hyper_treat <- treatment_effect(cmodel,
-                                            transform = transform,
-                                            message=FALSE)$tau
-          if(length(effect_names) > 1)
-            hyper_treat <- treatment_effect(cmodel,
-                                            transform = transform,
-                                            message=FALSE)$tau[,i]
-          hyper_effects <- data.frame(
-            lci = quantile(hyper_treat, (1 - prob)/2),
-            median = quantile(hyper_treat, 0.5),
-            uci = quantile(hyper_treat, 1 - (1 - prob)/2),
-            mean = mean(hyper_treat),
-            sd = sd(hyper_treat),
-            group = "Pooled Estimate"
-          )
+          hyper_effects <- as.data.frame(effect_slice(
+            treatment_effect(cmodel, transform = transform, prob = prob,
+                             summary = TRUE, message = FALSE)$tau, i))
+          hyper_effects$group <- "Pooled Estimate"
           if(compare == "hyperpars")
             m <- hyper_effects
           if(compare == "groups")
@@ -482,7 +454,7 @@ plot.baggr_compare <- function(x,
 
 #' Plot single comparison ggplot in `baggr_compare` style
 #'
-#' @param df data.frame with columns `group`, `median`, `lci`, `uci`,
+#' @param df data.frame with columns `group`, `median`, `lower`, `upper`,
 #'           `model` (character or factor listing compared models) and,
 #'           optionally, `parameter` (character or factor with name of parameter)
 #' @param title `ggtitle` argument passed to ggplot
@@ -501,7 +473,7 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                              points = FALSE,
                              add_values = FALSE, values_digits = 1, values_size = 4) {
 
-  group <- median <- lci <- uci <- model <- NULL
+  group <- median <- lower <- upper <- model <- NULL
 
   # Set the appropriate right margin
   if(add_values) {
@@ -518,10 +490,10 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
     legend <- "none"
 
   if(add_values)
-    value_text <- paste3_formatter(df$median, df$lci, df$uci, values_digits)
+    value_text <- paste3_formatter(df$median, df$lower, df$upper, values_digits)
 
   pl <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = median,
-                                         ymin = lci, ymax = uci,
+                                         ymin = lower, ymax = upper,
                                          group = interaction(model),
                                          color = model)) +
     {if(grid) ggplot2::facet_wrap( ~ parameter, ncol = 3)} +
@@ -544,7 +516,7 @@ single_comp_plot <- function(df, title="", legend = "top", ylab = "", grid = F,
                    axis.title.x=element_text(size=values_size*3+2),
                    legend.text=element_text(size=values_size*3),
                    strip.text.x = ggplot2::element_blank()) +
-    {if(add_values) ggplot2::geom_text(aes(y=max(uci),
+    {if(add_values) ggplot2::geom_text(aes(y=max(upper),
                                            hjust=-0.25,
                                            label=value_text),
                                        position = position_dodge2(width = 0.75),
@@ -574,4 +546,15 @@ get_order <- function(df_groups, hyper) {
   else
     ord <- rev(lvls)
   ord
+}
+
+# Combine aggregate summaries with one row per model.
+comparison_summary <- function(x, models, effects) {
+  out <- array(NA_real_, c(length(x), ncol(x[[1]]), length(effects)),
+               dimnames = list(models, colnames(x[[1]]), effects))
+  for(i in seq_along(x))
+    for(j in seq_along(effects))
+      out[i,,j] <- effect_slice(x[[i]], j)[1,colnames(out)]
+  if(length(effects) == 1L) out <- effect_slice(out, 1)
+  out
 }

@@ -48,13 +48,13 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
     te_or <- treatment_effect(model_or, summary = TRUE)$tau
     te_rr <- treatment_effect(model_rr, summary = TRUE)$tau
     p_bsl <- seq(0,1,length=1000)
-    p_trt_rr <- exp(te_rr[["mean"]])*p_bsl
-    odds_trt <- exp(te_or[["mean"]])*(p_bsl/(1-p_bsl))
+    p_trt_rr <- exp(te_rr[1,"mean"])*p_bsl
+    odds_trt <- exp(te_or[1,"mean"])*(p_bsl/(1-p_bsl))
     p_trt_or <- odds_trt / (1 + odds_trt)
     p_lines <- rbind(
       data.frame(p_bsl, "p_trt" = p_trt_rr, model = "RR"),
       data.frame(p_bsl, "p_trt" = p_trt_or, model = "OR"))
-    # p_trt_or <- te_or[["mean"]]
+    # p_trt_or <- te_or[1,"mean"]
   }
 
   lim_min <- min(c(ggdata$risk_trt*0.9, ggdata$risk_control*0.9))

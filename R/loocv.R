@@ -323,21 +323,28 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
   if(is.null(loo_model$models))
     stop("To plot, the loocv() output must include models (return_models = TRUE).")
 
-  mm1 <- do.call(rbind,
-                 lapply(loo_model$models, function(x) treatment_effect(x, summary = T)$tau))
-  df1 <- data.frame(
-    setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
-    model = "LOOCV estimate",
-    elpd = loo_model$pointwise,
-    group = input_data$group)
-  df2 <- data.frame(lci = input_data$tau - 1.96*input_data$se,
-                    median = input_data$tau,
-                    uci = input_data$tau + 1.96*input_data$se,
-                    group = input_data$group,
-                    elpd = NA,
-                    model = "Test data (out-of-sample)")
-  df <- rbind(df1, df2)
-  pl <- single_comp_plot(df)
+  effects <- loo_model$full_model$effects
+  groups <- group_names(loo_model$full_model)
+  mm1 <- comparison_summary(lapply(loo_model$models, function(model)
+    treatment_effect(model, summary = TRUE)$tau), groups, effects)
+  df <- do.call(rbind, lapply(seq_along(effects), function(i) {
+    inputs <- input_data
+    if(length(effects) > 1) {
+      treatments <- attr(loo_model$full_model$inputs, "treatment_levels")
+      inputs <- inputs[inputs$treatment == treatments[i],,drop = FALSE]
+    }
+    inputs <- inputs[match(groups, inputs$group),,drop = FALSE]
+    df1 <- data.frame(effect_slice(mm1, i)[,
+      c("lower", "median", "upper"), drop = FALSE],
+      model = "LOOCV estimate", elpd = loo_model$pointwise, group = groups)
+    df2 <- data.frame(lower = inputs$tau - 1.96*inputs$se,
+                      median = inputs$tau,
+                      upper = inputs$tau + 1.96*inputs$se,
+                      group = groups, elpd = NA,
+                      model = "Test data (out-of-sample)")
+    data.frame(rbind(df1, df2), parameter = effects[i])
+  }))
+  pl <- single_comp_plot(df, grid = length(effects) > 1)
 
   fmti <- function(x, digits = values_digits) {
     format(round(x, digits), nsmall = digits)
@@ -345,7 +352,7 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
 
   # add_values
   if(add_values){
-    group <- median <- lci <- uci <- model <- elpd <- NULL
+    group <- median <- lower <- upper <- model <- elpd <- NULL
     values_digits <- 2
     values_size <- 2.5
 
@@ -353,7 +360,7 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
       ggplot2::geom_text(
         aes(label = fmti(elpd, values_digits),
             hjust = 1,
-            y = 1.1*max(uci)),
+            y = 1.1*max(upper)),
         position = ggplot2::position_dodge(width = .5),
         size = values_size) +
       ggplot2::theme(strip.text.x = ggplot2::element_blank()) +

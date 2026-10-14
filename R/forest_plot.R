@@ -55,8 +55,8 @@ forest_plot <- function(bg,
 
   ge_raw$mean  <- ge_raw$tau
   ge_raw$sd    <- ge_raw$se
-  ge_raw$lci   <- ge_raw$tau - stats::qnorm((1 + prob)/2)*ge_raw$se
-  ge_raw$uci   <- ge_raw$tau + stats::qnorm((1 + prob)/2)*ge_raw$se
+  ge_raw$lower   <- ge_raw$tau - stats::qnorm((1 + prob)/2)*ge_raw$se
+  ge_raw$upper   <- ge_raw$tau + stats::qnorm((1 + prob)/2)*ge_raw$se
   ge_posterior <- as.data.frame(
     effect_slice(group_effects(bg, summary = TRUE, prob = prob), 1))
   fe_posterior <- as.data.frame(
@@ -71,8 +71,8 @@ forest_plot <- function(bg,
   }else if(show == "both"){
     ge <- list(mean = cbind(ge_raw$mean, ge_posterior$mean),
                sd   = cbind(ge_raw$sd,   ge_posterior$sd),
-               lci  = cbind(ge_raw$lci,  ge_posterior$lci),
-               uci  = cbind(ge_raw$uci,  ge_posterior$uci))
+               lower  = cbind(ge_raw$lower,  ge_posterior$lower),
+               upper  = cbind(ge_raw$upper,  ge_posterior$upper))
   } else if(show == "covariates"){
     if(nrow(fe_posterior) == 0)
       stop("No covariates to include in forest plot.")
@@ -120,8 +120,8 @@ forest_plot <- function(bg,
 
   # Fix to make X ticks bigger
   # (solving the world hunger this ain't)
-  custom_xticks <- pretty(c(ge$lci, ge$uci, ge$mean,
-                           te_summary[c("mean", "lci", "uci")]), n = 8)
+  custom_xticks <- pretty(c(ge$lower, ge$upper, ge$mean,
+                           te_summary[c("mean", "lower", "upper")]), n = 8)
   # custom_xticks[which.min(abs(custom_xticks))] <- 0
   if(!("xticks" %in% names(l))) {
     l[["xticks"]] <- sort(unique(c(0, custom_xticks)))
@@ -131,8 +131,8 @@ forest_plot <- function(bg,
   l[["txt_gp"]]  <- fpTxtGp(ticks = grid::gpar(cex = 0.85))
 
   l[["mean"]]  <- rbind(NA, as.matrix(ge$mean),NA, te_summary["mean"])
-  l[["lower"]] <- rbind(NA, as.matrix(ge$lci), NA, te_summary["lci"])
-  l[["upper"]] <- rbind(NA, as.matrix(ge$uci), NA, te_summary["uci"])
+  l[["lower"]] <- rbind(NA, as.matrix(ge$lower), NA, te_summary["lower"])
+  l[["upper"]] <- rbind(NA, as.matrix(ge$upper), NA, te_summary["upper"])
   if(show == "both"){
     l[["fn.ci_norm"]]  <- c(fpDrawCircleCI, fpDrawNormalCI)
     l[["legend"]]      <- c("Input", "Estimate")

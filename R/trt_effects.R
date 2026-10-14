@@ -16,6 +16,16 @@
 #' `transform` is supplied; this is also what `hypersd(bg, transform = ...)`
 #' returns.
 #'
+#' With `summary = TRUE`, summaries are numeric matrices with rows for
+#' the quantities being summarised and columns `mean`, `median`, `sd`,
+#' `lower`, `upper`, `width`, in that order. The bounds form a central
+#' interval; `width` is its requested probability mass, even when estimates
+#' are unavailable. For multiple effects, the result is a rows by statistics
+#' by effects array, with effect names in the third dimension. A single-effect
+#' matrix stores its effect name in the `effect` attribute. Row names are
+#' preserved. Aggregate summaries have one row; predictions conditional on
+#' `newdata` have one row per observation.
+#'
 #' @param bg a [baggr::baggr()] model
 #' @param summary logical; if TRUE returns summary statistics as explained below.
 #' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
@@ -23,12 +33,14 @@
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `treatment_effect` from other
 #'                  plotting or printing functions)
+#' @param rename_int logical; with `summary = TRUE`, rename only `lower`
+#'   and `upper` to endpoint percentages and omit `width`. `median` retains
+#'   its name. Defaults to `FALSE`.
 #' @param message logical; use to disable messages prompted by using with
 #'                no pooling models
-#' @describeIn treatment_effect A list with 2 vectors (corresponding to MCMC samples)
+#' @describeIn treatment_effect A list with 2 components (posterior draws)
 #'         `tau` (mean effect) and `sigma_tau` (SD). If `summary=TRUE`,
-#'         both vectors are summarised as mean and lower/upper bounds according to
-#'         `prob`
+#'         each component follows the summary layout described here.
 #' @export
 #' @importFrom rstan extract
 #' @examples
@@ -44,13 +56,18 @@
 
 treatment_effect <- function(bg, summary = FALSE,
                              transform = NULL, prob = .95,
-                             message = TRUE, interval = NULL) {
+                             message = TRUE, interval = NULL, rename_int = FALSE) {
   prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   check_if_baggr(bg)
 
   if(bg$pooling == "none"){
     if(message)
       message("There is no treatment effect estimated when pooling = 'none'.")
+    if(summary) {
+      unavailable <- summary_draws(array(NA_real_, c(1, 1, length(bg$effects))),
+                                    prob, bg$effects, rename_int = rename_int)
+      return(list(tau = unavailable, sigma_tau = unavailable))
+    }
     return(list(tau = as.numeric(NA), sigma_tau = as.numeric(NA)))
   }
   if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
@@ -98,8 +115,13 @@ treatment_effect <- function(bg, summary = FALSE,
     # and then do operations on it by accident
   }
   if(summary) {
-    tau <- mint(tau, prob=prob, median=TRUE, sd = TRUE)
-    sigma_tau <- mint(sigma_tau, prob=prob, median=TRUE, sd = TRUE)
+    tau <- summary_draws(tau, prob, bg$effects, aggregate = TRUE,
+                          rename_int = rename_int)
+    if(!is.null(transform) || bg$pooling == "full")
+      sigma_tau <- array(if(is.null(transform)) 0 else NA_real_,
+                         c(1, 1, length(bg$effects)))
+    sigma_tau <- summary_draws(sigma_tau, prob, bg$effects, aggregate = TRUE,
+                                rename_int = rename_int)
   }
 
   return(list(tau = tau, sigma_tau = sigma_tau))
@@ -110,9 +132,10 @@ treatment_effect <- function(bg, summary = FALSE,
 #' @describeIn treatment_effect The hypermean of a `baggr` model, shorthand for `treatment_effect(x, s=T)[[1]]`
 #' @export
 hypermean <- function(bg, transform = NULL, prob = 0.95, message = FALSE,
-                      summary = TRUE, interval = NULL) {
+                      summary = TRUE, interval = NULL, rename_int = FALSE) {
   prob <- interval_prob(prob, interval, missing(prob), missing(interval))
-  t <- treatment_effect(bg,summary=summary,transform=transform,prob=prob,message=FALSE)
+  t <- treatment_effect(bg,summary=summary,transform=transform,prob=prob,message=FALSE,
+                        rename_int=rename_int)
   if(message){
     cat(paste0("Hypermean of ",bg$effects," with ",prob*100,"% interval:\n"))
     print(t[[1]])
@@ -123,9 +146,10 @@ hypermean <- function(bg, transform = NULL, prob = 0.95, message = FALSE,
 #' @describeIn treatment_effect The hyper-SD of a `baggr` model, shorthand for `treatment_effect(x, s=T)[[2]]`
 #' @export
 hypersd <- function(bg, transform = NULL, prob = 0.95, message = FALSE,
-                    summary = TRUE, interval = NULL) {
+                    summary = TRUE, interval = NULL, rename_int = FALSE) {
   prob <- interval_prob(prob, interval, missing(prob), missing(interval))
-  t <- treatment_effect(bg,summary=summary,transform=transform,prob=prob,message=FALSE)
+  t <- treatment_effect(bg,summary=summary,transform=transform,prob=prob,message=FALSE,
+                        rename_int=rename_int)
   if(message){
     cat(paste0("Hyper SD of ",bg$effects," with ",prob*100,"% interval:\n"))
     print(t[[2]])
@@ -140,12 +164,17 @@ hypersd <- function(bg, transform = NULL, prob = 0.95, message = FALSE,
 #' @param summary logical; if TRUE returns summary statistics as explained below.
 #' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
 #' @param interval Compatibility alias for `prob`; supply only one of these arguments.
-#' @return a vector of values
+#' @return Raw draws as a vector, or a one-row numeric summary matrix with
+#'   columns `mean`, `median`, `sd`, `lower`, `upper`, `width` and an
+#'   `effect` attribute of `"correlation"`. Correlation summaries are
+#'   unavailable for models with no or full pooling; their `width` remains known.
 #' @export
 mutau_cor <- function(bg,
                       summary = FALSE,
                       prob = 0.95, interval = NULL) {
   prob <- interval_prob(prob, interval, missing(prob), missing(interval))
+  if(summary && bg$pooling %in% c("none", "full"))
+    return(summary_draws(NA_real_, prob, "correlation"))
   # m <- matrix(apply(as.matrix(bg$fit, "L_Omega"), 2, mean), 2, 2)
   # h <- apply(as.matrix(bg$fit, "hypersd"), 2, mean)
   # (m %*% t(m))[2,1]
@@ -157,7 +186,7 @@ mutau_cor <- function(bg,
   if(!all(m[,1] == 1))
     warning("Error with correlation matrix in the mu&tau model. Inspect L_Omega parameters.")
   if(summary)
-    return(mint(m[,2], prob=prob, median=TRUE, sd = TRUE))
+    return(summary_draws(m[,2], prob, "correlation"))
   else
     return(m[,2])
 

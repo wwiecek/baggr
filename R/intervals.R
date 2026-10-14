@@ -17,35 +17,59 @@ interval_names <- function(prob) {
   names(stats::quantile(c(0, 1), c((1 - prob)/2, (1 + prob)/2)))
 }
 
-# Select summary statistics by name and label the bounds lci and uci.
-interval_stats <- function(x, prob) {
-  labels <- interval_names(prob)
-  cols <- if(is.null(dim(x))) names(x) else colnames(x)
-  lower <- if("lci" %in% cols) "lci" else labels[1]
-  upper <- if("uci" %in% cols) "uci" else labels[2]
-  keep <- c("mean", intersect(c("sd", "median"), cols), lower, upper)
-  if(is.null(dim(x))) {
-    x <- x[keep]
-    names(x) <- c(head(keep, -2), "lci", "uci")
-  } else {
-    x <- x[, keep, drop = FALSE]
-    colnames(x) <- c(head(keep, -2), "lci", "uci")
+# Summarise samples x rows x effects, reducing only a single effect.
+summary_draws <- function(x, prob, effects, rows = NULL, aggregate = FALSE,
+                          rename_int = FALSE) {
+  if(is.null(dim(x)) || length(dim(x)) == 1L)
+    x <- array(x, c(length(x), 1, 1))
+  else if(is.matrix(x))
+    x <- if(aggregate) array(x, c(nrow(x), 1, ncol(x))) else
+      array(x, c(dim(x), 1), dimnames = c(dimnames(x), list(NULL)))
+  if(!is.null(rows)) dimnames(x)[[2]] <- rows
+  dimnames(x)[[3]] <- effects
+  stats <- c("mean", "median", "sd", "lower", "upper", "width")
+  out <- array(NA_real_, c(dim(x)[2], length(stats), dim(x)[3]),
+               dimnames = list(dimnames(x)[[2]], stats, effects))
+  for(i in seq_len(dim(x)[3]))
+    for(j in seq_len(dim(x)[2]))
+      out[j,,i] <- mint(x[,j,i], prob = prob, median = TRUE, sd = TRUE)[stats]
+  if(rename_int) {
+    out <- out[, stats != "width",, drop = FALSE]
+    dimnames(out)[[2]][match(c("lower", "upper"), stats)] <- interval_names(prob)
   }
-  x
+  if(length(effects) == 1L)
+    out <- effect_slice(out, 1)
+  out
 }
 
-# Arrange printed statistics and label the bounds with their percentages.
+# Select available statistics in the common order.
+interval_stats <- function(x, prob) {
+  cols <- if(is.null(dim(x))) names(x) else colnames(x)
+  keep <- intersect(c("mean", "median", "sd", "lower", "upper", "width"), cols)
+  if(is.null(dim(x))) x[keep] else x[, keep, drop = FALSE]
+}
+
+# Arrange printed statistics and label bounds with their percentages.
 interval_table <- function(x, prob, include_sd = TRUE) {
   if(is.null(dim(x)))
     x <- matrix(x, nrow = 1, dimnames = list(NULL, names(x)))
   x <- interval_stats(x, prob)
-  if(!include_sd)
-    x <- x[, setdiff(colnames(x), "sd"), drop = FALSE]
-  colnames(x)[match(c("lci", "uci"), colnames(x))] <- interval_names(prob)
+  x <- x[, setdiff(colnames(x), c("width", if(!include_sd) "sd")), drop = FALSE]
+  colnames(x)[match(c("lower", "upper"), colnames(x))] <- interval_names(prob)
+  attr(x, "effect") <- NULL
   x
 }
 
-# Extract one effect while retaining row and statistic names.
+# Extract an effect as a matrix, including when there is only one row.
 effect_slice <- function(x, effect) {
-  matrix(x[,,effect], nrow = dim(x)[1], dimnames = dimnames(x)[1:2])
+  if(is.matrix(x)) {
+    if(!(effect %in% c(1, attr(x, "effect"))))
+      stop("Unknown effect")
+    return(x)
+  }
+  if(is.character(effect)) effect <- match(effect, dimnames(x)[[3]])
+  out <- matrix(x[,,effect], nrow = dim(x)[1], ncol = dim(x)[2],
+                dimnames = dimnames(x)[1:2])
+  attr(out, "effect") <- dimnames(x)[[3]][effect]
+  out
 }

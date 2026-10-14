@@ -39,9 +39,9 @@ plotting or printing functions)}
 \item{random_only}{logical; for meta-regression models, should \link{fixed_effects} be included in the
 returned group effect?}
 
-\item{rename_int}{logical; if \code{TRUE} then rather than returning \code{median}, \code{lci} and \code{uci}
-columns they are renamed to e.g. \verb{50\%}, \verb{2.5\%}, \verb{97.5\%}; this only
-works if \code{summary=TRUE}}
+\item{rename_int}{logical; with \code{summary = TRUE}, rename only \code{lower}
+and \code{upper} to endpoint percentages and omit \code{width}. \code{median} retains
+its name. Defaults to \code{FALSE}.}
 
 \item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
@@ -61,12 +61,15 @@ This is an internal function currently used as a helper for plotting and
 printing of results.
 }
 \details{
-If \code{summary = TRUE}, the returned object contains, for each study
-or group, the following 5 values:
-the posterior medians, the lower and upper bounds of the
-uncertainty intervals using the central posterior credible interval
-of width specified in the argument \code{prob}, the posterior mean, and
-the posterior standard deviation.
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }
 \examples{
 fit1 <- baggr(schools)

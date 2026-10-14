@@ -16,7 +16,10 @@ mutau_cor(bg, summary = FALSE, prob = 0.95, interval = NULL)
 \item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
-a vector of values
+Raw draws as a vector, or a one-row numeric summary matrix with
+columns \code{mean}, \code{median}, \code{sd}, \code{lower}, \code{upper}, \code{width} and an
+\code{effect} attribute of \code{"correlation"}. Correlation summaries are
+unavailable for models with no or full pooling; their \code{width} remains known.
 }
 \description{
 Correlation between mu and tau in a baggr model

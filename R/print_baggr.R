@@ -86,25 +86,25 @@ print.baggr <- function(x,
                          digits = digits, trim = TRUE)
       posteriorpred <- format(interval_stats(mint(de,  prob = prob), prob),
                          digits = digits, trim = TRUE)
-      cat(" = ", tau["mean"], intervaltxt, tau["lci"], "to", tau["uci"], "\n")
+      cat(" = ", tau["mean"], intervaltxt, tau["lower"], "to", tau["upper"], "\n")
       if(x$pooling == "partial"){
         if(!exponent)
           cat("Hyper-SD (sigma_tau) =", sigma_tau["mean"], intervaltxt,
-            sigma_tau["lci"], "to", sigma_tau["uci"], "\n")
+            sigma_tau["lower"], "to", sigma_tau["upper"], "\n")
         cat("Posterior predictive effect =", posteriorpred["mean"], intervaltxt,
-            posteriorpred["lci"], "to", posteriorpred["uci"], "\n")
-        tot_pool <- format(interval_stats(heterogeneity(x, prob = prob)[,,1], prob),
+            posteriorpred["lower"], "to", posteriorpred["upper"], "\n")
+        tot_pool <- format(interval_stats(effect_slice(heterogeneity(x, prob = prob), 1)[1,], prob),
                            digits = digits, trim = TRUE)
         if(!ppd)
           cat("Total pooling (1 - I^2) =", tot_pool["mean"], intervaltxt,
-              tot_pool["lci"], "to", tot_pool["uci"], "\n")
+              tot_pool["lower"], "to", tot_pool["upper"], "\n")
       }
 
       if(x$model == "mutau" && x$pooling != "full") {
-        mutauc <- format(interval_stats(mutau_cor(x, summary = TRUE, prob = prob), prob),
+        mutauc <- format(interval_stats(effect_slice(mutau_cor(x, summary = TRUE, prob = prob), 1)[1,], prob),
                          digits = digits, trim = TRUE)
         cat("Correlation of treatment effect and baseline =", mutauc["mean"], intervaltxt,
-            mutauc["lci"], "to", mutauc["uci"], "\n")
+            mutauc["lower"], "to", mutauc["upper"], "\n")
       }
 
     } else {
@@ -151,8 +151,8 @@ print.baggr <- function(x,
         ", Inf):\n", sep = "")
     for(i in seq_len(nrow(omega_summary))) {
       mean_val <- format(omega_summary[i, "mean"], digits = digits, trim = TRUE)
-      lower_val <- format(omega_summary[i, "lci"], digits = digits, trim = TRUE)
-      upper_val <- format(omega_summary[i, "uci"], digits = digits, trim = TRUE)
+      lower_val <- format(omega_summary[i, "lower"], digits = digits, trim = TRUE)
+      upper_val <- format(omega_summary[i, "upper"], digits = digits, trim = TRUE)
       cat("* |z| in (", fmt_cut(lower_bounds[i]), ", ", fmt_cut(upper_bounds[i]), "] = ",
           mean_val, " ", intervaltxt_selection, " ", lower_val, " to ",
           upper_val, "\n", sep = "")
@@ -187,11 +187,11 @@ print.baggr <- function(x,
         study_eff_tab <- group_effects(x, summary = TRUE,
                                        prob = prob,
                                        rename_int = FALSE)
-      if(dim(study_eff_tab)[3] == 1 && x$n_groups > 1)
+      if(length(x$effects) == 1 && x$n_groups > 1)
         cat(paste0("Group-specific treatment effects"))
 
-      for(i in 1:dim(study_eff_tab)[3]){
-        if(dim(study_eff_tab)[3] > 1 || x$n_groups == 1){
+      for(i in 1:length(x$effects)){
+        if(length(x$effects) > 1 || x$n_groups == 1){
           if(x$n_groups == 1)
             cat(paste0("Group-specific treatment effect on ", x$effects[i]))
           else
@@ -205,7 +205,7 @@ print.baggr <- function(x,
         # Keep the study dimension even for a single study.
         tab <- effect_slice(study_eff_tab, i)
         tab <- interval_table(tab, prob, include_sd = !exponent)
-        tab <- cbind(tab, pooling = pooling_tab["mean",,i])
+        tab <- cbind(tab, pooling = effect_slice(pooling_tab, i)[,"mean"])
         print(tab, digits = digits)
       }
       cat("\n")
@@ -223,7 +223,7 @@ print.baggr <- function(x,
     else
       fixed_eff_tab <- fixed_effects(x, summary = TRUE, prob = prob)
 
-    for(i in 1:dim(fixed_eff_tab)[3]){
+    for(i in 1:length(x$effects)){
       cat(paste0("Covariate (fixed) effects on ", x$effects[i]))
       if(exponent)
         cat(" (converted to exp scale):\n")

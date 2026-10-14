@@ -43,21 +43,21 @@ test_that("multi-arm outputs are correctly formed for rubin_full", {
 
   ge <- group_effects(bg_p, summary = TRUE)
   expect_true(is.array(ge))
-  expect_equal(dim(ge), c(10, 5, 2))
+  expect_equal(dim(ge), c(10, 6, 2))
 
   te <- treatment_effect(bg_p, summary= TRUE)
-  expect_equal(dim(te$sigma), c(2,5))
-  expect_equal(dim(te$sigma_tau), c(2,5))
+  expect_equal(dim(te$tau), c(1,6,2))
+  expect_equal(dim(te$sigma_tau), c(1,6,2))
 
   pm <- pooling(bg_p)
   expect_true(is.array(pm))
-  expect_equal(dim(pm), c(3, 10, 2))
+  expect_equal(dim(pm), c(10, 6, 2))
 
   wt <- weights(bg_p)
   expect_true(is.array(wt))
-  expect_equal(dim(wt), c(3, 10, 2))
-  expect_equal(sum(wt[2, , 1]), 1, tolerance = 1e-6)
-  expect_equal(sum(wt[2, , 2]), 1, tolerance = 1e-6)
+  expect_equal(dim(wt), c(10, 6, 2))
+  expect_equal(sum(wt[, "mean", 1]), 1, tolerance = 1e-6)
+  expect_equal(sum(wt[, "mean", 2]), 1, tolerance = 1e-6)
 
   bsl_k <- apply(rstan::extract(bg_p$fit, "baseline_k")[[1]], 2, mean)
   expect_length(bsl_k, 10)
@@ -88,15 +88,15 @@ test_that("logit multi-arm model keeps core outputs and drops eta_cluster draws"
 
   ge <- group_effects(bg_logit, summary = TRUE)
   expect_true(is.array(ge))
-  expect_equal(dim(ge), c(10, 5, 2))
+  expect_equal(dim(ge), c(10, 6, 2))
 
   te <- treatment_effect(bg_logit, summary= TRUE)
-  expect_equal(dim(te$sigma), c(2,5))
-  expect_equal(dim(te$sigma_tau), c(2,5))
+  expect_equal(dim(te$tau), c(1,6,2))
+  expect_equal(dim(te$sigma_tau), c(1,6,2))
 
   pm <- pooling(bg_logit)
   expect_true(is.array(pm))
-  expect_equal(dim(pm), c(3, 10, 2))
+  expect_equal(dim(pm), c(10, 6, 2))
 })
 
 test_that("clustered rubin_full model also drops eta_cluster draws", {
@@ -108,5 +108,5 @@ test_that("clustered rubin_full model also drops eta_cluster draws", {
 
   ge <- group_effects(bg_rubin_cluster, summary = TRUE)
   expect_true(is.array(ge))
-  expect_equal(dim(ge), c(10, 5, 2))
+  expect_equal(dim(ge), c(10, 6, 2))
 })

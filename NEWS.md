@@ -1,9 +1,31 @@
-# baggr 0.8.2 (June 2026)
+# devel (work in progress)
 
-Functionality:
+- Standardised numeric model summaries to columns `mean`, `median`, `sd`,
+  `lower`, `upper`, `width`, in that order. Single-effect summaries are now
+  rows by statistics matrices with an `effect` attribute; multiple-effect
+  summaries are rows by statistics by effects arrays with labelled effects.
+  Aggregate quantities have one row; conditional predictions have one row per
+  observation. Unavailable estimates retain the known interval `width`.
+- `mint()` uses named `lower` and `upper` bounds and includes `width`, while
+  retaining its optional median/SD and vector/matrix interfaces.
+- `rename_int = TRUE` in group and treatment summaries (including hypermean
+  and hyper-SD wrappers) renames only bounds to percentages and omits `width`.
+  Raw posterior draw interfaces and numerical definitions are unchanged.
 
 - Standardised central interval arguments to `prob`, retaining `interval` and
   `int` as compatibility aliases. Pooling summaries also accept `prob` (#130).
+
+- Fixed interval propagation in printing, forest plots and model comparisons;
+  printed summaries select statistics by name and use consistent column order
+  (#130). Group summaries now transform draws before calculating statistics,
+  and comparison covariates retain the correct model names. Forest plot
+  annotations now honour the `print` argument.
+- Forest plots retain posterior means outside narrow central intervals with
+  forestplot 3.2, and keep those points within the default axis range.
+
+# baggr 0.8.2 (June 2026)
+
+Functionality:
 
 - Improved funnel plot function
 - Faster logit model via bernoulli_logit_glm
@@ -17,14 +39,6 @@ Documentation:
   `hypersd()`, and `effect_draw()` (#143)
 
 Fixes: 
-
-- Fixed interval propagation in printing, forest plots and model comparisons;
-  printed summaries select statistics by name and use consistent column order
-  (#130). Group summaries now transform draws before calculating statistics,
-  and comparison covariates retain the correct model names. Forest plot
-  annotations now honour the `print` argument.
-- Forest plots retain posterior means outside narrow central intervals with
-  forestplot 3.2, and keep those points within the default axis range.
 
 - Fix to selection model: I did marginalisation of likelihood wrong and the previous
   results were biased towards the "uncorrected" hypermeans in presence of heterogeneity.
