@@ -46,14 +46,12 @@ choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
-\item{effect_label}{How to label the effect(s). These labels are used in various print and plot outputs.
+\item{effect_label}{How to label the effect(s). Typically this is a cosmetic choice of label
+used in various print and plot outputs.
 Will default to \code{"mean"} in most models, \code{"log OR"} in logistic model etc.
 If you plan on comparing models (see \link{baggr_compare}), use the same labels.
-For \code{model = "rubin"} with raw binary event counts,
-\code{"logOR"}, \code{"logRR"} and \code{"RD"} also select the measure used
-to calculate study-level estimates and standard errors via
-\link{prepare_ma}. The default is \code{"logOR"}. With estimates and
-standard errors already supplied, this only sets labels.}
+If using \code{model = "rubin"} with raw binary event counts, \code{"logOR"}, \code{"logRR"}
+and \code{"RD"} will trigger additional processing via \link{prepare_ma}.}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model (in case of aggregate data).
