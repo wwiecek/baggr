@@ -1,5 +1,7 @@
 # devel (work in progress)
 
+- Documented binary effect measures and clarified automatic conversion messages (#64).
+
 - Standardised numeric model summaries to columns `mean`, `median`, `sd`,
   `lower`, `upper`, `width`, in that order. Single-effect summaries are now
   rows by statistics matrices with an `effect` attribute; multiple-effect

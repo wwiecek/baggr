@@ -24,6 +24,11 @@
 #' @param effect_label How to label the effect(s). These labels are used in various print and plot outputs.
 #'                     Will default to `"mean"` in most models, `"log OR"` in logistic model etc.
 #'                     If you plan on comparing models (see [baggr_compare]), use the same labels.
+#'                     For `model = "rubin"` with raw binary event counts,
+#'                     `"logOR"`, `"logRR"` and `"RD"` also select the measure used
+#'                     to calculate study-level estimates and standard errors via
+#'                     [prepare_ma]. The default is `"logOR"`. With estimates and
+#'                     standard errors already supplied, this only sets labels.
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
