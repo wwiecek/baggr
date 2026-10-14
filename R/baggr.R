@@ -21,9 +21,12 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect_label How to label the effect(s). These labels are used in various print and plot outputs.
+#' @param effect_label How to label the effect(s). Typically this is a cosmetic choice of label
+#'                     used in various print and plot outputs.
 #'                     Will default to `"mean"` in most models, `"log OR"` in logistic model etc.
 #'                     If you plan on comparing models (see [baggr_compare]), use the same labels.
+#'                     If using `model = "rubin"` with raw binary event counts, `"logOR"`, `"logRR"`
+#'                     and `"RD"` will trigger additional processing via [prepare_ma].
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level

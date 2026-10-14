@@ -124,11 +124,10 @@ convert_inputs <- function(data,
 
   if(model == "rubin" && available_data == "pool_binary"){
     if(is.null(effect) || !(effect %in% c("logOR", "logRR", "RD"))) {
-      message('Automatically summarising binary data with logOR.
-              In baggr() set effect to one of "logOR", "logRR", "RD".
-              Alternatively, use ?prepare_ma to do this manually before running.')
       effect <- "logOR"
     }
+    if(!silent)
+      message("Automatically summarising binary data with ", effect, ".")
     data <- prepare_ma(data, effect = effect, group = group)
     group <- "group"
     available_data <- required_data

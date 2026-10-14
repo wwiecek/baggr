@@ -84,20 +84,41 @@ We use `tau` and `se` notation for our effect, same as we would for analysing co
 
 
 ```{r, include = F}
-bg_model_agg <- baggr(df_ma, iter = 2000, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, iter = 2000, effect_label = "logarithm of odds ratio")
 ```
 
 ```{r, eval = F, echo = T}
-bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
+bg_model_agg <- baggr(df_ma, effect_label = "logarithm of odds ratio")
 ```
 
-The argument we specified, `effect`, does not impact results, but it makes for nicer output labels, as we will see in the next section.
+## Odds ratio, risk ratio and risk difference models
 
-As a side note, you don't even have to use the `prepare_ma` step. The following one-liner would have worked just the same:
+With estimates and standard errors already supplied, `effect_label` controls
+only the display label. To analyse log risk ratios or risk differences, we can
+use the same counts and Rubin model as for log odds ratios:
 
-```{r, eval = F, echo = T}
-baggr(df_yusuf, effect = "logOR") #choose between logOR, logRR, RD (see below)
+```{r binary effect measures}
+df_ma_rr <- prepare_ma(df_yusuf, group = "trial", effect = "logRR")
+df_ma_rd <- prepare_ma(df_yusuf, group = "trial", effect = "RD")
+
+# The log odds ratio model, bg_model_agg, was fitted above.
+bg_model_rr <- baggr(df_ma_rr, model = "rubin", effect_label = "logRR")
+bg_model_rd <- baggr(df_ma_rd, model = "rubin", effect_label = "RD")
 ```
+
+Alternatively, supply the binary counts directly. In this case, `effect_label`
+also selects the conversion to study-level estimates and standard errors:
+
+```{r, eval = FALSE}
+baggr(df_yusuf, model = "rubin", group = "trial", effect_label = "logOR")
+baggr(df_yusuf, model = "rubin", group = "trial", effect_label = "logRR")
+baggr(df_yusuf, model = "rubin", group = "trial", effect_label = "RD")
+```
+
+The default conversion is `"logOR"`. The first two models estimate effects on
+the log scale; the RD model estimates the difference between treatment and
+control event probabilities. These are different assumptions about the effect
+measure, rather than transformations of one fitted model.
 
 As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
 
@@ -134,7 +155,7 @@ In terms of the L'Abbe plot, RD implies an effect line which runs parallel to th
 
 ## Using risk ratios instead of odds ratios
 
-As with ORs, risk ratios are also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). While we will focus on the OR example below, all of the analytic workflow would be identical in the RR case---with exception of interpretation of treatment effect, of course. Before proceeding let us quickly show how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
+As with log odds ratios, log risk ratio estimates are approximately normally distributed and can be calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). While we will focus on the OR example below, all of the analytic workflow would be identical in the RR case---with exception of interpretation of treatment effect, of course. Before proceeding let us quickly show how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
 
 ```{r}
 a <- 9; b <- 1; c <- 99; d <- 1
