@@ -28,7 +28,7 @@ probability 1 and is therefore not returned.
 \description{
 Extracts the posterior draws (or summaries) of the selection-model parameters
 that describe the relative publication probabilities across |z|-intervals.
-In Rubin summary-data models, \code{z = tau / se}; for example,
+In Rubin summary-data models, \code{z = yi / sei}; for example,
 \code{selection = 1.96} estimates the relative publication probability below the
 conventional two-sided 5\% normal threshold compared with the implicit
 highest-|z| interval.

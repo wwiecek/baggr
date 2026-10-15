@@ -72,9 +72,9 @@ print.baggr <- function(x,
       de <- effect_draw(x)
     }
     if(exponent)
-      cat("Exponent of hypermean (exp(tau))")
+      cat("Exponent of hypermean (exp(theta))")
     else
-      cat("Hypermean (tau)")
+      cat("Hypermean (theta)")
 
     intervaltxt <- paste0("with ", as.character(100*prob), "% interval")
 
@@ -89,7 +89,7 @@ print.baggr <- function(x,
       cat(" = ", tau["mean"], intervaltxt, tau["lower"], "to", tau["upper"], "\n")
       if(x$pooling == "partial"){
         if(!exponent)
-          cat("Hyper-SD (sigma_tau) =", sigma_tau["mean"], intervaltxt,
+          cat("Hyper-SD (sigma_theta) =", sigma_tau["mean"], intervaltxt,
             sigma_tau["lower"], "to", sigma_tau["upper"], "\n")
         cat("Posterior predictive effect =", posteriorpred["mean"], intervaltxt,
             posteriorpred["lower"], "to", posteriorpred["upper"], "\n")
@@ -134,7 +134,7 @@ print.baggr <- function(x,
     }
   }
   if(x$pooling == "full")
-    cat("(SD(tau) undefined.)\n")
+    cat("(SD(theta) undefined.)\n")
   cat("\n")
 
   if(is_selection_model) {

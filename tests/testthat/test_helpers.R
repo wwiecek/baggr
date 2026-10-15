@@ -22,7 +22,7 @@ test_that("prepare_ma()", {
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption")
   expect_is(pm, "data.frame")
   expect_equal(dim(pm), c(5,7))
-  expect_identical(names(pm), c("group", "mu", "tau", "se.mu", "se.tau", "n.mu", "n.tau"))
+  expect_identical(names(pm), c("group", "y0i", "yi", "se0i", "sei", "n0i", "ni"))
 
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption", summarise = FALSE)
   expect_identical(dim(pm), dim(microcredit_simplified))

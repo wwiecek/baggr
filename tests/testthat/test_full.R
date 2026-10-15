@@ -14,11 +14,11 @@ for(i in 1:8){
 
   x <- rnorm(N[i])
   x <- (x-mean(x))/sd(x)
-  x <- x*schools$se[i]*sqrt(N[i])/1.41 + schools$tau[i]
+  x <- x*schools$sei[i]*sqrt(N[i])/1.41 + schools$yi[i]
 
   y <- rnorm(N[i])
   y <- (y-mean(y))/sd(y)
-  y <- y*schools$se[i]*sqrt(N[i])/1.41
+  y <- y*schools$sei[i]*sqrt(N[i])/1.41
 
   schools_ipd <- rbind(schools_ipd,
                        data.frame(group = schools$group[i], outcome = bsl[i] + x, treatment = 1),
@@ -52,7 +52,7 @@ test_that("Basic operations on rubin_full model", {
   # No pooling gives sensible results:
   expect_equal(
     as.numeric(group_effects(bg_n,s=T)[,"mean"]),
-    schools$tau, tolerance = 1)
+    schools$yi, tolerance = 1)
 
 })
 

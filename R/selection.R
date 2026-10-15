@@ -2,7 +2,7 @@
 #'
 #' Extracts the posterior draws (or summaries) of the selection-model parameters
 #' that describe the relative publication probabilities across |z|-intervals.
-#' In Rubin summary-data models, `z = tau / se`; for example,
+#' In Rubin summary-data models, `z = yi / sei`; for example,
 #' `selection = 1.96` estimates the relative publication probability below the
 #' conventional two-sided 5% normal threshold compared with the implicit
 #' highest-|z| interval.

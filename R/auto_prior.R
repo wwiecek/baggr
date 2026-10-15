@@ -54,16 +54,16 @@ prepare_prior <- function(prior,
     # stop("For a model with multiple interventions you must set prior manually.")
     if(model == "logit"){
       data <- prepare_ma(pma_data, effect = "logOR", rare_event_correction = 0.1)
-      # Must add mu for automatic definition of baseline prior
+      # Add the baseline log odds for its automatic prior
       p <- data$c/data$n2
-      data$mu <- log(p/(1-p))
+      data$y0i <- log(p/(1-p))
     }
     if(model %in% c("mutau_full", "rubin_full")) {
       data <- prepare_ma(pma_data, effect = "mean")
-      # mu and tau columns could be NA because in some studies you may not
+      # Baseline and effect columns could be NA because some studies may not
       # have all treatments present; for purpose of deriving prior, we need
       # to ignore them:
-      data <- data[!is.na(data$mu) & !is.na(data$tau),]
+      data <- data[!is.na(data$y0i) & !is.na(data$yi),]
     }
   }
   # ...then proceed as you would in Rubin model
@@ -120,24 +120,24 @@ prepare_prior <- function(prior,
           "hypermean"  =
             if(model %in% c("mutau", "mutau_full"))
               multinormal(c(0,0),
-                          c(100*max(abs(data$mu)),
-                            100*max(abs(data$tau)))*diag(2))
+                          c(100*max(abs(data$y0i)),
+                            100*max(abs(data$yi)))*diag(2))
           else
-            normal(0, 10*max(abs(data$tau))),
+            normal(0, 10*max(abs(data$yi))),
           # else
-          # replicate(re_dim, normal(0, 10*max(abs(data$tau))), simplify = FALSE),
-          "sigma"      = uniform(0, 10*max(c(sqrt(data$n.mu)*data$se.mu,
-                                             sqrt(data$n.tau*data$se.tau)))),
+          # replicate(re_dim, normal(0, 10*max(abs(data$yi))), simplify = FALSE),
+          "sigma"      = uniform(0, 10*max(c(sqrt(data$n0i)*data$se0i,
+                                             sqrt(data$ni*data$sei)))),
           "hypersd"    = if(attr(stan_data, "n_groups") == 1)
             normal(0, 1) #this is not used because stop() will trigger below
           else
-            uniform(0, 10*sd(data$tau)),
+            uniform(0, 10*sd(data$yi)),
           "hypercor"   = lkj(3),
-          "control"    = normal(0, 10*max(abs(data$mu))),
+          "control"    = normal(0, 10*max(abs(data$y0i))),
           "control_sd" = if(attr(stan_data, "n_groups") == 1)
             normal(0, 1) #this is not used because stop() will trigger below
           else
-            uniform(0, 10*sd(data$mu))
+            uniform(0, 10*sd(data$y0i))
         )
       } else if(model == "sslab") {
         data_pos <- prepare_ma(data.frame(outcome = stan_data$y_pos,
@@ -148,10 +148,10 @@ prepare_prior <- function(prior,
                                           group = stan_data$site_neg,
                                           treatment = stan_data$treatment_neg),
                                effect = "mean")
-        max_hypermean <- max(c(abs(data_pos$tau), abs(data_neg$tau)))
-        max_control   <- max(c(abs(data_pos$mu),  abs(data_neg$mu)))
-        sd_hypermean  <- 10*max(c(sd(data_pos$mu),  sd(data_neg$mu)))
-        sd_control    <- 10*max(c(sd(data_pos$tau), sd(data_neg$tau)))
+        max_hypermean <- max(c(abs(data_pos$yi), abs(data_neg$yi)))
+        max_control   <- max(c(abs(data_pos$y0i),  abs(data_neg$y0i)))
+        sd_hypermean  <- 10*max(c(sd(data_pos$y0i),  sd(data_neg$y0i)))
+        sd_control    <- 10*max(c(sd(data_pos$yi), sd(data_neg$yi)))
 
         default_prior_dist <- switch(current_prior,
                                      # Prior settings from Rachael, 17/07/2020
@@ -217,7 +217,8 @@ prepare_prior <- function(prior,
                          " using 10 times the max effect ",
                          effect_on, ":"))
           if(model != "sslab")
-            special_name <- "tau"
+            special_name <- if(model %in% c("mutau", "mutau_full"))
+              "theta0, theta" else "theta"
         } else if(current_prior == "hypersd") {
           if(pooling == "partial" && attr(stan_data, "n_groups") == 1)
             stop("You must specify hyper-SD prior manually when data has only one row.")
@@ -226,7 +227,8 @@ prepare_prior <- function(prior,
                           "groups -- consider setting variance prior manually./"))
           if(pooling == "partial" && model != "sslab"){
             message("Setting hyper-SD prior using 10 times the naive SD across sites")
-            special_name <- "sigma_tau"
+            special_name <- if(model %in% c("mutau", "mutau_full"))
+              "sigma_theta0, sigma_theta" else "sigma_theta"
           }
         } else if(current_prior == "control") {
           if(model == "logit"){
@@ -246,7 +248,7 @@ prepare_prior <- function(prior,
           }
           if(model %in% c("rubin_full", "mutau_full")){
             if(stan_data$pooling_baseline == 1)
-              special_name <- "mu (hyperparameter)"
+              special_name <- "theta0 (hyperparameter)"
             else if(stan_data$pooling_baseline == 0)
               special_name <- "independent prior on control means"
             else
@@ -261,7 +263,7 @@ prepare_prior <- function(prior,
             if(model == "logit")
               special_name <- "log odds of event rate in untreated: sd"
             if(model %in% c("rubin_full", "mutau_full")){
-              special_name <- "sigma_mu (hyperparameter)"
+              special_name <- "sigma_theta0 (hyperparameter)"
             }
           }else
             special_name <- "DNP" #do not print, this is not used!

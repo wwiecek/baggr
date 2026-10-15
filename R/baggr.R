@@ -72,7 +72,7 @@
 #'                  random cluster effects will be fitted in each study
 #' @param selection optional publication-selection specification for Rubin
 #'                  summary-data models. A numeric vector is treated as z-value
-#'                  cut-points on the absolute z-scale, where `z = tau / se`.
+#'                  cut-points on the absolute z-scale, where `z = yi / sei`.
 #'                  A list must have named elements `z` (positive cut-points),
 #'                  `symmetrical` (`TRUE`/`FALSE`) and `possible` (0/1 or logical
 #'                  vector with one value per study, where 1 means selection is
@@ -81,6 +81,12 @@
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
 #'                  with the same columns as `data` argument. See "Cross-validation" section below.
+#' @param yi,sei Column names (single strings or `NULL`) for summary effect
+#'                  estimates and their standard errors. Defaults are `yi` and
+#'                  `sei`; both mappings must be supplied together.
+#' @param y0i,se0i Column names (single strings or `NULL`) for baseline/control
+#'                  means and their standard errors in the `mutau` model.
+#'                  Supply both together with `yi` and `sei` when mapping columns.
 #' @param silent Whether to silence messages about prior settings and about other automatic behaviour.
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
@@ -96,10 +102,22 @@
 #' All three are discussed in more depth in the package vignette, `vignette("baggr")`.
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
-#' `tau` and `se` (Rubin model) or `tau`, `mu`, `se.tau`, `se.mu` ("mu & tau" model).
+#' `yi` and `sei` (Rubin model) or `y0i`, `se0i`, `yi`, `sei` (`mutau` model).
+#' These are observed effect estimates and their standard errors, with baseline
+#' means and their standard errors included for `mutau`.
+#' Supply string arguments such as `yi = "effect", sei = "effect_se"` to
+#' select other columns. Bare column names and vector inputs are not supported.
+#' Exact aliases `y`/`se` and `y0`/`se0`/`y`/`se` are also recognised.
+#' Legacy names `tau`/`se` and `mu`/`se.mu`/`tau`/`se.tau` remain accepted,
+#' with an informational message unless `silent = TRUE` or mappings are explicit.
+#' Canonical columns take precedence when duplicate conventions agree; conflicting
+#' values require explicit mappings. The same mappings apply to `test_data`.
 #' An additional column can be used to provide labels for each group
 #' (by default column `group` is used if available, but this can be
 #' customised -- see the example below).
+#' For summary data, a `slab` column supplies labels when `group` is absent.
+#' You can also pass `slab = "study_label"` through `...`; explicit `group`
+#' takes precedence. These label aliases do not apply to individual-level data.
 #' For individual level data three columns are needed: outcome, treatment, group. These
 #' are identified by using the `outcome`, `treatment` and `group` arguments.
 #'
@@ -173,7 +191,7 @@
 #' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()`
 #' fits a publication-selection model on z-values (currently only in the
 #' `"rubin"` summary-data model). For each study, the observed z-value is the
-#' reported estimate divided by its standard error, `z = tau / se`. A numeric
+#' reported estimate divided by its standard error, `z = yi / sei`. A numeric
 #' `selection` input gives cut-points on the absolute z-scale. For example,
 #' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`,
 #' `[1.96, 2.58)`, and `[2.58, Inf)`. This is equivalent to
@@ -221,8 +239,8 @@
 #' * [loocv] for cross-validation
 #'
 #' @examples
-#' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-#'                         "se" = rep(1, 8),
+#' df_pooled <- data.frame("yi" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+#'                         "sei" = rep(1, 8),
 #'                         "state" = datasets::state.name[1:8])
 #' baggr(df_pooled) #baggr automatically detects the input data
 #' # same model, but with correct labels,
@@ -233,7 +251,7 @@
 #' baggr(df_pooled, prior_hypersd = normal(0, 2))
 #'
 #' \donttest{
-#' # "mu & tau" model, using a built-in dataset
+#' # Joint baseline and treatment-effect model, using a built-in dataset
 #' # prepare_ma() can summarise individual-level data
 #' ms <- microcredit_simplified
 #' microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
@@ -267,7 +285,8 @@ baggr <- function(data,
                   outcome = "outcome", group = "group", treatment = "treatment",
                   cluster = NULL,
                   selection = NULL,
-                  silent = FALSE, warn = TRUE, ...) {
+                  silent = FALSE, warn = TRUE,
+                  yi = NULL, sei = NULL, y0i = NULL, se0i = NULL, ...) {
 
   # check that it is data.frame of at least 1 row
   # if(!inherits(data, "data.frame") || nrow(data) == 1)
@@ -292,25 +311,42 @@ baggr <- function(data,
     model <- "rubin_full"
   }
   if(!is.null(model) && model == "mutau_sum") {
-    message("Experimental: using mu & tau model with sum specification (tau = mu + theta)")
+    message("Experimental: joint baseline and treatment-effect model with sum specification (theta0 + theta)")
     model <- "mutau"
     cumsum_mutau <- 0
   } else {
     cumsum_mutau <- 1
   }
 
-  stan_data <- convert_inputs(data,
-                              model,
-                              effect = effect,
-                              covariates = covariates,
-                              quantiles = quantiles,
-                              outcome = outcome,
-                              group = group,
-                              treatment = treatment,
-                              cluster = cluster,
-                              selection = selection,
-                              test_data = test_data,
-                              silent = silent)
+  group_explicit <- !missing(group)
+  stan_args <- list(...)
+  summary_input <- model %in% c("rubin", "mutau") ||
+    (is.null(model) && (!is.null(yi) ||
+       grepl("^pool", detect_input_type(data, group, treatment, outcome))))
+  if(summary_input && "slab" %in% names(stan_args)) {
+    slab <- stan_args$slab
+    if(!is.character(slab) || length(slab) != 1 || is.na(slab) ||
+       !slab %in% names(data))
+      stop("`slab` must name a column in `data`.")
+    if(group_explicit) {
+      if(!silent) message("Both `group` and `slab` supplied; using `group`.")
+    } else {
+      group <- slab
+      group_explicit <- TRUE
+      if(!silent) message(
+        "Using `slab` as study labels. In baggr, the canonical argument is `group`.")
+    }
+    stan_args$slab <- NULL
+  }
+  conversion_args <- list(data = data, model = model, effect = effect,
+    covariates = covariates, quantiles = quantiles, outcome = outcome,
+    treatment = treatment, cluster = cluster, selection = selection,
+    test_data = test_data, silent = silent,
+    yi = yi, sei = sei, y0i = y0i, se0i = se0i)
+  if(group_explicit) conversion_args$group <- group
+  stan_data <- do.call(convert_inputs, conversion_args)
+  test_data <- attr(stan_data, "test_data")
+  group <- attr(stan_data, "columns")[["group"]]
 
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
@@ -412,7 +448,6 @@ baggr <- function(data,
   }
 
   # If extracting prior from another model, we need to do this switcheroo:
-  stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL

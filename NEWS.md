@@ -1,5 +1,12 @@
 # devel (work in progress)
 
+- Summary-data models now prefer `yi`/`sei` for effects and standard errors,
+  with `y0i`/`se0i` for baseline means in `mutau`. String column mappings and
+  summary-data `slab` labels are supported. Legacy names remain accepted with
+  informational messages. `prepare_ma()` and bundled summary datasets use the
+  new column names; model inputs and statistical calculations are unchanged
+  (#235).
+
 - Documented binary effect measures and clarified automatic conversion messages (#64).
 
 - Standardised numeric model summaries to columns `mean`, `median`, `sd`,

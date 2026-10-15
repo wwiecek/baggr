@@ -31,6 +31,10 @@ baggr(
   selection = NULL,
   silent = FALSE,
   warn = TRUE,
+  yi = NULL,
+  sei = NULL,
+  y0i = NULL,
+  se0i = NULL,
   ...
 )
 }
@@ -125,7 +129,7 @@ random cluster effects will be fitted in each study}
 
 \item{selection}{optional publication-selection specification for Rubin
 summary-data models. A numeric vector is treated as z-value
-cut-points on the absolute z-scale, where \code{z = tau / se}.
+cut-points on the absolute z-scale, where \code{z = yi / sei}.
 A list must have named elements \code{z} (positive cut-points),
 \code{symmetrical} (\code{TRUE}/\code{FALSE}) and \code{possible} (0/1 or logical
 vector with one value per study, where 1 means selection is
@@ -134,6 +138,14 @@ possible and 0 means the study would be published regardless).}
 \item{silent}{Whether to silence messages about prior settings and about other automatic behaviour.}
 
 \item{warn}{print an additional warning if Rhat exceeds 1.05}
+
+\item{yi, sei}{Column names (single strings or \code{NULL}) for summary effect
+estimates and their standard errors. Defaults are \code{yi} and
+\code{sei}; both mappings must be supplied together.}
+
+\item{y0i, se0i}{Column names (single strings or \code{NULL}) for baseline/control
+means and their standard errors in the \code{mutau} model.
+Supply both together with \code{yi} and \code{sei} when mapping columns.}
 
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 number of iterations etc.}
@@ -154,10 +166,22 @@ Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of p
 All three are discussed in more depth in the package vignette, \code{vignette("baggr")}.
 
 \strong{Data.} For aggregate data models you need a data frame with columns
-\code{tau} and \code{se} (Rubin model) or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu} ("mu & tau" model).
+\code{yi} and \code{sei} (Rubin model) or \code{y0i}, \code{se0i}, \code{yi}, \code{sei} (\code{mutau} model).
+These are observed effect estimates and their standard errors, with baseline
+means and their standard errors included for \code{mutau}.
+Supply string arguments such as \verb{yi = "effect", sei = "effect_se"} to
+select other columns. Bare column names and vector inputs are not supported.
+Exact aliases \code{y}/\code{se} and \code{y0}/\code{se0}/\code{y}/\code{se} are also recognised.
+Legacy names \code{tau}/\code{se} and \code{mu}/\code{se.mu}/\code{tau}/\code{se.tau} remain accepted,
+with an informational message unless \code{silent = TRUE} or mappings are explicit.
+Canonical columns take precedence when duplicate conventions agree; conflicting
+values require explicit mappings. The same mappings apply to \code{test_data}.
 An additional column can be used to provide labels for each group
 (by default column \code{group} is used if available, but this can be
 customised -- see the example below).
+For summary data, a \code{slab} column supplies labels when \code{group} is absent.
+You can also pass \code{slab = "study_label"} through \code{...}; explicit \code{group}
+takes precedence. These label aliases do not apply to individual-level data.
 For individual level data three columns are needed: outcome, treatment, group. These
 are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
 
@@ -230,7 +254,7 @@ For using aggregate level data, there is no such restriction.
 \strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()}
 fits a publication-selection model on z-values (currently only in the
 \code{"rubin"} summary-data model). For each study, the observed z-value is the
-reported estimate divided by its standard error, \code{z = tau / se}. A numeric
+reported estimate divided by its standard error, \code{z = yi / sei}. A numeric
 \code{selection} input gives cut-points on the absolute z-scale. For example,
 \code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)},
 \verb{[1.96, 2.58)}, and \verb{[2.58, Inf)}. This is equivalent to
@@ -278,8 +302,8 @@ shorthands \link{hypermean} for mean and \link{hypersd} for SD
 }
 }
 \examples{
-df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-                        "se" = rep(1, 8),
+df_pooled <- data.frame("yi" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                        "sei" = rep(1, 8),
                         "state" = datasets::state.name[1:8])
 baggr(df_pooled) #baggr automatically detects the input data
 # same model, but with correct labels,
@@ -290,7 +314,7 @@ baggr(df_pooled, group = "state", pooling = "full", iter = 500)
 baggr(df_pooled, prior_hypersd = normal(0, 2))
 
 \donttest{
-# "mu & tau" model, using a built-in dataset
+# Joint baseline and treatment-effect model, using a built-in dataset
 # prepare_ma() can summarise individual-level data
 ms <- microcredit_simplified
 microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")

@@ -311,11 +311,11 @@ test_that("aggregate and correlation printouts select the right quantities", {
     pred <- effect_draw(bg)
     set.seed(130)
     out <- capture.output(print(bg, prob=p, group=FALSE, fixed=FALSE,digits=7))
-    check_line(out, "Hyper-SD (sigma_tau) =", expected_interval(draws$tau,p),p)
+    check_line(out, "Hyper-SD (sigma_theta) =", expected_interval(draws$tau,p),p)
     check_line(out, "Posterior predictive effect =", expected_interval(pred,p),p)
     check_line(out, "Correlation of treatment effect and baseline =",
                expected_interval(bg$fit[,2],p),p)
-    check_line(out, "Hypermean (tau) =", expected_interval(draws$mu[,1,2],p),p)
+    check_line(out, "Hypermean (theta) =", expected_interval(draws$mu[,1,2],p),p)
   }
 })
 

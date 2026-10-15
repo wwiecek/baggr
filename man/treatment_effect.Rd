@@ -97,8 +97,8 @@ each component follows the summary layout described here.
 \examples{
 \donttest{
 # Fit on a log scale, then exponentiate the hypermean draws to obtain ratios.
-log_rr <- data.frame(tau = log(c(0.7, 0.9, 1.1, 1.3)),
-                     se = c(0.2, 0.25, 0.3, 0.35))
+log_rr <- data.frame(yi = log(c(0.7, 0.9, 1.1, 1.3)),
+                     sei = c(0.2, 0.25, 0.3, 0.35))
 bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
 
 hypermean(bg_log, transform = exp)

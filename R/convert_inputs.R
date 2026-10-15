@@ -26,6 +26,12 @@
 #'                  `z`, `symmetrical` and `possible`
 #' @param test_data same format as `data` argument, gets left aside for
 #'                  testing purposes (see [baggr::baggr()])
+#' @param yi,sei Column names (single strings or `NULL`) for summary effect
+#'                  estimates and their standard errors. Defaults are `yi` and
+#'                  `sei`; both mappings must be supplied together.
+#' @param y0i,se0i Column names (single strings or `NULL`) for baseline/control
+#'                  means and their standard errors in the `mutau` model.
+#'                  Supply both together with `yi` and `sei` when mapping columns.
 #' @param silent Whether to print messages when evaluated
 #' @return R structure that's appropriate for use by [baggr::baggr()] Stan models;
 #'         `group_label`, `model`, `effect` and `n_groups` are included as attributes
@@ -53,12 +59,20 @@ convert_inputs <- function(data,
                            selection = NULL,
                            covariates = c(),
                            test_data = NULL,
-                           silent = FALSE) {
+                           silent = FALSE,
+                           yi = NULL, sei = NULL,
+                           y0i = NULL, se0i = NULL) {
 
   # Fail fast for invalid model names before touching data columns.
   # This avoids spurious column warnings from custom/tibble inputs.
   if(!is.null(model) && !(model %in% names(model_data_types)))
     stop("Unrecognised model, can't format data.")
+
+  summary <- normalise_summary_columns(
+    data, test_data, model, yi, sei, y0i, se0i,
+    group = group, group_explicit = !missing(group), silent = silent)
+  data <- summary$data
+  test_data <- summary$test_data
 
   # If lazy users forgot to define their group column,
   # check if the first column is usable
@@ -103,10 +117,6 @@ convert_inputs <- function(data,
 
   # Convert mutau data to Rubin model data if requested
   if(model == "rubin" && available_data == "pool_wide"){
-    test_data$se <- test_data$se.tau
-    test_data$se.tau <- test_data$se.mu <- test_data$mu <- NULL
-    data$se <- data$se.tau
-    data$se.tau <- data$se.mu <- data$mu <- NULL
     available_data <- "pool_noctrl_narrow"
   }
 
@@ -286,24 +296,24 @@ convert_inputs <- function(data,
     if(is.null(data[[group]]) && (group != "group"))
       warning(paste0("Column '", group,
                      "' does not exist in data. No labels will be added."))
-    check_columns_numeric(data[,c("tau", "se")])
+    check_columns_numeric(data[,c("yi", "sei")])
     out <- list(
       K = nrow(data),
-      theta_hat_k = data[["tau"]],
-      se_theta_k = data[["se"]]
+      theta_hat_k = data[["yi"]],
+      se_theta_k = data[["sei"]]
     )
     if(is.null(test_data)){
       out$K_test <- 0
       out$test_theta_hat_k <- array(0, dim = 0)
       out$test_se_theta_k <- array(0, dim = 0)
     } else {
-      if(is.null(test_data[["tau"]]) ||
-         is.null(test_data[["se"]]))
+      if(is.null(test_data[["yi"]]) ||
+         is.null(test_data[["sei"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       # remember that for 1-dim cases we need to pass array()
-      out$test_theta_hat_k <- array(test_data[["tau"]], dim = c(nrow(test_data)))
-      out$test_se_theta_k <- array(test_data[["se"]], dim = c(nrow(test_data)))
+      out$test_theta_hat_k <- array(test_data[["yi"]], dim = c(nrow(test_data)))
+      out$test_se_theta_k <- array(test_data[["sei"]], dim = c(nrow(test_data)))
     }
   }
 
@@ -314,30 +324,30 @@ convert_inputs <- function(data,
     if(is.null(data[[group]]) && (group != "group"))
       warning(paste0("Column '", group,
                      "' does not exist in data. No labels will be added."))
-    check_columns_numeric(data[,c("tau", "se.tau", "mu", "se.mu")])
+    check_columns_numeric(data[,c("yi", "sei", "y0i", "se0i")])
     nr <- nrow(data)
     out <- list(
       K = nr,
       P = 2, #fixed for this case
-      # Remember, first row is always mu (baseline), second row is tau (effect)
+      # Remember, first row is baseline, second row is treatment effect
       # (Has to be consistent against ordering of prior values.)
-      theta_hat_k = matrix(c(data[["mu"]], data[["tau"]]), 2, nr, byrow = TRUE),
-      se_theta_k = matrix(c(data[["se.mu"]], data[["se.tau"]]), 2, nr, byrow = TRUE)
+      theta_hat_k = matrix(c(data[["y0i"]], data[["yi"]]), 2, nr, byrow = TRUE),
+      se_theta_k = matrix(c(data[["se0i"]], data[["sei"]]), 2, nr, byrow = TRUE)
     )
     if(is.null(test_data)){
       out$K_test <- as.integer(0)
       out$test_theta_hat_k <- array(0, dim = c(2,0))
       out$test_se_theta_k <- array(0, dim = c(2,0))
     } else {
-      if(is.null(test_data[["mu"]]) ||
-         is.null(test_data[["tau"]]) ||
-         is.null(test_data[["se.mu"]]) ||
-         is.null(test_data[["se.tau"]]))
+      if(is.null(test_data[["y0i"]]) ||
+         is.null(test_data[["yi"]]) ||
+         is.null(test_data[["se0i"]]) ||
+         is.null(test_data[["sei"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
-      out$test_theta_hat_k <- matrix(c(test_data[["mu"]], test_data[["tau"]]),
+      out$test_theta_hat_k <- matrix(c(test_data[["y0i"]], test_data[["yi"]]),
                                      2, nrow(test_data), byrow = TRUE)
-      out$test_se_theta_k <- matrix(c(test_data[["se.mu"]], test_data[["se.tau"]]),
+      out$test_se_theta_k <- matrix(c(test_data[["se0i"]], test_data[["sei"]]),
                                     2, nrow(test_data), byrow = TRUE)
     }
   }
@@ -444,6 +454,7 @@ convert_inputs <- function(data,
     out,
     data_type = available_data,
     data = data,
+    test_data = test_data,
     columns = c("treatment" = treatment,
                 "group" = group,
                 "outcome" = outcome),

@@ -13,8 +13,8 @@ chicks
 \description{
 An experiment conducted by Blackman et al. (1988) and documented in the following
 \href{https://github.com/VMatthijs/Slamming-the-sham}{GitHub repository} by Vakar
-and Gelman. The dataset consists of a large number of experiments (\code{tau}, \code{se.tau})
-repeated at varying wave frequencies. Sham experiments (\code{mu}, \code{se.mu}) are also
+and Gelman. The dataset consists of a large number of experiments (\code{yi}, \code{sei})
+repeated at varying wave frequencies. Sham experiments (\code{y0i}, \code{se0i}) are also
 included, allowing us to compare performance of models with and without
 control measurements.
 }
