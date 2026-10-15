@@ -10,21 +10,15 @@ detect_input_type <- function(data,
   if(!inherits(data, "data.frame"))
     stop("Can't detect input type because it's not a data.frame")
 
-  # Summary data -----
-  if("tau" %in% names(data) && "se" %in% names(data)){
-    if("treatment" %in% names(data))
-      return("pool_narrow") #will need conversion
-    else
-      return("pool_noctrl_narrow")
-  }
-
+  # Full baseline/effect sets must precede their effect-only subsets.
+  for(cols in list(c("y0i", "se0i", "yi", "sei"),
+                   c("y0", "se0", "y", "se"),
+                   c("mu", "se.mu", "tau", "se.tau")))
+    if(all(cols %in% names(data))) return("pool_wide")
+  for(cols in list(c("yi", "sei"), c("y", "se"), c("tau", "se")))
+    if(all(cols %in% names(data))) return("pool_noctrl_narrow")
   if(check_columns_binary(data, stop = FALSE))
     return("pool_binary")
-
-  if(!any(is.na(match(c("tau", "mu", "se.mu", "se.tau"),
-                      names(data)))))
-    return("pool_wide")
-
 
   # Individual-level data -----
   if(!is.null(data[[group]])){

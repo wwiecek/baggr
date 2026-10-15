@@ -20,6 +20,6 @@ test_that("prepare_ma works for synthetic mutau_full-style IPD", {
 
   ma <- prepare_ma(df)
   expect_s3_class(ma, "data.frame")
-  expect_true(all(c("group", "mu", "tau", "se.mu", "se.tau", "n.mu", "n.tau") %in% names(ma)))
+  expect_true(all(c("group", "y0i", "yi", "se0i", "sei", "n0i", "ni") %in% names(ma)))
   expect_equal(nrow(ma), K)
 })

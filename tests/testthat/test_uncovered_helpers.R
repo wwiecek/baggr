@@ -5,7 +5,7 @@ library(baggr)
 test_that("detect_input_type() identifies supported formats", {
   df_narrow <- data.frame(group = letters[1:3], treatment = c(0, 1, 1),
                           tau = c(0.1, 0.2, 0.3), se = c(0.01, 0.02, 0.03))
-  expect_identical(baggr:::detect_input_type(df_narrow), "pool_narrow")
+  expect_identical(baggr:::detect_input_type(df_narrow), "pool_noctrl_narrow")
 
   df_noctrl <- df_narrow[, c("group", "tau", "se")]
   expect_identical(baggr:::detect_input_type(df_noctrl), "pool_noctrl_narrow")

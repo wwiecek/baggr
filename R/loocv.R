@@ -323,6 +323,11 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE,
   if(is.null(input_data))
     input_data <- loo_model$full_model$data
 
+  if(!all(c("yi", "sei") %in% names(input_data)))
+    input_data <- normalise_summary_columns(input_data, silent = TRUE)$data
+  if(is.null(input_data$group))
+    input_data$group <- group_names(loo_model$full_model)
+
   if(is.null(loo_model$models))
     stop("To plot, the loocv() output must include models (return_models = TRUE).")
 
@@ -340,9 +345,9 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE,
     df1 <- data.frame(effect_slice(mm1, i)[,
       c("lower", "median", "upper"), drop = FALSE],
       model = "LOOCV estimate", group = groups)
-    df2 <- data.frame(lower = inputs$tau - 1.96*inputs$se,
-                      median = inputs$tau,
-                      upper = inputs$tau + 1.96*inputs$se,
+    df2 <- data.frame(lower = inputs$yi - 1.96*inputs$sei,
+                      median = inputs$yi,
+                      upper = inputs$yi + 1.96*inputs$sei,
                       group = groups,
                       model = "Test data (out-of-sample)")
     data.frame(rbind(df1, df2), parameter = effects[i])

@@ -39,7 +39,7 @@ Negative values indicate lower mortality in the vitamin A supplementation arm.
 
 ```{r}
 head(vitamin_a)
-summary(exp(vitamin_a$tau))
+summary(exp(vitamin_a$yi))
 ```
 
 See `?vitamin_a` for more information.
@@ -84,9 +84,9 @@ Selection models make the publication process explicit. For the canonical treatm
 see @hedges_modeling_1992 and @andrews_identification_2019 for framing of the same
 problem in econometric literature.
 In _baggr_, a selection model like in the above publications is implemented within
-the Bayesian posterior calculation, using custom Stan functions. 
+the Bayesian posterior calculation, using custom Stan functions.
 
-Briefly, but more concretely: 
+Briefly, but more concretely:
 if $y_k$ is the reported estimate and $s_k$ is its standard error, then
 $z_k = y_k / s_k$, and the probability a study is observed can vary by the
 interval containing $z_k$. The shorthand `selection = 1.96` fits a symmetric
@@ -102,7 +102,7 @@ be observed at all, summing over all z-intervals and their weights.
 
 For the partial-pooling Rubin model this normalising term is calculated using
 the _marginal_ distribution of the observed estimate,
-$y_k \sim N(\mu + x_k^\top\beta, \tau^2 + s_k^2)$ when covariates are present.
+$y_i \sim N(\theta + x_i^\top\beta, \sigma_\theta^2 + s_i^2)$ when covariates are present.
 
 
 ```{r fit-selection-simple, include = FALSE}

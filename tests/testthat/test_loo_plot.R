@@ -17,7 +17,7 @@ test_that("LOO plot labels match estimates, intervals and comparison style", {
                       inputs = structure(list(), n_groups = 2,
                                          group_label = c("A", "B")),
                       data = data.frame(group = c("A", "B"),
-                                       tau = c(-10, -2), se = c(1, 0.5))),
+                                       yi = c(-10, -2), sei = c(1, 0.5))),
     models = list(1, 2), pointwise = c(-30, -40)
   ), class = "baggr_cv")
 

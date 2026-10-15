@@ -2,7 +2,7 @@
 % Please edit documentation in R/trt_effects.R
 \name{mutau_cor}
 \alias{mutau_cor}
-\title{Correlation between mu and tau in a baggr model}
+\title{Correlation between baseline means and treatment effects in a baggr model}
 \usage{
 mutau_cor(bg, summary = FALSE, prob = 0.95, interval = NULL)
 }
@@ -22,5 +22,5 @@ columns \code{mean}, \code{median}, \code{sd}, \code{lower}, \code{upper}, \code
 unavailable for models with no or full pooling; their \code{width} remains known.
 }
 \description{
-Correlation between mu and tau in a baggr model
+Correlation between baseline means and treatment effects in a baggr model
 }

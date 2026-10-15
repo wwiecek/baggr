@@ -36,8 +36,8 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
   ggdata$risk_trt <- ggdata$a/(ggdata$a+ggdata$b)
   ggdata$risk_control <- ggdata$c/(ggdata$c+ggdata$d)
 
-  if(shade_se == "or") ggdata$se_size <- 1 / data_or$se
-  if(shade_se == "rr") ggdata$se_size <- 1 / data_rr$se
+  if(shade_se == "or") ggdata$se_size <- 1 / data_or$sei
+  if(shade_se == "rr") ggdata$se_size <- 1 / data_rr$sei
 
   if(plot_model) {
     model_or <- baggr(data_or, refresh=0, silent = TRUE)

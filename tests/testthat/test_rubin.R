@@ -227,13 +227,13 @@ test_that("Forest plots for Rubin model", {
 
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
-  expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
+  expect_error(baggr(data = df_pooled, test_data = cars), "Missing mapped summary columns")
 
   # NA values or wrong cols:
   df2 <- df_pooled; df2$tau[1] <- NA
   expect_error(baggr(data = df_pooled, test_data = df2), "NA")
   df_na <- df_pooled[7:8,]; df_na$tau <- NULL
-  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "is of type")
+  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "Missing mapped summary columns")
 
   # This should work:
   bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],

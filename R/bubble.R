@@ -24,7 +24,9 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
     stop("At the moment bubble plots are only available for summary-level data models")
 
   data <- bg$data
-  data$dotsize <- 1/(data$se^2)
+  if(!all(c("yi", "sei") %in% names(data)))
+    data <- normalise_summary_columns(data, silent = TRUE)$data
+  data$dotsize <- 1/(data$sei^2)
   data$mean <- as.data.frame(effect_slice(group_effects(bg, summary = TRUE), 1))$mean
   group <- NULL
   data$.covariate <- data[[covariate]]

@@ -13,7 +13,8 @@ schools
 \description{
 A classic example of aggregate level continuous data in Bayesian hierarchical modelling.
 This dataframe contains a column of estimated treatment effects of an SAT prep
-program implemented in 8 different schools in the US, and a column of estimated standard errors.
+program implemented in 8 different schools in the US (\code{yi}), and a column
+of estimated standard errors (\code{sei}).
 }
 \details{
 See Gelman et al (1995), Chapter 5, for context and applied example.
