@@ -48,6 +48,7 @@ Suggests:
     rmarkdown,
     testthat
 VignetteBuilder: knitr
-URL: https://github.com/wwiecek/baggr
+URL: https://wwiecek.github.io/baggr/,
+    https://github.com/wwiecek/baggr
 BugReports: https://github.com/wwiecek/baggr/issues
 Language: en-GB

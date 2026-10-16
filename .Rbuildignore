@@ -15,3 +15,7 @@ LICENSE$
 ^tools/checkcoverage.R
 ^CRAN-SUBMISSION$
 ^\.github$
+^\.git$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
