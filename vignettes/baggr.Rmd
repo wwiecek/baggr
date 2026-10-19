@@ -313,26 +313,6 @@ Note that the Rubin model assumes Gaussian distribution of effects across groups
 
 
 
-## Modeling selective reporting on z-values
-
-For summary data, the normal-normal hierarchical (Rubin) model can also model
-selective reporting through `selection`. By default, selection depends on
-$|z| = |\hat{\theta}_k / s_k|$, calculated from `yi / sei`.
-`selection = 1.96` splits studies at the conventional two-sided 5% normal
-threshold; `selection = c(1.96, 2.58)` adds an approximate 1% threshold.
-
-```{r eval=FALSE}
-baggr(schools, model = "rubin", selection = c(1.96, 2.58),
-      prior_selection = normal(0, 1))
-```
-
-The model estimates a relative reporting probability for each z-interval,
-with the highest-$|z|$ interval fixed to 1. Use `prior_selection` to specify
-priors on the log relative probabilities, and `selection(fit)` to summarise
-them. Results can be sensitive to the cut-points and priors; see
-`vignette("baggr_selection")` for interpretation and further examples.
-
-
 ## Understanding and criticising _baggr_ model performance
 
 _Baggr_ models are run in Stan, and the fit and results need to be checked, understood and criticised as you would any stan model or indeed any MCMC model fitting exercise. **You must pay attention to printed warnings about the Rhat criterion: if you see a warning that Rhat statistic exceeds 1.05 for any parameter, you MUST NOT use the results for inference.** This warning means the MCMC chains have not converged, and it is exceedingly unlikely that the "posterior inference" printed out corresponds to anything close to the true posterior implied by your model and data. **If you use results from which the Rhat statistic exceeds 1.05 YOUR INFERENCE WILL BE WRONG.**
@@ -558,16 +538,33 @@ We can compare those fits with `loo_compare`, which gives use the differences in
 loo_compare(loocv_res, loocv_full)
 ```
 
-## Publication bias assessment
+## Selective reporting and publication bias assessment
 
 _Baggr_ includes basic tools for assessing publication bias and small-study
-effects. `funnel_plot()` provides a graphical check of how study-level effects
+effects. These tools are described in more detail in `vignette("baggr_selection")`.
+
+The `funnel_plot()` is a graphical check for how study-level effects
 vary with precision, while the `selection` argument in `baggr()` fits selection
 models for Rubin summary-data meta-analyses. The fitted relative publication
-probabilities can be summarised with `selection()`.
+probabilities can be also summarised with `selection()`. Briefly: for summary data 
+with the normal-normal hierarchical model, the model can be specified as follows: 
 
-These tools are described in more detail in `vignette("baggr_selection")`.
+```{r eval=FALSE}
+baggr(schools, model = "rubin", selection = c(1.96, 2.58),
+      prior_selection = normal(0, 1))
+```
+
+(It makes no sense to fit such a model given only 8 observations, this is
+just an example.) In this model, selection depends on
+$|z| = |\hat{\theta}_k / s_k|$, calculated from `yi / sei` columns; 
+`selection = c(1.96, 2.58)` refers to two selective reporting thresholds:
+p-value less than 5% and p-value less than (approx.) 1%.
+The model estimates a relative reporting probability for each z-interval,
+with the highest-$|z|$ interval fixed to 1. We use `prior_selection` to specify
+priors on the log relative probabilities. 
+
 Funnel asymmetry and selection-model adjustments should be interpreted with
 care: they may reflect publication bias, genuine heterogeneity, or both.
+See `vignette("baggr_selection")` for interpretation and further examples.
 
 ## References
