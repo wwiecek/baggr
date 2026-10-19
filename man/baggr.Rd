@@ -24,17 +24,17 @@ baggr(
   pooling_control = c("none", "partial", "remove"),
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome",
   group = "group",
+  yi = NULL,
+  sei = NULL,
+  y0i = NULL,
+  se0i = NULL,
+  outcome = "outcome",
   treatment = "treatment",
   cluster = NULL,
   selection = NULL,
   silent = FALSE,
   warn = TRUE,
-  yi = NULL,
-  sei = NULL,
-  y0i = NULL,
-  se0i = NULL,
   ...
 )
 }
@@ -116,15 +116,21 @@ with the same columns as \code{data} argument. See "Cross-validation" section be
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}
 
-\item{outcome}{column name in \code{data} (used in individual-level only) with outcome variable values}
-
 \item{group}{column name in \code{data} with grouping factor;
 it's necessary for individual-level data, for summarised data
-it will be used as labels for groups when displaying results}
+it will be used as labels for groups when displaying results;
+you can also use \code{slab} instead of \code{group}, like in metafor.}
+
+\item{yi, sei, y0i, se0i}{Custom column names for summary effect (\code{yi}) and standard errors (\code{sei});
+\code{y0i} and \code{se0i} are means and SE in control groups.
+If \code{NULL}, these are detected automatically. Notation from older
+baggr versions (\code{mu} and \code{tau}) will work automatically.}
+
+\item{outcome}{column name in \code{data} (used in individual-level only) with outcome variable values}
 
 \item{treatment}{column name in (individual-level) \code{data} with treatment factor;}
 
-\item{cluster}{optional; column name in (individual-level) \code{data}; if defined,
+\item{cluster}{column name in (individual-level) \code{data}; if defined,
 random cluster effects will be fitted in each study}
 
 \item{selection}{optional publication-selection specification for Rubin
@@ -138,14 +144,6 @@ possible and 0 means the study would be published regardless).}
 \item{silent}{Whether to silence messages about prior settings and about other automatic behaviour.}
 
 \item{warn}{print an additional warning if Rhat exceeds 1.05}
-
-\item{yi, sei}{Column names (single strings or \code{NULL}) for summary effect
-estimates and their standard errors. Defaults are \code{yi} and
-\code{sei}; both mappings must be supplied together.}
-
-\item{y0i, se0i}{Column names (single strings or \code{NULL}) for baseline/control
-means and their standard errors in the \code{mutau} model.
-Supply both together with \code{yi} and \code{sei} when mapping columns.}
 
 \item{...}{extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
 number of iterations etc.}
@@ -179,11 +177,10 @@ values require explicit mappings. The same mappings apply to \code{test_data}.
 An additional column can be used to provide labels for each group
 (by default column \code{group} is used if available, but this can be
 customised -- see the example below).
-For summary data, a \code{slab} column supplies labels when \code{group} is absent.
-You can also pass \code{slab = "study_label"} through \code{...}; explicit \code{group}
-takes precedence. These label aliases do not apply to individual-level data.
-For individual level data three columns are needed: outcome, treatment, group. These
-are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
+For summary data, you can use \code{slab} column when \code{group} is absent.
+Or you can also pass \code{slab = "study_label_column"} when calling \code{baggr()};
+explicit \code{group} takes precedence.
+For individual level data three columns are needed: \code{outcome}, \code{treatment}, \code{group}.
 
 Many data preparation steps can be done through a helper function \link{prepare_ma}.
 It can convert individual to summary-level data, calculate

@@ -63,12 +63,17 @@
 #'                  and ignore `data` in inference. However, `data` argument might still
 #'                  be used to infer the correct model (if `model=NULL`) and to set the
 #'                  default priors, therefore you must specify it.
-#' @param outcome   column name in \code{data} (used in individual-level only) with outcome variable values
 #' @param group     column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
-#'                  it will be used as labels for groups when displaying results
+#'                  it will be used as labels for groups when displaying results;
+#'                  you can also use `slab` instead of `group`, like in metafor.
+#' @param yi,sei,y0i,se0i Custom column names for summary effect (`yi`) and standard errors (`sei`);
+#'                        `y0i` and `se0i` are means and SE in control groups.
+#'                        If `NULL`, these are detected automatically. Notation from older
+#'                        baggr versions (`mu` and `tau`) will work automatically.
+#' @param outcome   column name in \code{data} (used in individual-level only) with outcome variable values
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
-#' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
+#' @param cluster   column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
 #' @param selection optional publication-selection specification for Rubin
 #'                  summary-data models. A numeric vector is treated as z-value
@@ -81,12 +86,6 @@
 #'                  (with values between 0 and 1)
 #' @param test_data data for cross-validation; NULL for no validation, otherwise a data frame
 #'                  with the same columns as `data` argument. See "Cross-validation" section below.
-#' @param yi,sei Column names (single strings or `NULL`) for summary effect
-#'                  estimates and their standard errors. Defaults are `yi` and
-#'                  `sei`; both mappings must be supplied together.
-#' @param y0i,se0i Column names (single strings or `NULL`) for baseline/control
-#'                  means and their standard errors in the `mutau` model.
-#'                  Supply both together with `yi` and `sei` when mapping columns.
 #' @param silent Whether to silence messages about prior settings and about other automatic behaviour.
 #' @param warn print an additional warning if Rhat exceeds 1.05
 #' @param ... extra options passed to Stan function, e.g. \code{control = list(adapt_delta = 0.99)},
@@ -115,11 +114,10 @@
 #' An additional column can be used to provide labels for each group
 #' (by default column `group` is used if available, but this can be
 #' customised -- see the example below).
-#' For summary data, a `slab` column supplies labels when `group` is absent.
-#' You can also pass `slab = "study_label"` through `...`; explicit `group`
-#' takes precedence. These label aliases do not apply to individual-level data.
-#' For individual level data three columns are needed: outcome, treatment, group. These
-#' are identified by using the `outcome`, `treatment` and `group` arguments.
+#' For summary data, you can use `slab` column when `group` is absent.
+#' Or you can also pass `slab = "study_label_column"` when calling `baggr()`;
+#' explicit `group` takes precedence.
+#' For individual level data three columns are needed: `outcome`, `treatment`, `group`.
 #'
 #' Many data preparation steps can be done through a helper function [prepare_ma].
 #' It can convert individual to summary-level data, calculate
@@ -282,11 +280,13 @@ baggr <- function(data,
                   prior = NULL, ppd = FALSE,
                   pooling_control = c("none", "partial", "remove"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
-                  outcome = "outcome", group = "group", treatment = "treatment",
+                  group = "group",
+                  yi = NULL, sei = NULL, y0i = NULL, se0i = NULL,
+                  outcome = "outcome", treatment = "treatment",
                   cluster = NULL,
                   selection = NULL,
                   silent = FALSE, warn = TRUE,
-                  yi = NULL, sei = NULL, y0i = NULL, se0i = NULL, ...) {
+                  ...) {
 
   # check that it is data.frame of at least 1 row
   # if(!inherits(data, "data.frame") || nrow(data) == 1)
@@ -333,8 +333,8 @@ baggr <- function(data,
     } else {
       group <- slab
       group_explicit <- TRUE
-      if(!silent) message(
-        "Using `slab` as study labels. In baggr, the canonical argument is `group`.")
+      # if(!silent) message(
+        # "Using `slab` as study labels. In baggr, the canonical argument is `group`.")
     }
     stan_args$slab <- NULL
   }

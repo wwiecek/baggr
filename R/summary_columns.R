@@ -63,10 +63,10 @@ normalise_summary_columns <- function(data, test_data = NULL, model = NULL,
     if(grepl("^legacy", names(conventions)[chosen])) {
       legacy_type <- if(length(mapping) == 4) "mutau" else "rubin"
       messages <- if(legacy_type == "mutau")
-        paste0("Detected legacy mu-and-tau column names (`mu`, `se.mu`, ",
-               "`tau`, `se.tau`). Starting in baggr 0.9, the preferred names ",
+        paste0("Using `mu`, `se.mu`, ", "`tau`, `se.tau` columns.",
+               "Starting in baggr 0.9, the preferred names ",
                "are `y0i`, `se0i`, `yi`, and `sei`.") else
-        paste0("Detected legacy summary-data column names (`tau`/`se`). ",
+        paste0("Using `tau`and `se` column names. ",
                "Starting in baggr 0.9, the preferred names are `yi` and `sei`.")
     } else if(grepl("^alias", names(conventions)[chosen])) {
       messages <- if(length(mapping) == 4)
@@ -107,8 +107,8 @@ normalise_summary_columns <- function(data, test_data = NULL, model = NULL,
         stop("Missing study-label column `slab` in `test_data`.")
       test_data[[group]] <- test_data[["slab"]]
     }
-    messages <- c(messages,
-      "Using `slab` as study labels. In baggr, the canonical argument is `group`.")
+    # messages <- c(messages,
+      # "Using `slab` as study labels. In baggr, the canonical argument is `group`.")
   }
   if(!silent) for(msg in messages) message(msg)
   list(data = data, test_data = test_data, columns = columns,
