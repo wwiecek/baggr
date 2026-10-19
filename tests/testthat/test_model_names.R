@@ -69,8 +69,10 @@ test_that("LOO summaries use theta and sigma for canonical models and aliases", 
       silent = TRUE, warn = FALSE)))
     expect_named(cv$df, c("theta", "sigma", "lpd"))
     expect_identical(cv$full_model$model, canonical)
+    # Permuting identical draws can change rounding in their means.
     if(is.null(references[[canonical]])) references[[canonical]] <- cv$df else
-      expect_identical(cv$df, references[[canonical]])
+      expect_equal(cv$df, references[[canonical]], tolerance = 1e-12,
+                   info = paste(model, canonical))
   }
 })
 
