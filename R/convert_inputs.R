@@ -30,7 +30,7 @@
 #'                  estimates and their standard errors. Defaults are `yi` and
 #'                  `sei`; both mappings must be supplied together.
 #' @param y0i,se0i Column names (single strings or `NULL`) for baseline/control
-#'                  means and their standard errors in the `mutau` model.
+#'                  means and their standard errors in the `vivs` model.
 #'                  Supply both together with `yi` and `sei` when mapping columns.
 #' @param silent Whether to print messages when evaluated
 #' @return R structure that's appropriate for use by [baggr::baggr()] Stan models;
@@ -62,6 +62,8 @@ convert_inputs <- function(data,
                            silent = FALSE,
                            yi = NULL, sei = NULL,
                            y0i = NULL, se0i = NULL) {
+
+  model <- canonical_model(model)
 
   # Fail fast for invalid model names before touching data columns.
   # This avoids spurious column warnings from custom/tibble inputs.
@@ -179,7 +181,7 @@ convert_inputs <- function(data,
           "Baselines for all these groups should be included in data argument.")
     }
 
-    if(model %in% c("rubin_full", "mutau_full", "logit")){
+    if(model %in% c("rubin_full", "vivs_full", "logit")){
 
 
       out <- list(
@@ -213,8 +215,10 @@ convert_inputs <- function(data,
           out$test_sigma_y_i <- array(0, dim = 0)
           out$test_sigma_y_k <- numeric(0) # backward compatibility with precompiled Stan model
         }
-        if(model == "mutau_full")
+        if(model == "vivs_full") {
+          out$test_treatment <- array(0, dim = 0)
           out$test_sigma_y_k <- array(0, dim = 0)
+        }
 
       } else {
         out$N_test <- nrow(test_data)
@@ -228,10 +232,12 @@ convert_inputs <- function(data,
         out$K_test <- length(unique(group_numeric_test))
         out$test_y <- test_data[[outcome]]
         # This array() is to ensure formatting for multi-arm experiments (but won't run with P > 1 for now)
-        out$test_treatment <- array(test_data[[treatment]], c(out$N_test, out$P))
+        out$test_treatment <- if(model == "vivs_full")
+          array(test_data[[treatment]], out$N_test) else
+          array(test_data[[treatment]], c(out$N_test, out$P))
         out$test_site <- group_numeric_test
         # calculate outcome SDs in each test group and map as needed by Stan model
-        if(model %in% c("rubin_full", "mutau_full")) {
+        if(model %in% c("rubin_full", "vivs_full")) {
           test_group_ids <- sort(unique(group_numeric_test))
           sd_in_each_group <- sapply(
             test_group_ids,
@@ -248,7 +254,7 @@ convert_inputs <- function(data,
                                         dim = out$N_test)
             out$test_sigma_y_k <- as.numeric(sd_in_each_group)
           }
-          if(model == "mutau_full")
+          if(model == "vivs_full")
             out$test_sigma_y_k <- array(sd_in_each_group, dim = out$K_test)
         }
       }
@@ -400,10 +406,10 @@ convert_inputs <- function(data,
            call. = FALSE)
     })
 
-    cov_bind$tau <- 0
+    cov_bind$theta <- 0
     cov_bind[] <- lapply(cov_bind, function(x) if(is.character(x)) factor(x) else x)
     cov_mm <- model.matrix(as.formula(
-      paste("tau ~", paste(covariates, collapse="+"))),
+      paste("theta ~", paste(covariates, collapse="+"))),
       data=cov_bind)
     out$X <- cov_mm[1:nrow(data), 2:ncol(cov_mm), drop = FALSE]
     out$Nc <- ncol(out$X)
@@ -414,7 +420,7 @@ convert_inputs <- function(data,
 
     covariate_coding <- colnames(out$X)
     covariate_levels <- lapply(cov_bind, levels)
-    covariate_levels[["tau"]] <- NULL
+    covariate_levels[["theta"]] <- NULL
 
   } else {
     covariate_coding <- c()

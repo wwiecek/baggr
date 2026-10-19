@@ -16,10 +16,10 @@ stan_values <- function(x) {
 
 test_that("summary conventions yield the same Stan inputs", {
   expect_identical(normalise_summary_columns(summary_rubin)$data, summary_rubin)
-  for(model in c("rubin", "mutau")) {
+  for(model in c("rubin", "vivs")) {
     canonical <- if(model == "rubin") summary_rubin else summary_mutau
     legacy <- if(model == "rubin") legacy_rubin else legacy_mutau
-    expect_message(old <- convert_inputs(legacy, model), "Detected legacy")
+    expect_message(old <- convert_inputs(legacy, model), "Starting in baggr 0.9")
     new <- convert_inputs(canonical, model)
     expect_identical(stan_values(old), stan_values(new))
     expect_identical(attr(convert_inputs(canonical, NULL, silent = TRUE), "model"),
@@ -30,7 +30,7 @@ test_that("summary conventions yield the same Stan inputs", {
   }
   expect_identical(detect_input_type(transform(summary_rubin, treatment = 1)),
                    "pool_noctrl_narrow")
-  inp <- convert_inputs(summary_mutau, "mutau")
+  inp <- convert_inputs(summary_mutau, "vivs")
   expect_equal(inp$theta_hat_k[1, ], summary_mutau$y0i)
   expect_equal(inp$theta_hat_k[2, ], summary_mutau$yi)
   expect_equal(inp$se_theta_k[1, ], summary_mutau$se0i)
@@ -46,14 +46,14 @@ test_that("exact aliases and custom strings work", {
   expect_equal(alias$theta_hat_k, summary_rubin$yi)
   wide <- summary_mutau
   names(wide)[2:5] <- c("y", "se", "y0", "se0")
-  expect_message(alias <- convert_inputs(wide, "mutau"), "preferred names")
+  expect_message(alias <- convert_inputs(wide, "vivs"), "preferred names")
   expect_equal(alias$theta_hat_k[1, ], summary_mutau$y0i)
   custom <- summary_mutau
   names(custom)[2:5] <- c("effect", "effect_se", "baseline", "baseline_se")
-  inp <- convert_inputs(custom, "mutau", yi = "effect", sei = "effect_se",
+  inp <- convert_inputs(custom, "vivs", yi = "effect", sei = "effect_se",
                          y0i = "baseline", se0i = "baseline_se")
   expect_identical(stan_values(inp),
-                   stan_values(convert_inputs(summary_mutau, "mutau")))
+                   stan_values(convert_inputs(summary_mutau, "vivs")))
   for(name in c("se_effect", "se_tau", "stderr")) {
     wrong <- summary_rubin
     names(wrong)[3] <- name
@@ -80,11 +80,11 @@ test_that("mappings and held-out columns are validated early", {
                                 sei = "sei"), "single column name")
   expect_error(convert_inputs(summary_rubin, "rubin", yi = "yi"), "both")
   expect_error(convert_inputs(summary_rubin, "rubin", sei = "sei"), "both")
-  expect_error(convert_inputs(summary_mutau, "mutau", y0i = "y0i",
+  expect_error(convert_inputs(summary_mutau, "vivs", y0i = "y0i",
                               se0i = "se0i"), "together")
   expect_error(convert_inputs(summary_rubin, "rubin", yi = "absent",
                               sei = "sei"), "Missing mapped summary columns")
-  for(model in c("rubin", "mutau")) {
+  for(model in c("rubin", "vivs")) {
     df <- if(model == "rubin") legacy_rubin else legacy_mutau
     inp <- convert_inputs(df[-1, ], model, test_data = df[1, ], silent = TRUE)
     expect_equal(as.numeric(inp$test_theta_hat_k),
@@ -98,7 +98,7 @@ test_that("mappings and held-out columns are validated early", {
 test_that("slab column defaults apply only to summary data", {
   df <- summary_rubin
   names(df)[1] <- "slab"
-  expect_message(inp <- convert_inputs(df, "rubin"), "Using `slab`")
+  expect_message(inp <- convert_inputs(df, "rubin"), NA)
   expect_identical(attr(inp, "group_label"), df$slab)
   expect_message(inp <- convert_inputs(df, "rubin", group = "group"), NA)
   expect_null(attr(inp, "group_label"))
@@ -141,7 +141,7 @@ test_that("prepare_ma emits canonical columns with unchanged calculations", {
 })
 
 test_that("canonical and legacy fits have identical priors and posterior summaries", {
-  for(model in c("rubin", "mutau")) {
+  for(model in c("rubin", "vivs")) {
     canonical <- if(model == "rubin") summary_rubin else summary_mutau
     legacy <- if(model == "rubin") legacy_rubin else legacy_mutau
     new <- suppressWarnings(baggr(canonical, iter = 100, warmup = 50,
@@ -179,7 +179,7 @@ test_that("baggr consumes slab and stores canonical held-out data", {
   messages <- capture_messages(bg <- suppressWarnings(baggr(
     df[-1, ], test_data = df[1, ], slab = "study_label", iter = 100,
     warmup = 50, chains = 1, seed = 235, refresh = 0, warn = FALSE)))
-  expect_true(any(grepl("Using `slab`", messages, fixed = TRUE)))
+  expect_false(any(grepl("Using `slab`", messages, fixed = TRUE)))
   expect_false("slab" %in% names(sampling_args))
   expect_identical(group_names(bg), df$study_label[-1])
   expect_equal(bg$test_data$yi, df$tau[1])
@@ -225,6 +225,6 @@ test_that("explicit mappings remain authoritative in downstream plots", {
   names(df)[1] <- "slab"
   messages <- capture_messages(bg <- suppressWarnings(baggr(df,
     iter = 100, warmup = 50, chains = 1, seed = 235, refresh = 0, warn = FALSE)))
-  expect_true(any(grepl("Using `slab`", messages, fixed = TRUE)))
+  expect_false(any(grepl("Using `slab`", messages, fixed = TRUE)))
   expect_identical(group_names(bg), df$slab)
 })

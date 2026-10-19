@@ -9,7 +9,8 @@
 #' @param ... Additional arguments passed to [baggr::baggr()].
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
-#' These can be examined by using `attributes()` function.
+#' The `df` component has columns `theta` (mean treatment effect),
+#' `sigma` (heterogeneity SD), and `lpd` for each omitted group.
 #' @seealso [loo_compare] for comparison of many LOO CV results; you can print and plot
 #'          output via [plot.baggr_cv] and [print.baggr_cv]
 #' @details
@@ -156,7 +157,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   utils::setTxtProgressBar(pb, 1)
   close(pb)
 
-  tau_estimate <-
+  theta_estimate <-
     lapply(kfits, function(x) mean(treatment_effect(x)[[1]]))
   sd_estimate <-
     lapply(kfits, function(x) mean(treatment_effect(x)[[2]]))
@@ -170,8 +171,8 @@ loocv <- function(data, return_models = FALSE, ...) {
     elpd = sum(unlist(elpds)),
     looic = -2*sum(unlist(elpds)),
     df  = data.frame(
-      "tau" = unlist(tau_estimate),
-      "sigma_tau" = unlist(sd_estimate),
+      "theta" = unlist(theta_estimate),
+      "sigma" = unlist(sd_estimate),
       "lpd" = unlist(loglik)),
     full_model = full_fit,
     prior = args[["prior"]],
@@ -334,7 +335,7 @@ plot.baggr_cv <- function(x, y, ..., add_values = TRUE,
   effects <- loo_model$full_model$effects
   groups <- group_names(loo_model$full_model)
   mm1 <- comparison_summary(lapply(loo_model$models, function(model)
-    treatment_effect(model, summary = TRUE)$tau), groups, effects)
+    treatment_effect(model, summary = TRUE)$theta), groups, effects)
   df <- do.call(rbind, lapply(seq_along(effects), function(i) {
     inputs <- input_data
     if(length(effects) > 1) {

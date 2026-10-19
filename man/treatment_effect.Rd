@@ -68,7 +68,7 @@ ratio scale. It is different from \code{\link[=effect_draw]{effect_draw()}}, whi
 the posterior predictive distribution of a new treatment effect, including
 heterogeneity or uncertainty around the mean, and then applies the
 transformation. Because a transformed hyper-SD is not generally
-interpretable, \code{treatment_effect()} returns \code{sigma_tau = NA} when
+interpretable, \code{treatment_effect()} returns \code{sigma = NA} when
 \code{transform} is supplied; this is also what \code{hypersd(bg, transform = ...)}
 returns.
 }
@@ -86,7 +86,7 @@ preserved. Aggregate summaries have one row; predictions conditional on
 \section{Functions}{
 \itemize{
 \item \code{treatment_effect()}: A list with 2 components (posterior draws)
-\code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
+\code{theta} (mean effect) and \code{sigma} (SD). If \code{summary=TRUE},
 each component follows the summary layout described here.
 
 \item \code{hypermean()}: The hypermean of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[1]]}

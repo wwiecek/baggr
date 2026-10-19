@@ -1,4 +1,4 @@
-context("mutau_full")
+context("vivs_full")
 library(baggr)
 
 set.seed(1990)

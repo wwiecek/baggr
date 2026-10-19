@@ -20,7 +20,7 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
   if(!(covariate %in% bg$covariate))
     stop("requested covariate not specified in the baggr object")
 
-  if(!(bg$model %in% c("rubin", "mutau")))
+  if(!(bg$model %in% c("rubin", "vivs")))
     stop("At the moment bubble plots are only available for summary-level data models")
 
   data <- bg$data
@@ -31,7 +31,7 @@ bubble <- function(bg, covariate, fit=TRUE, label=TRUE) {
   group <- NULL
   data$.covariate <- data[[covariate]]
   fe <- effect_slice(fixed_effects(bg, summary=TRUE), 1)[,"mean"]
-  te <- effect_slice(treatment_effect(bg,summary=TRUE)$tau, 1)[1,"mean"]
+  te <- effect_slice(treatment_effect(bg,summary=TRUE)$theta, 1)[1,"mean"]
   if(is.null(data$group))
     data$group <- group_names(bg)
   data$.group <- data$group

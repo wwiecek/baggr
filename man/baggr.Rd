@@ -43,7 +43,9 @@ baggr(
 see Details section for how to format your data}
 
 \item{model}{if \code{NULL}, detected automatically from input data
-otherwise choose from \code{rubin}, \code{rubin_full}, \code{logit}, \code{mutau} (see Details).}
+otherwise choose \code{rubin} (\code{nnhm}), \code{rubin_full}, \code{logit},
+\code{vivs} or \code{vivs_full}. Aliases \code{mutau}/\code{bivariate} and
+\code{mutau_full}/\code{bivariate_full} select \code{vivs} and \code{vivs_full}.}
 
 \item{pooling}{Type of pooling;
 choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
@@ -70,10 +72,10 @@ If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
 \item{prior_hypersd}{prior for hyper-standard deviation, used
-by Rubin and \code{"mutau"} models;
+by Rubin and \code{"vivs"} models;
 same rules apply as for \verb{_hypermean};}
 
-\item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
+\item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"vivs"} model}
 
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
@@ -93,7 +95,7 @@ this can only be used if \code{pooling_control = "partial"}}
 
 \item{prior_selection}{prior for the log of relative publication probability (see \strong{Selection} section below and argument \code{selection})}
 
-\item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"mutau_full"})}
+\item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"vivs_full"})}
 
 \item{prior}{alternative way to specify all of the priors above as a single named list, with \code{hypermean},
 \code{hypersd}, \code{hypercor}, \code{beta} etc., with names dropping \code{prior_} prefix,
@@ -133,8 +135,8 @@ baggr versions (\code{mu} and \code{tau}) will work automatically.}
 \item{cluster}{column name in (individual-level) \code{data}; if defined,
 random cluster effects will be fitted in each study}
 
-\item{selection}{optional publication-selection specification for Rubin
-summary-data models. A numeric vector is treated as z-value
+\item{selection}{optional publication-selection specification for the
+normal-normal hierarchical (Rubin) summary-data model. A numeric vector is treated as z-value
 cut-points on the absolute z-scale, where \code{z = yi / sei}.
 A list must have named elements \code{z} (positive cut-points),
 \code{symmetrical} (\code{TRUE}/\code{FALSE}) and \code{possible} (0/1 or logical
@@ -164,9 +166,9 @@ Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of p
 All three are discussed in more depth in the package vignette, \code{vignette("baggr")}.
 
 \strong{Data.} For aggregate data models you need a data frame with columns
-\code{yi} and \code{sei} (Rubin model) or \code{y0i}, \code{se0i}, \code{yi}, \code{sei} (\code{mutau} model).
+\code{yi} and \code{sei} (Rubin model) or \code{y0i}, \code{se0i}, \code{yi}, \code{sei} (\code{vivs} model).
 These are observed effect estimates and their standard errors, with baseline
-means and their standard errors included for \code{mutau}.
+means and their standard errors included for \code{vivs}.
 Supply string arguments such as \verb{yi = "effect", sei = "effect_se"} to
 select other columns. Bare column names and vector inputs are not supported.
 Exact aliases \code{y}/\code{se} and \code{y0}/\code{se0}/\code{y}/\code{se} are also recognised.
@@ -190,14 +192,27 @@ Using it will automatically format data inputs to work with \code{baggr()}.
 \strong{Models.} Available models are:
 \itemize{
 \item for the \strong{continuous variable} means:
-\code{"rubin"} model for average treatment effect (using summary data), \code{"mutau"}
+\code{"rubin"} model for average treatment effect (using summary data), \code{"vivs"}
 version which takes into account means of control groups (also using summary data),
-\code{"rubin_full"},  which is the same model as \code{"rubin"} but works with individual-level data
+\code{"rubin_full"}, which works with individual-level data;
+\code{"vivs_full"}, which jointly pools control means and treatment effects
+using individual-level data
 \item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
 you can also analyse continuous statistics such as
 log odds ratios and logs risk ratios using the models listed above;
 see \code{vignette("baggr_binary")} for tutorial with examples
 }
+
+The default summary-data model, \code{"rubin"}, is often referred to in the
+literature as the normal-normal hierarchical model (\code{"nnhm"} is an alias).
+The varying-intercept, varying-slope model (\code{"vivs"}, or \code{"vivs_full"}
+for individual-level data) is a joint model that allows random effects on
+both control means and treatment effects. It is a bivariate hierarchical
+model that jointly estimates study-specific control means and treatment
+effects, allowing them to be correlated across studies.
+In previous baggr versions it was referred to as the \code{"mutau"} model.
+You can still use that name when specifying the model; \code{"bivariate"} is
+another alias. Both aliases also accept the \verb{_full} suffix.
 
 If no model is specified, the function tries to infer the appropriate
 model automatically.
@@ -211,7 +226,7 @@ We also refer to impact of these covariates as \emph{fixed effects}.
 
 Two types of covariates may be present in your data:
 \itemize{
-\item In \code{"rubin"} and \code{"mutau"} models, covariates that \strong{change according to group unit}.
+\item In \code{"rubin"} and \code{"vivs"} models, covariates that \strong{change according to group unit}.
 In that case, the model accounting
 for the group covariates is a
 meta-regression model, as described in Chapter 10 of the Cochrane
@@ -315,7 +330,7 @@ baggr(df_pooled, prior_hypersd = normal(0, 2))
 # prepare_ma() can summarise individual-level data
 ms <- microcredit_simplified
 microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
-baggr(microcredit_summary_data, model = "mutau",
+baggr(microcredit_summary_data, model = "vivs",
       iter = 500, #this is just for illustration -- don't set it this low normally!
       pooling = "partial", prior_hypercor = lkj(1),
       prior_hypersd = normal(0,10),

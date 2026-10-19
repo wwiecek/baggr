@@ -131,7 +131,7 @@ test_that("labbe()", {
 test_that("convert_inputs()", {
   # Rubin model
   expect_is(convert_inputs(schools, "rubin"), "list")
-  expect_error(convert_inputs(schools, "mutau"))
+  expect_error(convert_inputs(schools, "vivs"))
   expect_is(convert_inputs(schools, "rubin", test_data = schools[7:8,]), "list")
 
   # Invalid model should fail cleanly, without unrelated column warnings.

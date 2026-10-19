@@ -80,7 +80,7 @@ df_ma <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
 df_ma
 ```
 
-We use `yi` and `sei` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
+We use `yi` and `sei` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default normal-normal hierarchical (Rubin) model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
 
 
 

@@ -29,6 +29,8 @@ prepare_prior <- function(prior,
                           selection = NULL,
                           silent = FALSE) {
 
+  model <- canonical_model(model)
+
   if(missing(prior))
     prior <- list()
 
@@ -43,7 +45,7 @@ prepare_prior <- function(prior,
   if(model %in% c("rubin_full", "logit")) re_dim <- attr(stan_data, "n_re") else re_dim <- 1
 
   # In models that use individual-level data, swap `data` argument for summary data
-  if(model %in% c("rubin_full", "logit", "mutau_full")) {
+  if(model %in% c("rubin_full", "logit", "vivs_full")) {
     trt_col <- attr(stan_data, "columns")[["treatment"]]
     pma_data <- data.frame(outcome = stan_data$y,
                            group = stan_data$site,
@@ -58,7 +60,7 @@ prepare_prior <- function(prior,
       p <- data$c/data$n2
       data$y0i <- log(p/(1-p))
     }
-    if(model %in% c("mutau_full", "rubin_full")) {
+    if(model %in% c("vivs_full", "rubin_full")) {
       data <- prepare_ma(pma_data, effect = "mean")
       # Baseline and effect columns could be NA because some studies may not
       # have all treatments present; for purpose of deriving prior, we need
@@ -68,7 +70,7 @@ prepare_prior <- function(prior,
   }
   # ...then proceed as you would in Rubin model
 
-  if(!(model %in% c("rubin", "mutau", "logit", "rubin_full", "sslab", "mutau_full")))
+  if(!(model %in% c("rubin", "vivs", "logit", "rubin_full", "sslab", "vivs_full")))
     stop(paste0("Cannot prepare priors for model of type ", model))
 
 
@@ -85,10 +87,10 @@ prepare_prior <- function(prior,
     "rubin_full"  = c("hypermean" = "real", "hypersd" = "positive_real",
                       "control" = "real", "control_sd" = "positive_real",
                       "sigma" = "positive_real"),
-    "mutau" = c("hypermean" = "real_2",
+    "vivs" = c("hypermean" = "real_2",
                 "hypercor" = "corr",
                 "hypersd" = "positive_real"),
-    "mutau_full" = c("hypermean" = "real_2",
+    "vivs_full" = c("hypermean" = "real_2",
                      "hypercor" = "corr",
                      "hypersd" = "positive_real",
                      "control_sd" = "positive_real"),
@@ -118,7 +120,7 @@ prepare_prior <- function(prior,
         default_prior_dist <- switch(
           current_prior,
           "hypermean"  =
-            if(model %in% c("mutau", "mutau_full"))
+            if(model %in% c("vivs", "vivs_full"))
               multinormal(c(0,0),
                           c(100*max(abs(data$y0i)),
                             100*max(abs(data$yi)))*diag(2))
@@ -217,7 +219,7 @@ prepare_prior <- function(prior,
                          " using 10 times the max effect ",
                          effect_on, ":"))
           if(model != "sslab")
-            special_name <- if(model %in% c("mutau", "mutau_full"))
+            special_name <- if(model %in% c("vivs", "vivs_full"))
               "theta0, theta" else "theta"
         } else if(current_prior == "hypersd") {
           if(pooling == "partial" && attr(stan_data, "n_groups") == 1)
@@ -227,7 +229,7 @@ prepare_prior <- function(prior,
                           "groups -- consider setting variance prior manually./"))
           if(pooling == "partial" && model != "sslab"){
             message("Setting hyper-SD prior using 10 times the naive SD across sites")
-            special_name <- if(model %in% c("mutau", "mutau_full"))
+            special_name <- if(model %in% c("vivs", "vivs_full"))
               "sigma_theta0, sigma_theta" else "sigma_theta"
           }
         } else if(current_prior == "control") {
@@ -246,7 +248,7 @@ prepare_prior <- function(prior,
             else
               special_name <- "DNP"
           }
-          if(model %in% c("rubin_full", "mutau_full")){
+          if(model %in% c("rubin_full", "vivs_full")){
             if(stan_data$pooling_baseline == 1)
               special_name <- "theta0 (hyperparameter)"
             else if(stan_data$pooling_baseline == 0)
@@ -262,7 +264,7 @@ prepare_prior <- function(prior,
           if(stan_data$pooling_baseline == 1){
             if(model == "logit")
               special_name <- "log odds of event rate in untreated: sd"
-            if(model %in% c("rubin_full", "mutau_full")){
+            if(model %in% c("rubin_full", "vivs_full")){
               special_name <- "sigma_theta0 (hyperparameter)"
             }
           }else
@@ -282,7 +284,7 @@ prepare_prior <- function(prior,
 
       } else {
         if(current_prior == "control_sd" &&
-           model %in% c("logit", "rubin_full", "mutau_full") &&
+           model %in% c("logit", "rubin_full", "vivs_full") &&
            stan_data$pooling_baseline != 1)
           message("SD hyperparameter for control groups defined,",
                   "but there is no pooling. Ignoring it.")

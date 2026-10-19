@@ -16,8 +16,8 @@
 #'
 #' For models with group-level covariates, colouring points by a covariate can
 #' help inspect whether asymmetry is partly explained by meta-regression effects.
-#' In Rubin summary-data meta-regression models (`model = "rubin"` with
-#' `covariates`), `show = "posterior"` plots posterior study effects from
+#' In normal-normal hierarchical (Rubin) meta-regression models
+#' (`model = "rubin"` with `covariates`), `show = "posterior"` plots posterior study effects from
 #' [group_effects()], which include the fitted covariate contribution. By
 #' contrast, `show = "inputs"` plots the original study-level estimates.
 #'

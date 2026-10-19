@@ -1,7 +1,15 @@
 # devel (work in progress)
 
+- Using more standard notation for hierarchical parameters: hypermean theta,
+  hypersd sigma_theta. Posterior effect summaries and LOO data frames now use
+  `theta` and `sigma` instead of `tau` and `sigma_tau`.
+- Renamed the joint baseline/effect models to `vivs` and `vivs_full`
+  (varying-intercept, varying-slope). `mutau` and `bivariate` remain aliases,
+  with corresponding `_full` aliases. Added `nnhm` as an alias for `rubin`,
+  the normal-normal hierarchical model.
+
 - Summary-data models now prefer `yi`/`sei` for effects and standard errors,
-  with `y0i`/`se0i` for baseline means in `mutau`. You can also use `slab` 
+  with `y0i`/`se0i` for baseline means in `vivs`. You can also use `slab`
   instead of `group` in `baggr()` calls. Legacy column names still work
 
 - Documented binary effect measures and clarified automatic conversion messages (#64).

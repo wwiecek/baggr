@@ -8,7 +8,7 @@ test_that("LOO plot labels match estimates, intervals and comparison style", {
     treatment_effect = function(bg, summary) {
       tau <- summaries[bg,,drop = FALSE]
       attr(tau, "effect") <- "mean"
-      list(tau = tau)
+      list(theta = tau)
     },
     .package = "baggr"
   )

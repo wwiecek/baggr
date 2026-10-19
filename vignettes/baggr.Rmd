@@ -41,11 +41,20 @@ Suppose that $y_{ik}$ varies randomly around its mean $\theta_{0k} + \theta_k T_
 
 
 Summary-data inputs use `yi` and `sei` for effect estimates and their standard
-errors, with `y0i` and `se0i` added for baseline/control means in `mutau`.
+errors, with `y0i` and `se0i` added for baseline/control means in `vivs`.
+
+::: {.note style="border: 1px solid #ccc; padding: 0.75em 1em; margin: 1em 0;"}
+In baggr 0.9 default column names have changed to follow a convention popular
+in meta-analysis packages. The old version used `tau` for treatment effects
+and `mu` for control means. The new version prefers column names `yi` and
+`y0i` for their point estimates, with `sei` and `se0i` for standard errors.
+The corresponding parameters are $\theta_k$ and $\theta_{0k}$.
+You can still use the old notation.
+:::
+
 Other column names can be mapped explicitly with strings, for example
 `baggr(df, yi = "effect", sei = "effect_se", model = "rubin")`.
-Exact aliases `y`/`se` and `y0`/`se0`/`y`/`se` are recognised. Legacy
-`tau`/`se` and `mu`/`se.mu`/`tau`/`se.tau` inputs remain accepted and
+Exact aliases `y`/`se` and `y0`/`se0`/`y`/`se` are recognised. Legacy inputs
 produce an informational message unless mappings are explicit or `silent = TRUE`.
 A `slab` column, or `slab = "study_label"`, can supply study labels for
 summary data; an explicit `group` argument takes precedence.
@@ -68,7 +77,7 @@ For average effects aggregation, _baggr_ detects the input format automatically.
 | Input format | Required columns (minimum) | Internal input type | Typical default model |
 |---|---|---|---|
 | Effect estimates only (continuous outcomes) | `yi`, `sei` | `pool_noctrl_narrow` | `rubin` |
-| Control mean + treatment effect summary (continuous outcomes) | `y0i`, `se0i`, `yi`, `sei` | `pool_wide` | `mutau` |
+| Control mean + treatment effect summary (continuous outcomes) | `y0i`, `se0i`, `yi`, `sei` | `pool_wide` | `vivs` |
 | Binary summary counts (2x2-style per group) | `a`, `b`, `c`, `d` (plus optional `group`) | `pool_binary` | `rubin` (or `logit` if requested) |
 | Individual-level data (continuous outcomes) | `group`, `treatment`, `outcome` | `individual` | `rubin_full` |
 | Individual-level data (binary outcomes) | `group`, `treatment`, `outcome` with binary `outcome` | `individual_binary` | `logit` |
@@ -102,7 +111,11 @@ prepare_ma(microcredit_simplified, outcome = "consumption")
 
 _baggr_ includes summary-data models and individual-level-data models for aggregating average treatment effects.
 
-### Rubin model
+### Normal-normal hierarchical (Rubin) model
+
+This default model is often referred to in the literature as the
+normal-normal hierarchical model. You can specify it as `model = "rubin"`
+or `model = "nnhm"`.
 
 Consider first the evidence aggregation model from @rubin_estimation_1981, discussed extensively in Chapter 5 of @gelman_bayesian_2013; the model consists of a hierarchical likelihood as follows:
 
@@ -119,7 +132,7 @@ The motivation for this model structure is discussed in detail in the sources ab
 * For $\theta$, `prior_hypermean = normal(0, 10*max(abs(yi)))`.
 * For $\sigma_{\theta}$, `prior_hypersd = uniform(0, 10*sd(yi))` (for at least two groups).
 
-### $\theta_0$-$\theta$ model
+### Varying-intercept, varying-slope model
 
 In case you also have data on the control groups' mean outcomes and the uncertainty on those, you can augment the @rubin_estimation_1981 model to incorporate that information. Following @meager_aggregating_2019-1, if one has access to the estimated control means  $\{\hat{\theta}_{0k}\}^K_{k=1}$ and their standard errors $\{\hat{se}_{\theta_0 k}\}^K_{k=1}$, one can fit a joint Gaussian model on the pairs $\{\hat{\theta}_{0k},\hat{\theta}_k\}_{k=1}^{K}$:
 
@@ -141,7 +154,14 @@ N\left( \left(
 \label{full data model}
 \end{equation}
 
-In _baggr_ this model is referred to as `"mutau"`. Here $\theta_{0k}$
+In _baggr_ this is the varying-intercept, varying-slope model (`"vivs"`):
+a joint model that allows random effects on both control means and treatment
+effects. It is a bivariate hierarchical model that jointly estimates
+study-specific control means and treatment effects, allowing them to be
+correlated across studies. In previous baggr versions it was referred to as
+the `"mutau"` model. You can still use that name when specifying the model;
+`"bivariate"` is another alias. For individual-level data, use `"vivs_full"`
+(aliases `"mutau_full"` and `"bivariate_full"`). Here $\theta_{0k}$
 is the true control or baseline mean in group $k$, while $\theta_k$ is
 the true treatment effect. Their population means are $\theta_0$ and
 $\theta$. The observed estimates $\hat{\theta}_{0k}$ and
@@ -159,7 +179,7 @@ If you have only few groups, the priors on $V$ will need to be relatively strong
 For individual-level data (`outcome`, `treatment`, `group`), _baggr_ supports three likelihood models:
 
 * `"rubin_full"`: $y_i \sim N(\theta_{0,k[i]} + \theta_{k[i]} z_i + x_i^\top\beta + u_i, \sigma_{y,k[i]}^2)$.
-* `"mutau_full"`: $y_i \sim N(\theta_{0,k[i]} + \theta_{k[i]} z_i + x_i^\top\beta, \sigma_{y,k[i]}^2)$.
+* `"vivs_full"`: $y_i \sim N(\theta_{0,k[i]} + \theta_{k[i]} z_i + x_i^\top\beta, \sigma_{y,k[i]}^2)$.
 * `"logit"`: $y_i \sim \text{Bernoulli}(\text{logit}^{-1}(\theta_{0,k[i]} + \theta_{k[i]} z_i + x_i^\top\beta))$.
 
 ## Models, their inputs, hierarchy and priors: a summary table
@@ -168,13 +188,11 @@ For individual-level data (`outcome`, `treatment`, `group`), _baggr_ supports th
 
 | Model (name in `baggr`) | Required input columns | Hierarchical structure | Prior knobs (main arguments) |
 |---|---|---|---|
-| Rubin summary-data model (`"rubin"`) | `yi`, `sei` (optional `group`, optional `covariates`) | With `pooling = "partial"`: $\theta_k \sim N(\theta, \sigma_\theta^2)$. `pooling = "none"` uses independent study effects; `pooling = "full"` uses one common effect. | `prior_hypermean` (for $\theta$), `prior_hypersd` (for $\sigma_\theta$), `prior_beta` (if `covariates` used), `prior_selection` (if `selection` is used). |
-| $\theta_0$-$\theta$ summary-data model (`"mutau"`) | `y0i`, `se0i`, `yi`, `sei` (optional `group`, optional `covariates`) | With `pooling = "partial"`: $\begin{pmatrix}\theta_{0k}\\\theta_k\end{pmatrix} \sim N\left(\begin{pmatrix}\theta_0\\\theta\end{pmatrix}, V\right)$, where $V$ is parameterized via scales and a correlation matrix. `pooling = "none"` and `"full"` follow the same none/full pooling interpretation as above. | `prior_hypermean` (for $(\theta_0,\theta)$), `prior_hypersd` (scales in $V$), `prior_hypercor` (correlation in $V$), `prior_beta` (if `covariates` used). |
+| Normal-normal hierarchical (Rubin) summary-data model (`"rubin"`) | `yi`, `sei` (optional `group`, optional `covariates`) | With `pooling = "partial"`: $\theta_k \sim N(\theta, \sigma_\theta^2)$. `pooling = "none"` uses independent study effects; `pooling = "full"` uses one common effect. | `prior_hypermean` (for $\theta$), `prior_hypersd` (for $\sigma_\theta$), `prior_beta` (if `covariates` used), `prior_selection` (if `selection` is used). |
+| Varying-intercept, varying-slope summary-data model (`"vivs"`) | `y0i`, `se0i`, `yi`, `sei` (optional `group`, optional `covariates`) | With `pooling = "partial"`: $\begin{pmatrix}\theta_{0k}\\\theta_k\end{pmatrix} \sim N\left(\begin{pmatrix}\theta_0\\\theta\end{pmatrix}, V\right)$, where $V$ is parameterized via scales and a correlation matrix. `pooling = "none"` and `"full"` follow the same none/full pooling interpretation as above. | `prior_hypermean` (for $(\theta_0,\theta)$), `prior_hypersd` (scales in $V$), `prior_hypercor` (correlation in $V$), `prior_beta` (if `covariates` used). |
 | Rubin individual-level model (`"rubin_full"`) | `outcome`, `treatment`, `group` (optional individual-level `covariates`, optional `cluster`) | Treatment effects follow Rubin-style pooling across groups (`none`/`partial`/`full`), with optional baseline pooling via `pooling_control`. | `prior_hypermean` (treatment hypermean), `prior_hypersd` (treatment heterogeneity), `prior_control` and `prior_control_sd` (control arm baseline and its heterogeneity), `prior_sigma` (within-group outcome SD), `prior_beta`, `prior_cluster`. |
-| $\theta_0$-$\theta$ individual-level model (`"mutau_full"`) | `outcome`, `treatment`, `group` (optional individual-level `covariates`) | Partial-pooling form jointly pools $(\theta_{0k}, \theta_k)$ with a multivariate normal hierarchy and correlation; none/full pooling use the corresponding independent/common parameter special cases. | `prior_hypermean`, `prior_hypersd`, `prior_hypercor`, `prior_control_sd` (for baseline SD under partial baseline pooling), `prior_sigma`, `prior_beta`. |
+| Varying-intercept, varying-slope individual-level model (`"vivs_full"`) | `outcome`, `treatment`, `group` (optional individual-level `covariates`) | Partial-pooling form jointly pools $(\theta_{0k}, \theta_k)$ with a multivariate normal hierarchy and correlation; none/full pooling use the corresponding independent/common parameter special cases. | `prior_hypermean`, `prior_hypersd`, `prior_hypercor`, `prior_control_sd` (for baseline SD under partial baseline pooling), `prior_sigma`, `prior_beta`. |
 | Logistic individual-level model (`"logit"`) | `outcome` (0/1), `treatment`, `group` (optional individual-level `covariates`) | Log-odds treatment effects are pooled across groups (`none`/`partial`/`full`); control-arm log-odds can be pooled separately via `pooling_control`. | `prior_hypermean`, `prior_hypersd`, `prior_control`, `prior_control_sd`, `prior_beta`. |
-
-> `selection = ...` is currently available only for the summary-data Rubin model (`model = "rubin"`). It models publication selection on absolute z-values, $|z| = |\hat{\theta}_k / s_k|$, where `yi` is the reported estimate and `sei` is its standard error. For example, `selection = 1.96` splits studies at the conventional two-sided 5% normal threshold, and `selection = c(1.96, 2.58)` adds an approximate 1% threshold. Use `prior_selection` to set priors on the relative publication probabilities across the specified $|z|$ intervals.
 
 <!-- | Quantiles (`"quantiles"`)         | `outcome`, `treatment`, `group`  | See Meager (2019)    | See Meager (2019)          | See Meager (2019)  | -->
 
@@ -182,24 +200,24 @@ Where inputs are individual-level data, i.e.  `outcome`, `treatment`, `group`, y
 
 ## Prior choice in baggr
 
-In the "Rubin" and "$\theta_0$ and $\theta$" models, the user can specify custom priors beyond the defaults using the prior arguments. These prior arguments are subdivided into 3 categories:
+In the "Rubin" and varying-intercept, varying-slope models, the user can specify custom priors beyond the defaults using the prior arguments. These prior arguments are subdivided into 3 categories:
 
 * Priors for the hypermean, the average effect across groups, such as  $\theta$ or the vector $(\theta_0, \theta)$. This is denoted using the `prior_hypermean` argument in baggr.
 
-* Priors for the hyper-standard-deviations $\sigma_{\theta}$, the standard deviation of effects across groups. This also refers to the prior on the scales of the hyper-variance-covariance matrix $V$ in the"$\theta_0$ and $\theta$" model. This type of parameter is denoted `prior_hypersd` in baggr.
+* Priors for the hyper-standard-deviations $\sigma_{\theta}$, the standard deviation of effects across groups. This also refers to the prior on the scales of the hyper-variance-covariance matrix $V$ in the varying-intercept, varying-slope model. This type of parameter is denoted `prior_hypersd` in baggr.
 
-* Priors on hypercorrelations between parameters that may co-vary across the groups. When working with multi-dimensional parameters at the upper level of the model (aka performing multivariate shrinkage), this is the correlation in the distribution of the different parameters across the groups. For example, in the "$\theta_0$ and $\theta$" model this parameter is the correlation matrix $\Omega$ that governs the hyper-variance-covariance matrix $V$. This type of parameter is denoted `prior_hypercor` in baggr.
+* Priors on hypercorrelations between parameters that may co-vary across the groups. When working with multi-dimensional parameters at the upper level of the model (aka performing multivariate shrinkage), this is the correlation in the distribution of the different parameters across the groups. For example, in the varying-intercept, varying-slope model this parameter is the correlation matrix $\Omega$ that governs the hyper-variance-covariance matrix $V$. This type of parameter is denoted `prior_hypercor` in baggr.
 
 The possible prior distributions we allow for in the current version are:
 
-* For `prior_hypermean` we allow `"normal"`, `"uniform"`, `"cauchy"`, `"lognormal"`, and (generalised) `"student_t"` with any parameter values which are logically possible given support constraints (e.g. user cannot specify a negative variance on a normal distribution or a negative scale on a Cauchy) When the model has a vector hypermean, "$\theta_0$ and $\theta$" model, baggr applies the given prior to all the elements of the vector independently. If the user wishes to specify a prior dependence between the components, one can supply prior_hypermean with a multinormal argument (see `?priors` for details).
+* For `prior_hypermean` we allow `"normal"`, `"uniform"`, `"cauchy"`, `"lognormal"`, and (generalised) `"student_t"` with any parameter values which are logically possible given support constraints (e.g. user cannot specify a negative variance on a normal distribution or a negative scale on a Cauchy) When the model has a vector hypermean, as in the varying-intercept, varying-slope model, baggr applies the given prior to all the elements of the vector independently. If the user wishes to specify a prior dependence between the components, one can supply prior_hypermean with a multinormal argument (see `?priors` for details).
 * For `prior_hypersd` we allow `"normal"` and `"uniform"` with any parameter values which are logically possible given support constraints (as above).
-* For `prior_hypercor`, which is only necessary when there is a multivariate shrinkage operation (as in the "$\theta_0$ and $\theta$" model) we allow an LKJ correlation prior (`"lkj"`) with any parameter values which are logically possible given support constraints. For further details of this strategy see Meager (2019).
+* For `prior_hypercor`, which is only necessary when there is a multivariate shrinkage operation (as in the varying-intercept, varying-slope model) we allow an LKJ correlation prior (`"lkj"`) with any parameter values which are logically possible given support constraints. For further details of this strategy see Meager (2019).
 
 
 Notation for priors is "plain-text", in that you can write the distributions as `normal()`, `uniform()` etc. See `?priors` for details, or continue to the example below with the Rubin model.
 
-## Running the Rubin model in _baggr_
+## Running the normal-normal hierarchical (Rubin) model in _baggr_
 
 To demonstrate the Rubin model in _baggr_, consider the 8 schools example from Rubin (1981). In this dataset, 8 schools in the United States performed similar randomized experiments to estimate the causal effect of an SAT tutoring program on learning outcomes. Reported  treatment effects and their standard errors are included in  _baggr_ as a data frame:
 
@@ -229,8 +247,9 @@ print(baggr_schools)
 ### Examining treatment and study effects
 
 The overall treatment effect and heterogeneity parameters are available with
-`treatment_effect()`. If you only need the mean effect or its hyper-SD, use the
-shorter `hypermean()` and `hypersd()` functions.
+`treatment_effect()`, as components `theta` and `sigma`. If you only need the
+mean effect or its hyper-SD, use the shorter `hypermean()` and `hypersd()`
+functions.
 
 ```{r}
 hypermean(baggr_schools)
@@ -292,6 +311,26 @@ baggr(schools, "rubin", pooling = "partial", prior = custom_priors)
 
 Note that the Rubin model assumes Gaussian distribution of effects across groups. This is generally appropriate as a first pass at the problem (see @mcculloch_misspecifying_2011) _except_ if the distribution is known to be asymmetric for scientific reasons. For example, if you are working with risk ratios or odds ratios these statistics cannot be negative and the chosen hyper-distribution should typically reflect that. However, in many cases it is possible and indeed standard to maintain the Gaussian assumption on a transform of the object: for example, you can safely fit the Rubin model to the logarithm of the risk ratios or odds ratios. While bearing in mind that log transforms obscure inherent dependencies between means and variances in the raw scale, this is still much better than applying a Gaussian to the raw object itself.
 
+
+
+## Modeling selective reporting on z-values
+
+For summary data, the normal-normal hierarchical (Rubin) model can also model
+selective reporting through `selection`. By default, selection depends on
+$|z| = |\hat{\theta}_k / s_k|$, calculated from `yi / sei`.
+`selection = 1.96` splits studies at the conventional two-sided 5% normal
+threshold; `selection = c(1.96, 2.58)` adds an approximate 1% threshold.
+
+```{r eval=FALSE}
+baggr(schools, model = "rubin", selection = c(1.96, 2.58),
+      prior_selection = normal(0, 1))
+```
+
+The model estimates a relative reporting probability for each z-interval,
+with the highest-$|z|$ interval fixed to 1. Use `prior_selection` to specify
+priors on the log relative probabilities, and `selection(fit)` to summarise
+them. Results can be sensitive to the cut-points and priors; see
+`vignette("baggr_selection")` for interpretation and further examples.
 
 
 ## Understanding and criticising _baggr_ model performance
@@ -482,11 +521,11 @@ For smaller examples, like 8 schools, it may also be informative to plot the LOO
 plot(loocv_res)
 ```
 
-The `loocv()` output contains more than just the matrix it prints, and this additional information can be accessed via `attributes()`, e.g. the mean treatment effects, their variability and _elpd_ for each model that are stored in the attribute `df`:
+The `loocv()` output contains more than just the matrix it prints, and this additional information can be accessed with `$`, e.g. the mean treatment effects, their variability and _elpd_ for each model that are stored in the component `df`:
 
 ```{r}
-names(attributes(loocv_res))
-attr(loocv_res, "df")
+names(loocv_res)
+loocv_res$df
 ```
 
 This data frame can then be used to examine or compute the variation in the inference on $\theta$ in the absence of each group. If the user is interested in manually checking the consequences of excluding a particular group or set of groups, this is also possible in _baggr_ using subsetting. For example, suppose that we want to run the Rubin model on school groups 1-7 and predict the effect in the 8th school. The code below shows how you can specify a subset of the dataframe as your "data" argument, and then designate another subset as the "testing" holdout set by assigning it to the argument "test_data" in the baggr command. Here we have done it for both partial and full pooling:

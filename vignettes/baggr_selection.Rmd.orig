@@ -27,7 +27,8 @@ library(baggr)
 
 This vignette shows a short worked example of assessing and adjusting for publication
 bias in a meta-analysis using _baggr_. It assumes that users are already familiar with
-publication bias, funnel plots, and selection models.
+publication bias, funnel plots, and selection models. The examples use the
+normal-normal hierarchical (Rubin) model (`model = "rubin"`, alias `"nnhm"`).
 
 # Data
 

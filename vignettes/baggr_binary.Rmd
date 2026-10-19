@@ -82,7 +82,7 @@ df_ma
 #> 7      Norris 21 226 24 228 205 204 -0.13842138 0.3147471
 ```
 
-We use `yi` and `sei` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
+We use `yi` and `sei` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default normal-normal hierarchical (Rubin) model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
 
 
 
@@ -240,12 +240,12 @@ We now continue discussion of analytic workflow using the OR models. All of the 
 
 ``` r
 bg_model_agg
-#> Model type: Rubin model with aggregate data
+#> Model type: Normal-normal hierarchical (Rubin) model with aggregate data
 #> Pooling of effects: partial
 #>
 #> Aggregate treatment effect (on logarithm of odds ratio), 7 groups:
 #> Hypermean (theta) =  -0.17 with 95% interval -0.61 to 0.25
-#> Hyper-SD (sigma_theta) = 0.254 with 95% interval 0.009 to 0.949
+#> Hyper-SD (sigma) = 0.254 with 95% interval 0.009 to 0.949
 #> Posterior predictive effect = -0.17 with 95% interval -1.01 to 0.62
 #> Total pooling (1 - I^2) = 0.78 with 95% interval 0.19 to 1.00
 #>
@@ -746,12 +746,12 @@ To access the covariate estimates, see `fixed_effects()` function. They are also
 
 ``` r
 bg_cov1
-#> Model type: Rubin model with aggregate data
+#> Model type: Normal-normal hierarchical (Rubin) model with aggregate data
 #> Pooling of effects: partial
 #>
 #> Aggregate treatment effect (on logarithm of odds ratio), 7 groups:
 #> Hypermean (theta) =  -0.18 with 95% interval -0.82 to 0.43
-#> Hyper-SD (sigma_theta) = 0.302 with 95% interval 0.011 to 1.000
+#> Hyper-SD (sigma) = 0.302 with 95% interval 0.011 to 1.000
 #> Posterior predictive effect = -0.18 with 95% interval -1.28 to 0.78
 #> Total pooling (1 - I^2) = 0.73 with 95% interval 0.17 to 1.00
 #>

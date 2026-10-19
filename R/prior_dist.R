@@ -36,7 +36,7 @@
 #' * `prior_hypermean`, `prior_control`, and `prior_beta`
 #'    will take `"normal"`, `"uniform"`, `"lognormal"`, and
 #'    `"cauchy"` input for scalars.
-#'    For a vector hypermean (see `"mutau"` model), it will take any of these
+#'    For a vector hypermean (see `"vivs"` model), it will take any of these
 #'    arguments and apply them independently to
 #'    each component of the vector, or it can also take a `"multinormal"` argument
 #'    (see the example below).
@@ -65,7 +65,7 @@
 #' custom_priors <- list(hypercor = lkj(1), hypersd = normal(0,10),
 #'                       hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
 #' microcredit_summary_data <- prepare_ma(microcredit, outcome = "consumption")
-#' baggr(microcredit_summary_data, model = "mutau",
+#' baggr(microcredit_summary_data, model = "vivs",
 #'       pooling = "partial", prior = custom_priors)
 #' }
 

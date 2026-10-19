@@ -40,7 +40,7 @@ test_that("Different pooling methods work for the rubin_full model", {
 })
 
 test_that("Basic operations on rubin_full model", {
-  expect_error(baggr(schools_ipd, rubbish = 41))
+  expect_error(suppressWarnings(baggr(schools_ipd, rubbish = 41)))
   expect_is(pooling(bg_p), "matrix")
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
@@ -195,7 +195,7 @@ test_that("full-data test sigma uses SD and not SE", {
   inp_rubin <- convert_inputs(train, model = "rubin_full", quantiles = seq(.05, .95, .1),
                               test_data = test, outcome = "outcome",
                               group = "group", treatment = "treatment")
-  inp_mutau <- convert_inputs(train, model = "mutau_full", quantiles = seq(.05, .95, .1),
+  inp_mutau <- convert_inputs(train, model = "vivs_full", quantiles = seq(.05, .95, .1),
                               test_data = test, outcome = "outcome",
                               group = "group", treatment = "treatment")
 

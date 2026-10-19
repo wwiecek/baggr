@@ -95,7 +95,7 @@ forest_plot <- function(bg,
   else
     n_ge_rows <- nrow(ge_raw)
 
-  te <- treatment_effect(bg)$tau
+  te <- treatment_effect(bg)$theta
   te_summary <- interval_stats(mint(te, prob = prob), prob)
 
   te_printed <- paste0(format(mean(te), digits = digits), " (",

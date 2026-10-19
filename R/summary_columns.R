@@ -4,6 +4,7 @@ normalise_summary_columns <- function(data, test_data = NULL, model = NULL,
                                       y0i = NULL, se0i = NULL,
                                       group = "group", group_explicit = FALSE,
                                       silent = FALSE) {
+  model <- canonical_model(model)
   if(!inherits(data, "data.frame"))
     stop("Can't detect input type because it's not a data.frame")
   columns <- list(yi = "yi", sei = "sei", y0i = "y0i",
@@ -28,7 +29,7 @@ normalise_summary_columns <- function(data, test_data = NULL, model = NULL,
 
   # Explicit individual-level models do not interpret summary columns or slab.
   individual <- !is.null(model) &&
-    model %in% c("rubin_full", "mutau_full", "logit", "sslab", "quantiles")
+    model %in% c("rubin_full", "vivs_full", "logit", "sslab", "quantiles")
   conventions <- list(
     canonical_wide = c(y0i = "y0i", se0i = "se0i", yi = "yi", sei = "sei"),
     canonical = c(yi = "yi", sei = "sei"),
@@ -61,12 +62,12 @@ normalise_summary_columns <- function(data, test_data = NULL, model = NULL,
       }
     }
     if(grepl("^legacy", names(conventions)[chosen])) {
-      legacy_type <- if(length(mapping) == 4) "mutau" else "rubin"
-      messages <- if(legacy_type == "mutau")
-        paste0("Using `mu`, `se.mu`, ", "`tau`, `se.tau` columns.",
+      legacy_type <- if(length(mapping) == 4) "vivs" else "rubin"
+      messages <- if(legacy_type == "vivs")
+        paste0("Using `mu`, `se.mu`, ", "`tau`, `se.tau` columns. ",
                "Starting in baggr 0.9, the preferred names ",
                "are `y0i`, `se0i`, `yi`, and `sei`.") else
-        paste0("Using `tau`and `se` column names. ",
+        paste0("Using `tau` and `se` column names. ",
                "Starting in baggr 0.9, the preferred names are `yi` and `sei`.")
     } else if(grepl("^alias", names(conventions)[chosen])) {
       messages <- if(length(mapping) == 4)
@@ -97,7 +98,7 @@ normalise_summary_columns <- function(data, test_data = NULL, model = NULL,
     }
   }
   summary <- !individual && (!is.null(mapping) ||
-    (!is.null(model) && model %in% c("rubin", "mutau")) ||
+    (!is.null(model) && model %in% c("rubin", "vivs")) ||
     check_columns_binary(data, stop = FALSE))
   if(summary && !group_explicit && !group %in% names(data) &&
      "slab" %in% names(data)) {

@@ -62,7 +62,7 @@ estimates and their standard errors. Defaults are \code{yi} and
 \code{sei}; both mappings must be supplied together.}
 
 \item{y0i, se0i}{Column names (single strings or \code{NULL}) for baseline/control
-means and their standard errors in the \code{mutau} model.
+means and their standard errors in the \code{vivs} model.
 Supply both together with \code{yi} and \code{sei} when mapping columns.}
 }
 \value{
