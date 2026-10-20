@@ -18,7 +18,7 @@ LazyData: true
 Biarch: true
 Depends: R (>= 3.5.0), Rcpp (>= 0.12.17)
 Imports: 
-    rstan (>= 2.26.0),
+    rstan (>= 2.32.0),
     rstantools (>= 2.1.1),
     bayesplot,
     crayon,
@@ -31,8 +31,8 @@ Imports:
     stats,
     methods
 LinkingTo: 
-    StanHeaders (>= 2.26.0), 
-    rstan (>= 2.26.0), 
+    StanHeaders (>= 2.32.0),
+    rstan (>= 2.32.0),
     BH (>= 1.66.0-1), 
     Rcpp (>= 0.12.17), 
     RcppParallel (>= 5.0.1),
