@@ -71,16 +71,16 @@ treatment_effect <- function(bg, summary = FALSE,
     return(list(theta = as.numeric(NA), sigma = as.numeric(NA)))
   }
   if(bg$model %in% c("rubin", "vivs", "vivs_full", "logit", "rubin_full")) {
-    theta <- rstan::extract(bg$fit, pars="mu")[[1]]
+    theta <- rstan::extract(bg$fit, pars="theta")[[1]]
     if(bg$model %in% c("vivs", "vivs_full"))
       theta <- theta[,1,2] #in this joint model the second element is trt effect, first is baseline
     if(is.matrix(theta) && ncol(theta) == 1) theta <- c(theta) #convert to vector for 1D cases
 
     if(bg$pooling == "partial"){
       if(bg$model %in% c("vivs", "vivs_full"))
-        sigma <- rstan::extract(bg$fit, pars="hypersd[1,2]")[[1]]
+        sigma <- rstan::extract(bg$fit, pars="sigma[1,2]")[[1]]
       else
-        sigma <- rstan::extract(bg$fit, pars="tau")[[1]]
+        sigma <- rstan::extract(bg$fit, pars="sigma")[[1]]
       if(is.matrix(sigma) && ncol(sigma) == 1) sigma <- c(sigma)
     }
     if(bg$pooling == "full")
@@ -178,7 +178,7 @@ vivs_cor <- function(bg, summary = FALSE, prob = 0.95, interval = NULL) {
   if(summary && bg$pooling %in% c("none", "full"))
     return(summary_draws(NA_real_, prob, "correlation"))
   # m <- matrix(apply(as.matrix(bg$fit, "L_Omega"), 2, mean), 2, 2)
-  # h <- apply(as.matrix(bg$fit, "hypersd"), 2, mean)
+  # h <- apply(as.matrix(bg$fit, "sigma"), 2, mean)
   # (m %*% t(m))[2,1]
   # diag(h) %*% (m %*% t(m)) %*% diag(h)
 

@@ -16,6 +16,7 @@
 - Summary-data models now prefer `yi`/`sei` for effects and standard errors,
   with `y0i`/`se0i` for baseline means in `vivs`. You can also use `slab`
   instead of `group` in `baggr()` calls. Legacy column names still work
+- Underlying .stan files notation was also updated to reflect
 
 Fixes: 
 

@@ -59,7 +59,7 @@ test_that("multi-arm outputs are correctly formed for rubin_full", {
   expect_equal(sum(wt[, "mean", 1]), 1, tolerance = 1e-6)
   expect_equal(sum(wt[, "mean", 2]), 1, tolerance = 1e-6)
 
-  bsl_k <- apply(rstan::extract(bg_p$fit, "baseline_k")[[1]], 2, mean)
+  bsl_k <- apply(rstan::extract(bg_p$fit, "theta0_k")[[1]], 2, mean)
   expect_length(bsl_k, 10)
   expect_false(anyNA(bsl_k))
 })

@@ -230,13 +230,13 @@ test_that("rubin_full predictive log density matches analytic Normal density sca
           iter = 250, warmup = 125, chains = 2, refresh = 0, seed = 137)
   )
 
-  mu_draw <- rstan::extract(bg$fit, "mu")[[1]][,1]
+  theta_draw <- rstan::extract(bg$fit, "theta")[[1]][,1]
   logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
 
-  expected_sd_logpd <- vapply(mu_draw, function(m) {
+  expected_sd_logpd <- vapply(theta_draw, function(m) {
     sum(dnorm(test$outcome, mean = m, sd = test_sd, log = TRUE))
   }, numeric(1))
-  expected_se_logpd <- vapply(mu_draw, function(m) {
+  expected_se_logpd <- vapply(theta_draw, function(m) {
     sum(dnorm(test$outcome, mean = m, sd = test_se, log = TRUE))
   }, numeric(1))
 
@@ -373,10 +373,10 @@ bg_pn <- expect_warning(baggr(schools_ipd,
 test_that("You can change pooling on values in control group", {
   expect_is(bg_pr, "baggr")
   expect_is(bg_pn, "baggr")
-  bsl_k <- apply(rstan::extract(bg_pr$fit, "baseline_k")[[1]], 2, mean)
+  bsl_k <- apply(rstan::extract(bg_pr$fit, "theta0_k")[[1]], 2, mean)
   expect_length(bsl_k, 8)
   expect_equal(bsl_k, rep(0, 8))
-  bsl_k <- apply(rstan::extract(bg_pn$fit, "baseline_k")[[1]], 2, mean)
+  bsl_k <- apply(rstan::extract(bg_pn$fit, "theta0_k")[[1]], 2, mean)
   expect_length(bsl_k, 8)
   expect_equal(bsl_k, bsl, tolerance = 1)
 })

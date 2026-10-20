@@ -34,8 +34,8 @@ test_that("Error messages for wrong inputs are in place", {
   expect_warning(baggr(df_mutau, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
   expect_identical(names(convert_inputs(df_mutau, "vivs")),
-                   c("K", "P", "theta_hat_k", "se_theta_k",
-                     "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
+                   c("K", "P", "yi", "sei",
+                     "K_test", "test_yi", "test_sei", "Nc", "X", "X_test",
                      "M", "c", "symmetric", "possible_selection"))
 })
 
@@ -160,15 +160,15 @@ test_that("Test data can be used in the mu tau model", {
               2 * sum(log(diag(R))) + sum(z^2))
   }
 
-  draws <- rstan::extract(bg_lpd$fit, pars = c("logpd", "mu", "tau"))
+  draws <- rstan::extract(bg_lpd$fit, pars = c("logpd", "theta", "L_Sigma"))
   y_test <- rbind(df_mutau$mu[7:8], df_mutau$tau[7:8])
   se_test <- rbind(df_mutau$se.mu[7:8], df_mutau$se.tau[7:8])
-  manual_logpd <- vapply(seq_len(dim(draws$mu)[1]), function(s) {
-    mu_s <- draws$mu[s, 1, ]
-    Sigma_s <- tcrossprod(draws$tau[s, 1, , ])
+  manual_logpd <- vapply(seq_len(dim(draws$theta)[1]), function(s) {
+    theta_s <- draws$theta[s, 1, ]
+    Sigma_s <- tcrossprod(draws$L_Sigma[s, 1, , ])
     sum(vapply(seq_len(ncol(y_test)), function(k) {
       V_k <- Sigma_s + diag(se_test[, k]^2)
-      log_mvn(y_test[, k], mu_s, V_k)
+      log_mvn(y_test[, k], theta_s, V_k)
     }, numeric(1)))
   }, numeric(1))
 

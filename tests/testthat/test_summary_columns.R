@@ -31,10 +31,10 @@ test_that("summary conventions yield the same Stan inputs", {
   expect_identical(detect_input_type(transform(summary_rubin, treatment = 1)),
                    "pool_noctrl_narrow")
   inp <- convert_inputs(summary_mutau, "vivs")
-  expect_equal(inp$theta_hat_k[1, ], summary_mutau$y0i)
-  expect_equal(inp$theta_hat_k[2, ], summary_mutau$yi)
-  expect_equal(inp$se_theta_k[1, ], summary_mutau$se0i)
-  expect_equal(inp$se_theta_k[2, ], summary_mutau$sei)
+  expect_equal(inp$yi[1, ], summary_mutau$y0i)
+  expect_equal(inp$yi[2, ], summary_mutau$yi)
+  expect_equal(inp$sei[1, ], summary_mutau$se0i)
+  expect_equal(inp$sei[2, ], summary_mutau$sei)
   expect_equal(stan_values(convert_inputs(summary_mutau, "rubin")),
                stan_values(convert_inputs(summary_rubin, "rubin")))
 })
@@ -43,11 +43,11 @@ test_that("exact aliases and custom strings work", {
   aliases <- summary_rubin
   names(aliases)[2:3] <- c("y", "se")
   expect_message(alias <- convert_inputs(aliases, "rubin"), "preferred names")
-  expect_equal(alias$theta_hat_k, summary_rubin$yi)
+  expect_equal(alias$yi, summary_rubin$yi)
   wide <- summary_mutau
   names(wide)[2:5] <- c("y", "se", "y0", "se0")
   expect_message(alias <- convert_inputs(wide, "vivs"), "preferred names")
-  expect_equal(alias$theta_hat_k[1, ], summary_mutau$y0i)
+  expect_equal(alias$yi[1, ], summary_mutau$y0i)
   custom <- summary_mutau
   names(custom)[2:5] <- c("effect", "effect_se", "baseline", "baseline_se")
   inp <- convert_inputs(custom, "vivs", yi = "effect", sei = "effect_se",
@@ -87,7 +87,7 @@ test_that("mappings and held-out columns are validated early", {
   for(model in c("rubin", "vivs")) {
     df <- if(model == "rubin") legacy_rubin else legacy_mutau
     inp <- convert_inputs(df[-1, ], model, test_data = df[1, ], silent = TRUE)
-    expect_equal(as.numeric(inp$test_theta_hat_k),
+    expect_equal(as.numeric(inp$test_yi),
                  if(model == "rubin") summary_rubin$yi[1] else
                    c(summary_mutau$y0i[1], summary_mutau$yi[1]))
     expect_error(convert_inputs(df[-1, ], model,

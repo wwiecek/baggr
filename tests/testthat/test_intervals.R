@@ -2,7 +2,7 @@
 interval_fixture <- function(n_groups = 2, covariates = TRUE) {
   z <- seq(-1, 2, length.out = 101)^3 / 4
   fit <- cbind(1, seq(-0.8, 0.6, length.out = 101))
-  attr(fit, "draws") <- list(mu = z + 2, tau = exp(z)/5,
+  attr(fit, "draws") <- list(theta = z + 2, sigma = exp(z)/5,
                              theta_k = outer(z, seq_len(n_groups), "+"),
                              beta = matrix(z/2, ncol = 1),
                              omega = matrix(exp(z)/4, ncol = 1))
@@ -36,7 +36,7 @@ expect_printed_table <- function(output, tab) {
 test_that("prob means contained mass and legacy arguments remain compatible", {
   mock_interval_extract()
   bg <- interval_fixture()
-  z <- attr(bg$fit, "draws")$mu
+  z <- attr(bg$fit, "draws")$theta
   for(p in c(0, .05, .5, .8, .95, 1)) {
     got <- mint(z, prob = p, median = TRUE, sd = TRUE)
     expect_equal(unname(got), unname(expected_interval(z, p)))
@@ -79,7 +79,7 @@ test_that("summary values describe the requested draws and transformation", {
                    unname(expected_interval(tr(draws$beta[,1]), p)))
       te <- treatment_effect(bg, summary = TRUE, transform = tr, prob = p)
       expect_equal(unname(te$theta[1,]),
-                   unname(expected_interval(tr(draws$mu), p)))
+                   unname(expected_interval(tr(draws$theta), p)))
       expect_true(all(is.na(te$sigma[, -6])))
       expect_equal(unname(te$sigma[1,"width"]), p)
     }
@@ -181,11 +181,11 @@ test_that("forest plots use means and requested endpoints in every row", {
   for(p in c(.05,.5,.8,.95)) {
     for(show in c("inputs", "posterior", "both", "covariates")) {
       fp <- forest_plot(bg, show = show, prob = p)
-      expect_equal(unname(tail(fp$estimates[,1,1],1)), mean(z$mu))
+      expect_equal(unname(tail(fp$estimates[,1,1],1)), mean(z$theta))
       expect_equal(unname(tail(fp$estimates[,2,1],1)),
-                   unname(quantile(z$mu,(1-p)/2)))
+                   unname(quantile(z$theta,(1-p)/2)))
       expect_equal(unname(tail(fp$estimates[,3,1],1)),
-                   unname(quantile(z$mu,(1+p)/2)))
+                   unname(quantile(z$theta,(1+p)/2)))
       raw <- if(show %in% c("inputs","both")) bg$data$tau else
         if(show == "posterior") colMeans(z$theta_k) else mean(z$beta)
       lower <- if(show %in% c("inputs","both"))
@@ -270,22 +270,22 @@ test_that("pooling extremes and multiple effects keep names and dimensions", {
   bg$effects <- c("first","second")
   bg$n_parameters <- 2
   draws <- attr(bg$fit,"draws")
-  draws$mu <- cbind(first=draws$mu, second=draws$mu*2+1)
+  draws$theta <- cbind(first=draws$theta, second=draws$theta*2+1)
   attr(bg$fit,"draws") <- draws
   for(p in c(.5,.8)) {
     ge <- group_effects(bg, summary=TRUE, prob=p, transform=exp)
     expect_equal(dim(ge), c(2L,6L,2L))
     expect_equal(dimnames(ge)[[3]], bg$effects)
-    expect_equal(ge[1,"mean","second"], mean(exp(draws$mu[,"second"])))
+    expect_equal(ge[1,"mean","second"], mean(exp(draws$theta[,"second"])))
     output <- capture.output(print(bg, prob=p, digits=7))
-    tab <- t(apply(draws$mu,2,expected_interval,prob=p))
+    tab <- t(apply(draws$theta,2,expected_interval,prob=p))
     tab <- tab[,colnames(tab) != "width",drop=FALSE]
     colnames(tab)[match(c("lower","upper"),colnames(tab))] <- baggr:::interval_names(p)
     expect_printed_table(output,tab)
     plots <- baggr_plot(bg, style="forest_plot", prob=.25, prob_outer=p,
                         order=FALSE, hyper=TRUE)
     expect_length(plots,2)
-    expect_equal(plots[[2]]$data$m, rep(median(draws$mu[,"second"]),3))
+    expect_equal(plots[[2]]$data$m, rep(median(draws$theta[,"second"]),3))
   }
 })
 
@@ -295,8 +295,8 @@ test_that("aggregate and correlation printouts select the right quantities", {
   bg$model <- "vivs"
   bg$inputs$M <- 0
   draws <- attr(bg$fit,"draws")
-  draws$mu <- array(c(draws$mu*0,draws$mu), c(length(draws$mu),1,2))
-  draws[["hypersd[1,2]"]] <- draws$tau
+  draws$theta <- array(c(draws$theta*0,draws$theta), c(length(draws$theta),1,2))
+  draws[["sigma[1,2]"]] <- draws$sigma
   attr(bg$fit,"draws") <- draws
   check_line <- function(output, label, vals, p) {
     line <- output[startsWith(output, label)]
@@ -311,11 +311,11 @@ test_that("aggregate and correlation printouts select the right quantities", {
     pred <- effect_draw(bg)
     set.seed(130)
     out <- capture.output(print(bg, prob=p, group=FALSE, fixed=FALSE,digits=7))
-    check_line(out, "Hyper-SD (sigma) =", expected_interval(draws$tau,p),p)
+    check_line(out, "Hyper-SD (sigma) =", expected_interval(draws$sigma,p),p)
     check_line(out, "Posterior predictive effect =", expected_interval(pred,p),p)
     check_line(out, "Correlation of treatment effect and baseline =",
                expected_interval(bg$fit[,2],p),p)
-    check_line(out, "Hypermean (theta) =", expected_interval(draws$mu[,1,2],p),p)
+    check_line(out, "Hypermean (theta) =", expected_interval(draws$theta[,1,2],p),p)
   }
 })
 
@@ -349,7 +349,7 @@ test_that("forest annotations follow the selected input or posterior quantity", 
 test_that("forest plots draw means outside narrow central intervals", {
   mock_interval_extract()
   bg <- interval_fixture()
-  mu <- attr(bg$fit, "draws")$mu
+  theta <- attr(bg$fit, "draws")$theta
   drawn <- list()
   drawn_positions <- numeric()
   draw_ci <- function(lower_limit, estimate, upper_limit, ...) {
@@ -367,8 +367,8 @@ test_that("forest plots draw means outside narrow central intervals", {
       drawn_positions <- numeric()
       fp <- forest_plot(bg, show = "posterior", prob = .05,
                         fn.ci_norm = draw_ci, boxsize = .15, xlog = xlog)
-      expected <- c(lower = unname(quantile(mu, .475)), mean = mean(mu),
-                    upper = unname(quantile(mu, .525)))
+      expected <- c(lower = unname(quantile(theta, .475)), mean = mean(theta),
+                    upper = unname(quantile(theta, .525)))
       if(xlog) expected <- log(expected)
       expect_gt(expected["mean"], expected["upper"])
       expect_equal(unname(fp$estimates[5,c("lower","mean","upper"),1]),
@@ -444,8 +444,8 @@ test_that("single and multiple rows and effects follow the numeric contract", {
   bg$effects <- c("first", "second")
   bg$n_parameters <- 2
   draws <- attr(bg$fit, "draws")
-  draws$mu <- cbind(draws$mu, draws$mu*2)
-  draws$tau <- cbind(draws$tau, draws$tau*2)
+  draws$theta <- cbind(draws$theta, draws$theta*2)
+  draws$sigma <- cbind(draws$sigma, draws$sigma*2)
   draws$theta_k <- array(c(draws$theta_k, draws$theta_k*2), c(101, 2, 2))
   attr(bg$fit, "draws") <- draws
   for(pool in c("partial", "full", "none")) {
@@ -496,7 +496,7 @@ test_that("percentage mode changes only endpoint names and drops width", {
       bg$n_parameters <- 2
       bg$pooling <- "full"
       draws <- attr(bg$fit, "draws")
-      draws$mu <- cbind(draws$mu, draws$mu*2)
+      draws$theta <- cbind(draws$theta, draws$theta*2)
       attr(bg$fit, "draws") <- draws
     }
     for(p in c(0, .05, .8, 1)) {
@@ -543,21 +543,21 @@ test_that("LOO plots select named medians and bounds after reordering", {
   loo <- structure(list(full_model = bg, models = list(bg, bg),
                         pointwise = c(-1, -2)), class = "baggr_cv")
   gp <- plot(loo, add_values = FALSE)
-  vals <- expected_interval(attr(bg$fit, "draws")$mu, .95)
+  vals <- expected_interval(attr(bg$fit, "draws")$theta, .95)
   got <- gp$data[gp$data$model == "LOOCV estimate",]
   for(stat in c("median", "lower", "upper"))
     expect_equal(got[[stat]], rep(unname(vals[stat]), 2))
   expect_no_error(ggplot2::ggplot_build(gp))
 })
 
-test_that("single-study mu-tau extraction preserves its summary row", {
+test_that("single-study VIVS extraction preserves its summary row", {
   mock_interval_extract()
   bg <- interval_fixture(1, covariates = FALSE)
   bg$model <- "vivs"
   draws <- attr(bg$fit, "draws")
   draws$theta_k <- array(c(draws$theta_k*0, draws$theta_k), c(101, 1, 2, 1))
-  draws$mu <- array(c(draws$mu*0, draws$mu), c(101, 1, 2))
-  draws[["hypersd[1,2]"]] <- array(draws$tau, 101)
+  draws$theta <- array(c(draws$theta*0, draws$theta), c(101, 1, 2))
+  draws[["sigma[1,2]"]] <- array(draws$sigma, 101)
   attr(bg$fit, "draws") <- draws
   got <- group_effects(bg, summary = TRUE, prob = .8)
   expect_summary_contract(got, 1, bg$effects, .8)
@@ -566,7 +566,7 @@ test_that("single-study mu-tau extraction preserves its summary row", {
   te <- treatment_effect(bg, summary = TRUE, prob = .8)
   for(x in te) expect_summary_contract(x, 1, bg$effects, .8)
   expect_equal(unname(te$sigma[1,]),
-               unname(expected_interval(draws$tau, .8)))
+               unname(expected_interval(draws$sigma, .8)))
   expect_identical(dim(treatment_effect(bg)$sigma), 101L)
 
 })
@@ -577,8 +577,8 @@ test_that("fixed, quantile and LOO consumers slice multiple effects by name", {
   bg$effects <- c("first", "second")
   bg$n_parameters <- 2
   draws <- attr(bg$fit, "draws")
-  draws$mu <- cbind(draws$mu, draws$mu*2)
-  draws$tau <- cbind(draws$tau, draws$tau*2)
+  draws$theta <- cbind(draws$theta, draws$theta*2)
+  draws$sigma <- cbind(draws$sigma, draws$sigma*2)
   draws$theta_k <- array(c(draws$theta_k, draws$theta_k*2), c(101, 2, 2))
   attr(bg$fit, "draws") <- draws
   fe <- fixed_effects(bg, summary = TRUE, prob = .8)
@@ -608,7 +608,7 @@ test_that("fixed, quantile and LOO consumers slice multiple effects by name", {
   for(i in seq_along(bg$effects)) {
     got <- gp$data[gp$data$model == "LOOCV estimate" &
                    gp$data$parameter == bg$effects[i],]
-    expect_equal(got$median, rep(median(draws$mu[,i]), 2))
+    expect_equal(got$median, rep(median(draws$theta[,i]), 2))
   }
   expect_no_error(ggplot2::ggplot_build(gp))
   bg$covariates <- character()
@@ -620,7 +620,7 @@ test_that("fixed, quantile and LOO consumers slice multiple effects by name", {
   tab <- cbind(tab, pooling = pooling(bg)[,"mean",2])
   expect_printed_table(output, tab)
   cmp <- baggr_compare(A = bg, B = bg)
-  expect_equal(unname(cmp$mean_trt[,"mean",2]), rep(mean(draws$mu[,2]), 2))
+  expect_equal(unname(cmp$mean_trt[,"mean",2]), rep(mean(draws$theta[,2]), 2))
   gp_cmp <- plot(cmp, grid_parameters = FALSE, order = FALSE)[[2]]
   expect_equal(gp_cmp$data$median[gp_cmp$data$group == "Study 1"],
                rep(median(draws$theta_k[,1,2]), 2))
@@ -632,7 +632,7 @@ test_that("fixed, quantile and LOO consumers slice multiple effects by name", {
   plots <- testthat::with_mocked_bindings(plot_quantiles(bg),
     group_effects = function(...) ge, treatment_effect = function(...) te,
     .package = "baggr")
-  expect_equal(plots[[1]]$data$mean, unname(colMeans(draws$mu)))
+  expect_equal(plots[[1]]$data$mean, unname(colMeans(draws$theta)))
   expect_equal(plots[[2]]$data$mean,
                c(colMeans(draws$theta_k[,,1]), colMeans(draws$theta_k[,,2])))
   expect_no_error(lapply(plots, ggplot2::ggplot_build))
