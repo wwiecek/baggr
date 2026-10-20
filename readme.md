@@ -72,8 +72,8 @@ detected from the shape of data.
 
 ``` r
 library(baggr)
-df_pooled <- data.frame("tau" = c(28,8,-3,7,-1,1,18,12),
-                        "se"  = c(15,10,16,11,9,11,10,18))
+df_pooled <- data.frame("yi" = c(28,8,-3,7,-1,1,18,12),
+                        "sei"  = c(15,10,16,11,9,11,10,18))
 bg <- baggr(df_pooled, pooling = "partial")
 ```
 

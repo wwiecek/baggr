@@ -22,7 +22,7 @@ test_that("prepare_ma()", {
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption")
   expect_is(pm, "data.frame")
   expect_equal(dim(pm), c(5,7))
-  expect_identical(names(pm), c("group", "mu", "tau", "se.mu", "se.tau", "n.mu", "n.tau"))
+  expect_identical(names(pm), c("group", "y0i", "yi", "se0i", "sei", "n0i", "ni"))
 
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption", summarise = FALSE)
   expect_identical(dim(pm), dim(microcredit_simplified))
@@ -131,7 +131,7 @@ test_that("labbe()", {
 test_that("convert_inputs()", {
   # Rubin model
   expect_is(convert_inputs(schools, "rubin"), "list")
-  expect_error(convert_inputs(schools, "mutau"))
+  expect_error(convert_inputs(schools, "vivs"))
   expect_is(convert_inputs(schools, "rubin", test_data = schools[7:8,]), "list")
 
   # Invalid model should fail cleanly, without unrelated column warnings.

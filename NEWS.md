@@ -1,4 +1,4 @@
-# devel (work in progress)
+# baggr 0.9 (autumn 2026)
 
 - New notation for group and treatment effect (and some other) summaries: 
   note `lower`, `upper`, `width` columns. You can switch to e.g. 2.5% and 97.5% 
@@ -6,6 +6,16 @@
   automatic conversions.
 -  Interval arguments are now called `prob`; you can still use `interval` and
   `int` as aliases.
+- Using more standard notation for hierarchical parameters: hypermean theta,
+  hypersd sigma_theta. Posterior effect summaries and LOO data frames now use
+  `theta` and `sigma` instead of `tau` and `sigma_tau`.
+- Renamed the joint baseline/effect models to `vivs` and `vivs_full`
+  (varying-intercept, varying-slope). `mutau` and `bivariate` remain aliases,
+  with corresponding `_full` aliases. Added `nnhm` as an alias for `rubin`,
+  the normal-normal hierarchical model.
+- Summary-data models now prefer `yi`/`sei` for effects and standard errors,
+  with `y0i`/`se0i` for baseline means in `vivs`. You can also use `slab`
+  instead of `group` in `baggr()` calls. Legacy column names still work
 
 Fixes: 
 

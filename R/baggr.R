@@ -12,7 +12,9 @@
 #' @param data data frame with summary or individual level data to meta-analyse;
 #'             see Details section for how to format your data
 #' @param model if \code{NULL}, detected automatically from input data
-#'              otherwise choose from `rubin`, `rubin_full`, `logit`, `mutau` (see Details).
+#'              otherwise choose `rubin` (`nnhm`), `rubin_full`, `logit`,
+#'              `vivs` or `vivs_full`. Aliases `mutau`/`bivariate` and
+#'              `mutau_full`/`bivariate_full` select `vivs` and `vivs_full`.
 #' @param pooling Type of pooling;
 #'                choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 #'                If you are not familiar with the terms, consult the vignette;
@@ -21,9 +23,12 @@
 #'                        individual-level data. Typically we use either `"none"` or `"partial"`,
 #'                        but if you want to remove the group-specific intercept altogether,
 #'                        set this to `"remove"`.
-#' @param effect_label How to label the effect(s). These labels are used in various print and plot outputs.
+#' @param effect_label How to label the effect(s). Typically this is a cosmetic choice of label
+#'                     used in various print and plot outputs.
 #'                     Will default to `"mean"` in most models, `"log OR"` in logistic model etc.
 #'                     If you plan on comparing models (see [baggr_compare]), use the same labels.
+#'                     If using `model = "rubin"` with raw binary event counts, `"logOR"`, `"logRR"`
+#'                     and `"RD"` will trigger additional processing via [prepare_ma].
 #' @param covariates Character vector with column names in `data`. The corresponding columns are used as
 #'                   covariates (fixed effects) in the meta-regression model (in case of aggregate data).
 #'                   In the case of individual level data the model does not differentiate between group-level
@@ -35,9 +40,9 @@
 #'              If unspecified, the priors will be derived automatically based on data
 #'              (and printed out in the console).
 #' @param prior_hypersd  prior for hyper-standard deviation, used
-#'                       by Rubin and `"mutau"` models;
+#'                       by Rubin and `"vivs"` models;
 #'                       same rules apply as for `_hypermean`;
-#' @param prior_hypercor prior for hypercorrelation matrix, used by the `"mutau"` model
+#' @param prior_hypercor prior for hypercorrelation matrix, used by the `"vivs"` model
 #' @param prior_beta prior for regression coefficients if `covariates` are specified; will default to
 #'                       experimental normal(0, 10^2) distribution
 #' @param prior_cluster priors for SDs of cluster random effects in each study
@@ -51,7 +56,7 @@
 #' @param prior_control_sd prior for the SD in the control arm (baseline), currently
 #'                         used in `"logit"` model only;
 #'                         this can only be used if `pooling_control = "partial"`
-#' @param prior_sigma prior for error terms in linear regression models (`"rubin_full"` or `"mutau_full"`)
+#' @param prior_sigma prior for error terms in linear regression models (`"rubin_full"` or `"vivs_full"`)
 #' @param prior alternative way to specify all of the priors above as a single named list, with `hypermean`,
 #'              `hypersd`, `hypercor`, `beta` etc., with names dropping `prior_` prefix,
 #'              e.g. `prior = list(hypermean = normal(0,10), beta = uniform(-5, 5))`
@@ -60,16 +65,21 @@
 #'                  and ignore `data` in inference. However, `data` argument might still
 #'                  be used to infer the correct model (if `model=NULL`) and to set the
 #'                  default priors, therefore you must specify it.
-#' @param outcome   column name in \code{data} (used in individual-level only) with outcome variable values
 #' @param group     column name in \code{data} with grouping factor;
 #'                  it's necessary for individual-level data, for summarised data
-#'                  it will be used as labels for groups when displaying results
+#'                  it will be used as labels for groups when displaying results;
+#'                  you can also use `slab` instead of `group`, like in metafor.
+#' @param yi,sei,y0i,se0i Custom column names for summary effect (`yi`) and standard errors (`sei`);
+#'                        `y0i` and `se0i` are means and SE in control groups.
+#'                        If `NULL`, these are detected automatically. Notation from older
+#'                        baggr versions (`mu` and `tau`) will work automatically.
+#' @param outcome   column name in \code{data} (used in individual-level only) with outcome variable values
 #' @param treatment column name in (individual-level) \code{data} with treatment factor;
-#' @param cluster   optional; column name in (individual-level) \code{data}; if defined,
+#' @param cluster   column name in (individual-level) \code{data}; if defined,
 #'                  random cluster effects will be fitted in each study
-#' @param selection optional publication-selection specification for Rubin
-#'                  summary-data models. A numeric vector is treated as z-value
-#'                  cut-points on the absolute z-scale, where `z = tau / se`.
+#' @param selection optional publication-selection specification for the
+#'                  normal-normal hierarchical (Rubin) summary-data model. A numeric vector is treated as z-value
+#'                  cut-points on the absolute z-scale, where `z = yi / sei`.
 #'                  A list must have named elements `z` (positive cut-points),
 #'                  `symmetrical` (`TRUE`/`FALSE`) and `possible` (0/1 or logical
 #'                  vector with one value per study, where 1 means selection is
@@ -93,12 +103,23 @@
 #' All three are discussed in more depth in the package vignette, `vignette("baggr")`.
 #'
 #' __Data.__ For aggregate data models you need a data frame with columns
-#' `tau` and `se` (Rubin model) or `tau`, `mu`, `se.tau`, `se.mu` ("mu & tau" model).
+#' `yi` and `sei` (Rubin model) or `y0i`, `se0i`, `yi`, `sei` (`vivs` model).
+#' These are observed effect estimates and their standard errors, with baseline
+#' means and their standard errors included for `vivs`.
+#' Supply string arguments such as `yi = "effect", sei = "effect_se"` to
+#' select other columns. Bare column names and vector inputs are not supported.
+#' Exact aliases `y`/`se` and `y0`/`se0`/`y`/`se` are also recognised.
+#' Legacy names `tau`/`se` and `mu`/`se.mu`/`tau`/`se.tau` remain accepted,
+#' with an informational message unless `silent = TRUE` or mappings are explicit.
+#' Canonical columns take precedence when duplicate conventions agree; conflicting
+#' values require explicit mappings. The same mappings apply to `test_data`.
 #' An additional column can be used to provide labels for each group
 #' (by default column `group` is used if available, but this can be
 #' customised -- see the example below).
-#' For individual level data three columns are needed: outcome, treatment, group. These
-#' are identified by using the `outcome`, `treatment` and `group` arguments.
+#' For summary data, you can use `slab` column when `group` is absent.
+#' Or you can also pass `slab = "study_label_column"` when calling `baggr()`;
+#' explicit `group` takes precedence.
+#' For individual level data three columns are needed: `outcome`, `treatment`, `group`.
 #'
 #' Many data preparation steps can be done through a helper function [prepare_ma].
 #' It can convert individual to summary-level data, calculate
@@ -109,13 +130,26 @@
 #' __Models.__ Available models are:
 #'
 #' * for the __continuous variable__ means:
-#'   `"rubin"` model for average treatment effect (using summary data), `"mutau"`
+#'   `"rubin"` model for average treatment effect (using summary data), `"vivs"`
 #'   version which takes into account means of control groups (also using summary data),
-#'   `"rubin_full"`,  which is the same model as `"rubin"` but works with individual-level data
+#'   `"rubin_full"`, which works with individual-level data;
+#'   `"vivs_full"`, which jointly pools control means and treatment effects
+#'   using individual-level data
 #' * for __binary data__: `"logit"` model can be used on individual-level data;
 #'   you can also analyse continuous statistics such as
 #'   log odds ratios and logs risk ratios using the models listed above;
 #'   see `vignette("baggr_binary")` for tutorial with examples
+#'
+#' The default summary-data model, `"rubin"`, is often referred to in the
+#' literature as the normal-normal hierarchical model (`"nnhm"` is an alias).
+#' The varying-intercept, varying-slope model (`"vivs"`, or `"vivs_full"`
+#' for individual-level data) is a joint model that allows random effects on
+#' both control means and treatment effects. It is a bivariate hierarchical
+#' model that jointly estimates study-specific control means and treatment
+#' effects, allowing them to be correlated across studies.
+#' In previous baggr versions it was referred to as the `"mutau"` model.
+#' You can still use that name when specifying the model; `"bivariate"` is
+#' another alias. Both aliases also accept the `_full` suffix.
 #'
 #'  If no model is specified, the function tries to infer the appropriate
 #'  model automatically.
@@ -130,7 +164,7 @@
 #'
 #' Two types of covariates may be present in your data:
 #'
-#' * In `"rubin"` and `"mutau"` models, covariates that __change according to group unit__.
+#' * In `"rubin"` and `"vivs"` models, covariates that __change according to group unit__.
 #'   In that case, the model accounting
 #'   for the group covariates is a
 #'   meta-regression model, as described in Chapter 10 of the Cochrane
@@ -170,7 +204,7 @@
 #' __Selection model.__ If the `selection` argument is not `NULL`, `baggr()`
 #' fits a publication-selection model on z-values (currently only in the
 #' `"rubin"` summary-data model). For each study, the observed z-value is the
-#' reported estimate divided by its standard error, `z = tau / se`. A numeric
+#' reported estimate divided by its standard error, `z = yi / sei`. A numeric
 #' `selection` input gives cut-points on the absolute z-scale. For example,
 #' `selection = c(1.96, 2.58)` gives three intervals, `[0, 1.96)`,
 #' `[1.96, 2.58)`, and `[2.58, Inf)`. This is equivalent to
@@ -218,8 +252,8 @@
 #' * [loocv] for cross-validation
 #'
 #' @examples
-#' df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-#'                         "se" = rep(1, 8),
+#' df_pooled <- data.frame("yi" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+#'                         "sei" = rep(1, 8),
 #'                         "state" = datasets::state.name[1:8])
 #' baggr(df_pooled) #baggr automatically detects the input data
 #' # same model, but with correct labels,
@@ -230,11 +264,11 @@
 #' baggr(df_pooled, prior_hypersd = normal(0, 2))
 #'
 #' \donttest{
-#' # "mu & tau" model, using a built-in dataset
+#' # Joint baseline and treatment-effect model, using a built-in dataset
 #' # prepare_ma() can summarise individual-level data
 #' ms <- microcredit_simplified
 #' microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
-#' baggr(microcredit_summary_data, model = "mutau",
+#' baggr(microcredit_summary_data, model = "vivs",
 #'       iter = 500, #this is just for illustration -- don't set it this low normally!
 #'       pooling = "partial", prior_hypercor = lkj(1),
 #'       prior_hypersd = normal(0,10),
@@ -261,10 +295,13 @@ baggr <- function(data,
                   prior = NULL, ppd = FALSE,
                   pooling_control = c("none", "partial", "remove"),
                   test_data = NULL, quantiles = seq(.05, .95, .1),
-                  outcome = "outcome", group = "group", treatment = "treatment",
+                  group = "group",
+                  yi = NULL, sei = NULL, y0i = NULL, se0i = NULL,
+                  outcome = "outcome", treatment = "treatment",
                   cluster = NULL,
                   selection = NULL,
-                  silent = FALSE, warn = TRUE, ...) {
+                  silent = FALSE, warn = TRUE,
+                  ...) {
 
   # check that it is data.frame of at least 1 row
   # if(!inherits(data, "data.frame") || nrow(data) == 1)
@@ -289,25 +326,44 @@ baggr <- function(data,
     model <- "rubin_full"
   }
   if(!is.null(model) && model == "mutau_sum") {
-    message("Experimental: using mu & tau model with sum specification (tau = mu + theta)")
-    model <- "mutau"
+    message("Experimental: joint baseline and treatment-effect model with sum specification (theta0 + theta)")
+    model <- "vivs"
     cumsum_mutau <- 0
   } else {
     cumsum_mutau <- 1
   }
 
-  stan_data <- convert_inputs(data,
-                              model,
-                              effect = effect,
-                              covariates = covariates,
-                              quantiles = quantiles,
-                              outcome = outcome,
-                              group = group,
-                              treatment = treatment,
-                              cluster = cluster,
-                              selection = selection,
-                              test_data = test_data,
-                              silent = silent)
+  model <- canonical_model(model)
+
+  group_explicit <- !missing(group)
+  stan_args <- list(...)
+  summary_input <- model %in% c("rubin", "vivs") ||
+    (is.null(model) && (!is.null(yi) ||
+       grepl("^pool", detect_input_type(data, group, treatment, outcome))))
+  if(summary_input && "slab" %in% names(stan_args)) {
+    slab <- stan_args$slab
+    if(!is.character(slab) || length(slab) != 1 || is.na(slab) ||
+       !slab %in% names(data))
+      stop("`slab` must name a column in `data`.")
+    if(group_explicit) {
+      if(!silent) message("Both `group` and `slab` supplied; using `group`.")
+    } else {
+      group <- slab
+      group_explicit <- TRUE
+      # if(!silent) message(
+        # "Using `slab` as study labels. In baggr, the canonical argument is `group`.")
+    }
+    stan_args$slab <- NULL
+  }
+  conversion_args <- list(data = data, model = model, effect = effect,
+    covariates = covariates, quantiles = quantiles, outcome = outcome,
+    treatment = treatment, cluster = cluster, selection = selection,
+    test_data = test_data, silent = silent,
+    yi = yi, sei = sei, y0i = y0i, se0i = se0i)
+  if(group_explicit) conversion_args$group <- group
+  stan_data <- do.call(convert_inputs, conversion_args)
+  test_data <- attr(stan_data, "test_data")
+  group <- attr(stan_data, "columns")[["group"]]
 
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
@@ -368,17 +424,17 @@ baggr <- function(data,
                                         "none" = 0,
                                         "partial" = 1,
                                         "full" = 2)
-  if(model %in% c("logit", "rubin_full", "mutau_full"))
+  if(model %in% c("logit", "rubin_full", "vivs_full"))
     stan_data[["pooling_baseline"]] <- switch(pooling_control,
                                               "none" = 0,
                                               "partial" = 1,
                                               "remove" = 2)
-  if(model == "mutau_full"){
+  if(model == "vivs_full"){
     # For now this model only used for joint prior
     stan_data[["joint_prior_mean"]] <- 1
     stan_data[["joint_prior_variance"]] <- 1
   }
-  if(model == "mutau")
+  if(model == "vivs")
     stan_data[["cumsum"]] <- cumsum_mutau
 
 
@@ -409,7 +465,6 @@ baggr <- function(data,
   }
 
   # If extracting prior from another model, we need to do this switcheroo:
-  stan_args <- list(...)
   if("formatted_prior" %in% names(stan_args)){
     formatted_prior <- stan_args$formatted_prior
     stan_args$formatted_prior <- NULL
@@ -425,7 +480,8 @@ baggr <- function(data,
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]
 
-  stan_args$object <- stanmodels[[model]]
+  stan_model <- switch(model, vivs = "mutau", vivs_full = "mutau_full", model)
+  stan_args$object <- stanmodels[[stan_model]]
 
   if(ppd){
     if(pooling == "none")

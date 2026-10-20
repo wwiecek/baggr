@@ -36,8 +36,8 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
   ggdata$risk_trt <- ggdata$a/(ggdata$a+ggdata$b)
   ggdata$risk_control <- ggdata$c/(ggdata$c+ggdata$d)
 
-  if(shade_se == "or") ggdata$se_size <- 1 / data_or$se
-  if(shade_se == "rr") ggdata$se_size <- 1 / data_rr$se
+  if(shade_se == "or") ggdata$se_size <- 1 / data_or$sei
+  if(shade_se == "rr") ggdata$se_size <- 1 / data_rr$sei
 
   if(plot_model) {
     model_or <- baggr(data_or, refresh=0, silent = TRUE)
@@ -45,8 +45,8 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
     model_rr <- baggr(data_rr, refresh=0, silent = TRUE)
 
     # Apply trt effects to control pr events to get the right line
-    te_or <- treatment_effect(model_or, summary = TRUE)$tau
-    te_rr <- treatment_effect(model_rr, summary = TRUE)$tau
+    te_or <- treatment_effect(model_or, summary = TRUE)$theta
+    te_rr <- treatment_effect(model_rr, summary = TRUE)$theta
     p_bsl <- seq(0,1,length=1000)
     p_trt_rr <- exp(te_rr[1,"mean"])*p_bsl
     odds_trt <- exp(te_or[1,"mean"])*(p_bsl/(1-p_bsl))

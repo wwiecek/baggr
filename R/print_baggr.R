@@ -72,25 +72,25 @@ print.baggr <- function(x,
       de <- effect_draw(x)
     }
     if(exponent)
-      cat("Exponent of hypermean (exp(tau))")
+      cat("Exponent of hypermean (exp(theta))")
     else
-      cat("Hypermean (tau)")
+      cat("Hypermean (theta)")
 
     intervaltxt <- paste0("with ", as.character(100*prob), "% interval")
 
     #trim=T avoids whitespace in place of minus sign
     if(length(x$effects) == 1){
-      tau <- format(interval_stats(mint(te$tau, prob = prob), prob),
+      theta <- format(interval_stats(mint(te$theta, prob = prob), prob),
                          digits = digits, trim = TRUE)
-      sigma_tau <- format(interval_stats(mint(te$sigma_tau, prob = prob), prob),
+      sigma <- format(interval_stats(mint(te$sigma, prob = prob), prob),
                          digits = digits, trim = TRUE)
       posteriorpred <- format(interval_stats(mint(de,  prob = prob), prob),
                          digits = digits, trim = TRUE)
-      cat(" = ", tau["mean"], intervaltxt, tau["lower"], "to", tau["upper"], "\n")
+      cat(" = ", theta["mean"], intervaltxt, theta["lower"], "to", theta["upper"], "\n")
       if(x$pooling == "partial"){
         if(!exponent)
-          cat("Hyper-SD (sigma_tau) =", sigma_tau["mean"], intervaltxt,
-            sigma_tau["lower"], "to", sigma_tau["upper"], "\n")
+          cat("Hyper-SD (sigma) =", sigma["mean"], intervaltxt,
+            sigma["lower"], "to", sigma["upper"], "\n")
         cat("Posterior predictive effect =", posteriorpred["mean"], intervaltxt,
             posteriorpred["lower"], "to", posteriorpred["upper"], "\n")
         tot_pool <- format(interval_stats(effect_slice(heterogeneity(x, prob = prob), 1)[1,], prob),
@@ -100,41 +100,41 @@ print.baggr <- function(x,
               tot_pool["lower"], "to", tot_pool["upper"], "\n")
       }
 
-      if(x$model == "mutau" && x$pooling != "full") {
-        mutauc <- format(interval_stats(effect_slice(mutau_cor(x, summary = TRUE, prob = prob), 1)[1,], prob),
+      if(x$model == "vivs" && x$pooling != "full") {
+        correlation <- format(interval_stats(effect_slice(vivs_cor(x, summary = TRUE, prob = prob), 1)[1,], prob),
                          digits = digits, trim = TRUE)
-        cat("Correlation of treatment effect and baseline =", mutauc["mean"], intervaltxt,
-            mutauc["lower"], "to", mutauc["upper"], "\n")
+        cat("Correlation of treatment effect and baseline =", correlation["mean"], intervaltxt,
+            correlation["lower"], "to", correlation["upper"], "\n")
       }
 
     } else {
       cat("\n")
-      tau <- interval_stats(
-        mint(te$tau, prob = prob, median = TRUE, sd = TRUE), prob)
-      sigma_tau <- interval_stats(
-        mint(te$sigma_tau, prob = prob, median = TRUE, sd = TRUE), prob)
+      theta <- interval_stats(
+        mint(te$theta, prob = prob, median = TRUE, sd = TRUE), prob)
+      sigma <- interval_stats(
+        mint(te$sigma, prob = prob, median = TRUE, sd = TRUE), prob)
 
       if(x$model == "quantiles"){
-        rownames(tau) <- paste0(100*x$quantiles, "% quantile")
+        rownames(theta) <- paste0(100*x$quantiles, "% quantile")
         if(!exponent)
-          rownames(sigma_tau) <- paste0(100*x$quantiles, "% quantile")
+          rownames(sigma) <- paste0(100*x$quantiles, "% quantile")
       } else if(x$model == "sslab") {
-        rownames(tau) <- x$effects
+        rownames(theta) <- x$effects
         if(!exponent)
-          rownames(sigma_tau) <- x$effects
+          rownames(sigma) <- x$effects
       }
 
-      print(interval_table(tau, prob, include_sd = !exponent), digits = digits)
+      print(interval_table(theta, prob, include_sd = !exponent), digits = digits)
       if(!exponent && x$pooling == "partial"){
         cat(crayon::bold("\nSD of treatement effects:"))
-        print(interval_table(sigma_tau, prob), digits = digits)
+        print(interval_table(sigma, prob), digits = digits)
 
 
       }
     }
   }
   if(x$pooling == "full")
-    cat("(SD(tau) undefined.)\n")
+    cat("(SD(theta) undefined.)\n")
   cat("\n")
 
   if(is_selection_model) {

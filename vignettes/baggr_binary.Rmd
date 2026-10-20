@@ -1,7 +1,7 @@
 ---
 title: "Meta-analysis of binary data with baggr"
 author: "Witold Wiecek"
-date: "2022-12-30"
+date: "2026-10-15"
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -43,7 +43,7 @@ Typically, a meta-analysis of binary data is done on summary statistics of ratio
 For the running example in this vignette we will use a dataset based on (part of) Table 6 in @yusuf_beta_1985, a famous meta-analysis of the impact of beta blockers on occurrence of strokes and mortality.
 
 
-```r
+``` r
 df_yusuf <- read.table(text="
        trial  a n1i  c n2i
       Balcon 14  56 15  58
@@ -61,46 +61,84 @@ In a typical notation, `a` (`c`) are numbers of events in treatment (control) gr
 In our examples below we will focus on the OR metric; $\log(OR)$ and its SE can easily be calculated from the counts above (if you're not familiar with OR, [see here](https://en.wikipedia.org/wiki/Odds_ratio#Statistical_inference) for an introduction):
 
 
-```r
+``` r
 # This is a calculation we could do by hand:
 # df <- df_yusuf
 # df$b <- df$n1i-df$a
 # df$d <- df$n2i-df$c
-# df$tau <- log((df$a*df$d)/(df$b*df$c))
-# df$se <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
+# df$yi <- log((df$a*df$d)/(df$b*df$c))
+# df$sei <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
 
 # But prepare_ma() automates these operations:
 df_ma <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
 df_ma
-#>         group  a  n1  c  n2   b   d         tau        se
+#>         group  a  n1  c  n2   b   d          yi       sei
 #> 1      Balcon 14  56 15  58  42  43 -0.04546237 0.4303029
-#> 2     Clausen 18  66 19  64  48  45 -0.11860574 0.3888993
-#> 3 Multicentre 15 100 12  95  85  83  0.19933290 0.4169087
-#> 4      Barber 10  52 12  47  42  35 -0.36464311 0.4855042
-#> 5      Norris 21 226 24 228 205 204 -0.13842138 0.3147471
-#> 6      Kahler  3  38  6  31  35  25 -1.02961942 0.7540368
-#> 7     Ledwich  2  20  3  20  18  17 -0.46262352 0.9735052
+#> 2      Barber 10  52 12  47  42  35 -0.36464311 0.4855042
+#> 3     Clausen 18  66 19  64  48  45 -0.11860574 0.3888993
+#> 4      Kahler  3  38  6  31  35  25 -1.02961942 0.7540368
+#> 5     Ledwich  2  20  3  20  18  17 -0.46262352 0.9735052
+#> 6 Multicentre 15 100 12  95  85  83  0.19933290 0.4169087
+#> 7      Norris 21 226 24 228 205 204 -0.13842138 0.3147471
 ```
 
-We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
+We use `yi` and `sei` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default normal-normal hierarchical (Rubin) model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
 
 
 
 
 
 
-```r
-bg_model_agg <- baggr(df_ma, effect = "logarithm of odds ratio")
+``` r
+bg_model_agg <- baggr(df_ma, effect_label = "logarithm of odds ratio")
 ```
 
-The argument we specified, `effect`, does not impact results, but it makes for nicer output labels, as we will see in the next section.
+## Odds ratio, risk ratio and risk difference models
 
-As a side note, you don't even have to use the `prepare_ma` step. The following one-liner would have worked just the same:
+With estimates and standard errors already supplied, `effect_label` controls
+only the display label. To analyse log risk ratios or risk differences, we can
+use the same counts and Rubin model as for log odds ratios:
 
 
-```r
-baggr(df_yusuf, effect = "logOR") #choose between logOR, logRR, RD (see below)
+``` r
+df_ma_rr <- prepare_ma(df_yusuf, group = "trial", effect = "logRR")
+df_ma_rd <- prepare_ma(df_yusuf, group = "trial", effect = "RD")
+
+# The log odds ratio model, bg_model_agg, was fitted above.
+bg_model_rr <- baggr(df_ma_rr, model = "rubin", effect_label = "logRR")
+#> Setting prior for hypermean using 10 times the max effect :
+#> * hypermean [theta] ~ normal(0, 9^2)
+#> Setting hyper-SD prior using 10 times the naive SD across sites
+#> * hypersd [sigma_theta] ~ uniform(0.0, 3.4)
+#> Warning: There were 5 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+bg_model_rd <- baggr(df_ma_rd, model = "rubin", effect_label = "RD")
+#> Setting prior for hypermean using 10 times the max effect :
+#> * hypermean [theta] ~ normal(0.0, 1.1^2)
+#> Setting hyper-SD prior using 10 times the naive SD across sites
+#> * hypersd [sigma_theta] ~ uniform(0.00, 0.45)
+#> Warning: There were 2 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 ```
+
+Alternatively, supply the binary counts directly. In this case, `effect_label`
+also selects the conversion to study-level estimates and standard errors:
+
+
+``` r
+baggr(df_yusuf, model = "rubin", group = "trial", effect_label = "logOR")
+baggr(df_yusuf, model = "rubin", group = "trial", effect_label = "logRR")
+baggr(df_yusuf, model = "rubin", group = "trial", effect_label = "RD")
+```
+
+The default conversion is `"logOR"`. The first two models estimate effects on
+the log scale; the RD model estimates the difference between treatment and
+control event probabilities. These are different assumptions about the effect
+measure, rather than transformations of one fitted model.
 
 As with continuous quantities, the prior is chosen automatically. However, it is important to review the automatic prior choice when analysing quantities on log scale, because the priors may be needlessly diffuse (in other words, when using the command above _baggr_ does not "know" that data are logged, although it does try to adjust the scale of priors).
 
@@ -116,20 +154,21 @@ We summarised our data as $\log(OR)$. Alternatively, we could work with $\log(RR
 The basic tool that can help us choose between OR, RD and RR is a `labbe` plot (introduced by @labbe_meta-analysis_1987), which is built into _baggr_:
 
 
-```r
+``` r
 labbe(df_ma, plot_model = TRUE, shade_se = "or")
-#> Warning: There were 5 divergent transitions after warmup. See
+#> Warning: There were 3 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
-#> Warning: There were 6 divergent transitions after warmup. See
+#> Warning: There were 1 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
-#> Warning: Removed 1 row containing missing values (`geom_line()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_line()`).
 ```
 
-![plot of chunk unnamed-chunk-6](fig/unnamed-chunk-6-1.png)
+![plot of chunk unnamed-chunk-6](fig/binary-unnamed-chunk-6-1.png)
 
 When we make the plot, two Bayesian models are run, one for OR and one for RR. The mean treatment effect from these 2 lines is then used to plot the dotted/dashed lines corresponding to OR and RR estimates. In our case we can see that there is no meaningful difference between the two models, given the size of the effect and estimates.
 
@@ -149,10 +188,10 @@ In terms of the L'Abbe plot, RD implies an effect line which runs parallel to th
 
 ## Using risk ratios instead of odds ratios
 
-As with ORs, risk ratios are also normally distributed and can be easily calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). While we will focus on the OR example below, all of the analytic workflow would be identical in the RR case---with exception of interpretation of treatment effect, of course. Before proceeding let us quickly show how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
+As with log odds ratios, log risk ratio estimates are approximately normally distributed and can be calculated from contingency tables (i.e. `a`, `b`, `c`, `d` columns). While we will focus on the OR example below, all of the analytic workflow would be identical in the RR case---with exception of interpretation of treatment effect, of course. Before proceeding let us quickly show how risk and odd ratios compare. If an event is rare (rule of thumb: up to 10%), OR and RR will be similar. For really rare events there is no difference. The higher the event rate, the more discrepancy, e.g.
 
 
-```r
+``` r
 a <- 9; b <- 1; c <- 99; d <- 1
 cat("Risk ratio is", (a/(a+b))/(c/(c+d)), "\n" )
 #> Risk ratio is 0.9090909
@@ -161,7 +200,7 @@ cat("Odds ratio is", a*d/(b*c), "\n")
 ```
 
 
-```r
+``` r
 a <- 10; b <- 20; c <- 100; d <- 100
 cat("Risk ratio is", (a/(a+b))/(c/(c+d)), "\n" )
 #> Risk ratio is 0.6666667
@@ -170,7 +209,7 @@ cat("Odds ratio is", a*d/(b*c), "\n")
 ```
 
 
-```r
+``` r
 par(mfrow = c(2,3), oma = rep(2,4))
 for(es in c(1, .9, .8, .5, .25, .1)){
   p_bsl    <- seq(0,1,length=100)
@@ -184,7 +223,7 @@ for(es in c(1, .9, .8, .5, .25, .1)){
 title(outer = TRUE, "Compare RR (dashed) and OR (solid) of the same magnitude")
 ```
 
-![plot of chunk unnamed-chunk-9](fig/unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-9](fig/binary-unnamed-chunk-9-1.png)
 
 
 ## Model comparison using a measure of model fit
@@ -199,63 +238,64 @@ We will return to this topic at the end of the vignette when we discuss leave-on
 We now continue discussion of analytic workflow using the OR models. All of the outputs we will show are explained in more detail in the "main" package vignette, `vignette("baggr")`. Here, we simply illustrate their behaviour when applied to binary data.
 
 
-```r
+``` r
 bg_model_agg
-#> Model type: Rubin model with aggregate data 
-#> Pooling of effects: partial 
-#> 
+#> Model type: Normal-normal hierarchical (Rubin) model with aggregate data
+#> Pooling of effects: partial
+#>
 #> Aggregate treatment effect (on logarithm of odds ratio), 7 groups:
-#> Hypermean (tau) =  -0.18 with 95% interval -0.68 to 0.22 
-#> Hyper-SD (sigma_tau) = 0.2563 with 95% interval 0.0089 to 0.9051 
-#> Total pooling (1 - I^2) = 0.78 with 95% interval 0.21 to 1.00 
-#> 
-#> Treatment effects on logarithm of odds ratio:
+#> Hypermean (theta) =  -0.17 with 95% interval -0.61 to 0.25
+#> Hyper-SD (sigma) = 0.254 with 95% interval 0.009 to 0.949
+#> Posterior predictive effect = -0.17 with 95% interval -1.01 to 0.62
+#> Total pooling (1 - I^2) = 0.78 with 95% interval 0.19 to 1.00
+#>
+#> Group-specific treatment effects:
 #>               mean median   sd  2.5% 97.5% pooling
-#> Balcon      -0.133 -0.138 0.25 -0.63  0.37    0.76
-#> Clausen     -0.153 -0.150 0.25 -0.64  0.35    0.73
-#> Multicentre -0.064 -0.081 0.27 -0.55  0.52    0.75
-#> Barber      -0.211 -0.196 0.28 -0.82  0.30    0.79
-#> Norris      -0.152 -0.153 0.22 -0.58  0.28    0.67
-#> Kahler      -0.267 -0.223 0.34 -1.10  0.28    0.88
-#> Ledwich     -0.193 -0.171 0.35 -1.00  0.44    0.91
+#> Balcon      -0.135 -0.145 0.25 -0.65  0.38    0.76
+#> Barber      -0.201 -0.190 0.28 -0.84  0.33    0.79
+#> Clausen     -0.148 -0.152 0.25 -0.64  0.33    0.73
+#> Kahler      -0.273 -0.228 0.35 -1.15  0.29    0.88
+#> Ledwich     -0.187 -0.171 0.33 -0.96  0.43    0.91
+#> Multicentre -0.068 -0.086 0.26 -0.53  0.53    0.75
+#> Norris      -0.156 -0.157 0.23 -0.61  0.29    0.68
 ```
 
 Default plot (`plot(bg_model_agg)`) will show pooled group results. If you prefer a typical forest plot style, you can use `forest_plot`, which can also plot comparison with source data (via `print` argument):
 
 
-```r
+``` r
 forest_plot(bg_model_agg, show = "both", print = "inputs")
 ```
 
-![plot of chunk unnamed-chunk-11](fig/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-11](fig/binary-unnamed-chunk-11-1.png)
 
 Hypothetical treatment effect in a new trial is obtained through `effect_plot`.
 
 
-```r
+``` r
 effect_plot(bg_model_agg)
 ```
 
-![plot of chunk unnamed-chunk-12](fig/unnamed-chunk-12-1.png)
+![plot of chunk unnamed-chunk-12](fig/binary-unnamed-chunk-12-1.png)
 
 We can transform printed and plotted outputs to show exponents (or other transforms); for example:
 
 
-```r
+``` r
 gridExtra::grid.arrange(
   plot(bg_model_agg, transform = exp) + xlab("Effect on OR"),
   effect_plot(bg_model_agg, transform = exp) + xlim(0, 3) + xlab("Effect on OR"),
   ncol = 2)
 ```
 
-![plot of chunk unnamed-chunk-13](fig/unnamed-chunk-13-1.png)
+![plot of chunk unnamed-chunk-13](fig/binary-unnamed-chunk-13-1.png)
 
 ## Model comparison
 
 We can compare with no pooling and full pooling models using `baggr_compare`
 
 
-```r
+``` r
 # Instead of writing...
 # bg1 <- baggr(df_ma, pooling = "none")
 # bg2 <- baggr(df_ma, pooling = "partial")
@@ -268,23 +308,23 @@ bg_c <- baggr_compare(df_ma, effect = "logarithm of odds ratio")
 
 
 
-```r
+``` r
 plot(bg_c)
 ```
 
-![plot of chunk unnamed-chunk-16](fig/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-16](fig/binary-unnamed-chunk-16-1.png)
 
 We can also examine the compared models directly, by accessing them via `$models`. This is useful e.g. for `effect_plot`:
 
 
-```r
+``` r
 effect_plot(
   "Partial pooling, default prior" = bg_c$models$partial,
   "Full pooling, default prior" = bg_c$models$full) +
   theme(legend.position = "bottom")
 ```
 
-![plot of chunk unnamed-chunk-17](fig/unnamed-chunk-17-1.png)
+![plot of chunk unnamed-chunk-17](fig/binary-unnamed-chunk-17-1.png)
 
 
 You can use leave-one-out cross-validation to compare the models quantitatively. See documentation of `?loocv` for more details of calculation.
@@ -292,7 +332,7 @@ You can use leave-one-out cross-validation to compare the models quantitatively.
 
 
 
-```r
+``` r
 a <- loocv(df_ma, pooling = "partial")
 b <- loocv(df_ma, pooling = "full")
 #a; b; #you can print out individual loocv() calculations
@@ -306,7 +346,7 @@ loo_compare(a,b) #...but typically we compare them to each other
 Let's assume that you have access to underlying individual-level data. In our example above, we do not, but we can create a data.frame with individual level data since we know the contingency table. In practice this is not necessary as _baggr_ will do the appropriate conversions behind the scenes, but for our example we will convert our data by hand. Fortunately, a built-in function, `binary_to_individual` can do the conversion for us:
 
 
-```r
+``` r
 df_ind <- binary_to_individual(df_yusuf, group = "trial")
 head(df_ind)
 #>    group treatment outcome
@@ -323,7 +363,7 @@ We can now use a logistic regression model
 
 
 
-```r
+``` r
 bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio")
 ```
 
@@ -334,33 +374,33 @@ bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
 $$
-y_i \sim \text{Bernoulli}(\text{logit}^{-1}[\mu_{\text{group}(i)} + \tau_{\text{group}(i)}z_i])
+y_i \sim \text{Bernoulli}(\text{logit}^{-1}[\theta_0_{\text{group}(i)} + \theta_{\text{group}(i)}z_i])
 $$
 
-where $\mu_k$'s and $\tau_k$'s are parameters to estimate. The former is a group-specific mean probability of event in untreated units. We are primarily interested in the latter, the group-specific treatment effects.
+where $\theta_{0k}$'s and $\theta_k$'s are parameters to estimate. The former is a group-specific mean probability of event in untreated units. We are primarily interested in the latter, the group-specific treatment effects.
 
-Under this formulation, odds ratio of event between treatment and non-treatment are given by $\tau_k$.  This means, the modelling assumption is the same as in the model of summary data we saw above. Moreover, _baggr_'s default prior for $\tau_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One difference is that parameter $\mu$ is estimated. However, unless dealing with extreme values of $\mu$, i.e. with rare or common events (which we discuss below), this should not impact the modelled result.
+Under this formulation, odds ratio of event between treatment and non-treatment are given by $\theta_k$.  This means, the modelling assumption is the same as in the model of summary data we saw above. Moreover, _baggr_'s default prior for $\theta_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One difference is that parameter $\theta_0$ is estimated. However, unless dealing with extreme values of $\theta_0$, i.e. with rare or common events (which we discuss below), this should not impact the modelled result.
 
 Therefore, the result we get from the two models will be close (albeit with some numerical variation):
 
 
-```r
+``` r
 baggr_compare(bg_model_agg, bg_model_ind)
-#> 
+#>
 #> Mean treatment effects:
-#>              mean    median       sd      2.5%    97.5%
-#> Model 1 -0.178309 -0.168606 0.228784 -0.676378 0.216140
-#> Model 2 -0.168874 -0.166212 0.215986 -0.591938 0.255116
-#> 
+#>          mean median   sd  2.5% 97.5%
+#> Model 1 -0.17  -0.17 0.23 -0.61  0.25
+#> Model 2 -0.17  -0.17 0.21 -0.61  0.23
+#>
 #> SD for treatment effects:
-#>             mean   median       sd       2.5%    97.5%
-#> Model 1 0.256308 0.187025 0.252931 0.00885086 0.905122
-#> Model 2 0.254885 0.185259 0.242173 0.00931181 0.899649
-#> 
+#>         mean median   sd  2.5% 97.5%
+#> Model 1 0.25   0.19 0.25 0.009  0.95
+#> Model 2 0.25   0.20 0.22 0.010  0.84
+#>
 #> Posterior predictive effects:
-#>             mean    median       sd     2.5%    97.5%
-#> Model 1 -0.17638 -0.158556 0.420455 -1.06702 0.594144
-#> Model 2 -0.17034 -0.156770 0.408368 -1.07007 0.645039
+#>          mean median   sd 2.5% 97.5%
+#> Model 1 -0.17  -0.16 0.43   -1  0.65
+#> Model 2 -0.17  -0.15 0.40   -1  0.67
 ```
 
 There will be difference in speed -- in our example logistic model has to work with 1101 rows of data, while the summary level model only had 7 datapoints. Therefore in "standard" cases you are better off summarising your data and using the faster aggregate data model.
@@ -384,28 +424,28 @@ In the previous example we analysed individual-level data and suggested that typ
 The generic function for doing this in _baggr_ is `prepare_ma`. It can be used with both continuous and binary data. In our case we can summarise `df_ind` to obtain either odds ratios or risk ratios:
 
 
-```r
+``` r
 prepare_ma(df_ind, effect = "logOR")
-#>         group  a  n1  c  n2   b   d         tau        se
+#>         group  a  n1  c  n2   b   d          yi       sei
 #> 1      Balcon 14  56 15  58  42  43 -0.04546237 0.4303029
-#> 2     Clausen 18  66 19  64  48  45 -0.11860574 0.3888993
-#> 3 Multicentre 15 100 12  95  85  83  0.19933290 0.4169087
-#> 4      Barber 10  52 12  47  42  35 -0.36464311 0.4855042
-#> 5      Norris 21 226 24 228 205 204 -0.13842138 0.3147471
-#> 6      Kahler  3  38  6  31  35  25 -1.02961942 0.7540368
-#> 7     Ledwich  2  20  3  20  18  17 -0.46262352 0.9735052
+#> 2      Barber 10  52 12  47  42  35 -0.36464311 0.4855042
+#> 3     Clausen 18  66 19  64  48  45 -0.11860574 0.3888993
+#> 4      Kahler  3  38  6  31  35  25 -1.02961942 0.7540368
+#> 5     Ledwich  2  20  3  20  18  17 -0.46262352 0.9735052
+#> 6 Multicentre 15 100 12  95  85  83  0.19933290 0.4169087
+#> 7      Norris 21 226 24 228 205 204 -0.13842138 0.3147471
 prepare_ma(df_ind, effect = "logRR")
-#>         group  a  n1  c  n2   b   d         tau        se
+#>         group  a  n1  c  n2   b   d          yi       sei
 #> 1      Balcon 14  56 15  58  42  43 -0.03390155 0.3209310
-#> 2     Clausen 18  66 19  64  48  45 -0.08483888 0.2782276
-#> 3 Multicentre 15 100 12  95  85  83  0.17185026 0.3598245
-#> 4      Barber 10  52 12  47  42  35 -0.28341767 0.3779232
-#> 5      Norris 21 226 24 228 205 204 -0.12472076 0.2836811
-#> 6      Kahler  3  38  6  31  35  25 -0.89674614 0.6643991
-#> 7     Ledwich  2  20  3  20  18  17 -0.40546511 0.8563488
+#> 2      Barber 10  52 12  47  42  35 -0.28341767 0.3779232
+#> 3     Clausen 18  66 19  64  48  45 -0.08483888 0.2782276
+#> 4      Kahler  3  38  6  31  35  25 -0.89674614 0.6643991
+#> 5     Ledwich  2  20  3  20  18  17 -0.40546511 0.8563488
+#> 6 Multicentre 15 100 12  95  85  83  0.17185026 0.3598245
+#> 7      Norris 21 226 24 228 205 204 -0.12472076 0.2836811
 ```
 
-In both cases the effect (OR or RR) and its SE were renamed to `tau` and `se`, so that the resulting data frame can be used directly as input to `baggr()`.
+In both cases the effect (OR or RR) and its SE were renamed to `yi` and `sei`, so that the resulting data frame can be used directly as input to `baggr()`.
 
 For already summarised data, you can use the same function to move between different effect measures. For example you can take OR measures `a <- prepare_ma(df_ind, effect = "logOR")` and convert them to RR by using `prepare_ma(a, effect = "logRR")`.
 
@@ -416,7 +456,7 @@ For already summarised data, you can use the same function to move between diffe
 Consider data on four fictional studies:
 
 
-```r
+``` r
 df_rare <- data.frame(group = paste("Study", LETTERS[1:5]),
                       a = c(0, 2, 1, 3, 1), c = c(2, 2, 3, 3, 5),
                       n1i = c(120, 300, 110, 250, 95),
@@ -436,12 +476,12 @@ In Study A you can see that no events occurred in `a` column.
 We have shown above how `prepare_ma()` can be used to summarise the rates (if we work with individual-level data) and calculate/convert between log OR's and log RR's. It can also be used to apply corrections to event rates, which it does automatically:
 
 
-```r
+``` r
 df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
 #> Applied default rare event correction (0.25) in 1 study
 # df_rare_logor <- prepare_ma(df_rare_ind, effect = "logOR")
 df_rare_logor
-#>     group    a     n1    c     n2      b      d       tau        se
+#>     group    a     n1    c     n2      b      d        yi       sei
 #> 1 Study A 0.25 120.25 2.25 120.25 120.25 118.25 -2.213996 2.1121593
 #> 2 Study B 2.00 300.00 2.00 300.00 298.00 298.00  0.000000 1.0033501
 #> 3 Study C 1.00 110.00 3.00 110.00 109.00 107.00 -1.117131 1.1626923
@@ -454,13 +494,13 @@ df_rare_logor
 Note how the output of `prepare_ma` now differs from the original `df_rare` for "Study A": a (default) value of 0.25 was added, because there were no events in treatment arm. That means $\log(OR)=\log(0)=-\infty$. Corrections for rare events are discussed in Chapter 10 of the Cochrane Handbook [@deeks_chapter_2024]. A great overview of the subject and how different meta-analysis methods perform is provided by @bradburn_much_2007. You can modify the amount of correction by setting the `rare_event_correction` argument.
 
 
-```r
+``` r
 pma01 <- prepare_ma(df_rare, effect = "logOR",
                             rare_event_correction = 0.1)
 pma1 <- prepare_ma(df_rare, effect = "logOR",
                             rare_event_correction = 1)
 pma01
-#>     group   a    n1   c    n2     b     d       tau        se
+#>     group   a    n1   c    n2     b     d        yi       sei
 #> 1 Study A 0.1 120.1 2.1 120.1 120.1 118.1 -3.061315 3.2392876
 #> 2 Study B 2.0 300.0 2.0 300.0 298.0 298.0  0.000000 1.0033501
 #> 3 Study C 1.0 110.0 3.0 110.0 109.0 107.0 -1.117131 1.1626923
@@ -473,7 +513,7 @@ It is important to compare different models with different `rare_event_correctio
 
 
 
-```r
+``` r
 bg_correction01 <- baggr(pma01, effect = "logOR")
 bg_correction025 <- baggr(df_rare_logor, effect = "logOR")
 bg_correction1 <- baggr(pma1, effect = "logOR")
@@ -481,7 +521,7 @@ bg_rare_ind <- baggr(df_rare, model = "logit", effect = "logOR")
 ```
 
 
-```r
+``` r
 bgc1 <- baggr_compare(
   "Correct by .10" = bg_correction01,
   "Correct by .25" = bg_correction025,
@@ -489,31 +529,31 @@ bgc1 <- baggr_compare(
   "Individual data" = bg_rare_ind
 )
 bgc1
-#> 
+#>
 #> Mean treatment effects:
-#>                      mean    median       sd     2.5%    97.5%
-#> Correct by .10  -0.676312 -0.651132 0.748400 -2.23302 0.743550
-#> Correct by .25  -0.688957 -0.702436 0.754231 -2.19922 0.862837
-#> Correct by 1.0  -0.674965 -0.667651 0.631653 -1.99862 0.627155
-#> Individual data -0.969296 -0.926458 0.864047 -2.84815 0.822638
-#> 
+#>                  mean median   sd 2.5% 97.5%
+#> Correct by .10  -0.75  -0.70 0.89 -2.9  1.00
+#> Correct by .25  -0.74  -0.71 0.69 -2.2  0.56
+#> Correct by 1.0  -0.66  -0.66 0.69 -2.1  0.70
+#> Individual data -1.10  -0.96 0.96 -3.3  0.67
+#>
 #> SD for treatment effects:
-#>                     mean   median       sd      2.5%   97.5%
-#> Correct by .10  1.201240 0.765106 1.662980 0.0329695 4.71467
-#> Correct by .25  1.203540 0.799620 1.444410 0.0310607 6.15245
-#> Correct by 1.0  0.806168 0.598175 0.761054 0.0238649 2.99630
-#> Individual data 1.311940 0.963777 1.238470 0.0466459 4.79798
-#> 
+#>                 mean median   sd  2.5% 97.5%
+#> Correct by .10  1.20   0.80 1.20 0.027   4.7
+#> Correct by .25  0.92   0.70 0.83 0.032   3.1
+#> Correct by 1.0  0.88   0.65 0.83 0.035   3.1
+#> Individual data 1.40   0.97 1.40 0.040   5.7
+#>
 #> Posterior predictive effects:
-#>                      mean    median      sd     2.5%   97.5%
-#> Correct by .10  -0.632432 -0.649115 2.24564 -4.56300 3.04614
-#> Correct by .25  -0.697637 -0.707071 2.00664 -4.38997 3.28813
-#> Correct by 1.0  -0.684390 -0.646239 1.29757 -3.50090 1.88305
-#> Individual data -0.995414 -0.903370 1.97591 -5.46903 2.97378
+#>                  mean median  sd 2.5% 97.5%
+#> Correct by .10  -0.71  -0.64 2.0 -4.8   3.2
+#> Correct by .25  -0.73  -0.69 1.4 -3.8   1.9
+#> Correct by 1.0  -0.63  -0.63 1.4 -3.6   2.3
+#> Individual data -1.10  -0.91 2.2 -6.0   3.1
 plot(bgc1) + theme(legend.position = "right")
 ```
 
-![plot of chunk bgc1](fig/bgc1-1.png)
+![plot of chunk bgc1](fig/binary-bgc1-1.png)
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself.
 
 Note in the result above that:
@@ -527,7 +567,7 @@ We will explore the last point in more detail soon. First, however, let us note 
 Let us generate similar data as above but now without the 0 cell:
 
 
-```r
+``` r
 df_rare <- data.frame(group = paste("Study", LETTERS[1:5]),
                       a = c(1, 2, 1, 3, 1), c = c(2, 2, 3, 3, 5),
                       n1i = c(120, 300, 110, 250, 95),
@@ -540,7 +580,7 @@ df_rare_logor <- prepare_ma(df_rare, effect = "logOR")
 
 
 
-```r
+``` r
 bg_rare_agg <- baggr(df_rare_logor, effect = "logOR")
 bg_rare_ind <- baggr(df_rare, effect = "logOR", model = "logit")
 ```
@@ -548,31 +588,31 @@ bg_rare_ind <- baggr(df_rare, effect = "logOR", model = "logit")
 Let's compare again, both on group level but also in terms of hypothetical treatment effect:
 
 
-```r
+``` r
 bgc2 <- baggr_compare(
   "Summary-level (Rubin model on logOR)" = bg_rare_agg,
   "Individual-level (logistic model)"    = bg_rare_ind
 )
 bgc2
-#> 
+#>
 #> Mean treatment effects:
-#>                                           mean    median       sd     2.5%    97.5%
-#> Summary-level (Rubin model on logOR) -0.608230 -0.606898 0.684658 -2.02986 0.755365
-#> Individual-level (logistic model)    -0.810261 -0.720548 0.895789 -3.62767 0.686309
-#> 
+#>                                       mean median   sd 2.5% 97.5%
+#> Summary-level (Rubin model on logOR) -0.57  -0.62 0.78 -2.0  1.30
+#> Individual-level (logistic model)    -0.71  -0.68 0.71 -2.3  0.71
+#>
 #> SD for treatment effects:
-#>                                         mean   median       sd      2.5%   97.5%
-#> Summary-level (Rubin model on logOR) 0.84085 0.593070 0.846950 0.0296311 3.27987
-#> Individual-level (logistic model)    1.00042 0.732055 0.915191 0.0383252 3.48474
-#> 
+#>                                      mean median   sd  2.5% 97.5%
+#> Summary-level (Rubin model on logOR) 0.87   0.59 0.95 0.021   4.0
+#> Individual-level (logistic model)    0.92   0.70 0.83 0.034   3.2
+#>
 #> Posterior predictive effects:
-#>                                           mean    median      sd     2.5%   97.5%
-#> Summary-level (Rubin model on logOR) -0.585702 -0.590107 1.40043 -3.26276 2.27612
-#> Individual-level (logistic model)    -0.817129 -0.713853 1.59739 -4.42009 2.18869
+#>                                       mean median  sd 2.5% 97.5%
+#> Summary-level (Rubin model on logOR) -0.59  -0.61 1.5 -3.5   2.2
+#> Individual-level (logistic model)    -0.75  -0.70 1.4 -4.0   2.2
 plot(bgc2)
 ```
 
-![plot of chunk bgc2](fig/bgc2-1.png)
+![plot of chunk bgc2](fig/binary-bgc2-1.png)
 
 The results are still a bit different.
 
@@ -597,7 +637,7 @@ We exaggerate our prior choices on purpose, to best illustrate the differences.
 
 
 
-```r
+``` r
 bg_rare_pool_bsl <- baggr(df_rare, effect = "logOR", model = "logit",
                         pooling_control = "partial",
                         prior_control = normal(-4.59, 1), prior_control_sd = normal(0, 2))
@@ -606,7 +646,7 @@ bg_rare_strong_prior <- baggr(df_rare, effect = "logOR", model = "logit",
 ```
 
 
-```r
+``` r
 bgc3 <- baggr_compare(
   "Rubin model" = bg_rare_agg,
   "Independent N(0,10^2)" = bg_rare_ind,
@@ -616,31 +656,31 @@ bgc3 <- baggr_compare(
 )
 
 bgc3
-#> 
+#>
 #> Mean treatment effects:
-#>                                 mean    median       sd     2.5%    97.5%
-#> Rubin model                -0.608230 -0.606898 0.684658 -2.02986 0.755365
-#> Independent N(0,10^2)      -0.810261 -0.720548 0.895789 -3.62767 0.686309
-#> Hierarchical prior         -0.686223 -0.667927 0.621197 -1.98819 0.454052
-#> Independent N(-4.59, 10^2) -0.778947 -0.706826 1.013460 -3.41717 0.853450
-#> 
+#>                             mean median   sd 2.5% 97.5%
+#> Rubin model                -0.57  -0.62 0.78 -2.0  1.30
+#> Independent N(0,10^2)      -0.71  -0.68 0.71 -2.3  0.71
+#> Hierarchical prior         -0.70  -0.69 0.59 -1.9  0.42
+#> Independent N(-4.59, 10^2) -0.71  -0.70 0.67 -2.2  0.56
+#>
 #> SD for treatment effects:
-#>                                mean   median       sd      2.5%   97.5%
-#> Rubin model                0.840850 0.593070 0.846950 0.0296311 3.27987
-#> Independent N(0,10^2)      1.000420 0.732055 0.915191 0.0383252 3.48474
-#> Hierarchical prior         0.675636 0.475771 0.726157 0.0177607 2.54531
-#> Independent N(-4.59, 10^2) 1.039860 0.710351 1.066950 0.0345881 4.02034
-#> 
+#>                            mean median   sd  2.5% 97.5%
+#> Rubin model                0.87   0.59 0.95 0.021   4.0
+#> Independent N(0,10^2)      0.92   0.70 0.83 0.034   3.2
+#> Hierarchical prior         0.64   0.47 0.62 0.021   2.3
+#> Independent N(-4.59, 10^2) 0.90   0.68 0.82 0.034   3.1
+#>
 #> Posterior predictive effects:
-#>                                 mean    median      sd     2.5%   97.5%
-#> Rubin model                -0.614096 -0.610400 1.44826 -3.47727 2.29151
-#> Independent N(0,10^2)      -0.821637 -0.703896 1.58941 -4.64276 2.10816
-#> Hierarchical prior         -0.672248 -0.651758 1.15323 -3.05701 1.59197
-#> Independent N(-4.59, 10^2) -0.813682 -0.713356 1.82096 -5.01152 2.59469
+#>                             mean median  sd 2.5% 97.5%
+#> Rubin model                -0.56  -0.62 1.5 -3.2   2.5
+#> Independent N(0,10^2)      -0.69  -0.69 1.4 -3.6   2.1
+#> Hierarchical prior         -0.68  -0.66 1.0 -2.8   1.4
+#> Independent N(-4.59, 10^2) -0.71  -0.67 1.4 -3.7   2.0
 plot(bgc3) + theme(legend.position = "right")
 ```
 
-![plot of chunk bgc3](fig/bgc3-1.png)
+![plot of chunk bgc3](fig/binary-bgc3-1.png)
 
 > Note: The results of this vignette hosted on CRAN have very short run time (`iter = 2000, chains = 4`) due to server constraints. We recommend replicating this example yourself. __In particular for hierarchical prior on baselines, we recommend longer runs.__
 
@@ -657,73 +697,77 @@ Each of the models considered could now be compared using `loocv()` (see the exa
 # Accounting for covariates: meta-regression and mixed models
 
 This section provides only a short example. To learn more about meta-regression see e.g. @baker_understanding_2009
-When assessing funnel plots, keep in mind that asymmetry does not only reflect publication or small-study biases: it can also arise from unexplained between-study heterogeneity. Meta-regression covariates can sometimes account for part of that asymmetry by explaining systematic differences across studies.
 
 Two types of covariates may be present in your data:
 
 * Covariates that __change according to group unit__. In that case, the model accounting for the group covariates is a meta-regression model, as described in Chapter 10 of the Cochrane Handbook [@deeks_chapter_2024]. It can be modelled on summary-level data.
-* Covariates that __change according to individual unit__ (mixed model). It has to be fitted to individual-level data. Note that the first bullet point is a special case of this mixed model.
+* Covariates that __change according to individual unit__. Then, the model can be called a [mixed model](https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode/252888). It has to be fitted to individual-level data. Note that the first case can also be accounted for by using a mixed model.
 
 In both cases we only need to name one extra argument to `baggr`: `covariates=`, followed by a vector of column names in input data. You should remember that your treatment effect estimate will vary a lot not only with choice of covariates, but also the contrasts that you use.
 
-```r
+
+
+
+``` r
 #let's use the data.frame we created from Yusuf et al earlier
 df_ma$study_grouping      <- c(1,1,1,0,0,0,0)
 df_ma$different_contrasts <- c(1,1,1,0,0,0,0) - .5
 bg_cov1 <- baggr(df_ma, covariates = c("study_grouping"), effect = "logarithm of odds ratio")
 ```
 
-```r
+
+``` r
 baggr_compare("No covariate" = bg_model_agg,
               "With covariates, 0-1 coding" = bg_cov1)
 #> Compared models use different covariates. Hyperparameters are not directly comparable.
-#> 
+#>
 #> Mean treatment effects:
-#>                                  mean    median       sd      2.5%    97.5%
-#> No covariate                -0.178309 -0.168606 0.228784 -0.676378 0.216140
-#> With covariates, 0-1 coding -0.341271 -0.333130 0.311910 -0.983304 0.252122
-#> 
+#>                              mean median   sd  2.5% 97.5%
+#> No covariate                -0.17  -0.17 0.23 -0.61  0.25
+#> With covariates, 0-1 coding -0.18  -0.17 0.32 -0.82  0.43
+#>
 #> SD for treatment effects:
-#>                                 mean   median       sd       2.5%    97.5%
-#> No covariate                0.256308 0.187025 0.252931 0.00885086 0.905122
-#> With covariates, 0-1 coding 0.287942 0.212520 0.274785 0.00954359 0.997505
-#> 
+#>                             mean median   sd  2.5% 97.5%
+#> No covariate                0.25   0.19 0.25 0.009  0.95
+#> With covariates, 0-1 coding 0.30   0.23 0.28 0.011  1.00
+#>
 #> Posterior predictive effects:
-#>                                  mean    median       sd     2.5%    97.5%
-#> No covariate                -0.179489 -0.163442 0.434541 -1.03299 0.650847
-#> With covariates, 0-1 coding -0.339569 -0.340654 0.519976 -1.35930 0.648485
-#> 
-#> Mean (SD) for covariates:
-#>         model      study_grouping
-#>  No covariate 0.331005 (0.456074)
+#>                              mean median   sd 2.5% 97.5%
+#> No covariate                -0.16  -0.15 0.42 -1.1  0.63
+#> With covariates, 0-1 coding -0.18  -0.17 0.51 -1.3  0.81
+#>
+#> Covariate effects:
+#>                        model      covariate  mean median   sd  2.5% 97.5%
+#>  With covariates, 0-1 coding study_grouping 0.025  0.012 0.45 -0.81     1
 ```
 
 To access the covariate estimates, see `fixed_effects()` function. They are also printed out by default:
 
 
-```r
+``` r
 bg_cov1
-#> Model type: Rubin model with aggregate data 
-#> Pooling of effects: partial 
-#> 
+#> Model type: Normal-normal hierarchical (Rubin) model with aggregate data
+#> Pooling of effects: partial
+#>
 #> Aggregate treatment effect (on logarithm of odds ratio), 7 groups:
-#> Hypermean (tau) =  -0.34 with 95% interval -0.98 to 0.25 
-#> Hyper-SD (sigma_tau) = 0.2879 with 95% interval 0.0095 to 0.9975 
-#> Total pooling (1 - I^2) = 0.74 with 95% interval 0.18 to 1.00 
-#> 
-#> Treatment effects on logarithm of odds ratio:
-#>               mean  median   sd  2.5% 97.5% pooling
-#> Balcon      -0.007 -0.0033 0.30 -0.62  0.58    0.73
-#> Clausen     -0.039 -0.0271 0.29 -0.64  0.51    0.70
-#> Multicentre  0.051  0.0480 0.30 -0.54  0.68    0.72
-#> Barber      -0.344 -0.3446 0.32 -1.01  0.26    0.76
-#> Norris      -0.259 -0.2587 0.28 -0.78  0.30    0.64
-#> Kahler      -0.436 -0.4086 0.39 -1.31  0.25    0.85
-#> Ledwich     -0.348 -0.3394 0.41 -1.24  0.44    0.90
-#> 
+#> Hypermean (theta) =  -0.18 with 95% interval -0.82 to 0.43
+#> Hyper-SD (sigma) = 0.302 with 95% interval 0.011 to 1.000
+#> Posterior predictive effect = -0.18 with 95% interval -1.28 to 0.78
+#> Total pooling (1 - I^2) = 0.73 with 95% interval 0.17 to 1.00
+#>
+#> Group-specific treatment effects:
+#>               mean median   sd  2.5% 97.5% pooling
+#> Balcon      -0.126 -0.128 0.32 -0.73  0.51    0.71
+#> Barber      -0.218 -0.205 0.34 -0.92  0.43    0.74
+#> Clausen     -0.146 -0.152 0.30 -0.71  0.45    0.68
+#> Kahler      -0.302 -0.259 0.42 -1.28  0.43    0.85
+#> Ledwich     -0.207 -0.184 0.42 -1.13  0.56    0.89
+#> Multicentre -0.047 -0.059 0.32 -0.62  0.65    0.70
+#> Norris      -0.156 -0.147 0.27 -0.68  0.37    0.62
+#>
 #> Covariate (fixed) effects on logarithm of odds ratio:
-#>                mean   sd
-#> study_grouping 0.33 0.46
+#>                 mean median   sd  2.5% 97.5%
+#> study_grouping 0.025  0.012 0.45 -0.81     1
 ```
 
 > Note: in the example above we did not manually set priors for $\beta$ coefficients. Users can do it by passing argument `prior_beta` to `baggr()`.

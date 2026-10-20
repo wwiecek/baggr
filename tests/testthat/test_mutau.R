@@ -33,7 +33,7 @@ test_that("Error messages for wrong inputs are in place", {
 
   expect_warning(baggr(df_mutau, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
-  expect_identical(names(convert_inputs(df_mutau, "mutau")),
+  expect_identical(names(convert_inputs(df_mutau, "vivs")),
                    c("K", "P", "theta_hat_k", "se_theta_k",
                      "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
                      "M", "c", "symmetric", "possible_selection"))
@@ -54,7 +54,7 @@ test_that("Different pooling methods work for mu tau model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
-  expect_error(baggr(df_mutau, rubbish = 41))
+  expect_error(suppressWarnings(baggr(df_mutau, rubbish = 41)))
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -64,7 +64,7 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_p$n_parameters, 1)
   expect_equal(bg5_p$n_groups, 8)
   expect_equal(bg5_p$effects, "mean")
-  expect_equal(bg5_p$model, "mutau")
+  expect_equal(bg5_p$model, "vivs")
   expect_is(bg5_p$fit, "stanfit")
 })
 
@@ -120,16 +120,16 @@ test_that("extra pooling stats work", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 6)
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$theta, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma, 6)
 
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau,hypermean(bg5_p,message=FALSE))
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau,hypersd(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$theta,hypermean(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma,hypersd(bg5_p,message=FALSE))
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
 })
 
 
@@ -185,8 +185,8 @@ test_that("Test data can be used in the mu tau model", {
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_mutau))
   expect_is(treatment_effect(bg5_p), "list")
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric")
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
+  expect_is(treatment_effect(bg5_p)$theta, "numeric")
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 })
 

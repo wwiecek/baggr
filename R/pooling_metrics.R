@@ -55,23 +55,23 @@
 #' In a partial pooling model (see [baggr::baggr()] and above), group _k_ (e.g. study) has
 #' standard error of treatment effect estimate, \eqn{se_k}.
 #' The treatment effect (across _k_ groups) is variable across groups, with
-#' hyper-SD parameter \eqn{\sigma_(\tau)}.
+#' hyper-SD parameter \eqn{\sigma_(\theta)}.
 #'
 #' The quantity of interest is ratio of variation in treatment effects to the
 #' total variation.
 #' By convention, we subtract it from 1, to obtain a _pooling metric_ _P_.
 #'
-#' \deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
+#' \deqn{p = 1 - (\sigma_(\theta)^2 / (\sigma_(\theta)^2 + se_k^2))}
 #'
 #' * If \eqn{p < 0.5}, the variation across studies is higher than variation within studies.
 #' * Values close to 1 indicate nearly full pooling. Variation across studies dominates.
 #' * Values close to 0 indicate no pooling. Variation within studies dominates.
 #'
-#' Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
+#' Note that, since \eqn{\sigma_{\theta}^2} is a Bayesian parameter (rather than a
 #' single fixed value),
 #' _P_ is also a parameter. It is typical for _P_ to have very high dispersion,
 #' as in many cases we
-#' cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain samples from the distribution
+#' cannot precisely estimate \eqn{\sigma_{\theta}}. To obtain samples from the distribution
 #' of _P_ (rather than summarised values), set `summary=FALSE`.
 #'
 #'
@@ -143,6 +143,13 @@ pooling <- function(bg,
   type <- match.arg(type, c("groups", "total"))
   metric <- match.arg(metric, c("pooling", "isq", "hsq", "weights"))
 
+  # Older saved fits may still store summary data under legacy column names.
+  if(bg$model %in% c("rubin", "vivs") && !"sei" %in% names(bg$data))
+    bg$data <- normalise_summary_columns(bg$data, silent = TRUE)$data
+  if(!is.null(bg$summary_data) && !"sei" %in% names(bg$summary_data))
+    bg$summary_data <- normalise_summary_columns(bg$summary_data,
+                                                silent = TRUE)$data
+
   n_rows <- if(type == "total") 1L else bg$n_groups
   row_labels <- if(type == "groups") group_names(bg) else NULL
   if(bg$pooling %in% c("none", "full")) {
@@ -164,14 +171,14 @@ pooling <- function(bg,
 
   if(bg$model == "quantiles") {
     # compared to individual-level, here we are dealing with 1 more dimension
-    # which is number of quantiles; so if sigma_tau above is sigma of trt effect
+    # which is number of quantiles; so if sigma above is sigma of trt effect
     # here it is N effects on N quantiles etc.
 
-    # Nq-dimensional sigma_tau
-    sigma_tau <- treatment_effect(bg)$sigma_tau
-    # for(i in 1:dim(sigma_tau)[2])
-    # sigma_tau[,i,1] <- sigma_tau[,i,i]
-    # sigma_tau <- sigma_tau[,,1] #rows are samples, columns are quantiles
+    # Nq-dimensional sigma
+    sigma <- treatment_effect(bg)$sigma
+    # for(i in 1:dim(sigma)[2])
+    # sigma[,i,1] <- sigma[,i,i]
+    # sigma <- sigma[,,1] #rows are samples, columns are quantiles
 
     # now SE's of study treatment effects: this is our input data!
     # Sigma_y_k_1 is now vcov of trt effect (used to be control + effect, mind)
@@ -180,25 +187,25 @@ pooling <- function(bg,
     # output is an array with dim = samples, studies, parameters
     # so let's convert to these dimensions:
     # for sigma_k the values are fixed over samples
-    sigma_k <- array(rep(sigma_k, each = nrow(sigma_tau)),
-                     dim = c(nrow(sigma_tau), nrow(sigma_k), ncol(sigma_k)))
-    # for sigma_tau it doesn't change with studies, so:
-    sigma_tau <- replicate(dim(sigma_k)[2], sigma_tau)
+    sigma_k <- array(rep(sigma_k, each = nrow(sigma)),
+                     dim = c(nrow(sigma), nrow(sigma_k), ncol(sigma_k)))
+    # for sigma it doesn't change with studies, so:
+    sigma <- replicate(dim(sigma_k)[2], sigma)
     # but this has (parameters, studies) rather than (studies, parameters) so
-    sigma_tau <- aperm(sigma_tau, c(1, 3, 2))
+    sigma <- aperm(sigma, c(1, 3, 2))
 
     # now we can just do the operation on arrays and preserve dimensions:
-    ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
+    ret <- sigma_k^2 / (sigma_k^2 + sigma^2)
 
   } else if(bg$model == "sslab") {
     # Must calculate pooling for each effect vector?
-    te <- treatment_effect(bg)$sigma_tau
+    te <- treatment_effect(bg)$sigma
     warning("In this version of baggr calculations of pooling for spike & slab may be wrong")
     warning("Please contact package authors if youy are using this feature")
     ge <- group_effects(bg, summary = T)[,"sd",]
-    sigma_tau <- aperm(replicate(5, te), c(1,3,2))
-    sigma_k   <- aperm(replicate(dim(sigma_tau)[1], ge), c(3,1,2))
-    ret <- sigma_k^2 / (sigma_k^2 + sigma_tau^2)
+    sigma <- aperm(replicate(5, te), c(1,3,2))
+    sigma_k   <- aperm(replicate(dim(sigma)[1], ge), c(3,1,2))
+    ret <- sigma_k^2 / (sigma_k^2 + sigma^2)
 
   } else {
     # Make sure we follow the same ordering of groups as in group_effects()
@@ -210,32 +217,32 @@ pooling <- function(bg,
       csd <- bg$summary_data #current summary data
       if(bg$n_parameters > 1){
         csd <- csd[csd$treatment == attr(bg$inputs, "treatment_levels")[i],]
-        sigma_tau <- treatment_effect(bg)$sigma_tau[,i]
+        sigma <- treatment_effect(bg)$sigma[,i]
       } else
-        sigma_tau <- treatment_effect(bg)$sigma_tau
+        sigma <- treatment_effect(bg)$sigma
 
       # Grab the appropriate SE (k values)
       sigma_k <- switch(bg$model,
-                        "mutau"       = bg$data$se.tau,
-                        "rubin"       = bg$data$se,
+                        "vivs"       = bg$data$sei,
+                        "rubin"       = bg$data$sei,
                         # May need to apply rare event correction for
                         # the pooling models to work correctly
                         "logit"       = apply_cont_corr(csd, 0.25, "single",
-                                                        add_or = TRUE, pooling = TRUE)$se[match(group_names, csd$group)],
-                        "rubin_full"  = csd$se.tau[match(group_names, csd$group)],
-                        "mutau_full"  = csd$se.tau[match(group_names, csd$group)]
+                                                        add_or = TRUE, pooling = TRUE)$sei[match(group_names, csd$group)],
+                        "rubin_full"  = csd$sei[match(group_names, csd$group)],
+                        "vivs_full"  = csd$sei[match(group_names, csd$group)]
       )
 
       if(type == "groups")
-        ret_i <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma_tau^2))
+        ret_i <- sapply(sigma_k, function(se) se^2 / (se^2 + sigma^2))
       if(type == "total"){
         # nu <- mean(sigma_k^2)
         w <- 1/(sigma_k^2)
         nu <- (length(sigma_k)-1)*sum(w) / (sum(w)^2 - sum(w^2))
-        ret_i <- replicate(1, nu / (nu + sigma_tau^2))
+        ret_i <- replicate(1, nu / (nu + sigma^2))
       }
       if(metric == "weights" && type == "groups"){
-        precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma_tau^2))
+        precisions <- sapply(sigma_k, function(se) 1 / (se^2 + sigma^2))
         ret_i <- precisions / rowSums(precisions)
       }
       if(metric == "weights" && type == "total")

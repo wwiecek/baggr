@@ -14,11 +14,11 @@ for(i in 1:8){
 
   x <- rnorm(N[i])
   x <- (x-mean(x))/sd(x)
-  x <- x*schools$se[i]*sqrt(N[i])/1.41 + schools$tau[i]
+  x <- x*schools$sei[i]*sqrt(N[i])/1.41 + schools$yi[i]
 
   y <- rnorm(N[i])
   y <- (y-mean(y))/sd(y)
-  y <- y*schools$se[i]*sqrt(N[i])/1.41
+  y <- y*schools$sei[i]*sqrt(N[i])/1.41
 
   schools_ipd <- rbind(schools_ipd,
                        data.frame(group = schools$group[i], outcome = bsl[i] + x, treatment = 1),
@@ -40,7 +40,7 @@ test_that("Different pooling methods work for the rubin_full model", {
 })
 
 test_that("Basic operations on rubin_full model", {
-  expect_error(baggr(schools_ipd, rubbish = 41))
+  expect_error(suppressWarnings(baggr(schools_ipd, rubbish = 41)))
   expect_is(pooling(bg_p), "matrix")
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
@@ -52,7 +52,7 @@ test_that("Basic operations on rubin_full model", {
   # No pooling gives sensible results:
   expect_equal(
     as.numeric(group_effects(bg_n,s=T)[,"mean"]),
-    schools$tau, tolerance = 1)
+    schools$yi, tolerance = 1)
 
 })
 
@@ -195,7 +195,7 @@ test_that("full-data test sigma uses SD and not SE", {
   inp_rubin <- convert_inputs(train, model = "rubin_full", quantiles = seq(.05, .95, .1),
                               test_data = test, outcome = "outcome",
                               group = "group", treatment = "treatment")
-  inp_mutau <- convert_inputs(train, model = "mutau_full", quantiles = seq(.05, .95, .1),
+  inp_mutau <- convert_inputs(train, model = "vivs_full", quantiles = seq(.05, .95, .1),
                               test_data = test, outcome = "outcome",
                               group = "group", treatment = "treatment")
 

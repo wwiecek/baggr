@@ -82,7 +82,7 @@ test_that("selection input is validated", {
     "0/1 or logical"
   )
   expect_error(
-    convert_inputs(schools, "mutau", selection = 1.96),
+    convert_inputs(schools, "vivs", selection = 1.96),
     "only for model = 'rubin'"
   )
 })

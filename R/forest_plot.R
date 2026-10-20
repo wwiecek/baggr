@@ -45,18 +45,18 @@ forest_plot <- function(bg,
   if(length(bg$effects) > 1)
     stop("forest_plot only works with 1-dimensional effects")
 
-  # Get the summary-level data with tau and se columns
+  # Get the summary-level data with canonical effect and SE columns
   if(bg$model %in% c("rubin_full", "logit"))
     ge_raw <- bg$summary_data
   else
     ge_raw <- bg$data
-  if(bg$model %in% c("rubin_full", "mutau"))
-    ge_raw$se <- ge_raw$se.tau
+  if(!all(c("yi", "sei") %in% names(ge_raw)))
+    ge_raw <- normalise_summary_columns(ge_raw, silent = TRUE)$data
 
-  ge_raw$mean  <- ge_raw$tau
-  ge_raw$sd    <- ge_raw$se
-  ge_raw$lower   <- ge_raw$tau - stats::qnorm((1 + prob)/2)*ge_raw$se
-  ge_raw$upper   <- ge_raw$tau + stats::qnorm((1 + prob)/2)*ge_raw$se
+  ge_raw$mean  <- ge_raw$yi
+  ge_raw$sd    <- ge_raw$sei
+  ge_raw$lower   <- ge_raw$yi - stats::qnorm((1 + prob)/2)*ge_raw$sei
+  ge_raw$upper   <- ge_raw$yi + stats::qnorm((1 + prob)/2)*ge_raw$sei
   ge_posterior <- as.data.frame(
     effect_slice(group_effects(bg, summary = TRUE, prob = prob), 1))
   fe_posterior <- as.data.frame(
@@ -95,7 +95,7 @@ forest_plot <- function(bg,
   else
     n_ge_rows <- nrow(ge_raw)
 
-  te <- treatment_effect(bg)$tau
+  te <- treatment_effect(bg)$theta
   te_summary <- interval_stats(mint(te, prob = prob), prob)
 
   te_printed <- paste0(format(mean(te), digits = digits), " (",

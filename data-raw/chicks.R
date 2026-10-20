@@ -2,5 +2,5 @@
 
 # Reading in chicken data
 chicks <- read.table("data-raw/chickens.dat", header = TRUE)
-names(chicks) <- c("frequency", "mu_n", "mu", "se.mu", "tau_n", "tau", "se.tau")
+names(chicks) <- c("frequency", "n0i", "y0i", "se0i", "ni", "yi", "sei")
 usethis::use_data(chicks, overwrite=TRUE)

@@ -77,7 +77,7 @@ test_that("Hyper-SD priors are handled correctly outside partial pooling", {
   )
   expect_false(is.null(bg_partial$prior_dist$hypersd))
 
-  fe7n_te <- treatment_effect(fe7n, summary = TRUE)$tau
+  fe7n_te <- treatment_effect(fe7n, summary = TRUE)$theta
   expect_no_error(
     suppressWarnings(
       baggr(schools[8, ], pooling = "full",
@@ -111,7 +111,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
-  expect_error(baggr(df_pooled, rubbish = 41))
+  expect_error(suppressWarnings(baggr(df_pooled, rubbish = 41)))
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -185,7 +185,7 @@ test_that("Calculation of effects works", {
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
 })
 
 
@@ -227,13 +227,13 @@ test_that("Forest plots for Rubin model", {
 
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
-  expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
+  expect_error(baggr(data = df_pooled, test_data = cars), "Missing mapped summary columns")
 
   # NA values or wrong cols:
   df2 <- df_pooled; df2$tau[1] <- NA
   expect_error(baggr(data = df_pooled, test_data = df2), "NA")
   df_na <- df_pooled[7:8,]; df_na$tau <- NULL
-  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "is of type")
+  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "Missing mapped summary columns")
 
   # This should work:
   bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],
@@ -330,10 +330,10 @@ test_that("Model with covariates works fine", {
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_pooled))
   expect_is(treatment_effect(bg5_p), "list")
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
+  expect_is(treatment_effect(bg5_p)$theta, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$theta, 6)
 
   # Drawing values of tau:
   expect_error(effect_draw(cars))
@@ -412,8 +412,8 @@ test_that("loocv", {
 test_that("The default 8 schools result is close to the result in BDA", {
   skip_on_cran()
   bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
-  expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
-  expect_equal(mean(treatment_effect(bg_s)$sigma_tau), 7, tolerance = .25)
+  expect_equal(mean(treatment_effect(bg_s)$theta), 8, tolerance = .25)
+  expect_equal(mean(treatment_effect(bg_s)$sigma), 7, tolerance = .25)
 })
 
 
@@ -428,10 +428,10 @@ bg_bd <- baggr(dt_bd, group = "study", model = "rubin", iter = 4000,
 # RE results from metafor:
 # metafor::rma(yi, vi, data=dt2)
 test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
-  expect_equal(mean(treatment_effect(bg_bd)$tau), 0.22, tolerance = .01)
-  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .025)),
+  expect_equal(mean(treatment_effect(bg_bd)$theta), 0.22, tolerance = .01)
+  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$theta, .025)),
                0.13, tolerance = .02)
-  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .975)),
+  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$theta, .975)),
                0.31, tolerance = .02)
 })
 

@@ -76,8 +76,8 @@ test_that("mutau logpd is finite and close to a plug-in MVN reference", {
   bg_train <- bgdt[bgdt$include == 1, ]
   bg_test <- bgdt[bgdt$include == 0, ]
 
-  bg_fit <- baggr(bg_train, model = "mutau", refresh = 0, test_data = bg_test)
-  bg_fit_full <- baggr(bg_train, model = "mutau", pooling = "full",
+  bg_fit <- baggr(bg_train, model = "vivs", refresh = 0, test_data = bg_test)
+  bg_fit_full <- baggr(bg_train, model = "vivs", pooling = "full",
                        refresh = 0, test_data = bg_test)
 
   expect_is(bg_fit, "baggr")
