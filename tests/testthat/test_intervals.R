@@ -42,7 +42,7 @@ test_that("prob means contained mass and legacy arguments remain compatible", {
     expect_equal(unname(got), unname(expected_interval(z, p)))
     expect_identical(mint(z, p), mint(z, int = p))
     for(f in list(group_effects, fixed_effects, treatment_effect,
-                  hypermean, hypersd, selection, mutau_cor)) {
+                  hypermean, hypersd, selection, vivs_cor, mutau_cor)) {
       expect_equal(f(bg, prob = p), f(bg, interval = p))
       expect_error(f(bg, prob = p, interval = p), "Supply only one")
     }
@@ -78,10 +78,10 @@ test_that("summary values describe the requested draws and transformation", {
       expect_equal(unname(fe[1,]),
                    unname(expected_interval(tr(draws$beta[,1]), p)))
       te <- treatment_effect(bg, summary = TRUE, transform = tr, prob = p)
-      expect_equal(unname(te$tau[1,]),
+      expect_equal(unname(te$theta[1,]),
                    unname(expected_interval(tr(draws$mu), p)))
-      expect_true(all(is.na(te$sigma_tau[, -6])))
-      expect_equal(unname(te$sigma_tau[1,"width"]), p)
+      expect_true(all(is.na(te$sigma[, -6])))
+      expect_equal(unname(te$sigma[1,"width"]), p)
     }
     set.seed(130)
     de <- effect_draw(bg)
@@ -292,7 +292,7 @@ test_that("pooling extremes and multiple effects keep names and dimensions", {
 test_that("aggregate and correlation printouts select the right quantities", {
   mock_interval_extract()
   bg <- interval_fixture(covariates=FALSE)
-  bg$model <- "mutau"
+  bg$model <- "vivs"
   bg$inputs$M <- 0
   draws <- attr(bg$fit,"draws")
   draws$mu <- array(c(draws$mu*0,draws$mu), c(length(draws$mu),1,2))
@@ -311,11 +311,11 @@ test_that("aggregate and correlation printouts select the right quantities", {
     pred <- effect_draw(bg)
     set.seed(130)
     out <- capture.output(print(bg, prob=p, group=FALSE, fixed=FALSE,digits=7))
-    check_line(out, "Hyper-SD (sigma_tau) =", expected_interval(draws$tau,p),p)
+    check_line(out, "Hyper-SD (sigma) =", expected_interval(draws$tau,p),p)
     check_line(out, "Posterior predictive effect =", expected_interval(pred,p),p)
     check_line(out, "Correlation of treatment effect and baseline =",
                expected_interval(bg$fit[,2],p),p)
-    check_line(out, "Hypermean (tau) =", expected_interval(draws$mu[,1,2],p),p)
+    check_line(out, "Hypermean (theta) =", expected_interval(draws$mu[,1,2],p),p)
   }
 })
 
@@ -466,10 +466,10 @@ test_that("single and multiple rows and effects follow the numeric contract", {
         expect_summary_contract(cor, 1, "correlation", p)
         expect_true(all(is.na(cor[,-6])))
       }
-      if(pool == "full") expect_equal(unname(te$sigma_tau[,"sd",]), c(0, 0))
-      if(pool == "none") expect_true(all(is.na(te$tau[,-6,,drop = FALSE])))
+      if(pool == "full") expect_equal(unname(te$sigma[,"sd",]), c(0, 0))
+      if(pool == "none") expect_true(all(is.na(te$theta[,-6,,drop = FALSE])))
       transformed <- treatment_effect(bg, summary = TRUE, transform = exp,
-                                       prob = p, message = FALSE)$sigma_tau
+                                       prob = p, message = FALSE)$sigma
       expect_summary_contract(transformed, 1, bg$effects, p)
       expect_true(all(is.na(transformed[,-6,,drop = FALSE])))
     }
@@ -505,8 +505,8 @@ test_that("percentage mode changes only endpoint names and drops width", {
         a <- f(bg, summary = TRUE, prob = p)
         b <- f(bg, summary = TRUE, prob = p, rename_int = TRUE)
         if(is.list(a)) {
-          a <- a[c("tau", "sigma_tau")]
-          b <- b[c("tau", "sigma_tau")]
+          a <- a[c("theta", "sigma")]
+          b <- b[c("theta", "sigma")]
         } else { a <- list(a); b <- list(b) }
         for(j in seq_along(a)) {
           expect_identical(colnames(b[[j]]),
@@ -535,7 +535,7 @@ test_that("LOO plots select named medians and bounds after reordering", {
   original <- treatment_effect
   testthat::local_mocked_bindings(treatment_effect = function(...) {
     x <- original(...)
-    x$tau <- x$tau[,c("upper", "sd", "width", "lower", "mean", "median"),
+    x$theta <- x$theta[,c("upper", "sd", "width", "lower", "mean", "median"),
                    drop = FALSE]
     x
   }, .package = "baggr")
@@ -553,7 +553,7 @@ test_that("LOO plots select named medians and bounds after reordering", {
 test_that("single-study mu-tau extraction preserves its summary row", {
   mock_interval_extract()
   bg <- interval_fixture(1, covariates = FALSE)
-  bg$model <- "mutau"
+  bg$model <- "vivs"
   draws <- attr(bg$fit, "draws")
   draws$theta_k <- array(c(draws$theta_k*0, draws$theta_k), c(101, 1, 2, 1))
   draws$mu <- array(c(draws$mu*0, draws$mu), c(101, 1, 2))
@@ -565,9 +565,9 @@ test_that("single-study mu-tau extraction preserves its summary row", {
   expect_equal(unname(got[1,]), unname(expected_interval(draws$theta_k[,1,2,1], .8)))
   te <- treatment_effect(bg, summary = TRUE, prob = .8)
   for(x in te) expect_summary_contract(x, 1, bg$effects, .8)
-  expect_equal(unname(te$sigma_tau[1,]),
+  expect_equal(unname(te$sigma[1,]),
                unname(expected_interval(draws$tau, .8)))
-  expect_identical(dim(treatment_effect(bg)$sigma_tau), 101L)
+  expect_identical(dim(treatment_effect(bg)$sigma), 101L)
 
 })
 
@@ -598,8 +598,8 @@ test_that("fixed, quantile and LOO consumers slice multiple effects by name", {
     },
     treatment_effect = function(...) {
       x <- original_treatment(...)
-      if("width" %in% colnames(x$tau))
-        x$tau <- x$tau[,rev(colnames(x$tau)),,drop = FALSE]
+      if("width" %in% colnames(x$theta))
+        x$theta <- x$theta[,rev(colnames(x$theta)),,drop = FALSE]
       x
     }, .package = "baggr")
   loo <- structure(list(full_model = bg, models = list(bg, bg),

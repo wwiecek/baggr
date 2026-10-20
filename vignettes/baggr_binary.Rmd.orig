@@ -14,11 +14,12 @@ bibliography: baggr.bib
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE, fig.width=7,
+  collapse = TRUE, fig.path = "fig/binary-", fig.width=7,
   fig.height = 5, comment = "#>")
 library(baggr)
 library(ggplot2)
 library(gridExtra)
+set.seed(1990)
 ```
 
 This vignette is written for _baggr_ users who want to analyse binary data. For more general introduction to meta-analysis concepts and _baggr_ workflow, please read `vignette("baggr")`.
@@ -71,15 +72,15 @@ In our examples below we will focus on the OR metric; $\log(OR)$ and its SE can 
 # df <- df_yusuf
 # df$b <- df$n1i-df$a
 # df$d <- df$n2i-df$c
-# df$tau <- log((df$a*df$d)/(df$b*df$c))
-# df$se <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
+# df$yi <- log((df$a*df$d)/(df$b*df$c))
+# df$sei <- sqrt(1/df$a + 1/df$b + 1/df$c + 1/df$d)
 
 # But prepare_ma() automates these operations:
 df_ma <- prepare_ma(df_yusuf, group = "trial", effect = "logOR")
 df_ma
 ```
 
-We use `tau` and `se` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default "Rubin" model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
+We use `yi` and `sei` notation for our effect, same as we would for analysing continuous data with `baggr()`. In fact, the model we use for $\log(OR)$ is the same default normal-normal hierarchical (Rubin) model (@rubin_estimating_1974) with partial pooling. Once $\log(OR)$ and is SE have been calculated, there are no differences between this process and analysis continuous quantities in _baggr_.
 
 
 
@@ -296,12 +297,12 @@ bg_model_ind <- baggr(df_ind, model = "logit", effect = "logarithm of odds ratio
 If we denote binary outcome as $y$, treatment as $z$ (both indexed over individual units by $i$), under partial pooling the logistic regression model assumes that
 
 $$
-y_i \sim \text{Bernoulli}(\text{logit}^{-1}[\mu_{\text{group}(i)} + \tau_{\text{group}(i)}z_i])
+y_i \sim \text{Bernoulli}(\text{logit}^{-1}[\theta_0_{\text{group}(i)} + \theta_{\text{group}(i)}z_i])
 $$
 
-where $\mu_k$'s and $\tau_k$'s are parameters to estimate. The former is a group-specific mean probability of event in untreated units. We are primarily interested in the latter, the group-specific treatment effects.
+where $\theta_{0k}$'s and $\theta_k$'s are parameters to estimate. The former is a group-specific mean probability of event in untreated units. We are primarily interested in the latter, the group-specific treatment effects.
 
-Under this formulation, odds ratio of event between treatment and non-treatment are given by $\tau_k$.  This means, the modelling assumption is the same as in the model of summary data we saw above. Moreover, _baggr_'s default prior for $\tau_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One difference is that parameter $\mu$ is estimated. However, unless dealing with extreme values of $\mu$, i.e. with rare or common events (which we discuss below), this should not impact the modelled result.
+Under this formulation, odds ratio of event between treatment and non-treatment are given by $\theta_k$.  This means, the modelling assumption is the same as in the model of summary data we saw above. Moreover, _baggr_'s default prior for $\theta_k$ is set in the same way for summary and individual-level data (you can see it as `bg_model_ind$formatted_prior`). One difference is that parameter $\theta_0$ is estimated. However, unless dealing with extreme values of $\theta_0$, i.e. with rare or common events (which we discuss below), this should not impact the modelled result.
 
 Therefore, the result we get from the two models will be close (albeit with some numerical variation):
 
@@ -334,7 +335,7 @@ prepare_ma(df_ind, effect = "logOR")
 prepare_ma(df_ind, effect = "logRR")
 ```
 
-In both cases the effect (OR or RR) and its SE were renamed to `tau` and `se`, so that the resulting data frame can be used directly as input to `baggr()`.
+In both cases the effect (OR or RR) and its SE were renamed to `yi` and `sei`, so that the resulting data frame can be used directly as input to `baggr()`.
 
 For already summarised data, you can use the same function to move between different effect measures. For example you can take OR measures `a <- prepare_ma(df_ind, effect = "logOR")` and convert them to RR by using `prepare_ma(a, effect = "logRR")`.
 

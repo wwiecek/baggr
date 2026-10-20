@@ -4,7 +4,7 @@
 vitamin_a <- read.csv(
   "data-raw/vitamin_a_imdad2022.csv",
   header = FALSE,
-  col.names = c("group", "tau", "se"),
+  col.names = c("group", "yi", "sei"),
   strip.white = TRUE
 )
 
@@ -13,10 +13,10 @@ row.names(vitamin_a) <- NULL
 
 stopifnot(
   nrow(vitamin_a) == 18,
-  all(c("group", "tau", "se") %in% names(vitamin_a)),
-  all(is.finite(vitamin_a$tau)),
-  all(is.finite(vitamin_a$se)),
-  all(vitamin_a$se > 0)
+  all(c("group", "yi", "sei") %in% names(vitamin_a)),
+  all(is.finite(vitamin_a$yi)),
+  all(is.finite(vitamin_a$sei)),
+  all(vitamin_a$sei > 0)
 )
 
 save(vitamin_a, file = "data/vitamin_a.rda", compress = "bzip2")

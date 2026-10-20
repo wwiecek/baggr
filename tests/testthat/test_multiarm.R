@@ -46,8 +46,8 @@ test_that("multi-arm outputs are correctly formed for rubin_full", {
   expect_equal(dim(ge), c(10, 6, 2))
 
   te <- treatment_effect(bg_p, summary= TRUE)
-  expect_equal(dim(te$tau), c(1,6,2))
-  expect_equal(dim(te$sigma_tau), c(1,6,2))
+  expect_equal(dim(te$theta), c(1,6,2))
+  expect_equal(dim(te$sigma), c(1,6,2))
 
   pm <- pooling(bg_p)
   expect_true(is.array(pm))
@@ -91,8 +91,8 @@ test_that("logit multi-arm model keeps core outputs and drops eta_cluster draws"
   expect_equal(dim(ge), c(10, 6, 2))
 
   te <- treatment_effect(bg_logit, summary= TRUE)
-  expect_equal(dim(te$tau), c(1,6,2))
-  expect_equal(dim(te$sigma_tau), c(1,6,2))
+  expect_equal(dim(te$theta), c(1,6,2))
+  expect_equal(dim(te$sigma), c(1,6,2))
 
   pm <- pooling(bg_logit)
   expect_true(is.array(pm))

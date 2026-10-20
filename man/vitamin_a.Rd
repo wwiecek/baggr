@@ -8,8 +8,8 @@
 A data frame with 18 rows and 3 columns:
 \describe{
 \item{group}{Study label.}
-\item{tau}{Estimated log risk ratio for all-cause child mortality.}
-\item{se}{Standard error of the estimated log risk ratio.}
+\item{yi}{Estimated log risk ratio for all-cause child mortality.}
+\item{sei}{Standard error of the estimated log risk ratio.}
 }
 }
 \usage{
@@ -21,7 +21,7 @@ supplementation and all-cause child mortality in children aged six months to
 five years. Effects are log risk ratios.
 }
 \details{
-The source CSV contains one row for Lin 2008 with \code{tau = 0} and \code{se = 0}.
+The source CSV contains one row for Lin 2008 with a zero effect estimate and zero standard error.
 That row is excluded here because the object is intended to be used directly
 with \code{\link[=baggr]{baggr()}} and a zero standard error is not a valid summary-data input.
 }

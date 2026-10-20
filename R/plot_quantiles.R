@@ -34,7 +34,7 @@ plot_quantiles <- function(fit, ncol, hline = TRUE) {
 
   # Group-specific treatment effect
   ste <- group_effects(fit, summary = TRUE)
-  ate <- treatment_effect(fit, summary = TRUE)$tau
+  ate <- treatment_effect(fit, summary = TRUE)$theta
   df <- df_ate <- data.frame()
   for(i in seq_along(fit$quantiles)) {
     df2 <- as.data.frame(effect_slice(ste, i)[,c("lower", "mean", "upper"),

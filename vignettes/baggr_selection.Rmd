@@ -1,7 +1,7 @@
 ---
 title: "Publication bias and selection models with baggr"
 author: "Witold Wiecek"
-date: "2026-06-14"
+date: "2026-10-15"
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -16,7 +16,8 @@ bibliography: baggr.bib
 
 This vignette shows a short worked example of assessing and adjusting for publication
 bias in a meta-analysis using _baggr_. It assumes that users are already familiar with
-publication bias, funnel plots, and selection models.
+publication bias, funnel plots, and selection models. The examples use the
+normal-normal hierarchical (Rubin) model (`model = "rubin"`, alias `"nnhm"`).
 
 # Data
 
@@ -29,14 +30,14 @@ Negative values indicate lower mortality in the vitamin A supplementation arm.
 
 ``` r
 head(vitamin_a)
-#>            group     tau      se
+#>            group      yi     sei
 #> 1   Agarwal 1995  0.1972 0.31210
 #> 2   Barreto 1994  0.0000 0.99840
 #> 3      Benn 1997 -0.7763 0.59370
 #> 4 Chowdhury 2002 -1.9419 0.75420
 #> 5  Daulaire 1992 -0.3011 0.14990
 #> 6     DEVTA 2013 -0.0408 0.03726
-summary(exp(vitamin_a$tau))
+summary(exp(vitamin_a$yi))
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 #>  0.1434  0.4600  0.7175  0.6885  0.9525  1.2180
 ```
@@ -58,13 +59,13 @@ bg_va <- baggr(vitamin_a, effect = "log risk ratio")
 
 ``` r
 bg_va
-#> Model type: Rubin model with aggregate data
+#> Model type: Normal-normal hierarchical (Rubin) model with aggregate data
 #> Pooling of effects: partial
 #>
 #> Aggregate treatment effect (on log risk ratio), 18 groups:
-#> Hypermean (tau) =  -0.29 with 95% interval -0.49 to -0.12
-#> Hyper-SD (sigma_tau) = 0.25 with 95% interval 0.11 to 0.48
-#> Posterior predictive effect = -0.29 with 95% interval -0.84 to 0.25
+#> Hypermean (theta) =  -0.29 with 95% interval -0.49 to -0.12
+#> Hyper-SD (sigma) = 0.25 with 95% interval 0.11 to 0.48
+#> Posterior predictive effect = -0.30 with 95% interval -0.86 to 0.26
 #> Total pooling (1 - I^2) = 0.331 with 95% interval 0.094 to 0.688
 #>
 #> Group-specific treatment effects:
@@ -109,12 +110,14 @@ more of a funnel shape.
 
 # Selection adjustment
 
-Selection models make the publication process explicit. The argument in
-@hedges_modeling_1992 is that publication selection changes the distribution of
-estimates we get to observe, not just our interpretation of a funnel plot.
-@andrews_identification_2019 frame the same problem in terms of relative
-publication probabilities for different regions of the test statistic. In
-_baggr_, if $y_k$ is the reported estimate and $s_k$ is its standard error, then
+Selection models make the publication process explicit. For the canonical treatment,
+see @hedges_modeling_1992 and @andrews_identification_2019 for framing of the same
+problem in econometric literature.
+In _baggr_, a selection model like in the above publications is implemented within
+the Bayesian posterior calculation, using custom Stan functions.
+
+Briefly, but more concretely:
+if $y_k$ is the reported estimate and $s_k$ is its standard error, then
 $z_k = y_k / s_k$, and the probability a study is observed can vary by the
 interval containing $z_k$. The shorthand `selection = 1.96` fits a symmetric
 two-sided model, splitting studies at the usual 5 percent normal threshold,
@@ -128,11 +131,9 @@ $z_k$. It is then divided by the model-implied probability that a result would
 be observed at all, summing over all z-intervals and their weights.
 
 For the partial-pooling Rubin model this normalising term is calculated using
-the marginal distribution of the observed estimate,
-$y_k \sim N(\mu + x_k^\top\beta, \tau^2 + s_k^2)$ when covariates are present,
-not by conditioning on the latent study effect. This matters because selection
-is a statement about which estimates enter the observed literature, not only
-about sampling variation around a fixed latent effect.
+the _marginal_ distribution of the observed estimate,
+$y_i \sim N(\theta + x_i^\top\beta, \sigma_\theta^2 + s_i^2)$ when covariates are present.
+
 
 
 
@@ -145,42 +146,41 @@ bg_va_sel <- baggr(vitamin_a, selection = 1.96,
 
 ``` r
 bg_va_sel
-#> Model type: Rubin model with aggregate data and with selection on |z|
+#> Model type: Normal-normal hierarchical (Rubin) model with aggregate data and with selection on |z|
 #> Pooling of effects: partial
 #>
 #> Aggregate treatment effect (on log risk ratio), 18 groups:
-#> Hypermean (tau) =  -0.189 with 95% interval -0.419 to -0.056
-#> Hyper-SD (sigma_tau) = 0.155 with 95% interval 0.017 to 0.392
-#> Posterior predictive effect = -0.18 with 95% interval -0.69 to 0.16
-#> Total pooling (1 - I^2) = 0.57 with 95% interval 0.14 to 0.99
+#> Hypermean (theta) =  -0.185 with 95% interval -0.404 to -0.057
+#> Hyper-SD (sigma) = 0.15 with 95% interval 0.02 to 0.37
+#> Posterior predictive effect = -0.19 with 95% interval -0.67 to 0.16
+#> Total pooling (1 - I^2) = 0.56 with 95% interval 0.15 to 0.98
 #>
 #> Publication probability relative to |z| in (1.96, Inf):
-#> * |z| in (0, 1.96] = 0.39 with 95% interval 0.076 to 1.3
+#> * |z| in (0, 1.96] = 0.4 with 95% interval 0.072 to 1.3
 #>
 #> Group-specific treatment effects:
-#>                        mean median    sd  2.5%   97.5% pooling
-#> Agarwal 1995         -0.106 -0.107 0.153 -0.42  0.2229    0.80
-#> Barreto 1994         -0.184 -0.160 0.198 -0.62  0.1570    0.97
-#> Benn 1997            -0.230 -0.194 0.203 -0.71  0.0878    0.92
-#> Chowdhury 2002       -0.280 -0.223 0.243 -0.91  0.0390    0.95
-#> Daulaire 1992        -0.220 -0.209 0.115 -0.47 -0.0301    0.55
-#> DEVTA 2013           -0.052 -0.053 0.038 -0.12  0.0230    0.14
-#> Dibley 1996          -0.198 -0.173 0.200 -0.74  0.1104    0.99
-#> Donnen 1998          -0.209 -0.182 0.185 -0.64  0.1005    0.89
-#> Fisker 2014          -0.131 -0.128 0.117 -0.36  0.1047    0.61
-#> Herrera 1992         -0.051 -0.058 0.102 -0.24  0.1608    0.50
-#> Pant 1996            -0.289 -0.262 0.174 -0.69 -0.0273    0.69
-#> Rahmathullah 1990    -0.359 -0.331 0.206 -0.81 -0.0591    0.69
-#> Ross 1993 (health)   -0.302 -0.251 0.233 -0.95  0.0042    0.89
-#> Ross 1993 (survival) -0.189 -0.188 0.089 -0.36 -0.0256    0.38
-#> Sommer 1986          -0.230 -0.219 0.127 -0.50 -0.0291    0.56
-#> Venkatrao 1996       -0.239 -0.189 0.208 -0.75  0.0680    0.94
-#> Vijayaraghavan 1990  -0.135 -0.131 0.147 -0.44  0.1624    0.78
-#> West 1991            -0.268 -0.265 0.112 -0.50 -0.0768    0.45
+#>                        mean median    sd  2.5%  97.5% pooling
+#> Agarwal 1995         -0.105 -0.106 0.153 -0.40  0.224    0.80
+#> Barreto 1994         -0.178 -0.162 0.186 -0.59  0.161    0.97
+#> Benn 1997            -0.233 -0.197 0.211 -0.76  0.100    0.93
+#> Chowdhury 2002       -0.271 -0.220 0.232 -0.92  0.031    0.95
+#> Daulaire 1992        -0.224 -0.210 0.121 -0.48 -0.034    0.55
+#> DEVTA 2013           -0.053 -0.053 0.038 -0.12  0.026    0.14
+#> Dibley 1996          -0.194 -0.173 0.193 -0.70  0.136    0.99
+#> Donnen 1998          -0.216 -0.186 0.181 -0.63  0.066    0.90
+#> Fisker 2014          -0.127 -0.126 0.119 -0.36  0.110    0.61
+#> Herrera 1992         -0.054 -0.057 0.102 -0.25  0.164    0.50
+#> Pant 1996            -0.292 -0.276 0.174 -0.67 -0.029    0.69
+#> Rahmathullah 1990    -0.361 -0.346 0.200 -0.79 -0.048    0.69
+#> Ross 1993 (health)   -0.304 -0.254 0.223 -0.87 -0.011    0.89
+#> Ross 1993 (survival) -0.190 -0.184 0.089 -0.37 -0.032    0.37
+#> Sommer 1986          -0.229 -0.223 0.123 -0.48 -0.025    0.56
+#> Venkatrao 1996       -0.232 -0.190 0.206 -0.70  0.088    0.94
+#> Vijayaraghavan 1990  -0.128 -0.125 0.145 -0.41  0.180    0.78
+#> West 1991            -0.268 -0.265 0.111 -0.50 -0.075    0.45
 selection(bg_va_sel)
-#>
 #>           mean    median        sd      lower    upper width
-#> [1,] 0.3949767 0.2857972 0.3230395 0.07557633 1.250674  0.95
+#> [1,] 0.4017369 0.2927418 0.3401733 0.07202011 1.299228  0.95
 #> attr(,"effect")
 #> [1] "selection"
 ```
@@ -194,6 +194,9 @@ More thresholds can be used. For example, the following model separates
 two-sided p-values below 10 percent, between 10 and 5 percent, between 5 and
 1 percent, and beyond 1 percent.
 
+However, please note that with only a modest number of studies, selection models can be weakly
+identified. Choice of three cut-off points is done for demonstration only.
+
 
 
 
@@ -205,11 +208,10 @@ bg_va_sel_multi <- baggr(vitamin_a, selection = c(1.64, 1.96, 2.58),
 
 ``` r
 selection(bg_va_sel_multi)
-#>
-#>           mean    median        sd      lower     upper width
-#> [1,] 3.8077342 2.2570909 5.5006254 0.26542641 16.962890  0.95
-#> [2,] 0.6323066 0.2983701 0.9960486 0.01009151  3.430887  0.95
-#> [3,] 7.0774430 4.8827424 7.1107018 0.78571162 25.957450  0.95
+#>           mean   median       sd      lower     upper width
+#> [1,] 3.2282171 2.032277 4.226609 0.21190139 12.122012  0.95
+#> [2,] 0.6563213 0.267422 1.170622 0.01078304  4.023866  0.95
+#> [3,] 6.4758467 4.666594 6.261052 0.69779743 23.465852  0.95
 #> attr(,"effect")
 #> [1] "selection"
 ```
@@ -236,18 +238,13 @@ bg_va_sel_one_sided <- baggr(vitamin_a, selection = selection_one_sided,
 
 ``` r
 selection(bg_va_sel_one_sided)
-#>
-#>           mean    median        sd     lower     upper width
-#> [1,] 18.687427 4.6557837 73.989824 0.3019088 110.73318  0.95
-#> [2,]  2.247875 0.6134501  4.920052 0.0219042  14.39896  0.95
+#>           mean    median       sd      lower    upper width
+#> [1,] 15.915402 4.8501906 37.63726 0.33531826 90.54151  0.95
+#> [2,]  2.395249 0.6730006  6.57713 0.01306289 13.50824  0.95
 #> attr(,"effect")
 #> [1] "selection"
 ```
 
-With only a modest number of studies, selection models can be weakly
-identified. In this example, the adjustment should be read as a sensitivity
-analysis for possible preferential publication of more statistically significant
-or favourable small-study estimates, not as definitive evidence about the exact
-publication process.
+
 
 # References

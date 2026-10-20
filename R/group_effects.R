@@ -61,7 +61,7 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, prob = .95,
     stop("There are no group effects in prior predictive distribution baggr objects.")
 
   if(bg$pooling == "full"){
-    tau <- treatment_effect(bg)[["tau"]]
+    tau <- treatment_effect(bg)[["theta"]]
     k <- attr(bg$inputs, "n_groups")
     m <- replicate(k, tau)
     if(length(dim(m)) == 3)
@@ -69,12 +69,12 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, prob = .95,
 
   } else {
     # choose correct columns for the given models:
-    if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
+    if(bg$model %in% c("rubin", "vivs", "vivs_full", "logit", "rubin_full")) {
       #replace by extract:
       # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
       # drop mu if model has mu (baseline/control value)
-      if(bg$model %in% c("mutau", "mutau_full"))
+      if(bg$model %in% c("vivs", "vivs_full"))
         m <- array(m[,1,2,,drop = FALSE], c(dim(m)[1], dim(m)[4], 1))
       # Some full-data models keep a singleton effects dimension.
       # Reduce to 2D so fixed-effect draws can be added by group.

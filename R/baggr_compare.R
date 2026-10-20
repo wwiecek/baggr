@@ -213,10 +213,10 @@ baggr_compare <- function(...,
   # Return treatment effects, hyperSDs, predicted effects
   mean_trt_effects <- comparison_summary(lapply(models, function(x)
     treatment_effect(x, transform = transform, prob = prob,
-                     summary = TRUE, message = FALSE)$tau), names(models), effect_names)
+                     summary = TRUE, message = FALSE)$theta), names(models), effect_names)
   sd_trt_effects <- comparison_summary(lapply(models, function(x)
     treatment_effect(x, transform = transform, prob = prob,
-                     summary = TRUE, message = FALSE)$sigma_tau), names(models), effect_names)
+                     summary = TRUE, message = FALSE)$sigma), names(models), effect_names)
   posteriorpd_trt <- comparison_summary(lapply(models, function(x)
     effect_draw(x, transform = transform, prob = prob, summary = TRUE)),
     names(models), effect_names)
@@ -376,7 +376,7 @@ plot.baggr_compare <- function(x,
         if(cmodel$pooling != "none" && hyper) {
           hyper_effects <- as.data.frame(effect_slice(
             treatment_effect(cmodel, transform = transform, prob = prob,
-                             summary = TRUE, message = FALSE)$tau, i))
+                             summary = TRUE, message = FALSE)$theta, i))
           hyper_effects$group <- "Pooled Estimate"
           if(compare == "hyperpars")
             m <- hyper_effects

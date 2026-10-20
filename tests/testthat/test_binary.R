@@ -50,7 +50,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 150) #right dimension means right iter
-  expect_error(baggr(df_binary, rubbish = 41))
+  expect_error(suppressWarnings(baggr(df_binary, rubbish = 41)))
 })
 
 # Run without summarising data first
@@ -141,16 +141,16 @@ test_that("extra pooling stats work", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 6)
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$theta, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma, 6)
 
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau, hypermean(bg5_p,message=FALSE))
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, hypersd(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$theta, hypermean(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma, hypersd(bg5_p,message=FALSE))
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(150, 5 , 1)))
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
 })
 
 
@@ -265,8 +265,8 @@ test_that("logit test_data errors if test groups are absent from training", {
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_binary))
   expect_is(treatment_effect(bg5_p), "list")
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
+  expect_is(treatment_effect(bg5_p)$theta, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 
   # Drawing values of tau:
@@ -350,7 +350,7 @@ test_that("baggr_compare basic cases work with logit models", {
 
 test_that("loocv", {
   # Rubbish model
-  # expect_error(loocv(schools, model = "mutau"))
+  # expect_error(loocv(schools, model = "vivs"))
   # Can't do pooling none
   expect_error(loocv(df_binary, pooling = "none"))
 

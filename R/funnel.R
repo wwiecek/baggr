@@ -16,8 +16,8 @@
 #'
 #' For models with group-level covariates, colouring points by a covariate can
 #' help inspect whether asymmetry is partly explained by meta-regression effects.
-#' In Rubin summary-data meta-regression models (`model = "rubin"` with
-#' `covariates`), `show = "posterior"` plots posterior study effects from
+#' In normal-normal hierarchical (Rubin) meta-regression models
+#' (`model = "rubin"` with `covariates`), `show = "posterior"` plots posterior study effects from
 #' [group_effects()], which include the fitted covariate contribution. By
 #' contrast, `show = "inputs"` plots the original study-level estimates.
 #'
@@ -39,18 +39,18 @@ funnel_plot <- function(bg,
     stop("Funnel plot currently defined for 1-dimensional effects.")
   show <- match.arg(show)
 
-  # raw study-level data (tau/se/group)
+  # raw study-level data (yi/sei/group)
   if(bg$model %in% c("rubin_full", "logit")) {
     studies <- bg$summary_data
   } else {
     studies <- bg$data
   }
-  if(bg$model %in% c("rubin_full", "mutau"))
-    studies$se <- studies$se.tau
+  if(!all(c("yi", "sei") %in% names(studies)))
+    studies <- normalise_summary_columns(studies, silent = TRUE)$data
   if(is.null(studies$group))
     studies$group <- group_names(bg)
 
-  raw_df <- studies[, c("group", "tau", "se")]
+  raw_df <- studies[, c("group", "yi", "sei")]
   names(raw_df) <- c("group", "effect", "se")
 
   if(!is.null(covariate)) {

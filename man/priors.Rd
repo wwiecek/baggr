@@ -70,7 +70,7 @@ what the different \code{prior_} arguments do):
 \item \code{prior_hypermean}, \code{prior_control}, and \code{prior_beta}
 will take \code{"normal"}, \code{"uniform"}, \code{"lognormal"}, and
 \code{"cauchy"} input for scalars.
-For a vector hypermean (see \code{"mutau"} model), it will take any of these
+For a vector hypermean (see \code{"vivs"} model), it will take any of these
 arguments and apply them independently to
 each component of the vector, or it can also take a \code{"multinormal"} argument
 (see the example below).
@@ -92,7 +92,7 @@ baggr(schools, model = "rubin", pooling = "partial",
 custom_priors <- list(hypercor = lkj(1), hypersd = normal(0,10),
                       hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
 microcredit_summary_data <- prepare_ma(microcredit, outcome = "consumption")
-baggr(microcredit_summary_data, model = "mutau",
+baggr(microcredit_summary_data, model = "vivs",
       pooling = "partial", prior = custom_priors)
 }
 }

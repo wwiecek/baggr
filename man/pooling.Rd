@@ -88,24 +88,24 @@ This is the calculation done by \code{pooling()} if \code{type = "groups"} (defa
 In a partial pooling model (see \code{\link[=baggr]{baggr()}} and above), group \emph{k} (e.g. study) has
 standard error of treatment effect estimate, \eqn{se_k}.
 The treatment effect (across \emph{k} groups) is variable across groups, with
-hyper-SD parameter \eqn{\sigma_(\tau)}.
+hyper-SD parameter \eqn{\sigma_(\theta)}.
 
 The quantity of interest is ratio of variation in treatment effects to the
 total variation.
 By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{P}.
 
-\deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
+\deqn{p = 1 - (\sigma_(\theta)^2 / (\sigma_(\theta)^2 + se_k^2))}
 \itemize{
 \item If \eqn{p < 0.5}, the variation across studies is higher than variation within studies.
 \item Values close to 1 indicate nearly full pooling. Variation across studies dominates.
 \item Values close to 0 indicate no pooling. Variation within studies dominates.
 }
 
-Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
+Note that, since \eqn{\sigma_{\theta}^2} is a Bayesian parameter (rather than a
 single fixed value),
 \emph{P} is also a parameter. It is typical for \emph{P} to have very high dispersion,
 as in many cases we
-cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain samples from the distribution
+cannot precisely estimate \eqn{\sigma_{\theta}}. To obtain samples from the distribution
 of \emph{P} (rather than summarised values), set \code{summary=FALSE}.
 }
 

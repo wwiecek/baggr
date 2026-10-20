@@ -36,7 +36,7 @@
 #' * `prior_hypermean`, `prior_control`, and `prior_beta`
 #'    will take `"normal"`, `"uniform"`, `"lognormal"`, and
 #'    `"cauchy"` input for scalars.
-#'    For a vector hypermean (see `"mutau"` model), it will take any of these
+#'    For a vector hypermean (see `"vivs"` model), it will take any of these
 #'    arguments and apply them independently to
 #'    each component of the vector, or it can also take a `"multinormal"` argument
 #'    (see the example below).
@@ -65,7 +65,7 @@
 #' custom_priors <- list(hypercor = lkj(1), hypersd = normal(0,10),
 #'                       hypermean = multinormal(c(0,0),matrix(c(10,3,3,10),2,2)))
 #' microcredit_summary_data <- prepare_ma(microcredit, outcome = "consumption")
-#' baggr(microcredit_summary_data, model = "mutau",
+#' baggr(microcredit_summary_data, model = "vivs",
 #'       pooling = "partial", prior = custom_priors)
 #' }
 
@@ -99,7 +99,7 @@ print_dist <- function(dist){
 #' @param name prior name, like `hypermean`, `hypersd`, `hypercor`
 #' @param prior one of prior distributions allowed by baggr like [normal]
 #' @param p number of repeats of the prior, i.e. when P i.i.d. priors are set for
-#'                  P dimensional parameter as in "mu & tau" type of model
+#'                  P dimensional parameter as in the joint baseline and treatment-effect model
 #' @param to_array for some models where `p` may be larger than 1, Stan will expect
 #'                 an array instead of a numeric (even when p == 1), so for compatibiliy
 #'                 we return `fam` as an array type
