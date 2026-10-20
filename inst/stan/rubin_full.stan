@@ -60,10 +60,10 @@ transformed data {
 }
 parameters {
   // SHARED ACROSS FULL MODELS:
-  vector[pooling_type != 0 ? P : 0] mu;
-  vector<lower=0>[pooling_type == 1 ? P : 0] tau;
-  array[pooling_baseline == 1] real mu_baseline;
-  array[pooling_baseline == 1] real<lower=0> tau_baseline;
+  vector[pooling_type != 0 ? P : 0] theta;
+  vector<lower=0>[pooling_type == 1 ? P : 0] sigma;
+  array[pooling_baseline == 1] real theta0;
+  array[pooling_baseline == 1] real<lower=0> sigma_theta0;
   vector[K_pooled * P] eta;
   vector[K_bsl_pooled] eta_baseline;
   vector[Nc] beta;
@@ -75,21 +75,21 @@ parameters {
 }
 transformed parameters {
   matrix[K_pooled,P] theta_k;
-  vector[K] baseline_k;
+  vector[K] theta0_k;
   matrix[K_pooled, P] eta_matrix;
   eta_matrix = to_matrix(eta, K_pooled, P);
 
   if(pooling_type == 0)
     theta_k = eta_matrix;
   else if(pooling_type == 1)
-    theta_k = rep_matrix(mu', K_pooled) + eta_matrix .* rep_matrix(tau', K_pooled);
+    theta_k = rep_matrix(theta', K_pooled) + eta_matrix .* rep_matrix(sigma', K_pooled);
 
   if(pooling_baseline == 0)
-    baseline_k = eta_baseline;
+    theta0_k = eta_baseline;
   else if(pooling_baseline == 1)
-    baseline_k = rep_vector(mu_baseline[1], K) + tau_baseline[1]*eta_baseline;
+    theta0_k = rep_vector(theta0[1], K) + sigma_theta0[1]*eta_baseline;
   else
-    baseline_k = rep_vector(0.0, K);
+    theta0_k = rep_vector(0.0, K);
 }
 model {
   //fixed effects:
@@ -116,8 +116,8 @@ model {
     eta_baseline ~ vecprior(prior_control_fam, prior_control_val);
   else if(pooling_baseline == 1){
     eta_baseline ~ normal(0,1);
-    mu_baseline[1]  ~ realprior(prior_control_fam, prior_control_val);
-    tau_baseline[1] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
+    theta0[1]  ~ realprior(prior_control_fam, prior_control_val);
+    sigma_theta0[1] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
   }
 
   //priors for trt effect and normal likelihood
@@ -125,18 +125,18 @@ model {
     //each column of eta_matrix should use a different "P-specific" distribution
     for (p in 1:P)
       eta_matrix[:, p] ~ vecprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
-    y ~ normal(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re, sigma_y_k[site]);
+    y ~ normal(theta0_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re, sigma_y_k[site]);
   } else if(pooling_type == 1) {
     eta ~ normal(0,1);
     for(p in 1:P){
-      tau[p] ~ realprior(prior_hypersd_fam[p], prior_hypersd_val[p]);
-      mu[p]  ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
+      sigma[p] ~ realprior(prior_hypersd_fam[p], prior_hypersd_val[p]);
+      theta[p]  ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
     }
-    y   ~ normal(baseline_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re, sigma_y_k[site]);
+    y   ~ normal(theta0_k[site] + rows_dot_product(theta_k[site,], treatment) + fe + re, sigma_y_k[site]);
   } else {
     for(p in 1:P)
-      mu[p] ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
-    y ~ normal(baseline_k[site] + treatment * mu + fe + re, sigma_y_k[site]);
+      theta[p] ~ realprior(prior_hypermean_fam[p], prior_hypermean_val[p]);
+    y ~ normal(theta0_k[site] + treatment * theta + fe + re, sigma_y_k[site]);
   }
   // (normal model only:) error term priors
   sigma_y_k ~ vecprior(prior_sigma_fam, prior_sigma_val);
@@ -148,23 +148,23 @@ generated quantities {
   if (pooling_type != 0) {
 
     for (i in 1:N_test) {
-      real mu_pred;
+      real y_mean_pred;
       real sigma_pred;
 
       // Compute the predicted mean
-      mu_pred = baseline_k[test_site[i]]
-                + dot_product(test_treatment[i,], mu)
+      y_mean_pred = theta0_k[test_site[i]]
+                + dot_product(test_treatment[i,], theta)
                 + (Nc > 0 ? dot_product(X_test[i,], beta) : 0.0);
 
       // Compute the predictive SD (test_sigma_y_i is on outcome scale, not SE scale)
       if (pooling_type == 1) {
-        sigma_pred = sqrt(dot_product(test_treatment[i,], tau .* tau) + test_sigma_y_i[i]^2);
+        sigma_pred = sqrt(dot_product(test_treatment[i,], sigma .* sigma) + test_sigma_y_i[i]^2);
       } else if (pooling_type == 2) {
         sigma_pred = test_sigma_y_i[i];
       }
 
       // Accumulate log predictive density
-      logpd[1] += normal_lpdf(test_y[i] | mu_pred, sigma_pred);
+      logpd[1] += normal_lpdf(test_y[i] | y_mean_pred, sigma_pred);
     }
   }
 }

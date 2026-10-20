@@ -117,7 +117,7 @@ convert_inputs <- function(data,
   if(!is.null(selection) && model != "rubin")
     stop("Selection models are currently available only for model = 'rubin'.")
 
-  # Convert mutau data to Rubin model data if requested
+  # Convert vivs data to Rubin model data if requested
   if(model == "rubin" && available_data == "pool_wide"){
     available_data <- "pool_noctrl_narrow"
   }
@@ -196,7 +196,7 @@ convert_inputs <- function(data,
         cluster = cluster_numeric,
         Ncluster = if(!is.null(cluster)) max(cluster_numeric) else 0
       )
-      # Developing this in stages: rubin, then logit, then mutau
+      # Developing this in stages: rubin, then logit, then vivs
       if(model %in% c("logit", "rubin_full")){
         # Use typical contrast coding, but drop the matrix
         trt_matrix <- model.matrix(as.formula(paste0("~ ", treatment)), data = data)[,-1, drop = FALSE]
@@ -305,21 +305,21 @@ convert_inputs <- function(data,
     check_columns_numeric(data[,c("yi", "sei")])
     out <- list(
       K = nrow(data),
-      theta_hat_k = data[["yi"]],
-      se_theta_k = data[["sei"]]
+      yi = data[["yi"]],
+      sei = data[["sei"]]
     )
     if(is.null(test_data)){
       out$K_test <- 0
-      out$test_theta_hat_k <- array(0, dim = 0)
-      out$test_se_theta_k <- array(0, dim = 0)
+      out$test_yi <- array(0, dim = 0)
+      out$test_sei <- array(0, dim = 0)
     } else {
       if(is.null(test_data[["yi"]]) ||
          is.null(test_data[["sei"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
       # remember that for 1-dim cases we need to pass array()
-      out$test_theta_hat_k <- array(test_data[["yi"]], dim = c(nrow(test_data)))
-      out$test_se_theta_k <- array(test_data[["sei"]], dim = c(nrow(test_data)))
+      out$test_yi <- array(test_data[["yi"]], dim = c(nrow(test_data)))
+      out$test_sei <- array(test_data[["sei"]], dim = c(nrow(test_data)))
     }
   }
 
@@ -337,13 +337,13 @@ convert_inputs <- function(data,
       P = 2, #fixed for this case
       # Remember, first row is baseline, second row is treatment effect
       # (Has to be consistent against ordering of prior values.)
-      theta_hat_k = matrix(c(data[["y0i"]], data[["yi"]]), 2, nr, byrow = TRUE),
-      se_theta_k = matrix(c(data[["se0i"]], data[["sei"]]), 2, nr, byrow = TRUE)
+      yi = matrix(c(data[["y0i"]], data[["yi"]]), 2, nr, byrow = TRUE),
+      sei = matrix(c(data[["se0i"]], data[["sei"]]), 2, nr, byrow = TRUE)
     )
     if(is.null(test_data)){
       out$K_test <- as.integer(0)
-      out$test_theta_hat_k <- array(0, dim = c(2,0))
-      out$test_se_theta_k <- array(0, dim = c(2,0))
+      out$test_yi <- array(0, dim = c(2,0))
+      out$test_sei <- array(0, dim = c(2,0))
     } else {
       if(is.null(test_data[["y0i"]]) ||
          is.null(test_data[["yi"]]) ||
@@ -351,9 +351,9 @@ convert_inputs <- function(data,
          is.null(test_data[["sei"]]))
         stop("Test data must be of the same format as input data")
       out$K_test <- nrow(test_data)
-      out$test_theta_hat_k <- matrix(c(test_data[["y0i"]], test_data[["yi"]]),
+      out$test_yi <- matrix(c(test_data[["y0i"]], test_data[["yi"]]),
                                      2, nrow(test_data), byrow = TRUE)
-      out$test_se_theta_k <- matrix(c(test_data[["se0i"]], test_data[["sei"]]),
+      out$test_sei <- matrix(c(test_data[["se0i"]], test_data[["sei"]]),
                                     2, nrow(test_data), byrow = TRUE)
     }
   }
@@ -450,7 +450,7 @@ convert_inputs <- function(data,
   # When using data frames with 1 rows, we need to explicitly define them
   # as arrays before passing from R to Stan. So here I check if any of them
   # are length 1 and change them to arrays
-  numeric_to_array_c <- c("theta_hat_k", "se_theta_k")
+  numeric_to_array_c <- c("yi", "sei")
   for(nm in numeric_to_array_c) {
     if(length(out[[nm]]) == 1)
       out[[nm]] <- array(out[[nm]], dim = 1)

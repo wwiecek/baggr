@@ -1,3 +1,7 @@
+# devel (work in progress)
+
+- Aligned internal Stan parameter, data and model names with current notation (#245).
+
 # baggr 0.9 (autumn 2026)
 
 - New notation for group and treatment effect (and some other) summaries: 

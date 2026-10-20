@@ -230,10 +230,10 @@ test_that("logit test_data uses training group indexing for predictive density",
   )
 
   logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
-  baseline_draws <- rstan::extract(bg$fit, "baseline_k")[[1]][, trial_c_idx]
-  mu_draws <- rstan::extract(bg$fit, "mu")[[1]][, 1]
+  baseline_draws <- rstan::extract(bg$fit, "theta0_k")[[1]][, trial_c_idx]
+  theta_draws <- rstan::extract(bg$fit, "theta")[[1]][, 1]
   expected <- vapply(seq_along(logpd), function(i) {
-    eta <- baseline_draws[i] + mu_draws[i]
+    eta <- baseline_draws[i] + theta_draws[i]
     sum(dbinom(test$outcome, size = 1, prob = plogis(eta), log = TRUE))
   }, numeric(1))
   expect_equal(as.numeric(logpd), expected, tolerance = 1e-6)

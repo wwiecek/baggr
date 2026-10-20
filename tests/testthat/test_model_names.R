@@ -42,6 +42,10 @@ test_that("aliases fit the same model with unchanged posterior draws", {
       fit <- suppressWarnings(baggr(data, model = alias, iter = 100,
         warmup = 50, chains = 1, seed = 1909, refresh = 0,
         silent = TRUE, warn = FALSE))
+      expect_true(all(c("theta", "sigma", "theta_k") %in%
+                        fit$fit@sim$pars_oi))
+      expect_false(any(c("mu", "tau", "hypersd") %in% fit$fit@sim$pars_oi))
+      expect_identical(fit$fit@stanmodel@model_name, model)
       posterior <- treatment_effect(fit, summary = TRUE)
       draws <- rstan::extract(fit$fit, permuted = FALSE)
       if(is.null(reference_draws)) reference_draws <- draws else

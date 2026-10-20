@@ -328,9 +328,9 @@ baggr <- function(data,
   if(!is.null(model) && model == "mutau_sum") {
     message("Experimental: joint baseline and treatment-effect model with sum specification (theta0 + theta)")
     model <- "vivs"
-    cumsum_mutau <- 0
+    cumsum_vivs <- 0
   } else {
-    cumsum_mutau <- 1
+    cumsum_vivs <- 1
   }
 
   model <- canonical_model(model)
@@ -368,7 +368,7 @@ baggr <- function(data,
   # model might've been chosen automatically (if NULL)
   # within convert_inptuts(), otherwise it's unchanged
   model <- attr(stan_data, "model")
-  # data might also change if Rubin model requested but mutau
+  # data might also change if Rubin model requested but vivs
   # type inputs supplied
   data <- attr(stan_data, "data")
   # Lastly, effect changes if binary data were passed
@@ -435,7 +435,7 @@ baggr <- function(data,
     stan_data[["joint_prior_variance"]] <- 1
   }
   if(model == "vivs")
-    stan_data[["cumsum"]] <- cumsum_mutau
+    stan_data[["cumsum"]] <- cumsum_vivs
 
 
 
@@ -480,8 +480,7 @@ baggr <- function(data,
   for(nm in names(formatted_prior))
     stan_data[[nm]] <- formatted_prior[[nm]]
 
-  stan_model <- switch(model, vivs = "mutau", vivs_full = "mutau_full", model)
-  stan_args$object <- stanmodels[[stan_model]]
+  stan_args$object <- stanmodels[[model]]
 
   if(ppd){
     if(pooling == "none")
@@ -578,7 +577,7 @@ remove_data_for_prior_pred <- function(data) {
   scalars_to0 <- c("K", "N", "Nc",
                    # specific to sslab (generalise this)
                    "N_neg", "N_pos")
-  objects_to_remove <- c("theta_hat_k", "se_theta_k",
+  objects_to_remove <- c("yi", "sei",
                          "y", "site",
                          # specific to sslab
                          "treatment_neg", "treatment_pos", "cat",
