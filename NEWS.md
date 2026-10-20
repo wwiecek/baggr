@@ -1,6 +1,7 @@
 # devel (work in progress)
 
 - Aligned internal Stan parameter, data and model names with current notation (#245).
+- Updated Stan declarations and selection functions for current compilers (#245).
 
 # baggr 0.9 (autumn 2026)
 

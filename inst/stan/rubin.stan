@@ -31,7 +31,7 @@ data {
   //selection model
   int<lower=0> M;                   // number of cut-points
   int<lower=0, upper = 1> symmetric; // 1 if symmetric cutoffs, 0 if not
-  int<lower=0, upper = 1> possible_selection[K]; // estimates with 0 are never not published
+  array[K] int<lower=0, upper = 1> possible_selection; // estimates with 0 are never not published
   vector<lower=0>[M] c;             // cut-off values, e.g., (1.96, 2.58), ascending
   // prior for selection weights (on log-scale!)
   int prior_sel_fam;

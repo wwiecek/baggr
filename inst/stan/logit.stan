@@ -25,10 +25,10 @@ data {
   vector[3] prior_control_val;
   vector[3] prior_control_sd_val;
   // effects:
-  int prior_hypermean_fam[P];
-  int prior_hypersd_fam[P];
-  vector[3] prior_hypermean_val[P];
-  vector[3] prior_hypersd_val[P];
+  array[P] int prior_hypermean_fam;
+  array[P] int prior_hypersd_fam;
+  array[P] vector[3] prior_hypermean_val;
+  array[P] vector[3] prior_hypersd_val;
   // coefficients in regression:
   int prior_beta_fam;
   vector[3] prior_beta_val;

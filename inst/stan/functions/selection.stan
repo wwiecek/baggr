@@ -4,13 +4,13 @@
     real pneg;
 
     if (is_inf(b)) {
-      ppos = 1.0 - normal_cdf(a, mu_z, sd_z);
-      pneg = normal_cdf(-a, mu_z, sd_z);
+      ppos = 1.0 - normal_cdf(a | mu_z, sd_z);
+      pneg = normal_cdf(-a | mu_z, sd_z);
     } else {
-      ppos = normal_cdf(b,  mu_z, sd_z) -
-             normal_cdf(a,  mu_z, sd_z);
-      pneg = normal_cdf(-a, mu_z, sd_z) -
-             normal_cdf(-b, mu_z, sd_z);
+      ppos = normal_cdf(b | mu_z, sd_z) -
+             normal_cdf(a | mu_z, sd_z);
+      pneg = normal_cdf(-a | mu_z, sd_z) -
+             normal_cdf(-b | mu_z, sd_z);
     }
 
     return ppos + pneg;
@@ -19,12 +19,12 @@
   // Pr( Z in [a,b) ) for Z ~ Normal(mu, 1); b may be +inf, a may be -inf
   real prob_z_interval_general(real mu_z, real sd_z, real a, real b) {
     if (is_inf(b)) {
-      return 1.0 - normal_cdf(a, mu_z, sd_z);
+      return 1.0 - normal_cdf(a | mu_z, sd_z);
     } else if (is_inf(a)) {
       // avoid NaN gradient from normal_cdf(-Inf, ...) in autodiff
-      return normal_cdf(b, mu_z, sd_z);
+      return normal_cdf(b | mu_z, sd_z);
     } else {
-      return normal_cdf(b, mu_z, sd_z) - normal_cdf(a, mu_z, sd_z);
+      return normal_cdf(b | mu_z, sd_z) - normal_cdf(a | mu_z, sd_z);
     }
   }
 
@@ -47,7 +47,7 @@
 
     real z = y / z_se;
     if (symmetric)
-      z = fabs(z);
+      z = abs(z);
 
     // Determine observed interval j with [a,b) convention.
     j = 1;
@@ -72,7 +72,7 @@
     if (symmetric) {
       p += prob_absz_interval_general(mu_z, sd_z, c[M], positive_infinity());
     } else {
-      p += 1.0 - normal_cdf(c[M], mu_z, sd_z);
+      p += 1.0 - normal_cdf(c[M] | mu_z, sd_z);
     }
 
     return normal_lpdf(y | theta, z_se) + log(w_obs) - log(p);
