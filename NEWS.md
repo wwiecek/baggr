@@ -1,8 +1,3 @@
-# devel (work in progress)
-
-- Aligned internal Stan parameter, data and model names with current notation (#245).
-- Updated Stan declarations and selection functions for current compilers (#245).
-
 # baggr 0.9 (autumn 2026)
 
 - New notation for group and treatment effect (and some other) summaries: 
@@ -21,6 +16,7 @@
 - Summary-data models now prefer `yi`/`sei` for effects and standard errors,
   with `y0i`/`se0i` for baseline means in `vivs`. You can also use `slab`
   instead of `group` in `baggr()` calls. Legacy column names still work
+- Underlying .stan files notation was also updated to reflect
 
 Fixes: 
 
