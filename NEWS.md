@@ -1,27 +1,24 @@
-# devel (work in progress)
-
-- Require RStan and StanHeaders 2.32.0 or newer.
-- Fixed a missing endpoint in the L’Abbé odds-ratio curve.
-- Cleaned vignette output and added a separate CRAN source-package build.
-
 # baggr 0.9 (autumn 2026)
 
-- New notation for group and treatment effect (and some other) summaries: 
+IMPORTANT! New notation to bring it closer to typical meta-analytic names.
+Old naming conventions will still work, unless you're trying to directly 
+manipulate parts of the code.
+
+- For hierarchical parameters: hypermean is theta, hypersd is sigma_theta,
+  instead of old tau, sigma_tau.
+- Renamed the joint baseline/effect models to `vivs` and `vivs_full`
+  (varying-intercept, varying-slope). `mutau` and `bivariate` work as aliases.
+  Added `nnhm` as an alias for `rubin` (the normal-normal hierarchical model).
+- Summary-data models now prefer `yi`/`sei` for effects and standard errors,
+  with `y0i`/`se0i` for baseline means in `vivs`. Legacy column names still work
+- You can also use `slab` instead of `group` in `baggr()` calls. 
+- For group and treatment effect (and some other) summaries: 
   note `lower`, `upper`, `width` columns. You can switch to e.g. 2.5% and 97.5% 
   column name notation via `rename_int = TRUE`. Sorted out some array to matrix
   automatic conversions.
--  Interval arguments are now called `prob`; you can still use `interval` and
+- Interval arguments are now called `prob`; you can still use `interval` and
   `int` as aliases.
-- Using more standard notation for hierarchical parameters: hypermean theta,
-  hypersd sigma_theta. Posterior effect summaries and LOO data frames now use
-  `theta` and `sigma` instead of `tau` and `sigma_tau`.
-- Renamed the joint baseline/effect models to `vivs` and `vivs_full`
-  (varying-intercept, varying-slope). `mutau` and `bivariate` remain aliases,
-  with corresponding `_full` aliases. Added `nnhm` as an alias for `rubin`,
-  the normal-normal hierarchical model.
-- Summary-data models now prefer `yi`/`sei` for effects and standard errors,
-  with `y0i`/`se0i` for baseline means in `vivs`. You can also use `slab`
-  instead of `group` in `baggr()` calls. Legacy column names still work
+
 - Underlying .stan files notation was also updated to reflect
 
 Fixes: 
@@ -29,6 +26,7 @@ Fixes:
 - Fixed interval propagation in printing, forest plots and model comparisons.
   Previously setting to something else than 0.95 was sometimes ignored.
 - Rendering of LOO plots was improved.
+- Compatibility fixes for new R devel releases.
 
 
 # baggr 0.8.2 (June 2026)
