@@ -33,31 +33,28 @@ plot_quantiles <- function(fit, ncol, hline = TRUE) {
     ncol <- round((length(fit$quantiles) + 1)/2)
 
   # Group-specific treatment effect
-  ste <- apply(group_effects(fit), c(2,3),
-               function(x) c(quantile(x, .025), "mean" = mean(x), quantile(x, .975)))
-  dimnames(ste)[[3]] <- fit$quantiles
-  df <- data.frame()
-  for(i in 1:dim(ste)[3]) {
-    df2 <- as.data.frame(t(ste[,,i]))
-    df2$country <- rownames(df2)
+  ste <- group_effects(fit, summary = TRUE)
+  ate <- treatment_effect(fit, summary = TRUE)$theta
+  df <- df_ate <- data.frame()
+  for(i in seq_along(fit$quantiles)) {
+    df2 <- as.data.frame(effect_slice(ste, i)[,c("lower", "mean", "upper"),
+                                               drop = FALSE])
+    df2$group <- rownames(df2)
     rownames(df2) <- NULL
-    df2$quantile <- dimnames(ste)[[3]][i]
+    df2$quantile <- as.character(fit$quantiles[i])
     df <- rbind(df, df2)
+    df_ate <- rbind(df_ate, as.data.frame(effect_slice(ate, i)[,
+      c("lower", "mean", "upper"), drop = FALSE]))
   }
-  colnames(df) <- c("lci", "mean", "uci", "group", "quantile")
 
   # Average treatment effect
-  ate <- apply(treatment_effect(fit)$tau, 2,
-               function(x) c(quantile(x, .025), "mean" = mean(x), quantile(x, .975)))
-  df_ate <- data.frame(t(ate))
-  names(df_ate) <- c("lci", "mean", "uci")
   df_ate$quantile <- as.character(fit$quantiles)
   df_ate$group <- "All countries"
 
-  lci <- uci <- group <- NULL #check fix
+  lower <- upper <- group <- NULL #check fix
 
   gg_groups <-
-    ggplot2::ggplot(df, aes(y = mean, x=quantile, ymin = lci, ymax = uci)) +
+    ggplot2::ggplot(df, aes(y = mean, x=quantile, ymin = lower, ymax = upper)) +
     # theme_bw() +
     {if(hline) geom_hline(yintercept = 0, lty = "dashed")} +
     geom_line(aes(group = group)) +
@@ -69,7 +66,7 @@ plot_quantiles <- function(fit, ncol, hline = TRUE) {
     theme(panel.grid.major.x = element_blank())
 
   gg_trt <-
-    ggplot2::ggplot(df_ate, aes(y = mean, x=quantile, ymin = lci, ymax = uci)) +
+    ggplot2::ggplot(df_ate, aes(y = mean, x=quantile, ymin = lower, ymax = upper)) +
     # theme_bw() +
     {if(hline) geom_hline(yintercept = 0, lty = "dashed")} +
     geom_line(aes(group = group)) +

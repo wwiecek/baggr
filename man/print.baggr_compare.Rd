@@ -4,7 +4,7 @@
 \alias{print.baggr_compare}
 \title{Print method for baggr_compare models}
 \usage{
-\method{print}{baggr_compare}(x, digits, ...)
+\method{print}{baggr_compare}(x, digits = 2, ...)
 }
 \arguments{
 \item{x}{baggr_compare model}

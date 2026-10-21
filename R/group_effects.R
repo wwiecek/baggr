@@ -8,39 +8,44 @@
 #' This is an internal function currently used as a helper for plotting and
 #' printing of results.
 #'
+#' With `summary = TRUE`, summaries are numeric matrices with rows for
+#' the quantities being summarised and columns `mean`, `median`, `sd`,
+#' `lower`, `upper`, `width`, in that order. The bounds form a central
+#' interval; `width` is its requested probability mass, even when estimates
+#' are unavailable. For multiple effects, the result is a rows by statistics
+#' by effects array, with effect names in the third dimension. A single-effect
+#' matrix stores its effect name in the `effect` attribute. Row names are
+#' preserved. Aggregate summaries have one row; predictions conditional on
+#' `newdata` have one row per observation.
+#'
 #' @param bg baggr object
 #' @param summary logical; if `TRUE` returns summary statistics as explained below.
-#' @param interval uncertainty interval width (numeric between 0 and 1), if summarising
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @param transform a transformation to apply to the result, should be an R function;
 #'                  (this is commonly used when calling `group_effects` from other
 #'                  plotting or printing functions)
 #' @param random_only logical; for meta-regression models, should [fixed_effects] be included in the
 #'                    returned group effect?
-#' @param rename_int logical; if `TRUE` then rather than returning `median`, `lci` and `uci`
-#'                   columns they are renamed to e.g. `50%`, `2.5%`, `97.5%`; this only
-#'                   works if `summary=TRUE`
+#' @param rename_int logical; with `summary = TRUE`, rename only `lower`
+#'   and `upper` to endpoint percentages and omit `width`. `median` retains
+#'   its name. Defaults to `FALSE`.
 #' @return Either an array with MCMC samples (if `summary = FALSE`)
 #'         or a summary of these samples (if `summary = TRUE`).
 #'         For arrays the three dimensions are: N samples, N groups and N effects
 #'         (equal to 1 for the basic models).
 #' @examples
 #' fit1 <- baggr(schools)
-#' group_effects(fit1, summary = TRUE, interval = 0.5)
-#' @details If `summary = TRUE`, the returned object contains, for each study
-#' or group, the following 5 values:
-#' the posterior medians, the lower and upper bounds of the
-#' uncertainty intervals using the central posterior credible interval
-#' of width specified in the argument `interval`, the posterior mean, and
-#' the posterior standard deviation.
-#'
+#' group_effects(fit1, summary = TRUE, prob = 0.5)
 #' @seealso [fixed_effects] for effects of covariates on outcome. To extract random effects
 #'          when covariates are present, you can use either [random_effects] or, equivalently,
 #'          `group_effects(random_only=TRUE)`.
 #'
 #' @export
-group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
+group_effects <- function(bg, summary = FALSE, transform = NULL, prob = .95,
                           random_only = FALSE,
-                          rename_int = FALSE) {
+                          rename_int = FALSE, interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   check_if_baggr(bg)
 
   # Grab group labels
@@ -56,25 +61,24 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
     stop("There are no group effects in prior predictive distribution baggr objects.")
 
   if(bg$pooling == "full"){
-    tau <- treatment_effect(bg)[["tau"]]
+    theta <- treatment_effect(bg)[["theta"]]
     k <- attr(bg$inputs, "n_groups")
-    m <- replicate(k, tau)
+    m <- replicate(k, theta)
     if(length(dim(m)) == 3)
       m <- aperm(m, c(1, 3, 2))
 
   } else {
     # choose correct columns for the given models:
-    if(bg$model %in% c("rubin", "mutau", "mutau_full", "logit", "rubin_full")) {
+    if(bg$model %in% c("rubin", "vivs", "vivs_full", "logit", "rubin_full")) {
       #replace by extract:
-      # m <- m[, grepl("^tau_k", colnames(m))]
       m <- rstan::extract(bg$fit, pars = "theta_k")[[1]]
-      # drop mu if model has mu (baseline/control value)
-      if(bg$model %in% c("mutau", "mutau_full"))
-        m <- m[,1,2,]
+      # Drop the baseline component in joint baseline/effect models
+      if(bg$model %in% c("vivs", "vivs_full"))
+        m <- array(m[,1,2,,drop = FALSE], c(dim(m)[1], dim(m)[4], 1))
       # Some full-data models keep a singleton effects dimension.
       # Reduce to 2D so fixed-effect draws can be added by group.
       if(length(dim(m)) == 3 && dim(m)[3] == 1)
-        m <- m[,,1]
+        m <- matrix(m, nrow = dim(m)[1], ncol = dim(m)[2])
 
       # If dealing with a meta-regression model, we automatically add effect of covariates
       # unless user requests random_only
@@ -106,21 +110,13 @@ group_effects <- function(bg, summary = FALSE, transform = NULL, interval = .95,
   dimnames(m)[[2]] <- par_names
   dimnames(m)[[3]] <- effect_names
 
-  # will summarise if requested:
-  if(summary) {
-    intval <- c((1-interval)/2, .5, 1 - (1-interval)/2)
-    m <- apply(m, c(2,3), function(x) c(quantile(x, intval), mean(x), sd(x)))
-    if(is.null(dimnames(m)[[2]]))
-      dimnames(m)[[2]] <- 1:nrow(m)
-    if(rename_int){
-      dimnames(m)[[1]] <- c(paste0(as.character(100*intval), "%"), "mean", "sd")
-    }else
-      dimnames(m)[[1]] <- c("lci", "median", "uci", "mean", "sd")
-    m <- aperm(m, c(2,1,3))
-  }
-
   if(!is.null(transform))
     m <- do.call(transform, list(m))
+
+  # will summarise if requested:
+  if(summary) {
+    m <- summary_draws(m, prob, effect_names, rename_int = rename_int)
+  }
 
   return(m)
 }

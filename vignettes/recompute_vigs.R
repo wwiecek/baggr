@@ -1,6 +1,18 @@
-# I follow the approach described at https://ropensci.org/blog/2019/12/08/precompute-vignettes/
-# To pre-compute everything needed to render the vignettes, which will save time
-# on CRAN servers (checks were above 10 mins)
-knitr::knit("vignettes/baggr_binary.Rmd.orig", "vignettes/baggr_binary.Rmd")
-knitr::knit("vignettes/baggr_selection.Rmd.orig", "vignettes/baggr_selection.Rmd")
-# then I manually copy figure/ into vignettes/figure/
+# Precompute the .Rmd.orig sources so CRAN builds do not fit Stan models.
+# Run from the project root with the current baggr version installed:
+# Rscript vignettes/recompute_vigs.R          # all vignettes
+# Rscript vignettes/recompute_vigs.R baggr    # just the main vignette
+# Commit the generated .Rmd files and figures in vignettes/fig/ together.
+
+vignettes <- commandArgs(trailingOnly = TRUE)
+if (!length(vignettes))
+  vignettes <- c("baggr", "baggr_binary", "baggr_selection")
+
+local({
+  old_dir <- setwd("vignettes")
+  on.exit(setwd(old_dir))
+  for (vignette in vignettes) {
+    knitr::knit(paste0(vignette, ".Rmd.orig"), paste0(vignette, ".Rmd"),
+                envir = new.env())
+  }
+})

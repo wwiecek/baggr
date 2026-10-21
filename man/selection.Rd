@@ -4,29 +4,31 @@
 \alias{selection}
 \title{Relative publication probabilities of a baggr model}
 \usage{
-selection(bg, summary = TRUE, interval = 0.95)
+selection(bg, summary = TRUE, prob = 0.95, interval = NULL)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model fitted with a selection-enabled likelihood
 (currently \code{model = "rubin"}).}
 
 \item{summary}{logical; if \code{TRUE}, returns summary statistics (mean and
-the uncertainty interval defined by \code{interval}).}
+the uncertainty interval defined by \code{prob}).}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1),
-used only when \code{summary = TRUE}.}
+\item{prob}{Probability mass of the central uncertainty interval, on the
+0--1 scale; used only when \code{summary = TRUE}.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one argument.}
 }
 \value{
 If \code{summary = FALSE}, a matrix of posterior draws where each column
 corresponds to one non-reference |z|-interval. Otherwise, a matrix with one
-row per interval and columns containing the mean and bounds of the
-uncertainty interval. The final highest-|z| interval is fixed to relative
+row per interval in the summary layout described here, labelled with
+\code{effect = "selection"}. The final highest-|z| interval is fixed to relative
 probability 1 and is therefore not returned.
 }
 \description{
 Extracts the posterior draws (or summaries) of the selection-model parameters
 that describe the relative publication probabilities across |z|-intervals.
-In Rubin summary-data models, \code{z = tau / se}; for example,
+In normal-normal hierarchical (Rubin) models, \code{z = yi / sei}; for example,
 \code{selection = 1.96} estimates the relative publication probability below the
 conventional two-sided 5\% normal threshold compared with the implicit
 highest-|z| interval.
@@ -36,4 +38,14 @@ highest-|z| interval.
 are relative publication probabilities, not treatment effects or corrected
 treatment effects. The highest-|z| interval is the reference category and is
 fixed to 1, so it is not returned.
+
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }

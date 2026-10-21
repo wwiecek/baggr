@@ -61,11 +61,14 @@ a factor (if using multiple treatment columns)}
 }
 \value{
 \itemize{
-\item If you \code{summarise}: a data.frame with columns for \code{group}, \code{tau} and \code{se.tau}
-(for \code{effect = "mean"}, also baseline means; for \code{"logRR"} or \code{"logOR"} also
-\code{a}, \code{b}, \code{c}, \code{d}, which correspond to typical contingency table notation, that is:
-\code{a} = events in exposed; \code{b} = no events in exposed, \code{c} = events in unexposed,
-\code{d} = no events in unexposed).
+\item Continuous summaries contain \code{group}, \code{y0i} (baseline/control mean),
+\code{yi} (treatment minus control mean), \code{se0i} and \code{sei} (their standard
+errors), and \code{n0i} and \code{ni} (control and treatment sample sizes).
+A \code{treatment} column identifies comparisons when several treatments exist.
+\item Binary summaries contain \code{group}, \code{a}, \code{b}, \code{c}, \code{d}, \code{n1}, \code{n2},
+\code{yi} (the selected effect estimate) and \code{sei} (its standard error).
+Here \code{a}/\code{b} are events/non-events in treatment and \code{c}/\code{d} are
+events/non-events in control; \code{n1}/\code{n2} are the corresponding totals.
 \item If you do not summarise data, individual level data will be returned, but
 some columns may be renamed or transformed (see the arguments above).
 }

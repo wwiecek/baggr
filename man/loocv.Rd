@@ -18,7 +18,8 @@ if TRUE, a list of models will be returned alongside summaries}
 \value{
 log predictive density value, an object of class \code{baggr_cv};
 full model, prior values and \emph{lpd} of each model are also returned.
-These can be examined by using \code{attributes()} function.
+The \code{df} component has columns \code{theta} (mean treatment effect),
+\code{sigma} (heterogeneity SD), and \code{lpd} for each omitted group.
 }
 \description{
 Performs exact leave-one-group-out cross-validation on a baggr model.

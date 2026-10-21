@@ -33,9 +33,9 @@ test_that("Error messages for wrong inputs are in place", {
 
   expect_warning(baggr(df_mutau, group = "state1000", iter = 50, refresh = 0),
                  "No labels will be added.")
-  expect_identical(names(convert_inputs(df_mutau, "mutau")),
-                   c("K", "P", "theta_hat_k", "se_theta_k",
-                     "K_test", "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
+  expect_identical(names(convert_inputs(df_mutau, "vivs")),
+                   c("K", "P", "yi", "sei",
+                     "K_test", "test_yi", "test_sei", "Nc", "X", "X_test",
                      "M", "c", "symmetric", "possible_selection"))
 })
 
@@ -54,7 +54,7 @@ test_that("Different pooling methods work for mu tau model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
-  expect_error(baggr(df_mutau, rubbish = 41))
+  expect_error(suppressWarnings(baggr(df_mutau, rubbish = 41)))
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -64,7 +64,7 @@ test_that("Various attr of baggr object are correct", {
   expect_equal(bg5_p$n_parameters, 1)
   expect_equal(bg5_p$n_groups, 8)
   expect_equal(bg5_p$effects, "mean")
-  expect_equal(bg5_p$model, "mutau")
+  expect_equal(bg5_p$model, "vivs")
   expect_is(bg5_p$fit, "stanfit")
 })
 
@@ -76,23 +76,23 @@ test_that("Data are available in baggr object", {
 
 test_that("Pooling metrics", {
   # all pooling metric are the same as SE's are the same
-  expect_equal(length(unique(bg5_p$pooling_metric[1,,1])), 1) #expect_length()
-  expect_equal(length(unique(bg5_p$pooling_metric[2,,1])), 1)
-  expect_equal(length(unique(bg5_p$pooling_metric[3,,1])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[,"lower"])), 1) #expect_length()
+  expect_equal(length(unique(bg5_p$pooling_metric[,"mean"])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[,"upper"])), 1)
   # all pooling stats are 0 if no pooling
-  expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
+  expect_equal(unique(as.numeric(bg5_n$pooling_metric[,c("mean","median","lower","upper")])), 0)
   # full pooling means 1's everywhere
-  expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
+  expect_equal(unique(as.numeric(bg5_f$pooling_metric[,c("mean","median","lower","upper")])), 1)
 
   pp <- pooling(bg5_p)
   expect_is(pp, "array")
-  expect_gt(min(pp), 0)
-  expect_lt(max(pp), 1)
+  expect_gt(min(pp[,c("mean","median","lower","upper")]), 0)
+  expect_lt(max(pp[,c("mean","median","lower","upper")]), 1)
   # since all SEs are the same, pooling should be the same for all sites
   capture_output(pp)
-  # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
-  expect_equal(length(unique(pp[2,,1])), 1)
-  expect_equal(as.numeric(pp[2,1,1]), .7, tolerance = .2)
+  # expect_equal(pp[,"mean"], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
+  expect_equal(length(unique(pp[,"mean"])), 1)
+  expect_equal(as.numeric(pp[1,"mean"]), .7, tolerance = .2)
 })
 
 test_that("extra pooling stats work", {
@@ -100,19 +100,19 @@ test_that("extra pooling stats work", {
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
   expect_is(i2, "array")
-  expect_gte(min(i2), 0)
-  expect_lte(max(i2), 1)
+  expect_gte(min(i2[,c("mean","median","lower","upper")]), 0)
+  expect_lte(max(i2[,c("mean","median","lower","upper")]), 1)
   h2 <- pooling(bg5_p, metric = "hsq")
   expect_is(h2, "array")
-  expect_gte(min(h2), 1)
+  expect_gte(min(h2[,c("mean","median","lower","upper")]), 1)
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
   expect_is(wt, "array")
-  expect_equal(dim(wt), c(3,8,1))
-  expect_equal(sum(wt[2,,1]), 1)
-  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[1,,1]), 0)
+  expect_equal(dim(wt), c(8,6))
+  expect_equal(sum(wt[,"mean"]), 1)
+  expect_lte(sum(wt[,"lower"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"upper"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"lower"]), 0)
   wt2 <- pooling(bg5_p, metric = "weights")
   expect_identical(wt, wt2)
 })
@@ -120,16 +120,16 @@ test_that("extra pooling stats work", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$theta, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma, 6)
 
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau,hypermean(bg5_p,message=FALSE))
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau,hypersd(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$theta,hypermean(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma,hypersd(bg5_p,message=FALSE))
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
 })
 
 
@@ -160,15 +160,15 @@ test_that("Test data can be used in the mu tau model", {
               2 * sum(log(diag(R))) + sum(z^2))
   }
 
-  draws <- rstan::extract(bg_lpd$fit, pars = c("logpd", "mu", "tau"))
+  draws <- rstan::extract(bg_lpd$fit, pars = c("logpd", "theta", "L_Sigma"))
   y_test <- rbind(df_mutau$mu[7:8], df_mutau$tau[7:8])
   se_test <- rbind(df_mutau$se.mu[7:8], df_mutau$se.tau[7:8])
-  manual_logpd <- vapply(seq_len(dim(draws$mu)[1]), function(s) {
-    mu_s <- draws$mu[s, 1, ]
-    Sigma_s <- tcrossprod(draws$tau[s, 1, , ])
+  manual_logpd <- vapply(seq_len(dim(draws$theta)[1]), function(s) {
+    theta_s <- draws$theta[s, 1, ]
+    Sigma_s <- tcrossprod(draws$L_Sigma[s, 1, , ])
     sum(vapply(seq_len(ncol(y_test)), function(k) {
       V_k <- Sigma_s + diag(se_test[, k]^2)
-      log_mvn(y_test[, k], mu_s, V_k)
+      log_mvn(y_test[, k], theta_s, V_k)
     }, numeric(1)))
   }, numeric(1))
 
@@ -185,8 +185,8 @@ test_that("Test data can be used in the mu tau model", {
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_mutau))
   expect_is(treatment_effect(bg5_p), "list")
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric")
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
+  expect_is(treatment_effect(bg5_p)$theta, "numeric")
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 })
 

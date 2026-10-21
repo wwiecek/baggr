@@ -56,7 +56,8 @@
 #'
 #' A classic example of aggregate level continuous data in Bayesian hierarchical modelling.
 #' This dataframe contains a column of estimated treatment effects of an SAT prep
-#' program implemented in 8 different schools in the US, and a column of estimated standard errors.
+#' program implemented in 8 different schools in the US (`yi`), and a column
+#' of estimated standard errors (`sei`).
 #'
 #' See Gelman et al (1995), Chapter 5, for context and applied example.
 #'
@@ -69,8 +70,8 @@
 #'
 #' An experiment conducted by Blackman et al. (1988) and documented in the following
 #' [GitHub repository](https://github.com/VMatthijs/Slamming-the-sham) by Vakar
-#' and Gelman. The dataset consists of a large number of experiments (`tau`, `se.tau`)
-#' repeated at varying wave frequencies. Sham experiments (`mu`, `se.mu`) are also
+#' and Gelman. The dataset consists of a large number of experiments (`yi`, `sei`)
+#' repeated at varying wave frequencies. Sham experiments (`y0i`, `se0i`) are also
 #' included, allowing us to compare performance of models with and without
 #' control measurements.
 #'

@@ -3,13 +3,13 @@ library(baggr)
 library(testthat)
 set.seed(11241)
 
-df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-                        "se" = rep(1, 8),
+df_pooled <- data.frame("yi" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                        "sei" = rep(1, 8),
                         "state" = datasets::state.name[1:8])
-df_mutau <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-                       "se.tau" = rep(1, 8),
-                       "mu" = rnorm(8),
-                       "se.mu" = rep(1, 8),
+df_mutau <- data.frame("yi" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                       "sei" = rep(1, 8),
+                       "y0i" = rnorm(8),
+                       "se0i" = rep(1, 8),
                        "state" = datasets::state.name[1:8])
 
 test_that("Wrong prior specifications crash baggr()", {

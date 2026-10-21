@@ -3,7 +3,7 @@
 #' @param bg a [baggr()] model
 #' @param show whether to plot raw study-level inputs (`"inputs"`) or
 #'   posterior summaries (`"posterior"`)
-#' @param level confidence level for reference lines
+#' @param level Confidence level for normal reference lines, on the 0--1 scale.
 #' @param label logical: add study/group labels?
 #' @param covariate optional name of a column in the model input data used to
 #'   colour points.
@@ -16,8 +16,8 @@
 #'
 #' For models with group-level covariates, colouring points by a covariate can
 #' help inspect whether asymmetry is partly explained by meta-regression effects.
-#' In Rubin summary-data meta-regression models (`model = "rubin"` with
-#' `covariates`), `show = "posterior"` plots posterior study effects from
+#' In normal-normal hierarchical (Rubin) meta-regression models
+#' (`model = "rubin"` with `covariates`), `show = "posterior"` plots posterior study effects from
 #' [group_effects()], which include the fitted covariate contribution. By
 #' contrast, `show = "inputs"` plots the original study-level estimates.
 #'
@@ -33,23 +33,24 @@ funnel_plot <- function(bg,
                         level = 0.95,
                         label = FALSE,
                         covariate = NULL) {
+  level <- interval_prob(level)
   stopifnot(inherits(bg, "baggr"))
   if(length(bg$effects) != 1)
     stop("Funnel plot currently defined for 1-dimensional effects.")
   show <- match.arg(show)
 
-  # raw study-level data (tau/se/group)
+  # raw study-level data (yi/sei/group)
   if(bg$model %in% c("rubin_full", "logit")) {
     studies <- bg$summary_data
   } else {
     studies <- bg$data
   }
-  if(bg$model %in% c("rubin_full", "mutau"))
-    studies$se <- studies$se.tau
+  if(!all(c("yi", "sei") %in% names(studies)))
+    studies <- normalise_summary_columns(studies, silent = TRUE)$data
   if(is.null(studies$group))
     studies$group <- group_names(bg)
 
-  raw_df <- studies[, c("group", "tau", "se")]
+  raw_df <- studies[, c("group", "yi", "sei")]
   names(raw_df) <- c("group", "effect", "se")
 
   if(!is.null(covariate)) {
@@ -61,8 +62,8 @@ funnel_plot <- function(bg,
   }
 
   # posterior summaries (mean & SD) for partial/full pooling outputs
-  post_df <- as.data.frame(group_effects(bg, summary = TRUE,
-                                         interval = level)[,,1])
+  post_df <- as.data.frame(effect_slice(group_effects(bg, summary = TRUE,
+                                         prob = level), 1))
   post_df$group <- group_names(bg)
   post_df <- post_df[, c("group", "mean", "sd")]
   names(post_df) <- c("group", "effect", "se")
@@ -74,8 +75,8 @@ funnel_plot <- function(bg,
   # hyper-mean + heterogeneity
   if(bg$pooling == "none")
     stop("Need a pooled model to plot average treatment effect for the funnel.")
-  hypermean <- hypermean(bg)[["mean"]]
-  hetero <- if(bg$pooling == "partial") hypersd(bg)[["mean"]] else 0
+  hypermean <- hypermean(bg)[1,"mean"]
+  hetero <- if(bg$pooling == "partial") hypersd(bg)[1,"mean"] else 0
 
   crit <- stats::qnorm(1 - (1 - level)/2)
   se_grid <- seq(0, max(plot_df$se), length.out = 200)

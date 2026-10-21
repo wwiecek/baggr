@@ -8,6 +8,21 @@
 #' This can be used for both prior and posterior draws, depending on [baggr::baggr()] model.
 #' By default this is done for a single new effect, but for meta-regression models
 #' you can specify values of covariates with the `newdata` argument, same as in [predict.baggr].
+#' If `transform` is supplied, it is applied after drawing from this predictive
+#' distribution. For example, `effect_draw(bg, transform = exp)` for a model fit
+#' on a log scale returns predictive draws on the ratio scale. This is not the
+#' same object as `hypermean(bg, transform = exp)`: `effect_draw()` also includes
+#' the uncertainty or heterogeneity around the mean treatment effect.
+#'
+#' With `summary = TRUE`, summaries are numeric matrices with rows for
+#' the quantities being summarised and columns `mean`, `median`, `sd`,
+#' `lower`, `upper`, `width`, in that order. The bounds form a central
+#' interval; `width` is its requested probability mass, even when estimates
+#' are unavailable. For multiple effects, the result is a rows by statistics
+#' by effects array, with effect names in the third dimension. A single-effect
+#' matrix stores its effect name in the `effect` attribute. Row names are
+#' preserved. Aggregate summaries have one row; predictions conditional on
+#' `newdata` have one row per observation.
 #'
 #' @param object A `baggr` class object.
 #' @param draws How many values to draw? The default is as long as the number of samples
@@ -16,7 +31,8 @@
 #'                that were used when fitting the `baggr` model
 #' @param transform a transformation (an R function) to apply to the result of a draw.
 #' @param summary logical; if TRUE returns summary statistics rather than samples from the distribution;
-#' @param interval uncertainty interval width (numeric between 0 and 1), if `summary=TRUE`
+#' @param prob Probability mass of the central uncertainty interval, on the 0--1 scale.
+#' @param interval Compatibility alias for `prob`; supply only one of these arguments.
 #' @param message logical; use to disable messages prompted by using this function with
 #'                no pooling models
 #' @return A vector (with `draws` values) for models with one treatment effect parameter,
@@ -51,6 +67,16 @@
 #' passing `newdata` (same as in [predict.baggr]). If no adjustment is made, the
 #' returned value should be interpreted as the effect when all covariates are 0.
 #'
+#' @examples
+#' \donttest{
+#' # Fit on a log scale, then exponentiate predictive draws to obtain ratios.
+#' log_rr <- data.frame(yi = log(c(0.7, 0.9, 1.1, 1.3)),
+#'                      sei = c(0.2, 0.25, 0.3, 0.35))
+#' bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+#'
+#' effect_draw(bg_log, transform = exp)
+#' }
+#'
 #' @references
 #' Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.
 #' "Interpretation of Random Effects Meta-Analyses".
@@ -60,7 +86,9 @@ effect_draw <- function(object,
                         draws = NULL,
                         newdata = NULL,
                         transform = NULL,
-                        summary = FALSE, message = TRUE, interval = .95) {
+                        summary = FALSE, message = TRUE, prob = .95,
+                        interval = NULL) {
+  prob <- interval_prob(prob, interval, missing(prob), missing(interval))
   x <- object
   check_if_baggr(x)
 
@@ -71,43 +99,47 @@ effect_draw <- function(object,
   if(x$pooling == "none"){
     if(message)
       message("There is no predicted effect when pooling = 'none'.")
-    new_tau <- return(as.numeric(c(NA)))
+    if(summary)
+      return(summary_draws(array(NA_real_,
+        c(1, if(is.null(newdata)) 1 else nrow(newdata), neffects)),
+        prob, x$effects, rows = rownames(newdata)))
+    return(as.numeric(c(NA)))
   }
 
   te <- treatment_effect(x, message = FALSE)
   if(!is.null(draws)){
     if(neffects > 1){
-      if(draws > nrow(te$tau))
+      if(draws > nrow(te$theta))
         warning("Making more effect draws than there are available samples in Stan object.",
                 "Consider running baggr() with higher iter= setting")
-      rows <- sample(nrow(te$tau), draws, replace = TRUE)
-      te$tau   <- te$tau[rows,]
+      rows <- sample(nrow(te$theta), draws, replace = TRUE)
+      te$theta   <- te$theta[rows,]
       if(x$pooling != "full")
-        te$sigma_tau <- te$sigma_tau[rows,]
+        te$sigma <- te$sigma[rows,]
       else
-        te$sigma_tau <- te$tau*0
+        te$sigma <- te$theta*0
     }
     if(neffects == 1){
-      if(draws > length(te$tau))
+      if(draws > length(te$theta))
         warning("Making more effect draws than there are available samples in Stan object.",
                 "Consider running baggr() with higher iter= setting")
-      rows <- sample(length(te$tau), draws, replace = TRUE)
-      te$tau   <- te$tau[rows]
+      rows <- sample(length(te$theta), draws, replace = TRUE)
+      te$theta   <- te$theta[rows]
       if(x$pooling != "full")
-        te$sigma_tau <- te$sigma_tau[rows]
+        te$sigma <- te$sigma[rows]
       else
-        te$sigma_tau <- te$tau*0
+        te$sigma <- te$theta*0
     }
   }
 
   # Make draws using normal distribution (for now it's the only option)
   # and format as matrix of N posterior samples x N effects
-  new_tau <- rnorm(length(te$tau), c(te$tau), c(te$sigma_tau))
+  new_theta <- rnorm(length(te$theta), c(te$theta), c(te$sigma))
   if(neffects > 1){
-    new_tau <- matrix(new_tau, nrow(te$tau), ncol(te$tau))
-    colnames(new_tau) <- colnames(te$tau)
+    new_theta <- matrix(new_theta, nrow(te$theta), ncol(te$theta))
+    colnames(new_theta) <- colnames(te$theta)
   } else {
-    new_tau <- matrix(new_tau, length(new_tau), 1)
+    new_theta <- matrix(new_theta, length(new_theta), 1)
   }
 
 
@@ -122,7 +154,7 @@ effect_draw <- function(object,
     if(neffects > 1)
       stop("Currently newdata for models with multidimensional effects is not supported")
 
-    new_tau_array <- array(NA, c(ncol(new_tau), nrow(newdata), nrow(new_tau)))
+    new_theta_array <- array(NA, c(ncol(new_theta), nrow(newdata), nrow(new_theta)))
 
     covariate_levels <- attr(x$inputs, "covariate_levels")
     for(nm in names(newdata))
@@ -131,29 +163,30 @@ effect_draw <- function(object,
     fe <- fixed_effects(x)
     if(!missing(draws))
       fe <- fe[rows,]
-    newdata$tau <- 0
+    newdata$theta <- 0
     cov_mm <- model.matrix(as.formula(
-      paste("tau ~", paste(x$covariates, collapse="+"))),
+      paste("theta ~", paste(x$covariates, collapse="+"))),
       data=newdata)
     fe_mat <- fe %*% t(cov_mm[,colnames(fe)])
 
-    for(i in 1:ncol(new_tau))
-      new_tau_array[i,,] <- t(new_tau[,i] + fe_mat)
+    for(i in 1:ncol(new_theta))
+      new_theta_array[i,,] <- t(new_theta[,i] + fe_mat)
 
   } else {
-    new_tau_array <- array(new_tau, c(ncol(new_tau), 1, nrow(new_tau)))
+    new_theta_array <- array(new_theta, c(ncol(new_theta), 1, nrow(new_theta)))
   }
 
   if(!is.null(transform))
-    new_tau_array <- apply(new_tau_array, c(1,2,3), transform)
+    new_theta_array <- apply(new_theta_array, c(1,2,3), transform)
 
   if(summary)
-    new_tau_array <- apply(new_tau_array, c(1, 2), mint, int=interval, median=TRUE, sd = TRUE)
+    return(summary_draws(aperm(new_theta_array, c(3, 2, 1)), prob,
+                         x$effects, rows = rownames(newdata)))
 
-  if(dim(new_tau_array)[2] == 1)
-    return(new_tau_array[,1,])
+  if(dim(new_theta_array)[2] == 1)
+    return(new_theta_array[,1,])
   else
-    return(new_tau_array)
+    return(new_theta_array)
 }
 
 

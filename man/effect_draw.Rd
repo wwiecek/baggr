@@ -11,7 +11,8 @@ effect_draw(
   transform = NULL,
   summary = FALSE,
   message = TRUE,
-  interval = 0.95
+  prob = 0.95,
+  interval = NULL
 )
 }
 \arguments{
@@ -30,7 +31,9 @@ that were used when fitting the \code{baggr} model}
 \item{message}{logical; use to disable messages prompted by using this function with
 no pooling models}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if \code{summary=TRUE}}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
 A vector (with \code{draws} values) for models with one treatment effect parameter,
@@ -47,8 +50,23 @@ and draws values of new realisations of treatment effect, i.e. an additional dra
 This can be used for both prior and posterior draws, depending on \code{\link[=baggr]{baggr()}} model.
 By default this is done for a single new effect, but for meta-regression models
 you can specify values of covariates with the \code{newdata} argument, same as in \link{predict.baggr}.
+If \code{transform} is supplied, it is applied after drawing from this predictive
+distribution. For example, \code{effect_draw(bg, transform = exp)} for a model fit
+on a log scale returns predictive draws on the ratio scale. This is not the
+same object as \code{hypermean(bg, transform = exp)}: \code{effect_draw()} also includes
+the uncertainty or heterogeneity around the mean treatment effect.
 }
 \details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+
 The predictive distribution can be used to "combine" heterogeneity between treatment effects and
 uncertainty in the mean treatment effect. This is useful both in understanding impact of
 heterogeneity (see Riley et al, 2011, for a simple introduction) and for study design e.g.
@@ -69,6 +87,17 @@ If the \code{baggr} model used by the function is a meta-regression
 the predicted values can be adjusted for known levels of fixed covariates by
 passing \code{newdata} (same as in \link{predict.baggr}). If no adjustment is made, the
 returned value should be interpreted as the effect when all covariates are 0.
+}
+\examples{
+\donttest{
+# Fit on a log scale, then exponentiate predictive draws to obtain ratios.
+log_rr <- data.frame(yi = log(c(0.7, 0.9, 1.1, 1.3)),
+                     sei = c(0.2, 0.25, 0.3, 0.35))
+bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+
+effect_draw(bg_log, transform = exp)
+}
+
 }
 \references{
 Riley, Richard D., Julian P. T. Higgins, and Jonathan J. Deeks.

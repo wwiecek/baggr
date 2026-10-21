@@ -10,19 +10,31 @@ treatment_effect(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
-  message = TRUE
+  prob = 0.95,
+  message = TRUE,
+  interval = NULL,
+  rename_int = FALSE
 )
 
 hypermean(
   bg,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   message = FALSE,
-  summary = TRUE
+  summary = TRUE,
+  interval = NULL,
+  rename_int = FALSE
 )
 
-hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
+hypersd(
+  bg,
+  transform = NULL,
+  prob = 0.95,
+  message = FALSE,
+  summary = TRUE,
+  interval = NULL,
+  rename_int = FALSE
+)
 }
 \arguments{
 \item{bg}{a \code{\link[=baggr]{baggr()}} model}
@@ -33,25 +45,62 @@ hypersd(bg, transform = NULL, interval = 0.95, message = FALSE, summary = TRUE)
 (this is commonly used when calling \code{treatment_effect} from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
 
 \item{message}{logical; use to disable messages prompted by using with
 no pooling models}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
+
+\item{rename_int}{logical; with \code{summary = TRUE}, rename only \code{lower}
+and \code{upper} to endpoint percentages and omit \code{width}. \code{median} retains
+its name. Defaults to \code{FALSE}.}
 }
 \description{
 The most general \code{treatment_effect} displays
 both hypermean and hyperSD (as a list of length 2),
 whereas \code{hypermean} and \code{hypersd} can be used as shorthands.
+The \code{transform} argument applies to posterior draws of model parameters:
+for example, \code{hypermean(bg, transform = exp)} exponentiates only the
+posterior distribution of the mean treatment effect. This is useful when a
+model was fit on a transformed scale, such as a log risk ratio or log odds
+ratio scale. It is different from \code{\link[=effect_draw]{effect_draw()}}, which first draws from
+the posterior predictive distribution of a new treatment effect, including
+heterogeneity or uncertainty around the mean, and then applies the
+transformation. Because a transformed hyper-SD is not generally
+interpretable, \code{treatment_effect()} returns \code{sigma = NA} when
+\code{transform} is supplied; this is also what \code{hypersd(bg, transform = ...)}
+returns.
+}
+\details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }
 \section{Functions}{
 \itemize{
-\item \code{treatment_effect()}: A list with 2 vectors (corresponding to MCMC samples)
-\code{tau} (mean effect) and \code{sigma_tau} (SD). If \code{summary=TRUE},
-both vectors are summarised as mean and lower/upper bounds according to
-\code{interval}
+\item \code{treatment_effect()}: A list with 2 components (posterior draws)
+\code{theta} (mean effect) and \code{sigma} (SD). If \code{summary=TRUE},
+each component follows the summary layout described here.
 
 \item \code{hypermean()}: The hypermean of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[1]]}
 
 \item \code{hypersd()}: The hyper-SD of a \code{baggr} model, shorthand for \code{treatment_effect(x, s=T)[[2]]}
 
 }}
+\examples{
+\donttest{
+# Fit on a log scale, then exponentiate the hypermean draws to obtain ratios.
+log_rr <- data.frame(yi = log(c(0.7, 0.9, 1.1, 1.3)),
+                     sei = c(0.2, 0.25, 0.3, 0.35))
+bg_log <- baggr(log_rr, pooling = "partial", iter = 500, refresh = 0)
+
+hypermean(bg_log, transform = exp)
+}
+}

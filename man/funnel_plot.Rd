@@ -21,7 +21,7 @@ funnel(...)
 \item{show}{whether to plot raw study-level inputs (\code{"inputs"}) or
 posterior summaries (\code{"posterior"})}
 
-\item{level}{confidence level for reference lines}
+\item{level}{Confidence level for normal reference lines, on the 0--1 scale.}
 
 \item{label}{logical: add study/group labels?}
 
@@ -43,8 +43,8 @@ arise due to unexplained heterogeneity between studies.
 
 For models with group-level covariates, colouring points by a covariate can
 help inspect whether asymmetry is partly explained by meta-regression effects.
-In Rubin summary-data meta-regression models (\code{model = "rubin"} with
-\code{covariates}), \code{show = "posterior"} plots posterior study effects from
+In normal-normal hierarchical (Rubin) meta-regression models
+(\code{model = "rubin"} with \code{covariates}), \code{show = "posterior"} plots posterior study effects from
 \code{\link[=group_effects]{group_effects()}}, which include the fitted covariate contribution. By
 contrast, \code{show = "inputs"} plots the original study-level estimates.
 }

@@ -22,7 +22,7 @@ test_that("prepare_ma()", {
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption")
   expect_is(pm, "data.frame")
   expect_equal(dim(pm), c(5,7))
-  expect_identical(names(pm), c("group", "mu", "tau", "se.mu", "se.tau", "n.mu", "n.tau"))
+  expect_identical(names(pm), c("group", "y0i", "yi", "se0i", "sei", "n0i", "ni"))
 
   pm <- prepare_ma(microcredit_simplified, outcome = "consumption", summarise = FALSE)
   expect_identical(dim(pm), dim(microcredit_simplified))
@@ -122,6 +122,11 @@ test_that("labbe()", {
                                 shade_se = "rr", labels = FALSE))
   expect_is(labbe(df_yusuf, shade_se = "rr"), "gg")
   expect_is(gg2, "gg")
+  model_lines <- gg2$layers[[3]]$data
+  or_line <- subset(model_lines, model == "OR")
+  expect_true(all(is.finite(or_line$p_trt)))
+  expect_equal(or_line$p_trt[c(1, nrow(or_line))], c(0, 1))
+  expect_warning(ggplot2::ggplotGrob(gg2), NA)
 
 
 })
@@ -131,7 +136,7 @@ test_that("labbe()", {
 test_that("convert_inputs()", {
   # Rubin model
   expect_is(convert_inputs(schools, "rubin"), "list")
-  expect_error(convert_inputs(schools, "mutau"))
+  expect_error(convert_inputs(schools, "vivs"))
   expect_is(convert_inputs(schools, "rubin", test_data = schools[7:8,]), "list")
 
   # Invalid model should fail cleanly, without unrelated column warnings.
@@ -143,12 +148,12 @@ test_that("convert_inputs()", {
 
 test_that("mint()", {
   # Rubin model
-  expect_length(mint(rnorm(100)), 3)
-  expect_length(mint(rnorm(100), sd = TRUE), 4)
-  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE), 5)
-  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5), 5)
+  expect_length(mint(rnorm(100)), 4)
+  expect_length(mint(rnorm(100), sd = TRUE), 5)
+  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE), 6)
+  expect_length(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5), 6)
   expect_identical(names(mint(rnorm(100), median = TRUE, sd = TRUE, int = .5)),
-                   c("25%", "mean", "75%", "median", "sd"))
+                   c("mean", "median", "sd", "lower", "upper", "width"))
 })
 
 test_that("We can set and get baggr theme", {

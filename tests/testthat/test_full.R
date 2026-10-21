@@ -14,11 +14,11 @@ for(i in 1:8){
 
   x <- rnorm(N[i])
   x <- (x-mean(x))/sd(x)
-  x <- x*schools$se[i]*sqrt(N[i])/1.41 + schools$tau[i]
+  x <- x*schools$sei[i]*sqrt(N[i])/1.41 + schools$yi[i]
 
   y <- rnorm(N[i])
   y <- (y-mean(y))/sd(y)
-  y <- y*schools$se[i]*sqrt(N[i])/1.41
+  y <- y*schools$sei[i]*sqrt(N[i])/1.41
 
   schools_ipd <- rbind(schools_ipd,
                        data.frame(group = schools$group[i], outcome = bsl[i] + x, treatment = 1),
@@ -40,8 +40,8 @@ test_that("Different pooling methods work for the rubin_full model", {
 })
 
 test_that("Basic operations on rubin_full model", {
-  expect_error(baggr(schools_ipd, rubbish = 41))
-  expect_is(pooling(bg_p)[,,1], "matrix")
+  expect_error(suppressWarnings(baggr(schools_ipd, rubbish = 41)))
+  expect_is(pooling(bg_p), "matrix")
   expect_is(plot(bg_p), "gg")
   expect_is(effect_plot(bg_p), "gg")
   expect_is(funnel_plot(bg_p), "gg")
@@ -51,8 +51,8 @@ test_that("Basic operations on rubin_full model", {
 
   # No pooling gives sensible results:
   expect_equal(
-    as.numeric(group_effects(bg_n,s=T)[,"mean",1]),
-    schools$tau, tolerance = 1)
+    as.numeric(group_effects(bg_n,s=T)[,"mean"]),
+    schools$yi, tolerance = 1)
 
 })
 
@@ -61,19 +61,19 @@ test_that("extra pooling stats work", {
   # Calculation of I^2 and H^2
   i2 <- pooling(bg_p, metric = "isq")
   expect_is(i2, "array")
-  expect_gte(min(i2), 0)
-  expect_lte(max(i2), 1)
+  expect_gte(min(i2[,c("mean","median","lower","upper")]), 0)
+  expect_lte(max(i2[,c("mean","median","lower","upper")]), 1)
   h2 <- pooling(bg_p, metric = "hsq")
   expect_is(h2, "array")
-  expect_gte(min(h2), 1)
+  expect_gte(min(h2[,c("mean","median","lower","upper")]), 1)
   # Calculation of weights makes sense
   wt <- weights(bg_p)
   expect_is(wt, "array")
-  expect_equal(dim(wt), c(3,8,1))
-  expect_equal(sum(wt[2,,1]), 1)
-  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[1,,1]), 0)
+  expect_equal(dim(wt), c(8,6))
+  expect_equal(sum(wt[,"mean"]), 1)
+  expect_lte(sum(wt[,"lower"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"upper"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"lower"]), 0)
   wt2 <- pooling(bg_p, metric = "weights")
   expect_identical(wt, wt2)
 })
@@ -195,7 +195,7 @@ test_that("full-data test sigma uses SD and not SE", {
   inp_rubin <- convert_inputs(train, model = "rubin_full", quantiles = seq(.05, .95, .1),
                               test_data = test, outcome = "outcome",
                               group = "group", treatment = "treatment")
-  inp_mutau <- convert_inputs(train, model = "mutau_full", quantiles = seq(.05, .95, .1),
+  inp_mutau <- convert_inputs(train, model = "vivs_full", quantiles = seq(.05, .95, .1),
                               test_data = test, outcome = "outcome",
                               group = "group", treatment = "treatment")
 
@@ -230,13 +230,13 @@ test_that("rubin_full predictive log density matches analytic Normal density sca
           iter = 250, warmup = 125, chains = 2, refresh = 0, seed = 137)
   )
 
-  mu_draw <- rstan::extract(bg$fit, "mu")[[1]][,1]
+  theta_draw <- rstan::extract(bg$fit, "theta")[[1]][,1]
   logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
 
-  expected_sd_logpd <- vapply(mu_draw, function(m) {
+  expected_sd_logpd <- vapply(theta_draw, function(m) {
     sum(dnorm(test$outcome, mean = m, sd = test_sd, log = TRUE))
   }, numeric(1))
-  expected_se_logpd <- vapply(mu_draw, function(m) {
+  expected_se_logpd <- vapply(theta_draw, function(m) {
     sum(dnorm(test$outcome, mean = m, sd = test_se, log = TRUE))
   }, numeric(1))
 
@@ -328,7 +328,7 @@ test_that("Model with covariates works fine", {
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov), "matrix")
   expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
-  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(4,6))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 4)
 })
 
@@ -373,10 +373,10 @@ bg_pn <- expect_warning(baggr(schools_ipd,
 test_that("You can change pooling on values in control group", {
   expect_is(bg_pr, "baggr")
   expect_is(bg_pn, "baggr")
-  bsl_k <- apply(rstan::extract(bg_pr$fit, "baseline_k")[[1]], 2, mean)
+  bsl_k <- apply(rstan::extract(bg_pr$fit, "theta0_k")[[1]], 2, mean)
   expect_length(bsl_k, 8)
   expect_equal(bsl_k, rep(0, 8))
-  bsl_k <- apply(rstan::extract(bg_pn$fit, "baseline_k")[[1]], 2, mean)
+  bsl_k <- apply(rstan::extract(bg_pn$fit, "theta0_k")[[1]], 2, mean)
   expect_length(bsl_k, 8)
   expect_equal(bsl_k, bsl, tolerance = 1)
 })
