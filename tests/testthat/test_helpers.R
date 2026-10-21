@@ -122,6 +122,11 @@ test_that("labbe()", {
                                 shade_se = "rr", labels = FALSE))
   expect_is(labbe(df_yusuf, shade_se = "rr"), "gg")
   expect_is(gg2, "gg")
+  model_lines <- gg2$layers[[3]]$data
+  or_line <- subset(model_lines, model == "OR")
+  expect_true(all(is.finite(or_line$p_trt)))
+  expect_equal(or_line$p_trt[c(1, nrow(or_line))], c(0, 1))
+  expect_warning(ggplot2::ggplotGrob(gg2), NA)
 
 
 })

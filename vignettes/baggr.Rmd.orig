@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   fig.path = "fig/baggr-",
   warning = FALSE,
+  error = FALSE,
   message = FALSE,
   comment = "#>")
 library(baggr)

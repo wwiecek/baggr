@@ -49,8 +49,7 @@ labbe <- function(data, group = "group", plot_model = FALSE, labels = TRUE,
     te_rr <- treatment_effect(model_rr, summary = TRUE)$theta
     p_bsl <- seq(0,1,length=1000)
     p_trt_rr <- exp(te_rr[1,"mean"])*p_bsl
-    odds_trt <- exp(te_or[1,"mean"])*(p_bsl/(1-p_bsl))
-    p_trt_or <- odds_trt / (1 + odds_trt)
+    p_trt_or <- stats::plogis(stats::qlogis(p_bsl) + te_or[1,"mean"])
     p_lines <- rbind(
       data.frame(p_bsl, "p_trt" = p_trt_rr, model = "RR"),
       data.frame(p_bsl, "p_trt" = p_trt_or, model = "OR"))

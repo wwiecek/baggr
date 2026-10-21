@@ -1,7 +1,7 @@
 ---
 title: "Aggregating Average Treatment Effects with baggr"
 author: "Rachael Meager, Witold Wiecek"
-date: "2026-10-19"
+date: "2026-10-21"
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -368,7 +368,7 @@ print(baggr_schools)
 #> Aggregate treatment effect (on mean), 8 groups:
 #> Hypermean (theta) =  7.87 with 95% interval -1.51 to 17.67 
 #> Hyper-SD (sigma) = 6.60 with 95% interval 0.30 to 21.00 
-#> Posterior predictive effect = 7.82 with 95% interval -11.78 to 29.52 
+#> Posterior predictive effect = 7.89 with 95% interval -12.82 to 28.69 
 #> Total pooling (1 - I^2) = 0.76 with 95% interval 0.24 to 1.00 
 #> 
 #> Group-specific treatment effects:
@@ -671,7 +671,7 @@ used e.g. to draw 1 new value:
 
 ``` r
 effect_draw(baggr_schools, draws = 1)
-#> [1] -0.7693338
+#> [1] 16.69271
 ```
 
 You can also summarise over the entire distribution to obtain mean, SD, and
@@ -744,17 +744,17 @@ baggr_compare("Default model" = baggr_schools, "normal(10, 2.5)" = baggr_schools
 #> Mean treatment effects:
 #>                 mean median  sd 2.5% 97.5%
 #> Default model    7.9    7.8 5.0 -1.5    18
-#> normal(10, 2.5)  9.5    9.5 2.2  5.2    14
+#> normal(10, 2.5)  9.5    9.5 2.2  5.1    14
 #> 
 #> SD for treatment effects:
 #>                 mean median  sd 2.5% 97.5%
-#> Default model    6.6    5.3 5.6  0.3    21
-#> normal(10, 2.5)  5.8    4.6 4.8  0.2    18
+#> Default model    6.6    5.3 5.6 0.30    21
+#> normal(10, 2.5)  6.1    5.0 5.0 0.32    19
 #> 
 #> Posterior predictive effects:
 #>                 mean median   sd  2.5% 97.5%
-#> Default model    7.9    7.9 10.0 -12.0    28
-#> normal(10, 2.5)  9.7    9.6  7.7  -6.1    26
+#> Default model    8.1    8.0 10.0 -11.0    29
+#> normal(10, 2.5)  9.6    9.5  8.1  -6.8    28
 ```
 
 
@@ -830,8 +830,8 @@ loocv_res
 #> LOO estimate based on 8-fold cross-validation
 #> 
 #>       Estimate Standard Error
-#> elpd     -31.8          0.958
-#> looic     63.6          1.920
+#> elpd     -31.8          0.955
+#> looic     63.5          1.910
 ```
 
 For smaller examples, like 8 schools, it may also be informative to plot the LOO
@@ -862,14 +862,14 @@ names(loocv_res)
 #> [6] "prior"      "K"          "pointwise"  "models"
 loocv_res$df
 #>      theta    sigma       lpd
-#> 1 6.178626 6.151541 -4.662373
-#> 2 7.802459 7.917742 -3.574791
-#> 3 9.752139 7.791249 -4.107058
-#> 4 7.982717 8.039453 -3.638390
-#> 5 9.406289 7.770879 -3.998711
-#> 6 9.056265 7.727781 -3.795972
-#> 7 5.782888 6.503760 -4.063129
-#> 8 7.580985 7.494550 -3.972439
+#> 1 5.972369 6.314339 -4.675552
+#> 2 8.359281 8.303116 -3.588834
+#> 3 8.307091 7.288951 -4.065396
+#> 4 7.944363 8.348109 -3.646546
+#> 5 9.903909 6.894150 -3.979569
+#> 6 8.896759 7.494034 -3.786249
+#> 7 5.942049 7.405439 -4.058273
+#> 8 7.825644 6.630787 -3.954114
 ```
 
 This data frame can then be used to examine or compute the variation in the
@@ -892,9 +892,9 @@ better. In this case the full pooling model actually does slightly better:
 
 ``` r
 fit1$mean_lpd
-#> [1] 7.915298
+#> [1] 7.957404
 fit2$mean_lpd
-#> [1] 7.738751
+#> [1] 7.734082
 ```
 
 If we run the full `loocv` for both models, we can estimate the difference
@@ -919,7 +919,7 @@ loo_compare(loocv_res, loocv_full)
 #> Comparison of cross-validation
 #> 
 #>                     ELPD ELPD SE
-#> Model 1 - Model 2 -0.818    0.34
+#> Model 1 - Model 2 -0.727   0.336
 #> 
 #> Positive ELPD indicates the reference group is preferred.
 ```

@@ -15,3 +15,8 @@ LICENSE$
 ^tools/checkcoverage.R
 ^CRAN-SUBMISSION$
 ^\.github$
+
+^AGENTS\.md$
+^tools/build_cran\.R$
+^tools/cran\.md$
+^baggr_.*\.tar\.gz$

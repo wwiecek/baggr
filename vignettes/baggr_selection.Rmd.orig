@@ -20,7 +20,8 @@ knitr::opts_chunk$set(
   fig.path = "fig/selection-",
   comment = "#>",
   message = FALSE,
-  warning = FALSE
+  warning = FALSE,
+  error = FALSE
 )
 library(baggr)
 ```

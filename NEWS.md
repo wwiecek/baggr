@@ -1,6 +1,8 @@
 # devel (work in progress)
 
 - Require RStan and StanHeaders 2.32.0 or newer.
+- Fixed a missing endpoint in the L’Abbé odds-ratio curve.
+- Cleaned vignette output and added a separate CRAN source-package build.
 
 # baggr 0.9 (autumn 2026)
 
