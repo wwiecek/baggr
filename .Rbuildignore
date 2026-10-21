@@ -18,5 +18,4 @@ LICENSE$
 
 ^AGENTS\.md$
 ^tools/build_cran\.R$
-^tools/cran\.md$
 ^baggr_.*\.tar\.gz$
