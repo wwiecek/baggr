@@ -9,7 +9,8 @@
 #' @param ... Additional arguments passed to [baggr::baggr()].
 #' @return log predictive density value, an object of class `baggr_cv`;
 #' full model, prior values and _lpd_ of each model are also returned.
-#' These can be examined by using `attributes()` function.
+#' The `df` component has columns `theta` (mean treatment effect),
+#' `sigma` (heterogeneity SD), and `lpd` for each omitted group.
 #' @seealso [loo_compare] for comparison of many LOO CV results; you can print and plot
 #'          output via [plot.baggr_cv] and [print.baggr_cv]
 #' @details
@@ -156,7 +157,7 @@ loocv <- function(data, return_models = FALSE, ...) {
   utils::setTxtProgressBar(pb, 1)
   close(pb)
 
-  tau_estimate <-
+  theta_estimate <-
     lapply(kfits, function(x) mean(treatment_effect(x)[[1]]))
   sd_estimate <-
     lapply(kfits, function(x) mean(treatment_effect(x)[[2]]))
@@ -170,8 +171,8 @@ loocv <- function(data, return_models = FALSE, ...) {
     elpd = sum(unlist(elpds)),
     looic = -2*sum(unlist(elpds)),
     df  = data.frame(
-      "tau" = unlist(tau_estimate),
-      "sigma_tau" = unlist(sd_estimate),
+      "theta" = unlist(theta_estimate),
+      "sigma" = unlist(sd_estimate),
       "lpd" = unlist(loglik)),
     full_model = full_fit,
     prior = args[["prior"]],
@@ -309,56 +310,49 @@ print.baggr_cv <- function(x, digits = 3, ...) {
 #' @param x output from [loocv] that has `return_models = TRUE`
 #' @param y Unused, ignore
 #' @param ... Unused, ignore
-#' @param add_values logical; if `TRUE`, values of _elpd_ are printed next to each
-#'                   study
+#' @param add_values logical; if `TRUE`, estimates and their 95% intervals
+#'                   are printed next to each study
+#' @param values_digits number of significant digits to use when printing values
+#' @param values_size size of font for the values, if `add_values == TRUE`
 #' @return `ggplot2` plot in similar style to [baggr_compare] default plots
 #' @export
 #'
-plot.baggr_cv <- function(x, y, ..., add_values = TRUE){
+plot.baggr_cv <- function(x, y, ..., add_values = TRUE,
+                          values_digits = 1, values_size = 4){
   loo_model <- x
   input_data <- loo_model$full_model$summary_data
   if(is.null(input_data))
     input_data <- loo_model$full_model$data
 
+  if(!all(c("yi", "sei") %in% names(input_data)))
+    input_data <- normalise_summary_columns(input_data, silent = TRUE)$data
+  if(is.null(input_data$group))
+    input_data$group <- group_names(loo_model$full_model)
+
   if(is.null(loo_model$models))
     stop("To plot, the loocv() output must include models (return_models = TRUE).")
 
-  mm1 <- do.call(rbind,
-                 lapply(loo_model$models, function(x) treatment_effect(x, summary = T)$tau))
-  df1 <- data.frame(
-    setNames( as.data.frame(mm1[,c(1,4,3)]) , c("lci", "median", "uci")),
-    model = "LOOCV estimate",
-    elpd = loo_model$pointwise,
-    group = input_data$group)
-  df2 <- data.frame(lci = input_data$tau - 1.96*input_data$se,
-                    median = input_data$tau,
-                    uci = input_data$tau + 1.96*input_data$se,
-                    group = input_data$group,
-                    elpd = NA,
-                    model = "Test data (out-of-sample)")
-  df <- rbind(df1, df2)
-  pl <- single_comp_plot(df)
-
-  fmti <- function(x, digits = values_digits) {
-    format(round(x, digits), nsmall = digits)
-  }
-
-  # add_values
-  if(add_values){
-    group <- median <- lci <- uci <- model <- elpd <- NULL
-    values_digits <- 2
-    values_size <- 2.5
-
-    pl <- pl +
-      ggplot2::geom_text(
-        aes(label = fmti(elpd, values_digits),
-            hjust = 1,
-            y = 1.1*max(uci)),
-        position = ggplot2::position_dodge(width = .5),
-        size = values_size) +
-      ggplot2::theme(strip.text.x = ggplot2::element_blank()) +
-      ggplot2::coord_flip(clip = "off")
-  }
-
-  pl
+  effects <- loo_model$full_model$effects
+  groups <- group_names(loo_model$full_model)
+  mm1 <- comparison_summary(lapply(loo_model$models, function(model)
+    treatment_effect(model, summary = TRUE)$theta), groups, effects)
+  df <- do.call(rbind, lapply(seq_along(effects), function(i) {
+    inputs <- input_data
+    if(length(effects) > 1) {
+      treatments <- attr(loo_model$full_model$inputs, "treatment_levels")
+      inputs <- inputs[inputs$treatment == treatments[i],,drop = FALSE]
+    }
+    inputs <- inputs[match(groups, inputs$group),,drop = FALSE]
+    df1 <- data.frame(effect_slice(mm1, i)[,
+      c("lower", "median", "upper"), drop = FALSE],
+      model = "LOOCV estimate", group = groups)
+    df2 <- data.frame(lower = inputs$yi - 1.96*inputs$sei,
+                      median = inputs$yi,
+                      upper = inputs$yi + 1.96*inputs$sei,
+                      group = groups,
+                      model = "Test data (out-of-sample)")
+    data.frame(rbind(df1, df2), parameter = effects[i])
+  }))
+  single_comp_plot(df, grid = length(effects) > 1, add_values = add_values,
+                   values_digits = values_digits, values_size = values_size)
 }

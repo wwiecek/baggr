@@ -34,11 +34,14 @@
 #' @param pooling Internal use only, please ignore
 #'
 #' @return
-#' * If you `summarise`: a data.frame with columns for `group`, `tau` and `se.tau`
-#'         (for `effect = "mean"`, also baseline means; for `"logRR"` or `"logOR"` also
-#'         `a`, `b`, `c`, `d`, which correspond to typical contingency table notation, that is:
-#'         `a` = events in exposed; `b` = no events in exposed, `c` = events in unexposed,
-#'         `d` = no events in unexposed).
+#' * Continuous summaries contain `group`, `y0i` (baseline/control mean),
+#'   `yi` (treatment minus control mean), `se0i` and `sei` (their standard
+#'   errors), and `n0i` and `ni` (control and treatment sample sizes).
+#'   A `treatment` column identifies comparisons when several treatments exist.
+#' * Binary summaries contain `group`, `a`, `b`, `c`, `d`, `n1`, `n2`,
+#'   `yi` (the selected effect estimate) and `sei` (its standard error).
+#'   Here `a`/`b` are events/non-events in treatment and `c`/`d` are
+#'   events/non-events in control; `n1`/`n2` are the corresponding totals.
 #' * If you do not summarise data, individual level data will be returned, but
 #'   some columns may be renamed or transformed (see the arguments above).
 #'
@@ -249,12 +252,12 @@ summarise_cont_data <- function(subset_data) {
   data.frame(
     group = mwide$group,
     treatment = NA,
-    mu = mwide$outcome.0,
-    tau = mwide$outcome.1 - mwide$outcome.0,
-    se.mu = sewide$outcome.0,
-    se.tau = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
-    n.mu = nwide$outcome.0,
-    n.tau = nwide$outcome.1
+    y0i = mwide$outcome.0,
+    yi = mwide$outcome.1 - mwide$outcome.0,
+    se0i = sewide$outcome.0,
+    sei = sqrt(sewide$outcome.0^2 + sewide$outcome.1^2),
+    n0i = nwide$outcome.0,
+    ni = nwide$outcome.1
   )
 }
 
@@ -290,16 +293,16 @@ summarise_binary_data <- function(data,
 # see prepare_ma()
 calc_or_rr <- function(out, effect) {
   if(effect == "logRR") {
-    out$tau <- with(out, log((a/(a+b))/(c/(c+d))))
-    out$se  <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
+    out$yi <- with(out, log((a/(a+b))/(c/(c+d))))
+    out$sei  <- with(out, sqrt(1/a + 1/c - 1/(a+b) - 1/(c+d)))
   }
   if(effect == "logOR") {
-    out$tau <- with(out, log((a*d)/(b*c)))
-    out$se  <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
+    out$yi <- with(out, log((a*d)/(b*c)))
+    out$sei  <- with(out, sqrt(1/a + 1/b + 1/c + 1/d))
   }
   if(effect == "RD") {
-    out$tau <- with(out, (a/(a+b)) - (c/(c+d)))
-    out$se  <- with(out, {
+    out$yi <- with(out, (a/(a+b)) - (c/(c+d)))
+    out$sei  <- with(out, {
       p1 <- a/(a+b); p2 <- c/(c+d);
       v1 <- p1*(1-p1)/(a+b)
       v2 <- p2*(1-p2)/(c+d)

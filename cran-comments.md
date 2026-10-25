@@ -1,18 +1,17 @@
-## cran-comments for baggr v0.8.2 (June 2026)
+## cran-comments for baggr v0.9 (October 2026)
 
-Test environments, now implemented via GitHub Actions via new version of rhub
+Test environments, implemented via GitHub Actions:
 
-* linux
-* macos
-* windows
+* ubuntu-latest (release, devel, oldrel-1)
+* macos-latest (release)
+* windows-latest (release)
 
-* I also conduct CHECK locally on some Linux distros and Windows 11.
-* GHA config also includes ubuntu-latest (oldrel-1), ubuntu-latest (release), ubuntu-latest (devel)
+* Local CHECK on Ubuntu 24.04, R 4.3.3, RStan 2.32.7 and StanHeaders 2.39.1.
 
-There are no WARNINGs; sometimes the following NOTEs/INFOs, depending on OS:
+Checks --as-cran pass with two notes:
 
 N checking installed package size ... NOTE
-  sub-directories of 1Mb or more: libs
-  
+  installed size is 8.6Mb; libs 6.3Mb.
+
 N checking for GNU extensions in Makefiles ... NOTE
   GNU make is a SystemRequirements.

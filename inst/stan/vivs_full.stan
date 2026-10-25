@@ -62,8 +62,8 @@ transformed data {
 parameters {
   // corr_matrix[P] Omega;        // prior correlation
   array[joint_prior_variance == 1 && pooling_type == 1] cholesky_factor_corr[P] L_Omega;
-  array[pooling_type == 1] vector<lower=0>[P] hypersd;        // prior scale
-  array[pooling_type != 0] vector[P] mu;
+  array[pooling_type == 1] vector<lower=0>[P] sigma;        // prior scale
+  array[pooling_type != 0] vector[P] theta;
   array[pooling_type != 2] matrix[P,K] eta;
   vector[Nc] beta;
   // NORMAL specific:
@@ -71,15 +71,15 @@ parameters {
 }
 transformed parameters {
   array[pooling_type != 2] matrix[P,K] theta_k;
-  array[pooling_type == 1] matrix[P,P] tau;
+  array[pooling_type == 1] matrix[P,P] L_Sigma;
   if(pooling_type == 0)
     theta_k[1] = eta[1];
   if(pooling_type == 1){
     if(joint_prior_variance)
-      tau[1] = diag_pre_multiply(hypersd[1], L_Omega[1]);
+      L_Sigma[1] = diag_pre_multiply(sigma[1], L_Omega[1]);
     else
-      tau[1] = diag_matrix(hypersd[1]);
-    theta_k[1] = rep_matrix(mu[1], K) + tau[1] * eta[1];
+      L_Sigma[1] = diag_matrix(sigma[1]);
+    theta_k[1] = rep_matrix(theta[1], K) + L_Sigma[1] * eta[1];
   }
 }
 model {
@@ -98,22 +98,22 @@ model {
     if(pooling_baseline != 2)
       y_mean += to_vector(theta_k[1][1, site]);
     else
-      y_mean += mu[1][1];
+      y_mean += theta[1][1];
 
     // Impact of treatment:
     if(pooling_type != 2)
       y_mean += treatment .* to_vector(theta_k[1][2, site]);
     else
-      y_mean += treatment * mu[1][2];
+      y_mean += treatment * theta[1][2];
   }
 
   /* PRIORS */
   if(pooling_type > 0){
     if(joint_prior_mean)
-      mu[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
+      theta[1] ~ multi_normal(prior_hypermean_mean, prior_hypermean_scale);
     // else {
-    //   mu[1][1] ~ realprior(prior_control_fam,   prior_control_val);
-    //   mu[1][2] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
+    //   theta[1][1] ~ realprior(prior_control_fam,   prior_control_val);
+    //   theta[1][2] ~ realprior(prior_hypermean_fam, prior_hypermean_val);
     // }
   } else {
     for(k in 1:K)
@@ -122,8 +122,8 @@ model {
 
   if(pooling_type == 1) {
     to_vector(eta[1]) ~ std_normal();
-    hypersd[1][1] ~ realprior(prior_hypersd_fam,    prior_hypersd_val);
-    hypersd[1][2] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
+    sigma[1][1] ~ realprior(prior_hypersd_fam,    prior_hypersd_val);
+    sigma[1][2] ~ realprior(prior_control_sd_fam, prior_control_sd_val);
     if(joint_prior_variance)
       L_Omega[1] ~ lkj_corr_cholesky(prior_hypercor_val);
   }
@@ -146,10 +146,10 @@ generated quantities {
     logpd[1] = 0;
     for(i in 1:N_test){
       if(pooling_type == 1)
-        logpd[1] += normal_lpdf(test_y[i] | mu[1][1] + mu[1][2] * test_treatment[i] + fe_test[i],
-                                sqrt(hypersd[1][1]^2 + hypersd[1][2]^2 + test_sigma_y_k[test_site[i]]^2));
+        logpd[1] += normal_lpdf(test_y[i] | theta[1][1] + theta[1][2] * test_treatment[i] + fe_test[i],
+                                sqrt(sigma[1][1]^2 + sigma[1][2]^2 + test_sigma_y_k[test_site[i]]^2));
       if(pooling_type == 2)
-        logpd[1] += normal_lpdf(test_y[i] | mu[1][1] + mu[1][2] * test_treatment[i] + fe_test[i],
+        logpd[1] += normal_lpdf(test_y[i] | theta[1][1] + theta[1][2] * test_treatment[i] + fe_test[i],
                                 sqrt(test_sigma_y_k[test_site[i]]^2));
     }
   }

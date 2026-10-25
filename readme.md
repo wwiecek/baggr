@@ -1,4 +1,4 @@
-# baggr: Bayesian aggregation package for R, v0.8.2 (June 2026)
+# baggr: Bayesian aggregation package for R, v0.9 (Autumn 2026)
 
 
 
@@ -9,6 +9,7 @@
 [![Codecov\_test\_coverage](https://codecov.io/gh/wwiecek/baggr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/wwiecek/baggr?branch=master)
 [![R-CMD-check](https://github.com/wwiecek/baggr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/wwiecek/baggr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
 
 This is *baggr*, an [R package](https://www.r-project.org/) for Bayesian
 meta-analysis using [Stan](https://mc-stan.org/). *Baggr* is intended to
@@ -71,8 +72,8 @@ detected from the shape of data.
 
 ``` r
 library(baggr)
-df_pooled <- data.frame("tau" = c(28,8,-3,7,-1,1,18,12),
-                        "se"  = c(15,10,16,11,9,11,10,18))
+df_pooled <- data.frame("yi" = c(28,8,-3,7,-1,1,18,12),
+                        "sei"  = c(15,10,16,11,9,11,10,18))
 bg <- baggr(df_pooled, pooling = "partial")
 ```
 
@@ -96,7 +97,7 @@ data, try `vignette("baggr_binary")`. Compiled vignettes are available
 
 ## Current release
 
-# Included in baggr v0.8.2 (2026):
+# Included in baggr v0.9 (late 2026):
 
   - Meta-analysis of continuous and binary outcomes
   - Both full and aggregate data sets can be used

@@ -9,18 +9,20 @@ group_effects(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   random_only = FALSE,
-  rename_int = FALSE
+  rename_int = FALSE,
+  interval = NULL
 )
 
 study_effects(
   bg,
   summary = FALSE,
   transform = NULL,
-  interval = 0.95,
+  prob = 0.95,
   random_only = FALSE,
-  rename_int = FALSE
+  rename_int = FALSE,
+  interval = NULL
 )
 }
 \arguments{
@@ -32,14 +34,16 @@ study_effects(
 (this is commonly used when calling \code{group_effects} from other
 plotting or printing functions)}
 
-\item{interval}{uncertainty interval width (numeric between 0 and 1), if summarising}
+\item{prob}{Probability mass of the central uncertainty interval, on the 0--1 scale.}
 
 \item{random_only}{logical; for meta-regression models, should \link{fixed_effects} be included in the
 returned group effect?}
 
-\item{rename_int}{logical; if \code{TRUE} then rather than returning \code{median}, \code{lci} and \code{uci}
-columns they are renamed to e.g. \verb{50\%}, \verb{2.5\%}, \verb{97.5\%}; this only
-works if \code{summary=TRUE}}
+\item{rename_int}{logical; with \code{summary = TRUE}, rename only \code{lower}
+and \code{upper} to endpoint percentages and omit \code{width}. \code{median} retains
+its name. Defaults to \code{FALSE}.}
+
+\item{interval}{Compatibility alias for \code{prob}; supply only one of these arguments.}
 }
 \value{
 Either an array with MCMC samples (if \code{summary = FALSE})
@@ -57,16 +61,19 @@ This is an internal function currently used as a helper for plotting and
 printing of results.
 }
 \details{
-If \code{summary = TRUE}, the returned object contains, for each study
-or group, the following 5 values:
-the posterior medians, the lower and upper bounds of the
-uncertainty intervals using the central posterior credible interval
-of width specified in the argument \code{interval}, the posterior mean, and
-the posterior standard deviation.
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
 }
 \examples{
 fit1 <- baggr(schools)
-group_effects(fit1, summary = TRUE, interval = 0.5)
+group_effects(fit1, summary = TRUE, prob = 0.5)
 }
 \seealso{
 \link{fixed_effects} for effects of covariates on outcome. To extract random effects

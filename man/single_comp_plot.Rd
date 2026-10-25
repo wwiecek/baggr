@@ -17,7 +17,7 @@ single_comp_plot(
 )
 }
 \arguments{
-\item{df}{data.frame with columns \code{group}, \code{median}, \code{lci}, \code{uci},
+\item{df}{data.frame with columns \code{group}, \code{median}, \code{lower}, \code{upper},
 \code{model} (character or factor listing compared models) and,
 optionally, \code{parameter} (character or factor with name of parameter)}
 

@@ -10,13 +10,15 @@ pooling(
   bg,
   metric = c("pooling", "isq", "hsq", "weights"),
   type = c("groups", "total"),
-  summary = TRUE
+  summary = TRUE,
+  prob = 0.95
 )
 
 heterogeneity(
   bg,
   metric = c("pooling", "isq", "hsq", "weights"),
-  summary = TRUE
+  summary = TRUE,
+  prob = 0.95
 )
 
 \method{weights}{baggr}(object, ...)
@@ -36,6 +38,8 @@ also see \emph{Details}}
 \item{summary}{logical; if \code{FALSE} a whole vector of pooling values is returned,
 otherwise only the means and intervals}
 
+\item{prob}{Probability mass of the central interval, on the 0--1 scale.}
+
 \item{object}{\code{\link[=baggr]{baggr()}} model for which to calculate group (study) weights}
 
 \item{...}{Unused, please ignore.}
@@ -49,6 +53,16 @@ pooling statistic by Gelman & Pardoe (2006), \emph{I-squared}, \emph{H-squared},
 \code{weights} is shorthand for \code{pooling(metric = "weights")}
 }
 \details{
+With \code{summary = TRUE}, summaries are numeric matrices with rows for
+the quantities being summarised and columns \code{mean}, \code{median}, \code{sd},
+\code{lower}, \code{upper}, \code{width}, in that order. The bounds form a central
+interval; \code{width} is its requested probability mass, even when estimates
+are unavailable. For multiple effects, the result is a rows by statistics
+by effects array, with effect names in the third dimension. A single-effect
+matrix stores its effect name in the \code{effect} attribute. Row names are
+preserved. Aggregate summaries have one row; predictions conditional on
+\code{newdata} have one row per observation.
+
 Pooling statistic (Gelman & Pardoe, 2006) describes the extent to which
 group-level estimates of treatment
 effect are "pooled" toward average treatment effect in the meta-analysis model.
@@ -74,24 +88,24 @@ This is the calculation done by \code{pooling()} if \code{type = "groups"} (defa
 In a partial pooling model (see \code{\link[=baggr]{baggr()}} and above), group \emph{k} (e.g. study) has
 standard error of treatment effect estimate, \eqn{se_k}.
 The treatment effect (across \emph{k} groups) is variable across groups, with
-hyper-SD parameter \eqn{\sigma_(\tau)}.
+hyper-SD parameter \eqn{\sigma_(\theta)}.
 
 The quantity of interest is ratio of variation in treatment effects to the
 total variation.
 By convention, we subtract it from 1, to obtain a \emph{pooling metric} \emph{P}.
 
-\deqn{p = 1 - (\sigma_(\tau)^2 / (\sigma_(\tau)^2 + se_k^2))}
+\deqn{p = 1 - (\sigma_(\theta)^2 / (\sigma_(\theta)^2 + se_k^2))}
 \itemize{
 \item If \eqn{p < 0.5}, the variation across studies is higher than variation within studies.
 \item Values close to 1 indicate nearly full pooling. Variation across studies dominates.
 \item Values close to 0 indicate no pooling. Variation within studies dominates.
 }
 
-Note that, since \eqn{\sigma_{\tau}^2} is a Bayesian parameter (rather than a
+Note that, since \eqn{\sigma_{\theta}^2} is a Bayesian parameter (rather than a
 single fixed value),
 \emph{P} is also a parameter. It is typical for \emph{P} to have very high dispersion,
 as in many cases we
-cannot precisely estimate \eqn{\sigma_{\tau}}. To obtain samples from the distribution
+cannot precisely estimate \eqn{\sigma_{\theta}}. To obtain samples from the distribution
 of \emph{P} (rather than summarised values), set \code{summary=FALSE}.
 }
 

@@ -19,3 +19,5 @@ src/*.h
 src/Makevars
 src/Makevars.win
 *.so
+
+/baggr_*.tar.gz

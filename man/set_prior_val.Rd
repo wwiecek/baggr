@@ -14,7 +14,7 @@ set_prior_val(target, name, prior, p = 1, to_array = FALSE)
 \item{prior}{one of prior distributions allowed by baggr like \link{normal}}
 
 \item{p}{number of repeats of the prior, i.e. when P i.i.d. priors are set for
-P dimensional parameter as in "mu & tau" type of model}
+P dimensional parameter as in the joint baseline and treatment-effect model}
 
 \item{to_array}{for some models where \code{p} may be larger than 1, Stan will expect
 an array instead of a numeric (even when p == 1), so for compatibiliy

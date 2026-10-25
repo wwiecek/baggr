@@ -36,8 +36,8 @@ test_that("Error messages for wrong inputs are in place", {
 
   # test_that("Converting inputs works correctly") more explicitly
   expect_identical(names(convert_inputs(df_pooled, "rubin")),
-                   c("K", "theta_hat_k", "se_theta_k", "K_test",
-                     "test_theta_hat_k", "test_se_theta_k", "Nc", "X", "X_test",
+                   c("K", "yi", "sei", "K_test",
+                     "test_yi", "test_sei", "Nc", "X", "X_test",
                      "M", "c", "symmetric", "possible_selection"))
 
   expect_warning(baggr(df_pooled, group = "state1000", iter = 50, refresh = 0),
@@ -77,11 +77,11 @@ test_that("Hyper-SD priors are handled correctly outside partial pooling", {
   )
   expect_false(is.null(bg_partial$prior_dist$hypersd))
 
-  fe7n_te <- treatment_effect(fe7n, summary = TRUE)$tau
+  fe7n_te <- treatment_effect(fe7n, summary = TRUE)$theta
   expect_no_error(
     suppressWarnings(
       baggr(schools[8, ], pooling = "full",
-            prior_hypermean = normal(fe7n_te[["mean"]], fe7n_te[["sd"]]),
+            prior_hypermean = normal(fe7n_te[1,"mean"], fe7n_te[1,"sd"]),
             iter = 50, chains = 1, refresh = 0, seed = 1990)
     )
   )
@@ -111,7 +111,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 200) #right dimension means right iter
-  expect_error(baggr(df_pooled, rubbish = 41))
+  expect_error(suppressWarnings(baggr(df_pooled, rubbish = 41)))
 })
 
 test_that("Various attr of baggr object are correct", {
@@ -133,43 +133,43 @@ test_that("Data are available in baggr object", {
 
 test_that("Pooling metrics", {
   # all pooling metric are the same as SE's are the same
-  expect_equal(length(unique(bg5_p$pooling_metric[1,,1])), 1) #expect_length()
-  expect_equal(length(unique(bg5_p$pooling_metric[2,,1])), 1)
-  expect_equal(length(unique(bg5_p$pooling_metric[3,,1])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[,"lower"])), 1) #expect_length()
+  expect_equal(length(unique(bg5_p$pooling_metric[,"mean"])), 1)
+  expect_equal(length(unique(bg5_p$pooling_metric[,"upper"])), 1)
   # all pooling stats are 0 if no pooling
-  expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
+  expect_equal(unique(as.numeric(bg5_n$pooling_metric[,c("mean","median","lower","upper")])), 0)
   # full pooling means 1's everywhere
-  expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
+  expect_equal(unique(as.numeric(bg5_f$pooling_metric[,c("mean","median","lower","upper")])), 1)
 
   pp <- pooling(bg5_p)
   expect_is(pp, "array")
-  expect_gt(min(pp), 0)
-  expect_lt(max(pp), 1)
+  expect_gt(min(pp[,c("mean","median","lower","upper")]), 0)
+  expect_lt(max(pp[,c("mean","median","lower","upper")]), 1)
   expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
 
   # since all SEs are the same, pooling should be the same for all sites
   expect_type(testthat::capture_output(print(pp)), "character")
-  # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
-  expect_equal(length(unique(pp[2,,1])), 1)
-  expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
+  # expect_equal(pp[,"mean"], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
+  expect_equal(length(unique(pp[,"mean"])), 1)
+  expect_equal(as.numeric(pp[1,"mean"]), .75, tolerance = .1)
 
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
   expect_is(i2, "array")
-  expect_gte(min(i2), 0)
-  expect_lte(max(i2), 1)
+  expect_gte(min(i2[,c("mean","median","lower","upper")]), 0)
+  expect_lte(max(i2[,c("mean","median","lower","upper")]), 1)
   h2 <- pooling(bg5_p, metric = "hsq")
   expect_is(h2, "array")
-  expect_gt(min(h2), 1)
+  expect_gt(min(h2[,c("mean","median","lower","upper")]), 1)
 
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
   expect_is(wt, "array")
-  expect_equal(dim(wt), c(3,8,1))
-  expect_equal(sum(wt[2,,1]), 1)
-  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[1,,1]), 0)
+  expect_equal(dim(wt), c(8,6))
+  expect_equal(sum(wt[,"mean"]), 1)
+  expect_lte(sum(wt[,"lower"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"upper"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"lower"]), 0)
   wt2 <- pooling(bg5_p, metric = "weights")
   expect_identical(wt, wt2)
 
@@ -185,7 +185,7 @@ test_that("Calculation of effects works", {
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(200, 8 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(200, 8 , 1)))
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
 })
 
 
@@ -227,13 +227,13 @@ test_that("Forest plots for Rubin model", {
 
 test_that("Test data can be used in the Rubin model", {
   # Wrong data type:
-  expect_error(baggr(data = df_pooled, test_data = cars), "is of type")
+  expect_error(baggr(data = df_pooled, test_data = cars), "Missing mapped summary columns")
 
   # NA values or wrong cols:
   df2 <- df_pooled; df2$tau[1] <- NA
   expect_error(baggr(data = df_pooled, test_data = df2), "NA")
   df_na <- df_pooled[7:8,]; df_na$tau <- NULL
-  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "is of type")
+  expect_error(baggr(df_pooled[1:6,], test_data = df_na), "Missing mapped summary columns")
 
   # This should work:
   bg_lpd <- expect_warning(baggr(df_pooled[1:6,], test_data = df_pooled[7:8,],
@@ -290,7 +290,7 @@ test_that("Model with covariates works fine", {
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov), "matrix")
   expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
-  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,6))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
 
   # Bubble plots
@@ -330,10 +330,10 @@ test_that("Model with covariates works fine", {
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_pooled))
   expect_is(treatment_effect(bg5_p), "list")
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
+  expect_is(treatment_effect(bg5_p)$theta, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$theta, 6)
 
   # Drawing values of tau:
   expect_error(effect_draw(cars))
@@ -342,8 +342,8 @@ test_that("Extracting treatment/study effects works", {
   expect_length(effect_draw(bg5_p,7), 7)
   eds1 <- effect_draw(bg5_p, summary = T)
   eds2 <- effect_draw(bg5_p, summary = T, interval = .5)
-  expect_length(eds1, 5)
-  expect_gt(eds2[1], eds1[1]) #narrower interval
+  expect_length(eds1, 6)
+  expect_gt(eds2[1,"lower"], eds1[1,"lower"]) #narrower interval
   expect_warning(effect_draw(bg5_p, 1e05), "more effect draws than there are available samples")
   set.seed(1); pred1 <- predict(bg5_p, draws = 7)
   set.seed(1); pred2 <- effect_draw(bg5_p, draws = 7)
@@ -412,8 +412,8 @@ test_that("loocv", {
 test_that("The default 8 schools result is close to the result in BDA", {
   skip_on_cran()
   bg_s <- baggr(schools, refresh = 0, iter = 2000, control = list(adapt_delta = .99))
-  expect_equal(mean(treatment_effect(bg_s)$tau), 8, tolerance = .25)
-  expect_equal(mean(treatment_effect(bg_s)$sigma_tau), 7, tolerance = .25)
+  expect_equal(mean(treatment_effect(bg_s)$theta), 8, tolerance = .25)
+  expect_equal(mean(treatment_effect(bg_s)$sigma), 7, tolerance = .25)
 })
 
 
@@ -428,10 +428,10 @@ bg_bd <- baggr(dt_bd, group = "study", model = "rubin", iter = 4000,
 # RE results from metafor:
 # metafor::rma(yi, vi, data=dt2)
 test_that("Bangert-Drowns meta-analysis result is close to metafor output", {
-  expect_equal(mean(treatment_effect(bg_bd)$tau), 0.22, tolerance = .01)
-  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .025)),
+  expect_equal(mean(treatment_effect(bg_bd)$theta), 0.22, tolerance = .01)
+  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$theta, .025)),
                0.13, tolerance = .02)
-  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$tau, .975)),
+  expect_equal(as.numeric(quantile(treatment_effect(bg_bd)$theta, .975)),
                0.31, tolerance = .02)
 })
 

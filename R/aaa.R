@@ -1,6 +1,7 @@
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("This is baggr; see vignette('baggr') for tutorial, ?baggr for basic help.")
-  packageStartupMessage("For execution on a local, multicore CPU with excess RAM call:")
+  packageStartupMessage("From v0.9 (late 2026) notation for inputs and parameters changed. You can still use old defaults.")
+  packageStartupMessage("For multicore CPU use: ")
   packageStartupMessage("options(mc.cores = parallel::detectCores())")
 }
 

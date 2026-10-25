@@ -24,8 +24,12 @@ baggr(
   pooling_control = c("none", "partial", "remove"),
   test_data = NULL,
   quantiles = seq(0.05, 0.95, 0.1),
-  outcome = "outcome",
   group = "group",
+  yi = NULL,
+  sei = NULL,
+  y0i = NULL,
+  se0i = NULL,
+  outcome = "outcome",
   treatment = "treatment",
   cluster = NULL,
   selection = NULL,
@@ -39,16 +43,21 @@ baggr(
 see Details section for how to format your data}
 
 \item{model}{if \code{NULL}, detected automatically from input data
-otherwise choose from \code{rubin}, \code{rubin_full}, \code{logit}, \code{mutau} (see Details).}
+otherwise choose \code{rubin} (\code{nnhm}), \code{rubin_full}, \code{logit},
+\code{vivs} or \code{vivs_full}. Aliases \code{mutau}/\code{bivariate} and
+\code{mutau_full}/\code{bivariate_full} select \code{vivs} and \code{vivs_full}.}
 
 \item{pooling}{Type of pooling;
 choose from \code{"none"}, \code{"partial"} (default) and \code{"full"}.
 If you are not familiar with the terms, consult the vignette;
 "partial" can be understood as random effects and "full" as fixed effects}
 
-\item{effect_label}{How to label the effect(s). These labels are used in various print and plot outputs.
+\item{effect_label}{How to label the effect(s). Typically this is a cosmetic choice of label
+used in various print and plot outputs.
 Will default to \code{"mean"} in most models, \code{"log OR"} in logistic model etc.
-If you plan on comparing models (see \link{baggr_compare}), use the same labels.}
+If you plan on comparing models (see \link{baggr_compare}), use the same labels.
+If using \code{model = "rubin"} with raw binary event counts, \code{"logOR"}, \code{"logRR"}
+and \code{"RD"} will trigger additional processing via \link{prepare_ma}.}
 
 \item{covariates}{Character vector with column names in \code{data}. The corresponding columns are used as
 covariates (fixed effects) in the meta-regression model (in case of aggregate data).
@@ -63,10 +72,10 @@ If unspecified, the priors will be derived automatically based on data
 (and printed out in the console).}
 
 \item{prior_hypersd}{prior for hyper-standard deviation, used
-by Rubin and \code{"mutau"} models;
+by Rubin and \code{"vivs"} models;
 same rules apply as for \verb{_hypermean};}
 
-\item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"mutau"} model}
+\item{prior_hypercor}{prior for hypercorrelation matrix, used by the \code{"vivs"} model}
 
 \item{prior_beta}{prior for regression coefficients if \code{covariates} are specified; will default to
 experimental normal(0, 10^2) distribution}
@@ -86,7 +95,7 @@ this can only be used if \code{pooling_control = "partial"}}
 
 \item{prior_selection}{prior for the log of relative publication probability (see \strong{Selection} section below and argument \code{selection})}
 
-\item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"mutau_full"})}
+\item{prior_sigma}{prior for error terms in linear regression models (\code{"rubin_full"} or \code{"vivs_full"})}
 
 \item{prior}{alternative way to specify all of the priors above as a single named list, with \code{hypermean},
 \code{hypersd}, \code{hypercor}, \code{beta} etc., with names dropping \code{prior_} prefix,
@@ -109,20 +118,26 @@ with the same columns as \code{data} argument. See "Cross-validation" section be
 \item{quantiles}{if \code{model = "quantiles"}, a vector indicating which quantiles of data to use
 (with values between 0 and 1)}
 
-\item{outcome}{column name in \code{data} (used in individual-level only) with outcome variable values}
-
 \item{group}{column name in \code{data} with grouping factor;
 it's necessary for individual-level data, for summarised data
-it will be used as labels for groups when displaying results}
+it will be used as labels for groups when displaying results;
+you can also use \code{slab} instead of \code{group}, like in metafor.}
+
+\item{yi, sei, y0i, se0i}{Custom column names for summary effect (\code{yi}) and standard errors (\code{sei});
+\code{y0i} and \code{se0i} are means and SE in control groups.
+If \code{NULL}, these are detected automatically. Notation from older
+baggr versions (\code{mu} and \code{tau}) will work automatically.}
+
+\item{outcome}{column name in \code{data} (used in individual-level only) with outcome variable values}
 
 \item{treatment}{column name in (individual-level) \code{data} with treatment factor;}
 
-\item{cluster}{optional; column name in (individual-level) \code{data}; if defined,
+\item{cluster}{column name in (individual-level) \code{data}; if defined,
 random cluster effects will be fitted in each study}
 
-\item{selection}{optional publication-selection specification for Rubin
-summary-data models. A numeric vector is treated as z-value
-cut-points on the absolute z-scale, where \code{z = tau / se}.
+\item{selection}{optional publication-selection specification for the
+normal-normal hierarchical (Rubin) summary-data model. A numeric vector is treated as z-value
+cut-points on the absolute z-scale, where \code{z = yi / sei}.
 A list must have named elements \code{z} (positive cut-points),
 \code{symmetrical} (\code{TRUE}/\code{FALSE}) and \code{possible} (0/1 or logical
 vector with one value per study, where 1 means selection is
@@ -151,12 +166,23 @@ Below we briefly discuss 1/ data preparation, 2/ choice of model, 3/ choice of p
 All three are discussed in more depth in the package vignette, \code{vignette("baggr")}.
 
 \strong{Data.} For aggregate data models you need a data frame with columns
-\code{tau} and \code{se} (Rubin model) or \code{tau}, \code{mu}, \code{se.tau}, \code{se.mu} ("mu & tau" model).
+\code{yi} and \code{sei} (Rubin model) or \code{y0i}, \code{se0i}, \code{yi}, \code{sei} (\code{vivs} model).
+These are observed effect estimates and their standard errors, with baseline
+means and their standard errors included for \code{vivs}.
+Supply string arguments such as \verb{yi = "effect", sei = "effect_se"} to
+select other columns. Bare column names and vector inputs are not supported.
+Exact aliases \code{y}/\code{se} and \code{y0}/\code{se0}/\code{y}/\code{se} are also recognised.
+Legacy names \code{tau}/\code{se} and \code{mu}/\code{se.mu}/\code{tau}/\code{se.tau} remain accepted,
+with an informational message unless \code{silent = TRUE} or mappings are explicit.
+Canonical columns take precedence when duplicate conventions agree; conflicting
+values require explicit mappings. The same mappings apply to \code{test_data}.
 An additional column can be used to provide labels for each group
 (by default column \code{group} is used if available, but this can be
 customised -- see the example below).
-For individual level data three columns are needed: outcome, treatment, group. These
-are identified by using the \code{outcome}, \code{treatment} and \code{group} arguments.
+For summary data, you can use \code{slab} column when \code{group} is absent.
+Or you can also pass \code{slab = "study_label_column"} when calling \code{baggr()};
+explicit \code{group} takes precedence.
+For individual level data three columns are needed: \code{outcome}, \code{treatment}, \code{group}.
 
 Many data preparation steps can be done through a helper function \link{prepare_ma}.
 It can convert individual to summary-level data, calculate
@@ -166,14 +192,27 @@ Using it will automatically format data inputs to work with \code{baggr()}.
 \strong{Models.} Available models are:
 \itemize{
 \item for the \strong{continuous variable} means:
-\code{"rubin"} model for average treatment effect (using summary data), \code{"mutau"}
+\code{"rubin"} model for average treatment effect (using summary data), \code{"vivs"}
 version which takes into account means of control groups (also using summary data),
-\code{"rubin_full"},  which is the same model as \code{"rubin"} but works with individual-level data
+\code{"rubin_full"}, which works with individual-level data;
+\code{"vivs_full"}, which jointly pools control means and treatment effects
+using individual-level data
 \item for \strong{binary data}: \code{"logit"} model can be used on individual-level data;
 you can also analyse continuous statistics such as
 log odds ratios and logs risk ratios using the models listed above;
 see \code{vignette("baggr_binary")} for tutorial with examples
 }
+
+The default summary-data model, \code{"rubin"}, is often referred to in the
+literature as the normal-normal hierarchical model (\code{"nnhm"} is an alias).
+The varying-intercept, varying-slope model (\code{"vivs"}, or \code{"vivs_full"}
+for individual-level data) is a joint model that allows random effects on
+both control means and treatment effects. It is a bivariate hierarchical
+model that jointly estimates study-specific control means and treatment
+effects, allowing them to be correlated across studies.
+In previous baggr versions it was referred to as the \code{"mutau"} model.
+You can still use that name when specifying the model; \code{"bivariate"} is
+another alias. Both aliases also accept the \verb{_full} suffix.
 
 If no model is specified, the function tries to infer the appropriate
 model automatically.
@@ -187,7 +226,7 @@ We also refer to impact of these covariates as \emph{fixed effects}.
 
 Two types of covariates may be present in your data:
 \itemize{
-\item In \code{"rubin"} and \code{"mutau"} models, covariates that \strong{change according to group unit}.
+\item In \code{"rubin"} and \code{"vivs"} models, covariates that \strong{change according to group unit}.
 In that case, the model accounting
 for the group covariates is a
 meta-regression model, as described in Chapter 10 of the Cochrane
@@ -227,7 +266,7 @@ For using aggregate level data, there is no such restriction.
 \strong{Selection model.} If the \code{selection} argument is not \code{NULL}, \code{baggr()}
 fits a publication-selection model on z-values (currently only in the
 \code{"rubin"} summary-data model). For each study, the observed z-value is the
-reported estimate divided by its standard error, \code{z = tau / se}. A numeric
+reported estimate divided by its standard error, \code{z = yi / sei}. A numeric
 \code{selection} input gives cut-points on the absolute z-scale. For example,
 \code{selection = c(1.96, 2.58)} gives three intervals, \verb{[0, 1.96)},
 \verb{[1.96, 2.58)}, and \verb{[2.58, Inf)}. This is equivalent to
@@ -275,8 +314,8 @@ shorthands \link{hypermean} for mean and \link{hypersd} for SD
 }
 }
 \examples{
-df_pooled <- data.frame("tau" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
-                        "se" = rep(1, 8),
+df_pooled <- data.frame("yi" = c(1, -1, .5, -.5, .7, -.7, 1.3, -1.3),
+                        "sei" = rep(1, 8),
                         "state" = datasets::state.name[1:8])
 baggr(df_pooled) #baggr automatically detects the input data
 # same model, but with correct labels,
@@ -287,11 +326,11 @@ baggr(df_pooled, group = "state", pooling = "full", iter = 500)
 baggr(df_pooled, prior_hypersd = normal(0, 2))
 
 \donttest{
-# "mu & tau" model, using a built-in dataset
+# Joint baseline and treatment-effect model, using a built-in dataset
 # prepare_ma() can summarise individual-level data
 ms <- microcredit_simplified
 microcredit_summary_data <- prepare_ma(ms, outcome = "consumption")
-baggr(microcredit_summary_data, model = "mutau",
+baggr(microcredit_summary_data, model = "vivs",
       iter = 500, #this is just for illustration -- don't set it this low normally!
       pooling = "partial", prior_hypercor = lkj(1),
       prior_hypersd = normal(0,10),

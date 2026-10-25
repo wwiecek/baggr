@@ -13,7 +13,7 @@
 
 \item{digits}{Number of significant digits to print.}
 
-\item{prob}{Width of uncertainty interval (defaults to 95\%)}
+\item{prob}{Probability mass of the central interval (defaults to 0.95).}
 
 \item{group}{logical; print group effects? If unspecified,
 they are printed only if

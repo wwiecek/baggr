@@ -16,7 +16,11 @@ convert_inputs(
   selection = NULL,
   covariates = c(),
   test_data = NULL,
-  silent = FALSE
+  silent = FALSE,
+  yi = NULL,
+  sei = NULL,
+  y0i = NULL,
+  se0i = NULL
 )
 }
 \arguments{
@@ -52,6 +56,14 @@ covariates (fixed effects) in the meta-regression model.}
 testing purposes (see \code{\link[=baggr]{baggr()}})}
 
 \item{silent}{Whether to print messages when evaluated}
+
+\item{yi, sei}{Column names (single strings or \code{NULL}) for summary effect
+estimates and their standard errors. Defaults are \code{yi} and
+\code{sei}; both mappings must be supplied together.}
+
+\item{y0i, se0i}{Column names (single strings or \code{NULL}) for baseline/control
+means and their standard errors in the \code{vivs} model.
+Supply both together with \code{yi} and \code{sei} when mapping columns.}
 }
 \value{
 R structure that's appropriate for use by \code{\link[=baggr]{baggr()}} Stan models;

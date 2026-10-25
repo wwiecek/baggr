@@ -50,7 +50,7 @@ test_that("Different pooling methods work for Rubin model", {
 
 test_that("Extra args to Stan passed via ... work well", {
   expect_equal(nrow(as.matrix(bg5_p$fit)), 150) #right dimension means right iter
-  expect_error(baggr(df_binary, rubbish = 41))
+  expect_error(suppressWarnings(baggr(df_binary, rubbish = 41)))
 })
 
 # Run without summarising data first
@@ -96,21 +96,21 @@ test_that("Data are available in baggr object", {
 
 test_that("Pooling metrics", {
   # all pooling stats are 0 if no pooling
-  expect_equal(unique(as.numeric(bg5_n$pooling_metric)), 0)
+  expect_equal(unique(as.numeric(bg5_n$pooling_metric[,c("mean","median","lower","upper")])), 0)
   # full pooling means 1's everywhere
-  expect_equal(unique(as.numeric(bg5_f$pooling_metric)), 1)
+  expect_equal(unique(as.numeric(bg5_f$pooling_metric[,c("mean","median","lower","upper")])), 1)
 
   # pp <- pooling(bg5_p)
   # expect_is(pp, "array")
-  # expect_gt(min(pp), 0)
-  # expect_lt(max(pp), 1)
+  # expect_gt(min(pp[,c("mean","median","lower","upper")]), 0)
+  # expect_lt(max(pp[,c("mean","median","lower","upper")]), 1)
   # expect_identical(bg5_p$pooling_metric, pooling(bg5_p))
 
   # since all SEs are the same, pooling should be the same for all sites
   # expect_type(testthat::capture_output(print(pp)), "character")
-  # expect_equal(pp[2,,1], .75, tolerance = .1) #YUGE tolerance as we only do 150 iter
-  # expect_equal(length(unique(pp[2,,1])), 1)
-  # expect_equal(as.numeric(pp[2,1,1]), .75, tolerance = .1)
+  # expect_equal(pp[,"mean"], .75, tolerance = .1) #YUGE tolerance as we only do 150 iter
+  # expect_equal(length(unique(pp[,"mean"])), 1)
+  # expect_equal(as.numeric(pp[1,"mean"]), .75, tolerance = .1)
 })
 
 test_that("extra pooling stats work", {
@@ -118,22 +118,22 @@ test_that("extra pooling stats work", {
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
   expect_is(i2, "array")
-  expect_gte(min(i2), 0)
-  expect_lte(max(i2), 1)
+  expect_gte(min(i2[,c("mean","median","lower","upper")]), 0)
+  expect_lte(max(i2[,c("mean","median","lower","upper")]), 1)
   h2 <- pooling(bg5_p, metric = "hsq")
   expect_is(h2, "array")
-  expect_gte(min(h2), 1)
+  expect_gte(min(h2[,c("mean","median","lower","upper")]), 1)
   h <- pooling(bg5_p, metric = "h")
   expect_is(h, "array")
-  expect_gte(min(h), 1)
+  expect_gte(min(h[,c("mean","median","lower","upper")]), 1)
   # Calculation of weights makes sense
   wt <- weights(bg5_p)
   expect_is(wt, "array")
-  expect_equal(dim(wt), c(3,5,1))
-  expect_equal(sum(wt[2,,1]), 1)
-  expect_lte(sum(wt[1,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[3,,1]), sum(wt[2,,1]))
-  expect_gte(sum(wt[1,,1]), 0)
+  expect_equal(dim(wt), c(5,6))
+  expect_equal(sum(wt[,"mean"]), 1)
+  expect_lte(sum(wt[,"lower"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"upper"]), sum(wt[,"mean"]))
+  expect_gte(sum(wt[,"lower"]), 0)
   wt2 <- pooling(bg5_p, metric = "weights")
   expect_identical(wt, wt2)
 })
@@ -141,16 +141,16 @@ test_that("extra pooling stats work", {
 test_that("Calculation of effects works", {
   expect_is(group_effects(bg5_p), "array")
   expect_is(treatment_effect(bg5_p), "list")
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$tau, 5)
-  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, 5)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$theta, 6)
+  expect_length(treatment_effect(bg5_p, summary = TRUE)$sigma, 6)
 
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$tau, hypermean(bg5_p,message=FALSE))
-  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma_tau, hypersd(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$theta, hypermean(bg5_p,message=FALSE))
+  expect_equal(treatment_effect(bg5_p, summary = TRUE)$sigma, hypersd(bg5_p,message=FALSE))
 
   expect_identical(dim(group_effects(bg5_n)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_p)), as.integer(c(150, 5 , 1)))
   expect_identical(dim(group_effects(bg5_f)), as.integer(c(150, 5 , 1)))
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
 })
 
 
@@ -230,10 +230,10 @@ test_that("logit test_data uses training group indexing for predictive density",
   )
 
   logpd <- rstan::extract(bg$fit, "logpd[1]")[[1]]
-  baseline_draws <- rstan::extract(bg$fit, "baseline_k")[[1]][, trial_c_idx]
-  mu_draws <- rstan::extract(bg$fit, "mu")[[1]][, 1]
+  baseline_draws <- rstan::extract(bg$fit, "theta0_k")[[1]][, trial_c_idx]
+  theta_draws <- rstan::extract(bg$fit, "theta")[[1]][, 1]
   expected <- vapply(seq_along(logpd), function(i) {
-    eta <- baseline_draws[i] + mu_draws[i]
+    eta <- baseline_draws[i] + theta_draws[i]
     sum(dbinom(test$outcome, size = 1, prob = plogis(eta), log = TRUE))
   }, numeric(1))
   expect_equal(as.numeric(logpd), expected, tolerance = 1e-6)
@@ -265,8 +265,8 @@ test_that("logit test_data errors if test groups are absent from training", {
 test_that("Extracting treatment/study effects works", {
   expect_error(treatment_effect(df_binary))
   expect_is(treatment_effect(bg5_p), "list")
-  expect_identical(names(treatment_effect(bg5_p)), c("tau", "sigma_tau"))
-  expect_is(treatment_effect(bg5_p)$tau, "numeric") #this might change to accommodate more dim's
+  expect_identical(names(treatment_effect(bg5_p)), c("theta", "sigma"))
+  expect_is(treatment_effect(bg5_p)$theta, "numeric") #this might change to accommodate more dim's
   expect_message(treatment_effect(bg5_n), "no treatment effect estimated when")
 
   # Drawing values of tau:
@@ -312,7 +312,7 @@ test_that("Model with covariates works fine", {
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov), "matrix")
   expect_is(fixed_effects(bg_cov, transform = exp), "matrix")
-  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,5,1))
+  expect_equal(dim(fixed_effects(bg_cov, summary = TRUE)), c(2,6))
   expect_equal(dim(fixed_effects(bg_cov, summary = FALSE))[2], 2)
 })
 
@@ -333,7 +333,7 @@ test_that("Model with covariates works fine", {
   # Fixed effects extraction
   expect_is(fixed_effects(bg_cov2), "matrix")
   expect_is(fixed_effects(bg_cov2, transform = exp), "matrix")
-  expect_equal(dim(fixed_effects(bg_cov2, summary = TRUE)), c(1,5,1))
+  expect_equal(dim(fixed_effects(bg_cov2, summary = TRUE)), c(1,6))
   expect_equal(dim(fixed_effects(bg_cov2, summary = FALSE))[2], 1)
 })
 
@@ -350,7 +350,7 @@ test_that("baggr_compare basic cases work with logit models", {
 
 test_that("loocv", {
   # Rubbish model
-  # expect_error(loocv(schools, model = "mutau"))
+  # expect_error(loocv(schools, model = "vivs"))
   # Can't do pooling none
   expect_error(loocv(df_binary, pooling = "none"))
 

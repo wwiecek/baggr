@@ -24,7 +24,7 @@ brms_totalef <- brms_ranef + brms_fixef
 baggr_fit <- baggr(schools, control = list(adapt_delta = 0.99),
                    iter = 5000, refresh = 0)
 baggr_groupef <- group_effects(baggr_fit, summary = TRUE)[]
-baggr_fixef   <- mean(baggr::treatment_effect(baggr_fit)$tau)
+baggr_fixef   <- mean(baggr::treatment_effect(baggr_fit)$theta)
 
 # tolerance for differences
 tol <- 0.25
@@ -33,7 +33,7 @@ test_that(desc = "baggr and brms are at least close for schools estimates", {
   # estimates within tolerance of each other
   for(i in 1:nrow(baggr_groupef)){
 
-    expect_lt(abs(brms_totalef[i] - baggr_groupef[i,"mean",]),
+    expect_lt(abs(brms_totalef[i] - baggr_groupef[i,"mean"]),
               tol)
   }
 

@@ -82,7 +82,7 @@ test_that("selection input is validated", {
     "0/1 or logical"
   )
   expect_error(
-    convert_inputs(schools, "mutau", selection = 1.96),
+    convert_inputs(schools, "vivs", selection = 1.96),
     "only for model = 'rubin'"
   )
 })
@@ -94,7 +94,7 @@ test_that("possible selection flag is used by Stan selection likelihood", {
   stan_code <- paste(readLines(stan_file), collapse = "\n")
 
   expect_match(stan_code, "possible_selection == 0", fixed = TRUE)
-  expect_match(stan_code, "if (symmetric)\n      z = fabs(z);", fixed = TRUE)
+  expect_match(stan_code, "if (symmetric)\n      z = abs(z);", fixed = TRUE)
   expect_match(stan_code, "a = symmetric ? 0.0 : negative_infinity();",
                fixed = TRUE)
   expect_match(stan_code, "w_obs = (j <= M) ? omega[j] : 1.0;", fixed = TRUE)
