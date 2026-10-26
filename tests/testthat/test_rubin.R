@@ -149,9 +149,13 @@ test_that("Pooling metrics", {
 
   # since all SEs are the same, pooling should be the same for all sites
   expect_type(testthat::capture_output(print(pp)), "character")
-  # expect_equal(pp[,"mean"], .75, tolerance = .1) #YUGE tolerance as we only do 200 iter
   expect_equal(length(unique(pp[,"mean"])), 1)
-  expect_equal(as.numeric(pp[1,"mean"]), .75, tolerance = .1)
+  # Check the formula using the same draws, avoiding Monte Carlo error.
+  sigma <- treatment_effect(bg5_p)$sigma
+  expected_pooling <- df_pooled$se[1]^2 / (df_pooled$se[1]^2 + sigma^2)
+  expect_equal(as.numeric(pooling(bg5_p, summary = FALSE)[,1,1]),
+               expected_pooling)
+  expect_equal(as.numeric(pp[1,"mean"]), mean(expected_pooling))
 
   # Calculation of I^2 and H^2
   i2 <- pooling(bg5_p, metric = "isq")
